@@ -306,7 +306,6 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectProperty("BeamClass", "float WheelSpeed", offsetof(Beam, WheelSpeed)); MYASSERT(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float brake", offsetof(Beam, brake)); MYASSERT(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "float currentScale", offsetof(Beam, currentScale)); MYASSERT(result>=0);
-	result = engine->RegisterObjectProperty("BeamClass", "int nodedebugstate", offsetof(Beam, nodedebugstate)); MYASSERT(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int debugVisuals", offsetof(Beam, debugVisuals)); MYASSERT(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "bool networking", offsetof(Beam, networking)); MYASSERT(result>=0);
 	result = engine->RegisterObjectProperty("BeamClass", "int label", offsetof(Beam, label)); MYASSERT(result>=0);

@@ -59,8 +59,7 @@ protected:
 	void onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
 	void vehiclesListUpdate();
 
-	const static int NUM_POPUPMENUS = 6;
-	MyGUI::PopupMenuPtr pop[NUM_POPUPMENUS];
+	std::vector<MyGUI::PopupMenuPtr> pop;
 	MyGUI::PopupMenuPtr vehiclesMenu;
 };
 

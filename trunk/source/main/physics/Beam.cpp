@@ -335,7 +335,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
 	rotaInertia  = new CmdKeyInertia(MAX_ROTATORS);
 	free_soundsource=0;
-	nodedebugstate=-1;
 	debugVisuals=0;
 	netMT = 0;
 	meshesVisible=true;
@@ -4976,80 +4975,103 @@ void Beam::setReplayMode(bool rm)
 	replay->setVisible(replaymode);
 }
 
+void Beam::setDebugOverlayState(int mode)
+{
+	// enable disable debug visuals
+	debugVisuals = mode;
+
+	if(nodes_debug.empty())
+	{
+		LOG("initializing debugVisuals");
+		// add node labels
+		for(int i=0; i<free_node; i++)
+		{
+			debugtext_t t;
+			char nodeName[256]="", entName[256]="";
+			sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
+			sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
+			t.id=i;
+			t.txt = new MovableText(nodeName, "n"+TOSTRING(i));
+			t.txt->setFontName("highcontrast_black");
+			t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
+			//t.txt->setAdditionalHeight(0);
+			t.txt->showOnTop(true);
+			t.txt->setCharacterHeight(0.5);
+			t.txt->setColor(ColourValue::White);
+			t.txt->setRenderingDistance(2);
+
+			t.node = parentNode->createChildSceneNode();
+			t.node->attachObject(t.txt);
+			t.node->setPosition(nodes[i].smoothpos);
+			t.node->setScale(Vector3(0.1,0.1,0.1));
+
+			// collision nodes debug, also mimics as node visual
+			SceneNode *s = t.node->createChildSceneNode();
+			Entity *b = tsm->createEntity(entName, "sphere.mesh");
+			b->setMaterialName("tracks/transgreen");
+			s->attachObject(b);
+			float f = 0.005f;
+			s->setScale(f,f,f);
+			
+			/*
+			// collision nodes
+			if(nodes[i].collRadius > 0.00001)
+			{
+				b->setMaterialName("tracks/transred");
+				f = nodes[i].collRadius;
+			} else
+			{
+				b->setMaterialName("tracks/transgreen");
+			}
+			*/
+
+			nodes_debug.push_back(t);
+		}
+
+		// add beam labels
+		for(int i=0; i<free_beam; i++)
+		{
+			debugtext_t t;
+			char nodeName[256]="";
+			sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
+			t.id=i;
+			t.txt = new MovableText(nodeName, "b"+TOSTRING(i));
+			t.txt->setFontName("highcontrast_black");
+			t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
+			//t.txt->setAdditionalHeight(0);
+			t.txt->showOnTop(true);
+			t.txt->setCharacterHeight(1);
+			t.txt->setColor(ColourValue::White);
+			t.txt->setRenderingDistance(2);
+
+			t.node = parentNode->createChildSceneNode();
+			t.node->attachObject(t.txt);
+
+			Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
+			t.node->setPosition(pos);
+			t.node->setVisible(false);
+			t.node->setScale(Vector3(0.1,0.1,0.1));
+			beams_debug.push_back(t);
+		}
+
+	}
+
+	// then hide them according to the state:
+	bool nodesVisible = debugVisuals == 1 || (debugVisuals >= 3 && debugVisuals <= 5);
+	bool beamsVisible = debugVisuals == 2 || debugVisuals == 3 || (debugVisuals >= 6 && debugVisuals <= 11);
+
+	for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		it->node->setVisible(nodesVisible);
+	for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		it->node->setVisible(beamsVisible);
+	
+	updateDebugOverlay();
+}
 
 void Beam::updateDebugOverlay()
 {
 	if(!debugVisuals) return;
-	if(nodedebugstate<0)
-	{
-		LOG("initializing debugVisuals with mode "+TOSTRING(debugVisuals));
-		if(debugVisuals == 1 || (debugVisuals >= 3 && debugVisuals <= 5))
-		{
-			// add node labels
-			for(int i=0; i<free_node; i++)
-			{
-				debugtext_t t;
-				char nodeName[256]="", entName[256]="";
-				sprintf(nodeName, "%s-nodesDebug-%d", truckname, i);
-				sprintf(entName, "%s-nodesDebug-%d-Ent", truckname, i);
-				Entity *b = tsm->createEntity(entName, "sphere.mesh");
-				t.id=i;
-				t.txt = new MovableText(nodeName, "n"+TOSTRING(i));
-				t.txt->setFontName("highcontrast_black");
-				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
-				//t.txt->setAdditionalHeight(0);
-				t.txt->showOnTop(true);
-				t.txt->setCharacterHeight(0.5);
-				t.txt->setColor(ColourValue::White);
 
-				t.node = parentNode->createChildSceneNode();
-				t.node->attachObject(t.txt);
-				t.node->attachObject(b);
-
-				float f = 0.05f;
-				if(nodes[i].collRadius > 0.00001)
-				{
-					b->setMaterialName("tracks/transred");
-					f = nodes[i].collRadius;
-				} else
-				{
-					b->setMaterialName("tracks/transgreen");
-				}
-				t.node->setScale(f,f,f);
-
-				t.node->setPosition(nodes[i].smoothpos);
-				nodes_debug.push_back(t);
-			}
-		} else if(debugVisuals == 2 || debugVisuals == 3 || (debugVisuals >= 6 && debugVisuals <= 11))
-		{
-			// add beam labels
-			for(int i=0; i<free_beam; i++)
-			{
-				debugtext_t t;
-				char nodeName[256]="";
-				sprintf(nodeName, "%s-beamsDebug-%d", truckname, i);
-				t.id=i;
-				t.txt = new MovableText(nodeName, "b"+TOSTRING(i));
-				t.txt->setFontName("highcontrast_black");
-				t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
-				//t.txt->setAdditionalHeight(0);
-				t.txt->showOnTop(true);
-				t.txt->setCharacterHeight(1);
-				t.txt->setColor(ColourValue::White);
-
-				t.node = parentNode->createChildSceneNode();
-				t.node->attachObject(t.txt);
-
-				Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
-				t.node->setPosition(pos);
-				t.node->setScale(Vector3(0.1,0.1,0.1));
-				beams_debug.push_back(t);
-			}
-		}
-
-		nodedebugstate=0;
-		// update now
-	}
 	switch(debugVisuals)
 	{
 	case 0: // off
@@ -5097,7 +5119,14 @@ void Beam::updateDebugOverlay()
 		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			it->txt->setCaption((beams[it->id].broken)?"BROKEN":"");
+			if(beams[it->id].broken)
+			{
+				it->node->setVisible(true);
+				it->txt->setCaption("BROKEN");
+			} else
+			{
+				it->node->setVisible(false);
+			}
 		}
 		break;
 	case 8: // beam-stress
@@ -5117,9 +5146,16 @@ void Beam::updateDebugOverlay()
 	case 10: // beam-hydros
 		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
-			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			int v = (beams[it->id].L / beams[it->id].Lhydro) * 100;
-			it->txt->setCaption(TOSTRING(v));
+			if(beams[it->id].type == BEAM_HYDRO || beams[it->id].type == BEAM_INVISIBLE_HYDRO)
+			{
+				it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
+				int v = (beams[it->id].L / beams[it->id].Lhydro) * 100;
+				it->txt->setCaption(TOSTRING(v));
+				it->node->setVisible(true);
+			} else
+			{
+				it->node->setVisible(false);
+			}
 		}
 		break;
 	case 11: // beam-commands

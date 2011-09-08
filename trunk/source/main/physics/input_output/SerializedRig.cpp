@@ -4109,31 +4109,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				if(!strncmp(keyword, "debugBeams", 255) && strnlen(value, 255) > 0)
 				{
-					debugVisuals = 0;
-					if(!strncmp(value, "off", 255))
-						debugVisuals = 0;
-					else if(!strncmp(value, "node-numbers", 255))
-						debugVisuals = 1;
-					else if(!strncmp(value, "beam-numbers", 255))
-						debugVisuals = 2;
-					else if(!strncmp(value, "node-and-beam-numbers", 255))
-						debugVisuals = 3;
-					else if(!strncmp(value, "node-mass", 255))
-						debugVisuals = 4;
-					else if(!strncmp(value, "node-locked", 255))
-						debugVisuals = 5;
-					else if(!strncmp(value, "beam-compression", 255))
-						debugVisuals = 6;
-					else if(!strncmp(value, "beam-broken", 255))
-						debugVisuals = 7;
-					else if(!strncmp(value, "beam-stress", 255))
-						debugVisuals = 8;
-					else if(!strncmp(value, "beam-strength", 255))
-						debugVisuals = 9;
-					else if(!strncmp(value, "beam-hydros", 255))
-						debugVisuals = 10;
-					else if(!strncmp(value, "beam-commands", 255))
-						debugVisuals = 11;
+					// obsolete
 				}
 				if(!strncmp(keyword, "tachoMaterial", 255) && strnlen(value, 255) > 0)
 				{
