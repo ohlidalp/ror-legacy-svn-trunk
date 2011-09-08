@@ -3395,7 +3395,7 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
 		windowHndStr << windowHnd; 
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
-		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);
+		INPUTENGINE.setup(win, windowHndStr.str(), true, true, GRAB_NONE);
 	#else
 		INPUTENGINE.setup(win, inputhwnd, true, true, GRAB_NONE);
 	#endif
