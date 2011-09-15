@@ -42,6 +42,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # define _L(str) LanguageEngine::Instance().lookUp(str).c_str()
 #else
 // gettext
+
+#ifdef WIN32
+#error please use MOFILEREADER (neable in cmake) when compiling for windows
+#endif // WIN32
+
 # include <libintl.h>
 # include <locale.h>
 # define _L(str) gettext(str)
