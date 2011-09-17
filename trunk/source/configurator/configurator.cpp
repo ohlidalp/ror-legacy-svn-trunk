@@ -1728,6 +1728,8 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 				int res_x=-1, res_y=-1, res_d=-1;
 				int res = sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
 
+				wxLogStatus(wxString::Format("parsed resolution \"%s\" as \"%d x %d @ %d-bit\"", valIt->c_str(), res_x, res_y, res_d));
+
 				// opengl has no colour info in there
 				if(res == 3)
 				{
