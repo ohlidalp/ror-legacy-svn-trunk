@@ -44,11 +44,11 @@ public:
 	int camNode, lookat, switchoff;
 	float fov, minclip, maxclip;
 	Ogre::Vector3 offset;
-	Ogre::Vector2 textureSize;
+	Ogre::Vector2 mirrorSize;
 	Ogre::Quaternion rotation;
 	
 	int nz, ny, nref, camRole;
-	Ogre::String materialName, disabledTexture;
+	Ogre::String materialName, disabledTexture, vidCamName;
 
 protected:
 	Ogre::SceneManager *mSceneMgr;
@@ -61,6 +61,7 @@ protected:
 	bool debugMode;
 	Ogre::SceneNode *debugNode;
 	MaterialReplacer *mr;
+	Ogre::RenderWindow *rwMirror;
 };
 
 

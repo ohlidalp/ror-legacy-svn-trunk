@@ -227,3 +227,25 @@ Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node)
 
 	return aabb;
 }
+
+void fixRenderWindowIcon (Ogre::RenderWindow *rw)
+{
+#ifndef ROR_EMBEDDED
+#ifdef WIN32
+	// only in non-embedded mode
+	size_t hWnd = 0;
+	rw->getCustomAttribute("WINDOW", &hWnd);
+
+	char buf[MAX_PATH];
+	::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
+
+	HINSTANCE instance = ::GetModuleHandleA(buf);
+	HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCEA(101));
+	if (hIcon)
+	{
+		::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
+		::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
+	}
+#endif // WIN32
+#endif //ROR_EMBEDDED
+}

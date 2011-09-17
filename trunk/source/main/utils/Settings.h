@@ -30,6 +30,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SETTINGS Settings::Instance()
 #define SSETTING(x) Settings::Instance().getSetting(x) //<! get string setting
 #define BSETTING(x) Settings::Instance().getBooleanSetting(x) //<! get boolean setting
+#define ISETTING(x) PARSEINT(Settings::Instance().getSetting(x)) //<! get int setting
+#define FSETTING(x) PARSEREAL(Settings::Instance().getSetting(x)) //<! get float setting
 
 class Settings
 {
