@@ -78,7 +78,8 @@ void AppStateManager::update(double dt)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	RoRWindowEventUtilities::messagePump();
 #endif
-	if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isClosed())
+	Ogre::RenderWindow *rw = OgreFramework::getSingletonPtr()->m_pRenderWnd;
+	if(rw->isClosed())
 	{
 		// unlock before shutdown
 		MUTEX_UNLOCK(&lock);
@@ -89,6 +90,10 @@ void AppStateManager::update(double dt)
 
 	m_ActiveStateStack.back()->update(dt);
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
+
+	if(!rw->isActive() && rw->isVisible())
+		rw->update(); // update even  when in background !
+
 	MUTEX_UNLOCK(&lock);
 }
 
@@ -96,42 +101,25 @@ void AppStateManager::start(AppState* state)
 {
 	changeAppState(state);
 
-	int timeSinceLastFrame = 1;
-	int startTime = 0;
+	unsigned long timeSinceLastFrame = 1;
+	unsigned long startTime          = 0;
 
 	while(!m_bShutdown)
 	{
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
 
 		// no more actual rendering?
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		if(m_bNoRendering)
 		{
 #ifdef WIN32
 			Sleep(100);
 #else
 			sleep(100);
+			continue;
 #endif // WIN32
-		} else
-		{
-			update(timeSinceLastFrame);
 		}
 
-		/*
-		// BUGGY:
-		if(OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive())
-		{
-			update(timeSinceLastFrame);
-		} else
-		{
-			Sleep(1000);
-			// linux: sleep(1);
-		}
-		*/
-#else
-		// BUG: somehow, OgreFramework::getSingletonPtr()->m_pRenderWnd->isActive()) returns always false under linux, even if window is active. Removed this optimization for now
 		update(timeSinceLastFrame);
-#endif // WIN32
 
 		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
 	}
