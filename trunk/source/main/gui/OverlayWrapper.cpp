@@ -34,6 +34,8 @@ using namespace std;
 using namespace Ogre;
 
 
+template<> OverlayWrapper* Ogre::Singleton<OverlayWrapper>::ms_Singleton = 0;
+
 // OverlayWrapper class
 OverlayWrapper::OverlayWrapper(Ogre::RenderWindow* win) : 
 	win(win)
@@ -848,4 +850,11 @@ void OverlayWrapper::updateStats(bool detailed)
 	{
 		// ignore
 	}
+}
+
+int OverlayWrapper::getDashBoardHeight()
+{
+	if(!dashboardOverlay) return 0;
+	float top = 1 + OverlayManager::getSingleton().getOverlayElement("tracks/dashbar")->getTop() * dashboardOverlay->getScaleY(); // tracks/dashbar top = -0.15 by default
+	return (int)(top * (float)win->getHeight());
 }

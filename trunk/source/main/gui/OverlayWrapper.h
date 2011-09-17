@@ -29,10 +29,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 
-#include "OgreOverlay.h"
+#include <OgreOverlay.h>
 #include "OgreTextAreaOverlayElement.h"
 #include "OgreLineStreamOverlayElement.h"
 #include <OgrePanelOverlayElement.h>
+
+#include <OgreSingleton.h>
 
 struct loadedOverlay_t
 {
@@ -41,7 +43,7 @@ struct loadedOverlay_t
 	Ogre::Overlay *o;
 };
 
-class OverlayWrapper
+class OverlayWrapper : public Ogre::Singleton<OverlayWrapper>
 {
 public:
 	OverlayWrapper(Ogre::RenderWindow* win);
@@ -61,6 +63,7 @@ public:
 	void windowResized(Ogre::RenderWindow* rw);
 	void resizeOverlay(struct loadedOverlay_t);
 
+	int getDashBoardHeight();
 
 //protected:
 	int init();
