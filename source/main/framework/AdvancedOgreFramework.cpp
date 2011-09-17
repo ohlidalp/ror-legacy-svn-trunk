@@ -7,6 +7,7 @@
 #include "language.h"
 #include "RoRVersion.h"
 #include "RoRWindowEventUtilities.h"
+#include "utils.h"
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -58,26 +59,7 @@ bool OgreFramework::configure(void)
 			m_pRenderWnd = m_pRoot->initialise(true, "Rigs of Rods version " + String(ROR_VERSION_STRING));
 
 			// set window icon correctly
-#ifndef ROR_EMBEDDED
-#ifdef WIN32
-			{
-				// only in non-embedded mode
-				size_t hWnd = 0;
-				m_pRenderWnd->getCustomAttribute("WINDOW", &hWnd);
-
-				char buf[MAX_PATH];
-				::GetModuleFileNameA(0, (LPCH)&buf, MAX_PATH);
-
-				HINSTANCE instance = ::GetModuleHandleA(buf);
-				HICON hIcon = ::LoadIconA(instance, MAKEINTRESOURCE(101));
-				if (hIcon)
-				{
-					::SendMessageA((HWND)hWnd, WM_SETICON, 1, (LPARAM)hIcon);
-					::SendMessageA((HWND)hWnd, WM_SETICON, 0, (LPARAM)hIcon);
-				}
-			}
-#endif // WIN32
-#endif //ROR_EMBEDDED
+			fixRenderWindowIcon(m_pRenderWnd);
 
 			return true;
 		}

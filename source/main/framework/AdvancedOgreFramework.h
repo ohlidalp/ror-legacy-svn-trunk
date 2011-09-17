@@ -19,8 +19,6 @@
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
 
-//#include <SdkTrays.h>
-
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
 class OgreFramework : public Ogre::Singleton<OgreFramework>

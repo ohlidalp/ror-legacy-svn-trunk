@@ -36,6 +36,7 @@ VideoCamera::VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, ri
 	, mat()
 	, debugMode(false)
 	, debugNode(0)
+	, rwMirror(0)
 {
 	debugMode = SETTINGS.getBooleanSetting("VideoCameraDebug");
 }
@@ -46,44 +47,91 @@ void VideoCamera::init()
 
 	mVidCam = mSceneMgr->createCamera(materialName + "_camera");
 
-	Ogre::TexturePtr rttTexPtr = Ogre::TextureManager::getSingleton().createManual(materialName + "_texture"
+	bool useExternalMirrorWindow = BSETTING("UseVideocameraWindows");
+	bool fullscreenRW = BSETTING("VideoCameraFullscreen");
+
+	// check if this vidcamera is also affected
+	if(useExternalMirrorWindow && fullscreenRW)
+	{
+		int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter));
+		if(monitor < 0)
+			useExternalMirrorWindow = false;
+		// < 0 = fallback to texture
+	}
+
+	if(!useExternalMirrorWindow)
+	{
+		Ogre::TexturePtr rttTexPtr = Ogre::TextureManager::getSingleton().createManual(materialName + "_texture"
 			, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
 			, Ogre::TEX_TYPE_2D
-			, textureSize.x
-			, textureSize.y
+			, mirrorSize.x
+			, mirrorSize.y
 			, 0 // no mip maps
 			, Ogre::PF_R8G8B8
 			, Ogre::TU_RENDERTARGET
 			, new ResourceBuffer());
-	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
+		rttTex = rttTexPtr->getBuffer()->getRenderTarget();
+		rttTex->setAutoUpdated(false);
+	} else
+	{
+		NameValuePairList misc;
+		misc["FSAA"] = SSETTING("VideoCameraFSAA");
+		misc["colourDepth"] = SSETTING("VideoCameraColourDepth");
+		misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter));
+		misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter));
+		misc["border"] = SSETTING("VideoCameraWindowBorder"); // fixes for windowed mode
+		misc["outerDimensions"] = "true"; // fixes for windowed mode
 
-	// disable automatic rendering
-	rttTex->setAutoUpdated(false);
+		bool fullscreen = BSETTING("VideoCameraFullscreen");
+		if(fullscreen)
+		{
+			int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter));
+			misc["monitorIndex"] = TOSTRING(monitor);
+		}
+		
+		rwMirror =  Ogre::Root::getSingleton().createRenderWindow(vidCamName, mirrorSize.x, mirrorSize.y, fullscreen, &misc);
+		rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter)), ISETTING("VideoCameraTop_" + TOSTRING(counter)));
+		rwMirror->setAutoUpdated(false);
+		fixRenderWindowIcon(rwMirror);
+		rwMirror->setDeactivateOnFocusChange(false);
+		// TODO: disable texture mirrors
+	}
 		
 	mVidCam->setNearClipDistance(minclip);
 	mVidCam->setFarClipDistance(maxclip);
 	mVidCam->setFOVy(Ogre::Degree(fov));
-	mVidCam->setAspectRatio((float)textureSize.x/(float)textureSize.y);
-
-	Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
-	vp->setClearEveryFrame(true);
-	vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
-	vp->setVisibilityMask(~HIDE_MIRROR);
-	vp->setOverlaysEnabled(false);
+	mVidCam->setAspectRatio((float)mirrorSize.x/(float)mirrorSize.y);
 
 	disabledTexture = mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
-
-	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
 	mat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-	
-	if (camRole == 1)
+
+	if(rttTex)
 	{
+		Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
+		vp->setClearEveryFrame(true);
+		vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
+		vp->setVisibilityMask(~HIDE_MIRROR);
+		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
+		vp->setOverlaysEnabled(false);
+
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
+
 		// this is a mirror, flip the image left<>right to have a mirror and not a cameraimage
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
+		if (camRole == 1)
+			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
 	}
 
-	vp->setVisibilityMask(~DEPTHMAP_DISABLED);
-
+	if(rwMirror)
+	{
+		Ogre::Viewport *vp = rwMirror->addViewport(mVidCam);
+		vp->setClearEveryFrame(true);
+		vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
+		vp->setVisibilityMask(~HIDE_MIRROR);
+		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
+		vp->setOverlaysEnabled(false);
+		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
+	}
+	
 	if(debugMode)
 	{
 		Entity *ent = mSceneMgr->createEntity("debug-camera.mesh");
@@ -96,11 +144,16 @@ void VideoCamera::init()
 
 void VideoCamera::setActive(bool state)
 {
-	rttTex->setActive(state);
-	if (state)
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
-	else
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
+	if(rttTex)
+	{
+		rttTex->setActive(state);
+		if (state)
+			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(materialName + "_texture");
+		else
+			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
+	}
+	
+	if(rwMirror) rwMirror->setActive(state);
 }
 
 void VideoCamera::update(float dt)
@@ -112,7 +165,9 @@ void VideoCamera::update(float dt)
 #endif // USE_CAELUM
 
 	// update the texture now, otherwise shuttering
-	rttTex->update();
+	if(rttTex) rttTex->update();
+
+	if(rwMirror) rwMirror->update();
 
 	// get the normal of the camera plane now
 	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
@@ -183,6 +238,7 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		int nz=-1, ny=-1, nref=-1, ncam=-1, lookto=-1, texx=256, texy=256, crole=-1, cmode=-1;
 		float fov=-1.0f, minclip=-1.0f, maxclip=-1.0f, offx=0.0f, offy=0.0f, offz=0.0f, rotx=0.0f, roty=0.0f, rotz=0.0f;
 		char materialname[256] = "";
+		char vidCamName[256] = "";
 		
 		Ogre::StringVector args;
 		int n = truck->parse_args(c, args, 19);
@@ -205,10 +261,16 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		crole   = PARSEINT (args[16]);
 		cmode   = PARSEINT (args[17]);
 		strncpy(materialname, args[18].c_str(), 255);
+		if(n > 19)
+			strncpy(vidCamName, args[19].c_str(), 255);
+		else
+			strncpy(vidCamName, materialname, 255); // fallback, use materialname
 
-		if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
+		//if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
+		// disabled isPowerOfTwo, as it can be a renderwindow now with custom resolution
+		if (texx <= 0 || texy <= 0)
 		{
-			truck->parser_warning(c, "Wrong texture size definition (needs to be 2^n). trying to continue ...");
+			truck->parser_warning(c, "Wrong texture size definition. trying to continue ...");
 			return 0;
 		}
 
@@ -255,7 +317,8 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		v->offset       = Vector3(offx, offy, offz);
 		v->switchoff    = cmode;            // add performance switch off  ->meeds fix, only "always on" supported yet
 		v->materialName = newMaterialName;
-		v->textureSize  = Vector2(texx, texy);
+		v->vidCamName   = vidCamName;
+		v->mirrorSize   = Vector2(texx, texy);
 
 		if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
 			rotz += 180;
