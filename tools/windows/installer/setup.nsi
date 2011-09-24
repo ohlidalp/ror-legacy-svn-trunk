@@ -245,7 +245,7 @@ ram_done:
 	IntOp $2 1$2 - 100000      ;ignore any leading zeros, the number is not octal
 	IntCmp $1 2000 cpu_ok 0 cpu_ok
 	DetailPrint "Checking CPU Speed: $1 MHz not optimal, 2GHz required"
-	MessageBox MB_OK|MB_ICONEXCLAMATION "You should use processor with at least 2GHz to run this software." /SD IDOK
+	MessageBox MB_OK|MB_ICONEXCLAMATION "You should use a processor with at least 2GHz to run this software." /SD IDOK
 	Goto cpu_done
 cpu_ok:		
 	DetailPrint "Checking CPU Speed: $1 MHz, ok"
@@ -426,18 +426,20 @@ FunctionEnd
 
 Section -Post
 
+	; directx check disabled for now - didnt work reliably
+
 	; check DirectX
-	Call GetDXVersion
-	Pop $R3
+	;Call GetDXVersion
+	;Pop $R3
 	;MessageBox MB_OK|MB_ICONEXCLAMATION "DirectX version: $R3" /SD IDOK	
 	
-	IntCmp $R3 900 directx_ok 0 directx_ok
-	DetailPrint "Checking DirectX Version: DirectX 9 required, installing now."
+	;IntCmp $R3 900 directx_ok 0 directx_ok
+	;DetailPrint "Checking DirectX Version: DirectX 9 required, installing now."
 	Call InstallDirectX
-	Goto directx_done
-directx_ok:		
-	DetailPrint "Checking DirectX Version: at least DirectX 9, ok"
-directx_done:
+	;Goto directx_done
+;directx_ok:		
+;	DetailPrint "Checking DirectX Version: at least DirectX 9, ok"
+;directx_done:
 
 	Call InstallVisualStudioRuntime
 	
