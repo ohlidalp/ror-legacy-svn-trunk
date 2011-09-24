@@ -618,8 +618,7 @@ void Network::receivethreadstart()
 				myauthlevel = userdata.authstatus;
 
 				// now join the chat and so forth
-				// TODO: XXX: crash below, fix threading problems properly
-				//Console::getInstance().setNetwork(this);
+				Console::getInstance().setNetwork(this);
 
 			} else
 			{

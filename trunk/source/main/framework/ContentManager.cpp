@@ -123,6 +123,7 @@ bool ContentManager::init(void)
 	loadMainResource("textures");
 	loadMainResource("flags");
 	loadMainResource("icons");
+	loadMainResource("famicons");
 
 
 #ifdef WIN32

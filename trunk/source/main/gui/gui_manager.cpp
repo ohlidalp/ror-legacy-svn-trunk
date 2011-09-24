@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI_OgrePlatform.h>
 #include <MyGUI_LanguageManager.h>
 
+#include "Console.h"
+
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #	include <windows.h>
 #endif
@@ -116,6 +118,8 @@ void GUIManager::createGui()
 
 	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
 	MyGUI::PointerManager::getInstance().setVisible(true);
+	Console *c = Console::getInstancePtrNoCreation();
+	if(c) c->resized();
 }
 
 void GUIManager::destroyGui()
@@ -161,6 +165,9 @@ void GUIManager::windowResized(Ogre::RenderWindow* _rw)
 	int width = (int)_rw->getWidth();
 	int height = (int)_rw->getHeight();
 	setInputViewSize(width, height);
+	
+	Console *c = Console::getInstancePtrNoCreation();
+	if(c) c->resized();
 }
 
 void GUIManager::windowClosed(Ogre::RenderWindow* _rw)

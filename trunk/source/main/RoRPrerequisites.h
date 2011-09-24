@@ -106,6 +106,7 @@ class Beam;
 class BeamEngine;
 class BeamThreadStats;
 class Buoyance;
+class ChatSystem;
 class CmdKeyInertia;
 class Cache_Entry;
 class Collisions;

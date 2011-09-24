@@ -124,7 +124,8 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus);
 		}
 
-		//NETCHAT->printUTF(username + mCommandColour + _L(" joined the chat"));
+		String msg = username + mCommandColour + _L(" joined the chat");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "add.png");
 	}
 #endif //SOCKETW
 }
@@ -133,7 +134,8 @@ ChatSystem::~ChatSystem()
 {
 	if(remote)
 	{
-		//NETCHAT->printUTF(username + mCommandColour + _L(" left the chat"));
+		String msg = username + mCommandColour + _L(" left the chat");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "delete.png");
 	}
 }
 
@@ -150,7 +152,7 @@ void ChatSystem::sendStreamSetup()
 
 void ChatSystem::sendStreamData()
 {
-    // we send data syncronously to prevent lag
+    // we send data synchronously to prevent lag
 }
 
 void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
@@ -161,11 +163,12 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		if(source == -1)
 		{
 			// server said something
-			//NETCHAT->printUTF(getASCIIFromCharString(buffer, 255));
+			String msg = getASCIIFromCharString(buffer, 255);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "bullet_black.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
-			UTFString text = tryConvertUTF(buffer);
-			//NETCHAT->printUTF(username + mNormalColour + ": " + text);
+			UTFString msg = username + mNormalColour + ": " + tryConvertUTF(buffer);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "bullet_orange.png");
 		}
 	}
 }
@@ -183,7 +186,7 @@ String ChatSystem::getColouredName(String nick, int auth)
 	for(unsigned int i=0; i<nick.size(); i++)
 		if(nick[i] == '#') nick[i] = 'X';
 
-	if(auth == AUTH_NONE)   col = "#c9c9c9"; // grey
+	if(auth == AUTH_NONE)  col = "#c9c9c9"; // grey
 	if(auth & AUTH_BOT )   col = "#0000c9"; // blue
 	if(auth & AUTH_RANKED) col = "#00c900"; // green
 	if(auth & AUTH_MOD)    col = "#c90000"; // red

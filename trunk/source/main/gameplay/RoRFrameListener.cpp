@@ -793,6 +793,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mDOF=0;
 	forcefeedback=0;
 
+#ifdef USE_MYGUI
+	// init GUI
+	new SceneMouse(scm, this);
+	new GUIManager(root, scm, win);
+	// create console, must be done early
+	Console::getInstance();
+#endif //USE_MYGUI
+
+
 #ifdef USE_OIS_G27
 	leds=0;
 #endif // USE_OIS_G27
@@ -823,7 +832,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	free_localizer=0;
 	loading_state=NONE_LOADED;
 	pressure_pressed=false;
-	chatting=false;
 	rtime=0;
 	joyshiftlock=0;
 	mScene=scm;
@@ -878,11 +886,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	INPUTENGINE.setupDefault(win, inputhwnd);
 
-
 #ifdef USE_MYGUI
-	// init GUI
-	new SceneMouse(scm, this);
-	new GUIManager(root, scm, win);
 	LoadingWindow::getInstance();
 	SelectorWindow::getInstance();
 	// create main menu :D
@@ -1175,6 +1179,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 		// network chat stuff
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
+
+		Console *c = Console::getInstancePtrNoCreation();
+		if(c)
+		{
+			c->setVisible(true);
+			c->setNetChat(netChat);
+		}
 
 #ifdef USE_MUMBLE
 		new MumbleIntegration();
@@ -1933,9 +1944,14 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 #endif // MYGUI
 
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !hidegui)
 	{
-		//NETCHAT->select();
+		Console *c = Console::getInstancePtrNoCreation();
+		if(c)
+		{
+			c->setVisible(true);
+			c->select();
+		}
 	}
 #if 0
 	// TODO: FIX
@@ -1964,10 +1980,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		CharacterFactory::getSingleton().updateCharacters(dt);
 	else if(loading_state==ALL_LOADED && !net)
 		person->update(dt, (cameramode == CAMERA_FREE));
-
-	// no event handling during chatting!
-	if(chatting)
-		return true;
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
@@ -3243,7 +3255,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				curr_truck->setBlinkType(BLINK_WARN);
 		}
 
-		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && !chatting && mTimeUntilNextToggle <= 0)
+		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && mTimeUntilNextToggle <= 0)
 		{
 			mTimeUntilNextToggle = 0.5; //Some delay before trying to re-enter(exit) truck
 			//perso in/out

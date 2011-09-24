@@ -256,7 +256,8 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->shutdown_final();
 	} else if(miname == _L("Show Console"))
 	{
-		Console::getInstance().setVisible(!Console::getInstance().getVisible());
+		Console *c = Console::getInstancePtrNoCreation();
+		if(c) c->setVisible(!c->getVisible());
 	}
 	// the debug menu
 	else if(miname == _L("no visual debug"))
@@ -347,18 +348,18 @@ void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
 	if(vehicleListNeedsUpdate)
 	{
 		vehiclesListUpdate();
-		MUTEX_LOCK(&updateLock)
+		MUTEX_LOCK(&updateLock);
 		vehicleListNeedsUpdate = false;
-		MUTEX_UNLOCK(&updateLock)
+		MUTEX_UNLOCK(&updateLock);
 	}
 }
 
 void GUI_MainMenu::triggerUpdateVehicleList()
 {
-	MUTEX_LOCK(&updateLock)
+	MUTEX_LOCK(&updateLock);
 	vehicleListNeedsUpdate = true;
-	MUTEX_UNLOCK(&updateLock)
-};
+	MUTEX_UNLOCK(&updateLock);
+}
 
 #endif // MYGUI
 

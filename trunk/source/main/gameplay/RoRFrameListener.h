@@ -344,8 +344,6 @@ public:
 
 	void reloadCurrentTruck();
 
-	bool isUserChatting() { return chatting; };
-
 	SoundScriptManager* getSSM() { return ssm; };
 private:
 	int net_quality; 
@@ -355,7 +353,6 @@ private:
 protected:
 
 	HeatHaze *heathaze;
-	bool chatting;
 	bool chatlock;
 	double rtime;
 	float terrainxsize;
