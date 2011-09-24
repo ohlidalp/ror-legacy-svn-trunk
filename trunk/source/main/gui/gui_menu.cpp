@@ -188,7 +188,10 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	{
 		int truck = PARSEINT(id.substr(6));
 		if(truck >= 0 && truck < BeamFactory::getSingleton().getTruckCount())
+		{
+			BeamFactory::getSingleton().setCurrentTruck(-1);
 			BeamFactory::getSingleton().setCurrentTruck(truck);
+		}
 	}
 
 	if(miname == _L("get new Vehicle") && mefl->person)
@@ -253,7 +256,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->shutdown_final();
 	} else if(miname == _L("Show Console"))
 	{
-		Console::getInstance().setVisible(true);
+		Console::getInstance().setVisible(!Console::getInstance().getVisible());
 	}
 	// the debug menu
 	else if(miname == _L("no visual debug"))
