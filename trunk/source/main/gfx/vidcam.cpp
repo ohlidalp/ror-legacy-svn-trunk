@@ -75,11 +75,22 @@ void VideoCamera::init()
 	} else
 	{
 		NameValuePairList misc;
-		misc["FSAA"] = SSETTING("VideoCameraFSAA");
-		misc["colourDepth"] = SSETTING("VideoCameraColourDepth");
-		misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter));
-		misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter));
-		misc["border"] = SSETTING("VideoCameraWindowBorder"); // fixes for windowed mode
+		if(!SSETTING("VideoCameraFSAA").empty())
+			misc["FSAA"] = SSETTING("VideoCameraFSAA");
+		
+		if(!SSETTING("VideoCameraColourDepth").empty())
+			misc["colourDepth"] = SSETTING("VideoCameraColourDepth");
+		else
+			misc["colourDepth"] = "32";
+		
+		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter)) > 0)
+			misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter));
+		
+		if(ISETTING("VideoCameraTop_" + TOSTRING(counter)) > 0)
+			misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter));
+		if(!SSETTING("VideoCameraWindowBorder").empty())
+			misc["border"] = SSETTING("VideoCameraWindowBorder"); // fixes for windowed mode
+
 		misc["outerDimensions"] = "true"; // fixes for windowed mode
 
 		bool fullscreen = BSETTING("VideoCameraFullscreen");
@@ -90,7 +101,12 @@ void VideoCamera::init()
 		}
 		
 		rwMirror =  Ogre::Root::getSingleton().createRenderWindow(vidCamName, mirrorSize.x, mirrorSize.y, fullscreen, &misc);
-		rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter)), ISETTING("VideoCameraTop_" + TOSTRING(counter)));
+		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter)) > 0)
+			rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter)), ISETTING("VideoCameraTop_" + TOSTRING(counter)));
+
+		if(ISETTING("VideoCameraWidth_" + TOSTRING(counter)) > 0)
+			rwMirror->resize(ISETTING("VideoCameraWidth_" + TOSTRING(counter)), ISETTING("VideoCameraHeight_" + TOSTRING(counter)));
+		
 		rwMirror->setAutoUpdated(false);
 		fixRenderWindowIcon(rwMirror);
 		rwMirror->setDeactivateOnFocusChange(false);
