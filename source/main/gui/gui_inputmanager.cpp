@@ -108,7 +108,17 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	MyGUI::PointerManager::getInstance().setPointer("arrow");
 
 	// fallback, handle by GUI, then by SceneMouse
-	if(!MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs))
+	bool handled = MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs);
+
+	if(handled)
+	{
+		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
+		// hack for console, we want to use the mouse through that control
+		if(w && w->getName().substr(0, 7) == "Console")
+			handled = false;
+	}
+
+	if(!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm)
@@ -146,7 +156,17 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 	if(menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
 
 	// fallback, handle by GUI, then by SceneMouse
-	if(!MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
+	bool handled = MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
+
+	if(handled)
+	{
+		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
+		// hack for console, we want to use the mouse through that control
+		if(w && w->getName().substr(0, 7) == "Console")
+			handled = false;
+	}
+
+	if(!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->mousePressed(_arg, _id);
@@ -159,7 +179,18 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 	activateGUI();
 
 	// fallback, handle by GUI, then by SceneMouse
-	if(!MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id)))
+	bool handled = MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
+
+
+	if(handled)
+	{
+		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
+		// hack for console, we want to use the mouse through that control
+		if(w && w->getName().substr(0, 7) == "Console")
+			handled = false;
+	}
+
+	if(!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->mouseReleased(_arg, _id);
@@ -190,25 +221,44 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 	}
 	
 	// fallback, handle by GUI, then by SceneMouse
-	if(!MyGUI::InputManager::getInstance().injectKeyPress(key, text))
+	bool handled = MyGUI::InputManager::getInstance().injectKeyPress(key, text);
+
+	if(handled)
+	{
+		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getKeyFocusWidget();
+		// hack for console, we want to use the mouse through that control
+		if(w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
+			handled = false;
+	}
+
+	if(!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->keyPressed(_arg);
-	} else
-	{
-		return true;
 	}
-	return false;
+
+	return true;
 }
 
 bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 {
 	// fallback, handle by GUI, then by SceneMouse
-	if(!MyGUI::InputManager::getInstance().injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key)))
+	bool handled = MyGUI::InputManager::getInstance().injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key));
+
+	if(handled)
+	{
+		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getKeyFocusWidget();
+		// hack for console, we want to use the mouse through that control
+		if(w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
+			handled = false;
+	}
+
+	if(!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->keyReleased(_arg);
 	}
+
 	return true;
 }
 

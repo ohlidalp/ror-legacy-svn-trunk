@@ -24,6 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "InputEngine.h"
 #include "OgreLogManager.h"
 #include "gui_manager.h"
+#include "gui_menu.h"
+#include "OverlayWrapper.h"
+#include "ChatSystem.h"
 
 #include "Settings.h"
 #include "RoRFrameListener.h"
@@ -33,57 +36,35 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "libircclient.h"
 
-// hack, hacky but works well
-irc_session_t *s   = 0;
-irc_ctx_t     *ctx = 0;
-
 // class
-Console::Console() : net(0), autoCompleteNum(0)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0)
 {
-	initialiseByAttributes(this);
+	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Overlapped", "Console");
+	mMainWidget->setCaption(_L("Console"));
+	mMainWidget->setAlpha(0.9f);
 
-	// make it 1/3 of screen height and place over screen
+	memset(&lines, 0, sizeof(lines));
 
-	/*
-	MyGUI::IntSize size = MyGUI::RenderManager::getInstance().getViewSize();
-	size.height = size.height/3;
-	mMainWidget->setCoord(0, -size.height, size.width, size.height);
-	*/
+	// and the textbox inside
+	mCommandEdit = mMainWidget->createWidget<MyGUI::EditBox>("EditBoxChat", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
+	
+	mCommandEdit->setProperty("WordWrap", "false");
+	mCommandEdit->setProperty("TextAlign", "Left Bottom");
+	mCommandEdit->setProperty("ReadOnly", "false");
+	mCommandEdit->setProperty("OverflowToTheLeft", "true");
+	mCommandEdit->setProperty("MaxTextLength", "8192");
+	mCommandEdit->setWidgetStyle(MyGUI::WidgetStyle::Child);
+	mCommandEdit->setCaption("");
 
-	((MyGUI::Window*)mMainWidget)->setCaption(_L("Console"));
-
-	MyGUI::Window *wnd = dynamic_cast<MyGUI::Window *>(mMainWidget);
-	wnd->eventWindowButtonPressed += MyGUI::newDelegate(this, &Console::notifyWindowXPressed);
 
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
-	mTabControl->eventTabChangeSelect   += MyGUI::newDelegate(this, &Console::eventChangeTab);
-
-	bool enable_ingame_console = BSETTING("Enable Ingame Console");
-
-	if(enable_ingame_console)
-	{
-		addTab("OgreLog");
-	
-		//addTab("IRCDebug");
-#ifdef USE_ANGELSCRIPT
-		addTab("Angelscript");
-#endif //ANGELSCRIPT
-
-
-		// BUG: all editboxes visible on startup D:
-		mTabControl->selectSheetIndex(0, false);
-
-		current_tab = &tabs["OgreLog"];
-	}
-
 
 	setVisible(false);
 
 	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
 
-	if(enable_ingame_console)
-		Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
+	Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
 Console::~Console()
@@ -92,62 +73,9 @@ Console::~Console()
 	MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Console::frameEntered );
 }
 
-void Console::addTab(Ogre::String name)
-{
-/*
-<Widget type="TabItem" skin="" position="2 24 304 193">
-<Property key="Caption" value="Log"/>
-<Widget type="EditBox" skin="EditBoxStretch" position="0 0 306 195" align="Stretch" name="OgreLog">
-<Property key="WordWrap" value="true"/>
-<Property key="TextAlign" value="Left Bottom"/>
-<Property key="ReadOnly" value="true"/>
-<Property key="OverflowToTheLeft" value="true"/>
-<Property key="MaxTextLength" value="8192"/>
-<Property key="FontName" value="Default"/>
-</Widget>
-</Widget>
-*/
-	tabctx_t *t = &tabs[name];
-	t->name = name;
-
-	// create tab
-	t->tab = mTabControl->addItem(name);
-	t->tab->setProperty("Caption", name);
-	t->tab->setCaption(name);
-
-	// and the textbox inside
-	t->txt = MyGUI::Gui::getInstance().createWidget<MyGUI::EditBox>("EditBoxStretch", 0, 0, 304, 193,  MyGUI::Align::Stretch, name);
-	t->txt->setProperty("WordWrap", "true");
-	t->txt->setProperty("TextAlign", "Left Bottom");
-	t->txt->setProperty("ReadOnly", "true");
-	t->txt->setProperty("OverflowToTheLeft", "true");
-	t->txt->setProperty("MaxTextLength", "8192");
-	t->txt->setWidgetStyle(MyGUI::WidgetStyle::Child);
-
-	// attach it to the tab
-	t->txt->detachFromWidget();
-	t->txt->attachToWidget(t->tab);
-
-
-	t->txt->setSize(t->tab->getSize().width, t->tab->getSize().height);
-
-	//mTabControl->setItemData(t->tab, t);
-	t->tab->setUserData(t);
-	
-	t->mHistoryPosition = 0;
-	t->mHistory.push_back("");
-}
 
 void Console::setVisible(bool _visible)
 {
-	mVisible = _visible;
-
-	if(!_visible)
-	{
-		autoCompleteTemp.clear();
-		autoCompleteNum = 0;
-	}
-
 	mMainWidget->setEnabledSilent(_visible);
 	mMainWidget->setVisible(_visible);
 	if (_visible)
@@ -163,26 +91,63 @@ void Console::setVisible(bool _visible)
 
 bool Console::getVisible()
 {
-	return mVisible;
+	return mMainWidget->getVisible();
 }
 
-void Console::print(const MyGUI::UString &_text, Ogre::String channel)
+
+void Console::select()
 {
-	msg_t t;
-	t.txt = _text;
-	t.channel = channel; 
-	push(t);
+	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 }
 
-void Console::printUTF(const Ogre::UTFString &_text, Ogre::String channel)
+void Console::frameEntered(float dt)
 {
-	this->print(_text.asWStr_c_str(), channel);
+	messageUpdate(dt);
+
+	updateGUIVisual(dt);
+}
+
+void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
+{
+}
+
+void Console::eventCommandAccept(MyGUI::Edit* _sender)
+{
+	MyGUI::UString msg = _sender->getCaption();
+	if(msg.empty()) return;
+
+	if(net && netChat)
+	{
+		netChat->sendChat(msg.c_str());
+
+		String nmsg = net->getNickname(true) + String("#000000: ") + msg;
+		putMessage(CONSOLE_MSGTYPE_NETWORK, nmsg, "bullet_orange.png");
+	}
+
+#ifdef USE_ANGELSCRIPT
+	// TODO:
+	/*
+	Console::getInstance().print(">>> " + command, current_tab->name);
+	int res = ScriptEngine::getSingleton().executeString(command);
+	*/
+#endif //ANGELSCRIPT
+
+	_sender->setCaption("");
+}
+
+void Console::setNetwork(Network *n)
+{
+	net = n;
+}
+
+void Console::setNetChat(ChatSystem *c)
+{
+	netChat = c;
 }
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
-std::wstring ansi_to_utf16(const std::string& _source)
+std::wstring ansi_to_utf16(const char* srcPtr)
 {
-	const char* srcPtr = _source.c_str();
 	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
 	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
 	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
@@ -202,198 +167,228 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	//this->print(logName+": "+message);
 	// strip script engine things
 	if(message.substr(0,4) == "SE| ")
+	{
 		msg = message.substr(4);
-#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
-	this->print(MyGUI::UString("#988310") + ansi_to_utf16(msg), "OgreLog");
-#else
-	this->printUTF(msg, "OgreLog");
-#endif
+		//putMessage(CONSOLE_MSGTYPE_SCRIPT, MyGUI::UString("#988310") + ansi_to_utf16(msg), "bricks.png");
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, String("#988310") + msg, "page_white_code.png");
+	} else
+	{
+		if(BSETTING("Enable Ingame Console"))
+		{
+			//putMessage(CONSOLE_MSGTYPE_LOG, MyGUI::UString("#988310") + ansi_to_utf16(msg), "book_open.png");
+			if(lml == LML_NORMAL)
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script_error.png");
+			else if(lml == LML_TRIVIAL)
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script.png");
+			else if(lml == LML_CRITICAL)
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script_lightning.png");
+		}
+	}
 }
 
-void Console::select()
+void Console::resized()
 {
-	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
+	GUI_MainMenu *menu = GUI_MainMenu::getSingletonPtr();
+	if(menu) top_border = menu->getMenuHeight();
+
+	MyGUI::IntSize size = MyGUI::RenderManager::getInstance().getViewSize();
+	
+	// 15% of the window height is the overlay
+	OverlayWrapper *ow = OverlayWrapper::getSingletonPtr();
+	if(ow) bottom_border = size.height - ow->getDashBoardHeight() + 20;
+
+	int height = size.height - bottom_border - top_border;
+	int width  = size.width;
+	mMainWidget->setCoord(0, top_border, width, size.height - bottom_border);
+	
+	linecount = height / (float)lineheight;
+	if(linecount >= LINES_MAX)
+		linecount = LINES_MAX - 1;
+
+	// add controls
+	for(unsigned int i = 0; i < linecount; i++)
+	{
+		if(lines[i].txtctrl)
+		{
+			lines[i].txtctrl->setVisible(true);
+			lines[i].iconctrl->setVisible(true);
+			lines[i].txtctrl->setSize(width, lines[i].txtctrl->getHeight());
+			continue;
+		}
+		mygui_console_line_t line;
+		memset(&line, 0, sizeof(line));
+		line.number = i;
+
+		line.txtctrl = mMainWidget->createWidget<MyGUI::TextBox>("TextBoxChat", lineheight + 2, i*lineheight+2, width, lineheight,  MyGUI::Align::Left | MyGUI::Align::Right | MyGUI::Align::Top, "ConsoleLine" + TOSTRING(i));
+		line.txtctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
+		line.txtctrl->setCaption("> LINE " + TOSTRING(i) + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		line.txtctrl->setVisible(false);
+
+		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight, lineheight, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
+		line.iconctrl->setProperty("ImageTexture", "arrow_left.png");
+		line.iconctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
+		line.iconctrl->setVisible(false);
+		MyGUI::ISubWidget* waitDisplaySub = line.iconctrl->getSubWidgetMain();
+		MyGUI::RotatingSkin *rotatingIcon = waitDisplaySub->castType<MyGUI::RotatingSkin>();
+		rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
+		
+		// funny but resource hungry
+		rotatingIcon->setAngle(Degree(0).valueRadians());
+		//rotatingIcon->setAngle(Degree(Math::RangeRandom(0, 360)).valueRadians());
+		lines[i] = line;
+	}
+	// hide the rest
+	for(unsigned int i = linecount; i < LINES_MAX; i++)
+	{
+		if(!lines[i].txtctrl) break;
+		lines[i].txtctrl->setVisible(false);
+		lines[i].iconctrl->setVisible(false);
+
+	}
+	mCommandEdit->setCoord(0, linecount*lineheight, width, lineheight * 1.2f);
 }
 
-void Console::frameEntered(float _frame)
+void Console::updateGUILines( float dt )
 {
-	// only copy the content and then unlock again
-	// this prevents that loggers are hung due to time consuming iteration over it
+	// update GUI
+	// bottom line is last entry always
+	int msgi = 0;
+	int ctrli = linecount - 1;
+
+	while(ctrli >= 0)
+	{
+		if(!lines[ctrli].txtctrl) break; // text control missing?!
+
+		int msgid = message_counter - msgi - 1;
+		if(msgid < 0)
+		{
+			// hide this entry, its empty
+			lines[ctrli].txtctrl->setVisible(false);
+			lines[ctrli].iconctrl->setVisible(false);
+			ctrli--;
+			msgi++;
+			continue;
+		}
+		if(msgid >= message_counter)
+		{
+			// no messages left
+			break;
+		}
+
+		msg_t &m = messages[msgid];
+
+		// check if TTL expired
+		unsigned long t = Ogre::Root::getSingleton().getTimer()->getMilliseconds() - m.time;
+		if(t > m.ttl)
+		{
+			// expired, take the next message instead
+			msgi++;
+			continue;
+		}
+
+		// not empty, not expired, add content
+		lines[ctrli].txtctrl->setVisible(true);
+		lines[ctrli].iconctrl->setVisible(true);
+
+
+		MyGUI::UString txt = ansi_to_utf16(m.txt);
+
+		lines[ctrli].txtctrl->setCaption(txt);
+		lines[ctrli].iconctrl->setProperty("ImageTexture", std::string(m.icon));
+		lines[ctrli].expired = false;
+
+		lines[ctrli].msg = &messages[msgid];
+		
+		ctrli--;
+		msgi++;
+	}
+}
+
+void Console::updateGUIVisual( float dt )
+{
+	for(unsigned int i = 0; i < linecount; i++)
+	{
+		if(lines[i].expired) continue;
+		if(lines[i].iconctrl && lines[i].msg)
+		{
+			
+			// rotating icons - funny but resource hungry
+			//MyGUI::RotatingSkin* rotatingIcon = lines[i].iconctrl->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
+			//rotatingIcon->setAngle(rotatingIcon->getAngle() + Math::PI / 360.0f);
+
+			unsigned long ot = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+			unsigned long t = ot - lines[i].msg->time;
+			if(t > lines[i].msg->ttl)
+			{
+				// expired
+				lines[i].txtctrl->setVisible(false);
+				lines[i].iconctrl->setVisible(false);
+				lines[i].expired = true;
+				lines[i].txtctrl->setCaption(lines[i].txtctrl->getCaption() + " EXPIRED");
+				continue;
+			}
+
+			unsigned long endTime   = lines[i].msg->time + lines[i].msg->ttl;
+			const float fadeTime = 2000.0f;
+			unsigned long startTime = endTime - (long)fadeTime;
+
+			float alpha = 1.0f;
+			if(ot < startTime)
+			{
+				alpha = 1.0f;
+			} else 
+			{
+				alpha = 1 - ((ot - startTime) / fadeTime);
+
+			}
+			
+			lines[i].txtctrl->setAlpha (alpha);
+			lines[i].iconctrl->setAlpha(alpha);
+			//lines[i].txtctrl->setCaption(String(lines[i].msg->txt) + " ALPHA = " + TOSTRING(alpha));
+		}
+	}
+}
+
+
+int Console::messageUpdate( float dt )
+{
+	// collect the waiting messages and handle them
 	std::vector<msg_t> tmpWaitingMessages;
 	int results = pull(tmpWaitingMessages);
 
+	// nothing to add?
 	if (results == 0)
-		return;
-	
-	for (std::vector<msg_t>::iterator iter = tmpWaitingMessages.begin(); iter != tmpWaitingMessages.end(); ++iter)
-	{
-		if(tabs.find(iter->channel) == tabs.end())
-		{
-			// add a new tab
-			addTab(iter->channel);
-		}
+		return 0;
 
-		MyGUI::Edit* ec = tabs[iter->channel].txt;
+	int r = 0;
+	for (int i = 0; i < results; i++, r++)
+	{
+		// copy over to our storage
+		messages[message_counter] = tmpWaitingMessages[i];
 		
-		if (!ec->getCaption().empty())
-			ec->addText("\n" + iter->txt);
-		else
-			ec->addText(iter->txt);
-
-		ec->setTextSelection(ec->getTextLength(), ec->getTextLength());
-
+		// increase pointer and overwrite oldest if overflown
+		message_counter++;
+		if(message_counter >= MESSAGES_MAX)
+			message_counter = 0;
 	}
+
+	updateGUILines(dt);
+	return r;
 }
 
-void Console::notifyWindowXPressed(MyGUI::WidgetPtr _widget, const std::string& _name)
+void Console::putMessage( int type, Ogre::String txt, Ogre::String icon, unsigned long ttl )
 {
-	if (_name == "close")
-	{
-		MyGUI::WindowPtr window = dynamic_cast<MyGUI::WindowPtr>(_widget);
-		window->hideSmooth();
-	}
+	msg_t t;
+
+	t.type    = type;
+	t.time    = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+	t.ttl     = ttl;
+	strncpy(t.txt,  txt.c_str(), 2048);
+	strncpy(t.icon, icon.c_str(), 50);
+	//t.channel = "default";
+
+	push(t);
 }
-void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
-{
-	if(_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))
-	{
-		setVisible(false);
-		// delete last character (to avoid printing `)
-		size_t lastChar = mCommandEdit->getTextLength() - 1;
-		if (_key != MyGUI::KeyCode::Escape && mCommandEdit->getCaption()[lastChar] == '`')
-			mCommandEdit->eraseText(lastChar);
-		return;
-	}
-
-	switch(_key.toValue())
-	{
-	case MyGUI::KeyCode::ArrowUp:
-		if(current_tab->mHistoryPosition > 0)
-		{
-			// first we save what we was writing
-			if (current_tab->mHistoryPosition == (int)current_tab->mHistory.size() - 1)
-			{
-				current_tab->mHistory[current_tab->mHistoryPosition] = mCommandEdit->getCaption();
-			}
-			current_tab->mHistoryPosition--;
-			mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
-		}
-		break;
-
-	case MyGUI::KeyCode::Tab:
-		{
-			// yay, auto-completion :)
-#ifdef USE_ANGELSCRIPT
-			if(current_tab->name == "Angelscript")
-			{
-				String command = mCommandEdit->getCaption();
-				
-				//if(autoCompleteTemp.empty())
-				autoCompleteTemp = ScriptEngine::getSingleton().getAutoComplete(command);
-				
-				if(!autoCompleteTemp.empty())
-				{
-					autoCompleteNum++;
-					if(autoCompleteNum >= autoCompleteTemp.size()) autoCompleteNum = 0;
-					// TODO: improve
-					Console::getInstance().print(">>> " + autoCompleteTemp[autoCompleteNum], current_tab->name);
-				}
-			}
-#endif //ANGELSCRIPT
-		}
-		break;
-
-	case MyGUI::KeyCode::ArrowDown:
-		if(current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
-		{
-			current_tab->mHistoryPosition++;
-			mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
-		}
-		break;
-
-	case MyGUI::KeyCode::PageUp:
-		if (current_tab->txt->getVScrollPosition() > (size_t)current_tab->txt->getHeight())
-			current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() - current_tab->txt->getHeight());
-		else
-			current_tab->txt->setVScrollPosition(0);
-		break;
-
-	case MyGUI::KeyCode::PageDown:
-		current_tab->txt->setVScrollPosition(current_tab->txt->getVScrollPosition() + current_tab->txt->getHeight());
-		break;
-	}
-}
-
-void Console::eventCommandAccept(MyGUI::Edit* _sender)
-{
-	MyGUI::UString command = _sender->getCaption();
-
-
-	if(current_tab->name.substr(0, 2) == "##" && net)
-	{
-		// its a channel, send message there
-
-		// send via IRC
-		irc_cmd_msg (s, current_tab->name.substr(1).c_str(), command.asUTF8_c_str());
-
-		// add our message to the textbox
-		String nick  = net->getNickname(false);
-		MyGUI::UString msg = "<"+String(ctx->nick)+"> " + command;
-		Console::getInstance().print(msg, current_tab->name);
-	}
-
-	if(current_tab->name == "Angelscript")
-	{
-#ifdef USE_ANGELSCRIPT
-		Console::getInstance().print(">>> " + command, current_tab->name);
-		int res = ScriptEngine::getSingleton().executeString(command);
-		autoCompleteTemp.clear();
-		autoCompleteNum = 0;
-#endif //ANGELSCRIPT
-	}
-
-	//if(netChat) netChat->sendChat(chatline);
-
-	*current_tab->mHistory.rbegin() = command;
-	current_tab->mHistory.push_back(""); // new, empty last entry
-	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
-	mCommandEdit->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
-}
-
-void Console::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
-{
-	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
-	if(!tab) return;
-	String n = tab->getCaption();
-	if(tabs.find(n) == tabs.end())
-		return;
-
-	bool enabled = true;
-	if(n == "OgreLog")  enabled = false;
-	if(n == "IRCDebug") enabled = false;
-	mCommandEdit->setEnabled(enabled);
-
-	current_tab = &tabs[n];
-}
-
-
-void Console::setNetwork(Network *n)
-{
-	net = n;
-
-	// we need persistent memory, so alloc
-	ctx = (irc_ctx_t *)malloc(sizeof(irc_ctx_t));
-	ctx->channel  = (char *)"#rigsofrods";
-	ctx->nickRetry=0;
-
-
-	strcpy(ctx->nick, net->getNickname(false).c_str());
-
-	String servername = "#" + SSETTING("Server name") + ":" + SSETTING("Server port");
-	strcpy(ctx->channel1, servername.c_str());
-
-
-	//initIRC(ctx);
-};
 
 #endif //MYGUI
+

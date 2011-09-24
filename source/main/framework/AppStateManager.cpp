@@ -92,7 +92,7 @@ void AppStateManager::update(double dt)
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
 
 	if(!rw->isActive() && rw->isVisible())
-		rw->update(); // update even  when in background !
+		rw->update(); // update even when in background !
 
 	MUTEX_UNLOCK(&lock);
 }

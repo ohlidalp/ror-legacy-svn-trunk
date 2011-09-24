@@ -42,6 +42,8 @@ public:
 	bool getVisible();
 	void setVisible(bool value);
 
+	int getMenuHeight() { return menuHeight; };
+
 	void updatePositionUponMousePosition(int x, int y);
 
 	void triggerUpdateVehicleList();

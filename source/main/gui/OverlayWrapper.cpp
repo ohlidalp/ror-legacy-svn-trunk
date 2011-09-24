@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "OgreFontManager.h"
 #include "RoRVersion.h"
+#include "Console.h"
 
 using namespace std;
 using namespace Ogre;
@@ -462,6 +463,13 @@ void OverlayWrapper::flashMessage(Ogre::String txt, float time, float charHeight
 
 void OverlayWrapper::flashMessage(const char* txt, float time, float charHeight)
 {
+	Console *c = Console::getInstancePtrNoCreation();
+	if(c && txt)
+	{
+		c->setVisible(true);
+		c->putMessage(Console::CONSOLE_MSGTYPE_FLASHMESSAGE, String(txt), "bell.png");
+	}
+
 	if(!txt || time < 0)
 	{
 		// hide
