@@ -65,6 +65,8 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	mCommandEdit->setProperty("MaxTextLength", "8192");
 	mCommandEdit->setWidgetStyle(MyGUI::WidgetStyle::Child);
 	mCommandEdit->setCaption("");
+	mCommandEdit->setEnabled(false);
+	mCommandEdit->setVisible(false);
 
 
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
@@ -89,10 +91,7 @@ void Console::setVisible(bool _visible)
 	mMainWidget->setEnabledSilent(_visible);
 	mMainWidget->setVisible(_visible);
 
-	if (_visible)
-		select();
-	else
-		unselect();
+	// DO NOT change focus here
 }
 
 bool Console::getVisible()
@@ -104,13 +103,14 @@ bool Console::getVisible()
 void Console::select()
 {
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
+	mCommandEdit->setEnabled(true);
+	mCommandEdit->setVisible(true);
 }
 
 
 void Console::unselect()
 {
 	MyGUI::InputManager::getInstance().resetKeyFocusWidget();
-	MyGUI::InputManager::getInstance()._resetMouseFocusWidget();
 	GUIManager::getSingleton().unfocus();
 }
 
@@ -168,6 +168,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 	// unfocus, so we return to the main game for the keyboard focus
 	unselect();
+	mCommandEdit->setEnabled(false);
+	mCommandEdit->setVisible(false);
 
 	// scripting?
 #ifdef USE_ANGELSCRIPT
