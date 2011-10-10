@@ -315,7 +315,7 @@ void Console::resized()
 		line.txtctrl->setCaption("> LINE " + TOSTRING(i) + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		line.txtctrl->setVisible(false);
 
-		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight, lineheight - 2, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
+		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight - 2, lineheight, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
 		line.iconctrl->setProperty("ImageTexture", "arrow_left.png");
 		line.iconctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
 		line.iconctrl->setVisible(false);
