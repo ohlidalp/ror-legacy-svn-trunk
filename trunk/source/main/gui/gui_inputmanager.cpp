@@ -171,7 +171,7 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->mousePressed(_arg, _id);
 	}
-	return true;
+	return handled;
 }
 
 bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
@@ -195,7 +195,7 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->mouseReleased(_arg, _id);
 	}
-	return true;
+	return handled;
 }
 
 bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
@@ -237,7 +237,7 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 		if(sm) return sm->keyPressed(_arg);
 	}
 
-	return true;
+	return handled;
 }
 
 bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
@@ -259,7 +259,7 @@ bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 		if(sm) return sm->keyReleased(_arg);
 	}
 
-	return true;
+	return handled;
 }
 
 void GUIInputManager::setInputViewSize(int _width, int _height)

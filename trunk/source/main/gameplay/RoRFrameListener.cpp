@@ -1952,6 +1952,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		Console *c = Console::getInstancePtrNoCreation();
 		if(c)
 		{
+			INPUTENGINE.resetKeys();
 			c->setVisible(true);
 			c->select();
 		}
@@ -6333,7 +6334,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	
 	Console *c = Console::getInstancePtrNoCreation();
-	if(c) c->setVisible(visible);
+	if(c) c->setVisible(!visible);
 
 	if(visible)
 	{
