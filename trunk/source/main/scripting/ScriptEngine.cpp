@@ -80,6 +80,9 @@ void logString(const std::string &str)
 
 ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
 {
+	// initialize the mutex for the string execution queue
+	pthread_mutex_init(&stringExecutionQueue_mutex, NULL);
+	
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
@@ -215,6 +218,7 @@ void ScriptEngine::init()
 {
 	SLOG("ScriptEngine (SE) initializing ...");
 	int result;
+
 	// Create the script engine
 	engine = AngelScript::asCreateScriptEngine(ANGELSCRIPT_VERSION);
 
@@ -440,6 +444,11 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "vector3 getCameraDirection()",     AngelScript::asMETHOD(GameScript,getCameraDirection), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "void cameraLookAt(vector3 &in)",       AngelScript::asMETHOD(GameScript,cameraLookAt),       AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 
+	result = engine->RegisterObjectMethod("GameScriptClass", "int addScriptFunction(const string &in)", AngelScript::asMETHOD(GameScript,addScriptFunction), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int deleteScriptFunction(const string &in)", AngelScript::asMETHOD(GameScript,deleteScriptFunction), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int addScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,addScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int deleteScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,deleteScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); MYASSERT(result>=0);
@@ -565,6 +574,15 @@ int ScriptEngine::framestep(Ogre::Real dt)
 
 #endif // 0
 
+	// Check if we need to execute any strings
+	MUTEX_LOCK(&stringExecutionQueue_mutex);
+	while( !stringExecutionQueue.empty() )
+	{
+		executeString(stringExecutionQueue.front());
+		stringExecutionQueue.pop_front();
+	}
+	MUTEX_UNLOCK(&stringExecutionQueue_mutex);
+
 	// framestep stuff below
 	if(frameStepFunctionPtr<=0) return 1;
 	if(!engine) return 0;
@@ -623,6 +641,13 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	return 0;
 }
 
+void ScriptEngine::queueStringForExecution(const Ogre::String command)
+{
+	MUTEX_LOCK(&stringExecutionQueue_mutex);
+	stringExecutionQueue.push_back(command);
+	MUTEX_UNLOCK(&stringExecutionQueue_mutex);
+}
+
 int ScriptEngine::executeString(Ogre::String command)
 {
 	if(!engine) return 1;
@@ -634,6 +659,162 @@ int ScriptEngine::executeString(Ogre::String command)
 		SLOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
 	}
 	return result;
+}
+
+int ScriptEngine::addFunction(const Ogre::String &arg)
+{
+	if(!engine) return 1;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
+
+	AngelScript::asIScriptFunction *func = 0;
+	int r = mod->CompileFunction("addfunc", arg.c_str(), 0, AngelScript::asCOMP_ADD_TO_MODULE, &func);
+	
+	if( r < 0 )
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to add a function ('%s') to script module '%s'.", arg.c_str(), moduleName);
+		SLOG(tmp);
+	}
+	else
+	{
+		// successfully added function
+		// Check if we added a "special" function
+		
+		// get the id of the function
+		int funcId = func->GetId();
+		
+		// compare the id of the newly added function with the special functions
+		if( funcId == mod->GetFunctionIdByDecl("void frameStep(float)") )
+		{	
+			if(frameStepFunctionPtr < 0) frameStepFunctionPtr = funcId;
+			callbacks["frameStep"].push_back(funcId);
+		}
+		else if( funcId == mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)") )
+		{	
+			if(wheelEventFunctionPtr < 0) wheelEventFunctionPtr = funcId;
+			callbacks["wheelEvents"].push_back(funcId);
+		}
+		else if( funcId == mod->GetFunctionIdByDecl("void eventCallback(int, int)") )
+		{
+			if(eventCallbackFunctionPtr < 0) eventCallbackFunctionPtr = funcId;
+			callbacks["eventCallback"].push_back(funcId);
+		}
+		else if( funcId == mod->GetFunctionIdByDecl("void defaultEventCallback(int, string, string, int)") )
+		{	
+			if(defaultEventCallbackFunctionPtr < 0) defaultEventCallbackFunctionPtr = funcId;
+			callbacks["defaultEventCallback"].push_back(funcId);
+		}
+		else if( funcId == mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)") )
+		{	
+			callbacks["on_terrain_loading"].push_back(funcId);
+		}
+	}
+
+	// We must release the function object
+	if( func )
+		func->Release();
+
+	return r;
+}
+
+int ScriptEngine::deleteFunction(const Ogre::String &arg)
+{
+	SLOG("ScriptEngine::DeleteFunction");
+	if(!engine) return 1;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
+
+	if( mod == 0 || mod->GetFunctionCount() == 0 ) 
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to remove a function ('%s') from script module '%s': No functions have been added (and consequently: the function does not exist).", arg.c_str(), moduleName);
+		SLOG(tmp);
+		return AngelScript::asNO_FUNCTION;
+	}
+
+	int id = mod->GetFunctionIdByDecl(arg.c_str());
+	if( id > 0 )
+	{
+		// Warning: The function is not destroyed immediately, only when no more references point to it. 
+		mod->RemoveFunction(id);
+
+		// Since functions can be recursive, we'll call the garbage
+		// collector to make sure the object is really freed
+		engine->GarbageCollect();
+		
+		// Check if we removed a "special" function
+		for(std::map< std::string , std::vector<int> >::iterator it=callbacks.begin(); it!=callbacks.end(); it++)
+		{
+			std::vector<int>::iterator key = std::find(it->second.begin(), it->second.end(), id);
+			if( *key == id )
+				it->second.erase(key);
+		}
+		if( frameStepFunctionPtr == id )
+			frameStepFunctionPtr = -1;
+		if( wheelEventFunctionPtr == id )
+			wheelEventFunctionPtr = -1;
+		if( eventCallbackFunctionPtr == id )
+			eventCallbackFunctionPtr = -1;
+		if( defaultEventCallbackFunctionPtr == id )
+			defaultEventCallbackFunctionPtr = -1;
+	}
+	else
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to remove a function ('%s') from script module '%s'.", arg.c_str(), moduleName);
+		SLOG(tmp);
+	}
+
+	return id;
+}
+
+int ScriptEngine::addVariable(const Ogre::String &arg)
+{
+	SLOG("ScriptEngine::addVariable");
+	if(!engine) return 1;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
+
+	int r = mod->CompileGlobalVar("addvar", arg.c_str(), 0);
+	if( r < 0 )
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to add a variable ('%s') to script module '%s'.", arg.c_str(), moduleName);
+		SLOG(tmp);
+	}
+
+	return r;
+}
+
+int ScriptEngine::deleteVariable(const Ogre::String &arg)
+{
+	SLOG("ScriptEngine::deleteVariable");
+	if(!engine) return 1;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
+
+	if( mod == 0 || mod->GetGlobalVarCount() == 0 ) 
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to remove a variable ('%s') from script module '%s': No variables have been added (and consequently: the variable does not exist).", arg.c_str(), moduleName);
+		SLOG(tmp);
+		return AngelScript::asNO_GLOBAL_VAR;
+	}
+
+	int index = mod->GetGlobalVarIndexByName(arg.c_str());
+	if( index >= 0 )
+	{
+		index = mod->RemoveGlobalVar(index);
+	}
+	else
+	{
+		char tmp[512] = "";
+		sprintf(tmp, "An error occurred while trying to remove a variable ('%s') from script module '%s'.", arg.c_str(), moduleName);
+		SLOG(tmp);
+	}
+
+	return index;
 }
 
 void ScriptEngine::triggerEvent(int eventnum, int value)

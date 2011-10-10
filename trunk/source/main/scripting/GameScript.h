@@ -239,6 +239,34 @@ public:
 	 * @param targetPoint A vector specifying the look at point.
 	*/
 	void cameraLookAt(Ogre::Vector3 &targetPoint);
+	
+	/** 
+	 * Adds a global function to the script
+	 * (Wrapper for ScriptEngine::addFunction)
+	 * @param arg A declaration for the function.
+	*/
+	int addScriptFunction(const std::string &arg);
+	
+	/** 
+	 * Deletes a global function from the script
+	 * (Wrapper for ScriptEngine::deleteFunction)
+	 * @param arg A declaration for the function.
+	*/
+	int deleteScriptFunction(const std::string &arg);
+	
+	/** 
+	 * Adds a global variable to the script
+	 * (Wrapper for ScriptEngine::addVariable)
+	 * @param arg A declaration for the variable.
+	*/
+	int addScriptVariable(const std::string &arg);
+	
+	/** 
+	 * Deletes a global variable from the script
+	 * (Wrapper for ScriptEngine::deleteVariable)
+	 * @param arg A declaration for the variable.
+	*/
+	int deleteScriptVariable(const std::string &arg);
 
 	// new things, not documented yet
 	void showChooser(std::string &type, std::string &instance, std::string &box);

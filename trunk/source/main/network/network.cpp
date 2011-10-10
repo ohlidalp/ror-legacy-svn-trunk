@@ -655,6 +655,13 @@ void Network::receivethreadstart()
 			}
 			continue;
 		}
+		else if(header.command == MSG2_GAME_CMD)
+		{
+#ifdef USE_ANGELSCRIPT
+			ScriptEngine::getSingleton().queueStringForExecution(Ogre::String(buffer));
+#endif // USE_ANGELSCRIPT
+			continue;
+		}
 		//debugPacket("receive-1", &header, buffer);
 		NetworkStreamManager::getSingleton().pushReceivedStreamMessage(header, buffer);
 	}
