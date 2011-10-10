@@ -80,9 +80,6 @@ void logString(const std::string &str)
 
 ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
 {
-	// initialize the mutex for the string execution queue
-	pthread_mutex_init(&stringExecutionQueue_mutex, NULL);
-	
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
@@ -575,13 +572,13 @@ int ScriptEngine::framestep(Ogre::Real dt)
 #endif // 0
 
 	// Check if we need to execute any strings
-	MUTEX_LOCK(&stringExecutionQueue_mutex);
-	while( !stringExecutionQueue.empty() )
+	std::vector<Ogre::String> tmpQueue;
+	stringExecutionQueue.pull(tmpQueue);
+	std::vector<Ogre::String>::iterator it;
+	for(it=tmpQueue.begin(); it!=tmpQueue.end();it++)
 	{
-		executeString(stringExecutionQueue.front());
-		stringExecutionQueue.pop_front();
+		executeString(*it);
 	}
-	MUTEX_UNLOCK(&stringExecutionQueue_mutex);
 
 	// framestep stuff below
 	if(frameStepFunctionPtr<=0) return 1;
@@ -643,9 +640,7 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 
 void ScriptEngine::queueStringForExecution(const Ogre::String command)
 {
-	MUTEX_LOCK(&stringExecutionQueue_mutex);
-	stringExecutionQueue.push_back(command);
-	MUTEX_UNLOCK(&stringExecutionQueue_mutex);
+	stringExecutionQueue.push(command);
 }
 
 int ScriptEngine::executeString(Ogre::String command)
