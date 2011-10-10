@@ -40,6 +40,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "libircclient.h"
 
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_LINUX
+#include <iconv.h>
+#endif // LINUX
+
 // class
 Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0)
 {
@@ -84,15 +88,11 @@ void Console::setVisible(bool _visible)
 {
 	mMainWidget->setEnabledSilent(_visible);
 	mMainWidget->setVisible(_visible);
+
 	if (_visible)
-	{
-		MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
-	}
+		select();
 	else
-	{
-		MyGUI::InputManager::getInstance().resetKeyFocusWidget(mCommandEdit);
-		GUIManager::getSingleton().unfocus();
-	}
+		unselect();
 }
 
 bool Console::getVisible()
@@ -109,8 +109,9 @@ void Console::select()
 
 void Console::unselect()
 {
-	MyGUI::InputManager::getInstance().resetKeyFocusWidget(mCommandEdit);
-	//GUIManager::getSingleton().unfocus();
+	MyGUI::InputManager::getInstance().resetKeyFocusWidget();
+	MyGUI::InputManager::getInstance()._resetMouseFocusWidget();
+	GUIManager::getSingleton().unfocus();
 }
 
 
@@ -159,14 +160,14 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 	if(msg.empty()) return;
 
-	// unfocus, so we return to the main game for the keyboard focus
-	unselect();
-
 	// record the history
 	*mHistory.rbegin() = msg;
 	mHistory.push_back(""); // new, empty last entry
 	mHistoryPosition = mHistory.size() - 1; // switch to the new line
 	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+
+	// unfocus, so we return to the main game for the keyboard focus
+	unselect();
 
 	// scripting?
 #ifdef USE_ANGELSCRIPT
@@ -211,7 +212,6 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
 		return;
 	}
-
 }
 
 void Console::setNetwork(Network *n)
@@ -224,17 +224,26 @@ void Console::setNetChat(ChatSystem *c)
 	netChat = c;
 }
 
-#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 std::wstring ansi_to_utf16(const char* srcPtr)
 {
+#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
 	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
 	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
 	std::wstring ret = tmpBuff;
 	delete[] tmpBuff;
 	return ret;
-}
+#else
+	// http://www.lemoda.net/c/iconv-example/iconv-example.html
+	
+	//iconv_t conv_desc iconv_open ("ANSI", "UTF16");
+	//if ((int) conv_desc == -1) return std::wstring();
+
+	// TODO: fix!
+
+	return std::wstring(srcPtr)
 #endif
+}
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
 void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
@@ -249,18 +258,18 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	{
 		msg = message.substr(4);
 		//putMessage(CONSOLE_MSGTYPE_SCRIPT, MyGUI::UString("#988310") + ansi_to_utf16(msg), "bricks.png");
-		putMessage(CONSOLE_MSGTYPE_SCRIPT, String("#988310") + msg, "page_white_code.png");
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, String("#988310") + ansi_to_utf16(msg.c_str()), "page_white_code.png");
 	} else
 	{
 		if(BSETTING("Enable Ingame Console"))
 		{
 			//putMessage(CONSOLE_MSGTYPE_LOG, MyGUI::UString("#988310") + ansi_to_utf16(msg), "book_open.png");
 			if(lml == LML_NORMAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script_error.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script_error.png");
 			else if(lml == LML_TRIVIAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script.png");
 			else if(lml == LML_CRITICAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + msg, "script_lightning.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script_lightning.png");
 		}
 	}
 }
