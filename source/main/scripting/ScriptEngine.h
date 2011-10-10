@@ -156,8 +156,7 @@ protected:
 	std::map <std::string , std::vector<int> > callbacks;
 	bool enable_ingame_console;
 	
-	pthread_mutex_t stringExecutionQueue_mutex;           //!< mutex for the string execution queue \see stringExecutionQueue
-	std::deque < Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution
+	InterThreadStoreVector< Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution
 
 	static const char *moduleName;
 
