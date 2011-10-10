@@ -1185,6 +1185,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		{
 			c->setVisible(true);
 			c->setNetChat(netChat);
+			char tmp[255] = "";
+			//sprintf(tmp, _L("Press %s to start chatting"), INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE).c_str());
+			sprintf(tmp, _L("Press Y to start chatting"));
+			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, String(tmp), "information.png");
 		}
 
 #ifdef USE_MUMBLE
