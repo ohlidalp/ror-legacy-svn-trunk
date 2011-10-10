@@ -408,6 +408,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	float fuse_y_min = 1000.0f;
 	float fuse_y_max = -1000.0f;
 
+	bool in_section = false; // reminder for us if we are in a section
+
 	// load truck configuration settings
 	bool enable_background_loading = BSETTING("Background Loading");
 	bool enable_advanced_deformation = false;
@@ -484,9 +486,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				c.mode = savedmode;
 				continue;
 			}
-			if (c.line == "end_section" && c.mode == BTS_IN_SECTION)
+			if (c.line == "end_section" && c.mode == BTS_IN_SECTION )
 			{
 				c.mode = savedmode;
+				in_section = false;
+				continue;
+			}
+			if (c.line == "end_section" && in_section)
+			{
+				// compatibility mode: do not restore the section
+				in_section = false;
 				continue;
 			}
 
@@ -554,7 +563,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			if (c.line == "comment") {savedmode=c.mode; c.mode=BTS_COMMENT; continue;};
 			if (c.line == "disabledefaultsounds") {disable_default_sounds=true;continue;};
 			if (c.line.size() > 13 && c.line.substr(0, 13) == "sectionconfig") {savedmode=c.mode;c.mode=BTS_SECTIONCONFIG; /* NOT continue */};
-			if (c.line.size() > 7 && c.line.substr(0, 7) == "section" && c.mode!=BTS_SECTIONCONFIG) {c.mode=BTS_SECTION; /* NOT continue */};
+			if (c.line.size() > 7 && c.line.substr(0, 7) == "section" && c.mode!=BTS_SECTIONCONFIG)
+			{
+				c.mode=BTS_SECTION;
+				/* NOT continue */
+			}
 			/* BTS_IN_SECTION = reserved for ignored section */
 		
 			if (c.line.size() > 14 && c.line.substr(0, 14) == "detacher_group")
@@ -4843,6 +4856,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 					}
 				}
+				
+				in_section = true;
+				
 				if(found)
 					continue;
 				else
