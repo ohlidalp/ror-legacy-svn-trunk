@@ -210,8 +210,9 @@ void Console::resized()
 	{
 		if(lines[i].txtctrl)
 		{
-			lines[i].txtctrl->setVisible(true);
-			lines[i].iconctrl->setVisible(true);
+			// do not set visibility here, we do that in updateGUILines()
+			//lines[i].txtctrl->setVisible(true);
+			//lines[i].iconctrl->setVisible(true);
 			lines[i].txtctrl->setSize(width, lines[i].txtctrl->getHeight());
 			continue;
 		}
@@ -233,17 +234,16 @@ void Console::resized()
 		rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
 		
 		// funny but resource hungry
-		rotatingIcon->setAngle(Degree(0).valueRadians());
+		rotatingIcon->setAngle(Degree(90).valueRadians());
 		//rotatingIcon->setAngle(Degree(Math::RangeRandom(0, 360)).valueRadians());
 		lines[i] = line;
 	}
-	// hide the rest
+	// hide the rest of the lines which are not visible anyways
 	for(unsigned int i = linecount; i < LINES_MAX; i++)
 	{
 		if(!lines[i].txtctrl) break;
 		lines[i].txtctrl->setVisible(false);
 		lines[i].iconctrl->setVisible(false);
-
 	}
 	mCommandEdit->setCoord(0, linecount*lineheight, width, lineheight * 1.2f);
 }

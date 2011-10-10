@@ -121,7 +121,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		client_t *c = net->getClientInfo(source);
 		if(c)
 		{
-			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus);
+			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus, c->user.colournum);
 		}
 
 		String msg = username + mCommandColour + _L(" joined the chat");
@@ -178,10 +178,15 @@ void ChatSystem::sendChat(Ogre::UTFString chatline)
 	this->addPacket(MSG2_CHAT, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str()));
 }
 
-String ChatSystem::getColouredName(String nick, int auth)
+String ChatSystem::getColouredName(String nick, int auth, int colourNumber)
 {
-	String col = "";
+	Ogre::ColourValue col_val = PlayerColours::getSingleton().getColour(colourNumber);
+	char tmp[255] = "";
+	sprintf(tmp, "#%02X%02X%02X", (unsigned int)(col_val.r * 255.0f), (unsigned int)(col_val.g * 255.0f), (unsigned int)(col_val.b * 255.0f));
+	return String(tmp) + nick;
 
+#if 0
+	// old code: colour not depending on auth status anymore ...
 	// replace # with X so the user cannot fake colour
 	for(unsigned int i=0; i<nick.size(); i++)
 		if(nick[i] == '#') nick[i] = 'X';
@@ -193,4 +198,5 @@ String ChatSystem::getColouredName(String nick, int auth)
 	if(auth & AUTH_ADMIN)  col = "#c97100"; // orange
 
 	return col + nick;
+#endif //0
 }
