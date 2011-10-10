@@ -89,6 +89,38 @@ public:
 	 * @param command string to execute
 	 */
 	int executeString(Ogre::String command);
+	
+	/**
+	 * Queues a string for execution.
+	 * Use this when you want to execute a script statement from another thread.
+	 * @param command string to queue for execution
+	 * @see executeString
+	 */
+	void queueStringForExecution(const Ogre::String command);
+	
+	/** 
+	 * Adds a global function to the script
+	 * @param arg A declaration for the function.
+	*/
+	int addFunction(const Ogre::String& arg);
+	
+	/** 
+	 * Deletes a global function from the script
+	 * @param arg A declaration for the function.
+	*/
+	int deleteFunction(const Ogre::String& arg);
+	
+	/** 
+	 * Adds a global variable to the script
+	 * @param arg A declaration for the variable.
+	*/
+	int addVariable(const Ogre::String& arg);
+	
+	/** 
+	 * Deletes a global variable from the script
+	 * @param arg A declaration for the variable.
+	*/
+	int deleteVariable(const Ogre::String& arg);
 
 	Ogre::StringVector getAutoComplete(Ogre::String command);
 
@@ -123,6 +155,9 @@ protected:
 	Ogre::String terrainScriptName, terrainScriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
 	bool enable_ingame_console;
+	
+	pthread_mutex_t stringExecutionQueue_mutex;           //!< mutex for the string execution queue \see stringExecutionQueue
+	std::deque < Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution
 
 	static const char *moduleName;
 

@@ -563,3 +563,23 @@ void GameScript::boostCurrentTruck(float factor)
         }
     
 }
+
+int GameScript::addScriptFunction(const std::string &arg)
+{
+	return mse->addFunction(arg);
+}
+
+int GameScript::deleteScriptFunction(const std::string &arg)
+{
+	return mse->deleteFunction(arg);
+}
+
+int GameScript::addScriptVariable(const std::string &arg)
+{
+	return mse->addVariable(arg);
+}
+
+int GameScript::deleteScriptVariable(const std::string &arg)
+{
+	return mse->deleteVariable(arg);
+}
