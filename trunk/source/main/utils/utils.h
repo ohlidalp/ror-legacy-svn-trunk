@@ -41,7 +41,7 @@ Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen);
 
 int getTimeStamp();
 
-Ogre::String getVersionString();
+Ogre::String getVersionString(bool multiline = true);
 
 bool fileExists(std::string filename);
 

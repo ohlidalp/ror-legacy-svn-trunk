@@ -74,6 +74,8 @@ public:
 	 */
 	int framestep(Ogre::Real dt);
 
+	void activateLogging();
+
 	unsigned int eventMask;                              //!< filter mask for script events
 	
 	/**

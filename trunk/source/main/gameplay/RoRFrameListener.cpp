@@ -1186,8 +1186,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			c->setVisible(true);
 			c->setNetChat(netChat);
 			char tmp[255] = "";
-			//sprintf(tmp, _L("Press %s to start chatting"), INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE).c_str());
-			sprintf(tmp, _L("Press Y to start chatting"));
+			sprintf(tmp, _L("Press %s to start chatting"), INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE).c_str());
 			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, String(tmp), "information.png");
 		}
 
@@ -3635,6 +3634,9 @@ void RoRFrameListener::initializeCompontents()
 		// load the default stscriptuff so spawners will work in multiplayer
 		ScriptEngine::getSingleton().loadScript("default.as");
 	}
+
+	// finally activate AS logging, so we dont spam the users screen with initialization messages
+	ScriptEngine::getSingleton().activateLogging();
 #endif
 
 	// update icollisions instance in factory
@@ -6329,9 +6331,12 @@ void RoRFrameListener::initHDR()
 void RoRFrameListener::hideGUI(bool visible)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+	
+	Console *c = Console::getInstancePtrNoCreation();
+	if(c) c->setVisible(visible);
+
 	if(visible)
 	{
-
 		if(ow) ow->showDashboardOverlays(false,0);
 		if(ow) ow->showEditorOverlay(false);
 		if(ow) ow->truckhud->show(false);

@@ -151,16 +151,23 @@ int getTimeStamp()
 }
 
 
-Ogre::String getVersionString()
+Ogre::String getVersionString(bool multiline)
 {
 	char tmp[1024] = "";
-	sprintf(tmp, "Rigs of Rods\n"
-		" version: %s\n"
-		" revision: %s\n"
-		" full revision: %s\n"
-		" protocol version: %s\n"
-		" build time: %s, %s\n"
-		, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
+	if(multiline)
+	{
+		sprintf(tmp, "Rigs of Rods\n"
+			" version: %s\n"
+			" revision: %s\n"
+			" full revision: %s\n"
+			" protocol version: %s\n"
+			" build time: %s, %s\n"
+			, ROR_VERSION_STRING, SVN_REVISION, SVN_ID, RORNET_VERSION, __DATE__, __TIME__);
+	} else
+	{
+		sprintf(tmp, "Rigs of Rods version %s, revision: %s, protocol version: %s, build time: %s, %s", ROR_VERSION_STRING, SVN_REVISION, RORNET_VERSION, __DATE__, __TIME__);
+	}
+
 	return Ogre::String(tmp);
 }
 

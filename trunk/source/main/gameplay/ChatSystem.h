@@ -42,6 +42,9 @@ public:
 	void sendChat(Ogre::UTFString chatline);
 
 	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
+
+	static const Ogre::String commandColour, normalColour;
+
 protected:
 	Network *net;
 	int source;
@@ -50,7 +53,6 @@ protected:
 	bool remote;
 	Ogre::UTFString username;
 	Ogre::String mNickColour;
-	Ogre::String mCommandColour, mNormalColour;
 	void sendStreamSetup();
 	void sendStreamData();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
