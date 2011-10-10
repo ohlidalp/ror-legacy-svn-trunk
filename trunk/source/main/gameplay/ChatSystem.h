@@ -41,7 +41,7 @@ public:
 
 	void sendChat(Ogre::UTFString chatline);
 
-	static Ogre::String getColouredName(Ogre::String nick, int auth);
+	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
 protected:
 	Network *net;
 	int source;

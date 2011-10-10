@@ -310,7 +310,7 @@ bool Network::connect()
 Ogre::String Network::getNickname(bool colour)
 {
 	if(colour)
-		return ChatSystem::getColouredName(nickname, myauthlevel);
+		return ChatSystem::getColouredName(nickname, myauthlevel, userdata.colournum);
 	else
 		return nickname;
 }
