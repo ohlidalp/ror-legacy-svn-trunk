@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Settings.h"
 #include "engine.h"
+#include "language.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -169,6 +170,20 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	stream_register_trucks_t *treg = (stream_register_trucks_t *)&reg->reg;
 
 	LOG(" new beam truck for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid));
+
+	// log a message about this
+	if(net)
+	{
+		client_t *c = net->getClientInfo(reg->sourceid);
+		if(c)
+		{
+			String username = ChatSystem::getColouredName(tryConvertUTF(c->user.username), c->user.authstatus, c->user.colournum);
+			String message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + treg->name;
+			Console *console = Console::getInstancePtrNoCreation();
+			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, message, "car_add.png");
+		}
+	}
+
 
 	bool networked=true, networking=false;
 	if(net) networking = true;

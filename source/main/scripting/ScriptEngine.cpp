@@ -90,9 +90,6 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl)
 	// create our own log
 	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path")+"/Angelscript.log", false);
 	
-	if(enable_ingame_console) 
-		scriptLog->addListener(this);
-	
 	scriptLog->logMessage("ScriptEngine initialized");
 
 	// init not earlier, otherwise crash
@@ -105,6 +102,8 @@ ScriptEngine::~ScriptEngine()
 	if(engine)  engine->Release();
 	if(context) context->Release();
 }
+
+
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
 void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
@@ -887,4 +886,9 @@ Ogre::StringVector ScriptEngine::getAutoComplete(Ogre::String command)
 	}
 
 	return result;
+}
+
+void ScriptEngine::activateLogging()
+{
+	scriptLog->addListener(this);
 }

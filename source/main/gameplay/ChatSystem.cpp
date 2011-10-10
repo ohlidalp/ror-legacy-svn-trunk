@@ -103,6 +103,9 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
+const Ogre::String ChatSystem::commandColour = "#e72edc";
+const Ogre::String ChatSystem::normalColour  = "#000000";
+
 ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colourNumber, bool remote) :
 	net(net),
 	source(source),
@@ -110,9 +113,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 	colourNumber(colourNumber),
 	remote(remote),
 	username("unknown"),
-	mNickColour(""),
-	mCommandColour("#e72edc"),
-	mNormalColour("#000000")
+	mNickColour("")
 {
 	sendStreamSetup();
 #ifdef USE_SOCKETW
@@ -124,8 +125,8 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 			username = getColouredName(tryConvertUTF(c->user.username), c->user.authstatus, c->user.colournum);
 		}
 
-		String msg = username + mCommandColour + _L(" joined the chat");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "add.png");
+		String msg = username + commandColour + _L(" joined the game");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_add.png");
 	}
 #endif //SOCKETW
 }
@@ -134,8 +135,8 @@ ChatSystem::~ChatSystem()
 {
 	if(remote)
 	{
-		String msg = username + mCommandColour + _L(" left the chat");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "delete.png");
+		String msg = username + commandColour + _L(" left the game");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_delete.png");
 	}
 }
 
@@ -164,11 +165,11 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		{
 			// server said something
 			String msg = getASCIIFromCharString(buffer, 255);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "bullet_black.png");
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_gray.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
-			UTFString msg = username + mNormalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "bullet_orange.png");
+			UTFString msg = username + normalColour + ": " + tryConvertUTF(buffer);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_comment.png");
 		}
 	}
 }

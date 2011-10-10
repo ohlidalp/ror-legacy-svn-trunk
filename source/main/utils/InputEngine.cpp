@@ -3401,3 +3401,14 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 	#endif
 	}
 }
+
+Ogre::String InputEngine::getKeyForCommand( int eventID )
+{
+	std::map<int, std::vector<event_trigger_t> >::iterator it = events.find(eventID);
+
+	if(it == events.end()) return String();
+	if(it->second.empty()) return String();
+	
+	std::vector<event_trigger_t>::iterator it2 = it->second.begin();
+	return getKeyNameForKeyCode((OIS::KeyCode)it2->keyCode);
+}

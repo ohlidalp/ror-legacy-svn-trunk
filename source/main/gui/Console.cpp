@@ -32,18 +32,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "network.h"
 
+#include "Beam.h"
+#include "BeamFactory.h"
+
 #include "language.h"
+#include "utils.h"
 
 #include "libircclient.h"
 
 // class
-Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0)
 {
 	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Overlapped", "Console");
 	mMainWidget->setCaption(_L("Console"));
 	mMainWidget->setAlpha(0.9f);
 
 	memset(&lines, 0, sizeof(lines));
+
+	mHistory.push_back(MyGUI::UString());
 
 	// and the textbox inside
 	mCommandEdit = mMainWidget->createWidget<MyGUI::EditBox>("EditBoxChat", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
@@ -100,6 +106,14 @@ void Console::select()
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 }
 
+
+void Console::unselect()
+{
+	MyGUI::InputManager::getInstance().resetKeyFocusWidget(mCommandEdit);
+	//GUIManager::getSingleton().unfocus();
+}
+
+
 void Console::frameEntered(float dt)
 {
 	messageUpdate(dt);
@@ -109,30 +123,95 @@ void Console::frameEntered(float dt)
 
 void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
+	switch(_key.toValue())
+	{
+	case MyGUI::KeyCode::ArrowUp:
+		{
+			if(mHistoryPosition > 0)
+			{
+				if (mHistoryPosition == (int)mHistory.size() - 1)
+					mHistory[mHistoryPosition] = mCommandEdit->getCaption();
+				mHistoryPosition--;
+				mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+			}
+		}
+		break;
+	case MyGUI::KeyCode::ArrowDown:
+		{
+			if(mHistoryPosition < (int)mHistory.size() - 1)
+			{
+				mHistoryPosition++;
+				mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+			}
+		}
+		break;
+		// TODO: LOG SCROLLING
+		//	case MyGUI::KeyCode::PageUp:
+		//	case MyGUI::KeyCode::PageUp:
+
+	}
 }
 
 void Console::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	MyGUI::UString msg = _sender->getCaption();
+	_sender->setCaption("");
+
 	if(msg.empty()) return;
 
+	// unfocus, so we return to the main game for the keyboard focus
+	unselect();
+
+	// record the history
+	*mHistory.rbegin() = msg;
+	mHistory.push_back(""); // new, empty last entry
+	mHistoryPosition = mHistory.size() - 1; // switch to the new line
+	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+
+	// scripting?
+#ifdef USE_ANGELSCRIPT
+	if(msg[0] == '\\')
+	{
+		String command = msg.substr(1);
+
+		String nmsg = ">>> " + command;
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, nmsg, "user_comment.png");
+		int res = ScriptEngine::getSingleton().executeString(command);
+		return;
+	}
+#endif //ANGELSCRIPT
+
+	// some specials
+	if(msg == "/pos")
+	{
+		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+		if(!b && RoRFrameListener::eflsingleton->person)
+		{
+			Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
+			putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		}
+		else
+		{
+			Vector3 pos = b->getPosition();
+			putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		}
+		return;
+	}else if(msg == "/ver")
+	{
+		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + getVersionString(false), "information.png");
+		return;
+	}
+
+	// network chat
 	if(net && netChat)
 	{
 		netChat->sendChat(msg.c_str());
 
 		String nmsg = net->getNickname(true) + String("#000000: ") + msg;
-		putMessage(CONSOLE_MSGTYPE_NETWORK, nmsg, "bullet_orange.png");
+		putMessage(CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
+		return;
 	}
 
-#ifdef USE_ANGELSCRIPT
-	// TODO:
-	/*
-	Console::getInstance().print(">>> " + command, current_tab->name);
-	int res = ScriptEngine::getSingleton().executeString(command);
-	*/
-#endif //ANGELSCRIPT
-
-	_sender->setCaption("");
 }
 
 void Console::setNetwork(Network *n)
@@ -269,7 +348,7 @@ void Console::updateGUILines( float dt )
 			msgi++;
 			continue;
 		}
-		if(msgid >= message_counter)
+		if(msgid >= (int)message_counter)
 		{
 			// no messages left
 			break;
