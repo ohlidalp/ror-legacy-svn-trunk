@@ -63,7 +63,7 @@ public:
 
 	enum {CONSOLE_MSGTYPE_LOG, CONSOLE_MSGTYPE_INFO, CONSOLE_MSGTYPE_SCRIPT, CONSOLE_MSGTYPE_NETWORK, CONSOLE_MSGTYPE_FLASHMESSAGE};
 
-	void putMessage(int type, Ogre::String msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 60000);
+	void putMessage(int type, Ogre::String msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 120000);
 
 	void resized();
 protected:

@@ -178,7 +178,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		if(c)
 		{
 			String username = ChatSystem::getColouredName(tryConvertUTF(c->user.username), c->user.authstatus, c->user.colournum);
-			String message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + treg->name;
+			String message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
 			Console *console = Console::getInstancePtrNoCreation();
 			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, message, "car_add.png");
 		}
