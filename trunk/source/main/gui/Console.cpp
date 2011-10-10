@@ -310,12 +310,12 @@ void Console::resized()
 		memset(&line, 0, sizeof(line));
 		line.number = i;
 
-		line.txtctrl = mMainWidget->createWidget<MyGUI::TextBox>("TextBoxChat", lineheight + 2, i*lineheight+2, width, lineheight,  MyGUI::Align::Left | MyGUI::Align::Right | MyGUI::Align::Top, "ConsoleLine" + TOSTRING(i));
+		line.txtctrl = mMainWidget->createWidget<MyGUI::TextBox>("TextBoxChat", lineheight + 2, i*lineheight, width, lineheight,  MyGUI::Align::Left | MyGUI::Align::Right | MyGUI::Align::Top, "ConsoleLine" + TOSTRING(i));
 		line.txtctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
 		line.txtctrl->setCaption("> LINE " + TOSTRING(i) + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		line.txtctrl->setVisible(false);
 
-		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight, lineheight, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
+		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight, lineheight - 2, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
 		line.iconctrl->setProperty("ImageTexture", "arrow_left.png");
 		line.iconctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
 		line.iconctrl->setVisible(false);
