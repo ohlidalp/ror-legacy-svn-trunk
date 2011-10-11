@@ -47,7 +47,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // class
 Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0)
 {
-	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Overlapped", "Console");
+	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Back", "Console");
 	mMainWidget->setCaption(_L("Console"));
 	mMainWidget->setAlpha(0.9f);
 
