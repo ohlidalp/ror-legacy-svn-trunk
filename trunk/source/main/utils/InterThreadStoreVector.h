@@ -45,6 +45,16 @@ public:
 		store.push_back(v);
 		MUTEX_UNLOCK(&lock);	
 	}
+
+	size_t size()
+	{
+		size_t s = 0;
+		MUTEX_LOCK(&lock);
+		s = store.size();
+		MUTEX_UNLOCK(&lock);
+		return s;
+	}
+
 	
 	int pull(std::vector < T > &res)
 	{
