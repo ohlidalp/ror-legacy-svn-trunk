@@ -467,7 +467,7 @@ void OverlayWrapper::flashMessage(const char* txt, float time, float charHeight)
 	if(c && txt)
 	{
 		c->setVisible(true);
-		c->putMessage(Console::CONSOLE_MSGTYPE_FLASHMESSAGE, String(txt), "bell.png");
+		c->putMessage(Console::CONSOLE_MSGTYPE_FLASHMESSAGE, String(txt), "bell.png", (unsigned long)(time * 2000.0f)); //2k = a bit longer
 	}
 
 	if(!txt || time < 0)
