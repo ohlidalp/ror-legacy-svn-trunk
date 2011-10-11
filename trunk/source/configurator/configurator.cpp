@@ -2632,7 +2632,11 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	wxString cachepath=app->UserPath+wxFileName::GetPathSeparator()+wxT("cache");
 	wxDir srcd(cachepath);
 	wxString src;
-	if (!srcd.GetFirst(&src)) return; //empty dir!
+	if (!srcd.GetFirst(&src))
+	{
+		wxMessageBox(_("Cache is already empty"), wxT("RoR: Cache is already empty"), wxICON_INFORMATION);
+		return; //empty dir!
+	}
 	do
 	{
 		//ignore files and directories beginning with "." (important, for SVN!)
@@ -2652,6 +2656,7 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 			::wxRemoveFile(tsfn.GetFullPath());
 		}
 	} while (srcd.GetNext(&src));
+	wxMessageBox(_("Cache cleared"), wxT("RoR: Cache cleared"), wxICON_INFORMATION);
 }
 
 void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
