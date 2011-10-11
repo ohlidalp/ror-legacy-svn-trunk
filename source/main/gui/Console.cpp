@@ -221,6 +221,9 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	{
 		String command = msg.substr(1);
 
+		Ogre::StringUtil::trim(command);
+		if(command.empty()) return;
+
 		String nmsg = ">>> " + command;
 		putMessage(CONSOLE_MSGTYPE_SCRIPT, nmsg, "user_comment.png");
 		int res = ScriptEngine::getSingleton().executeString(command);
@@ -240,6 +243,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/quit#000000 - exits"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
@@ -249,14 +254,46 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + getVersionString(false), "information.png");
 		return;
+	} else if(msg == "/quit")
+	{
+		RoRFrameListener::eflsingleton->shutdown_final();
+		return;
 	} else if(msg == "/save")
 	{
 		saveChat(SSETTING("Log Path") + "chat-log.txt");
 		return;
-	} else if(msg == "/test")
+	} else if(msg == "/log")
+	{
+		// switch to console logging
+		bool logging = BSETTING("Enable Ingame Console");
+		if(!logging)
+		{
+			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L(" logging to console enabled"), "information.png");
+			SETTINGS.setSetting("Enable Ingame Console", "Yes");
+		} else
+		{
+			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L(" logging to console disabled"), "information.png");
+			SETTINGS.setSetting("Enable Ingame Console", "No");
+		}
+		return;
+		
+	// some debugging things below ;)
+	} else if(msg == "/test1")
 	{
 		for(int i=0; i<600; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "TEST " + TOSTRING(i), "information.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, "TEST " + TOSTRING(i), "cog.png");
+		return;
+	} else if(msg == "/test2")
+	{
+		for(int i=0; i<MESSAGES_MAX*3; i++)
+			putMessage(CONSOLE_MSGTYPE_INFO, "OVERFLOW_TEST " + TOSTRING(i) + " / size: " + TOSTRING(size()), "cog.png");
+		return;
+	} else if(msg == "/fadetest")
+	{
+		for(int i=0; i<10; i++)
+			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST1 " + TOSTRING(i), "cog.png", i*1000);
+		for(int i=0; i<10; i++)
+			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST2 " + TOSTRING(i), "cog.png", (10-i)*1000);
 		return;
 	}
 
@@ -499,7 +536,7 @@ void Console::updateGUIVisual( float dt )
 			} else
 			{
 				// different logic in input mode: display all messages
-				alpha = 1.0f;
+				alpha = 0.9f;
 			}
 
 			// set the alpha
@@ -569,7 +606,7 @@ void Console::saveChat(String filename)
 		return;
 	}
 	fprintf(f, "==== \n");
-	for(int i = 0; i < message_counter; i++)
+	for(unsigned int i = 0; i < message_counter; i++)
 	{
 		fprintf(f, "%d %s\n", messages[i].time, messages[i].txt);
 	}

@@ -154,7 +154,6 @@ protected:
 	int defaultEventCallbackFunctionPtr;    //!< script function pointer for spawner events
 	Ogre::String terrainScriptName, terrainScriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
-	bool enable_ingame_console;
 	
 	InterThreadStoreVector< Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution
 
