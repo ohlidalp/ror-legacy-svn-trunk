@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // LINUX
 
 // class
-Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0)
 {
 	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Overlapped", "Console");
 	mMainWidget->setCaption(_L("Console"));
@@ -68,10 +68,28 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	mCommandEdit->setEnabled(false);
 	mCommandEdit->setVisible(false);
 
-
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 
+	// scroll icons
+	scrollImgUp = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, 0, lineheight, lineheight * 2,  MyGUI::Align::Default, "ConsoleIconScrollUp");
+	scrollImgUp->setProperty("ImageTexture", "arrow_up.png");
+	scrollImgUp->setWidgetStyle(MyGUI::WidgetStyle::Child);
+	scrollImgUp->setVisible(false);
+	MyGUI::RotatingSkin *rotatingIcon = scrollImgUp->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
+	rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
+	rotatingIcon->setAngle(Degree(90).valueRadians());
+
+	scrollImgDown = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, 0, lineheight, lineheight * 2,  MyGUI::Align::Default, "ConsoleIconScrollDown");
+	scrollImgDown->setProperty("ImageTexture", "arrow_down.png");
+	scrollImgDown->setWidgetStyle(MyGUI::WidgetStyle::Child);
+	scrollImgDown->setVisible(false);
+	rotatingIcon = scrollImgDown->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
+	rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
+	rotatingIcon->setAngle(Degree(90).valueRadians());
+
+
+	// the rest
 	setVisible(false);
 
 	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
@@ -92,6 +110,11 @@ void Console::setVisible(bool _visible)
 	mMainWidget->setVisible(_visible);
 
 	// DO NOT change focus here
+
+	if(!_visible)
+	{
+		inputMode = false;
+	}
 }
 
 bool Console::getVisible()
@@ -105,6 +128,8 @@ void Console::select()
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 	mCommandEdit->setEnabled(true);
 	mCommandEdit->setVisible(true);
+	inputMode = true;
+	linesChanged = true;
 }
 
 
@@ -146,10 +171,22 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 			}
 		}
 		break;
-		// TODO: LOG SCROLLING
-		//	case MyGUI::KeyCode::PageUp:
-		//	case MyGUI::KeyCode::PageUp:
-
+	case MyGUI::KeyCode::PageUp:
+		{
+			if(scrollOffset + scroll_size <= (message_counter - linecount))
+			{
+				scrollOffset += scroll_size;
+				linesChanged = true;
+			}
+		}
+		break;
+	case MyGUI::KeyCode::PageDown:
+		{
+			scrollOffset -= scroll_size;
+			if(scrollOffset < 0) scrollOffset = 0;
+			linesChanged = true;
+		}
+		break;
 	}
 }
 
@@ -158,18 +195,25 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	MyGUI::UString msg = _sender->getCaption();
 	_sender->setCaption("");
 
-	if(msg.empty()) return;
+	// unfocus, so we return to the main game for the keyboard focus
+	inputMode = false;
+	linesChanged = true;
+	scrollOffset = 0; // reset offset
+	unselect();
+	mCommandEdit->setEnabled(false);
+	mCommandEdit->setVisible(false);
+
+	if(msg.empty())
+	{
+		// discard the empty message
+		return;
+	}
 
 	// record the history
 	*mHistory.rbegin() = msg;
 	mHistory.push_back(""); // new, empty last entry
 	mHistoryPosition = mHistory.size() - 1; // switch to the new line
 	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
-
-	// unfocus, so we return to the main game for the keyboard focus
-	unselect();
-	mCommandEdit->setEnabled(false);
-	mCommandEdit->setVisible(false);
 
 	// scripting?
 #ifdef USE_ANGELSCRIPT
@@ -187,21 +231,32 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	// some specials
 	if(msg == "/pos")
 	{
-		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(!b && RoRFrameListener::eflsingleton->person)
-		{
-			Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
-			putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
-		}
-		else
-		{
-			Vector3 pos = b->getPosition();
-			putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
-		}
+		outputCurrentPosition();
 		return;
-	}else if(msg == "/ver")
+	} else if(msg == "/help")
+	{
+		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("possible commands:"), "help.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/help#000000 - this help information"), "help.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
+		return;
+
+	} else if(msg == "/ver")
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + getVersionString(false), "information.png");
+		return;
+	} else if(msg == "/save")
+	{
+		saveChat(SSETTING("Log Path") + "chat-log.txt");
+		return;
+	} else if(msg == "/test")
+	{
+		for(int i=0; i<600; i++)
+			putMessage(CONSOLE_MSGTYPE_INFO, "TEST " + TOSTRING(i), "information.png");
 		return;
 	}
 
@@ -241,9 +296,9 @@ std::wstring ansi_to_utf16(const char* srcPtr)
 	//iconv_t conv_desc iconv_open ("ANSI", "UTF16");
 	//if ((int) conv_desc == -1) return std::wstring();
 
-	// TODO: fix!
+	// TODO: fix: use iconv to convert the string similar to the windows implementation above
 
-	return std::wstring(srcPtr)
+	return std::wstring(srcPtr);
 #endif
 }
 
@@ -301,8 +356,6 @@ void Console::resized()
 		if(lines[i].txtctrl)
 		{
 			// do not set visibility here, we do that in updateGUILines()
-			//lines[i].txtctrl->setVisible(true);
-			//lines[i].iconctrl->setVisible(true);
 			lines[i].txtctrl->setSize(width, lines[i].txtctrl->getHeight());
 			continue;
 		}
@@ -335,7 +388,14 @@ void Console::resized()
 		lines[i].txtctrl->setVisible(false);
 		lines[i].iconctrl->setVisible(false);
 	}
+
+	// resize the rest
 	mCommandEdit->setCoord(0, linecount*lineheight, width, lineheight * 1.2f);
+	scrollImgUp->setPosition(width * 0.3f, 2);
+	scrollImgDown->setPosition(width * 0.3f, linecount * lineheight);
+
+	// trigger lines update
+	linesChanged = true;
 }
 
 void Console::updateGUILines( float dt )
@@ -349,7 +409,7 @@ void Console::updateGUILines( float dt )
 	{
 		if(!lines[ctrli].txtctrl) break; // text control missing?!
 
-		int msgid = message_counter - msgi - 1;
+		int msgid = message_counter - msgi - 1 - scrollOffset;
 		if(msgid < 0)
 		{
 			// hide this entry, its empty
@@ -369,9 +429,9 @@ void Console::updateGUILines( float dt )
 
 		// check if TTL expired
 		unsigned long t = Ogre::Root::getSingleton().getTimer()->getMilliseconds() - m.time;
-		if(t > m.ttl)
+		if(t > m.ttl && !inputMode)
 		{
-			// expired, take the next message instead
+			// expired, take the next message instead, when not in input mode
 			msgi++;
 			continue;
 		}
@@ -392,6 +452,8 @@ void Console::updateGUILines( float dt )
 		ctrli--;
 		msgi++;
 	}
+	
+	linesChanged = false;
 }
 
 void Console::updateGUIVisual( float dt )
@@ -408,35 +470,47 @@ void Console::updateGUIVisual( float dt )
 
 			unsigned long ot = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
 			unsigned long t = ot - lines[i].msg->time;
-			if(t > lines[i].msg->ttl)
+			if(t > lines[i].msg->ttl && !inputMode)
 			{
 				// expired
 				lines[i].txtctrl->setVisible(false);
 				lines[i].iconctrl->setVisible(false);
 				lines[i].expired = true;
 				lines[i].txtctrl->setCaption(lines[i].txtctrl->getCaption() + " EXPIRED");
+				linesChanged = true;
 				continue;
 			}
 
-			unsigned long endTime   = lines[i].msg->time + lines[i].msg->ttl;
-			const float fadeTime = 2000.0f;
-			unsigned long startTime = endTime - (long)fadeTime;
-
 			float alpha = 1.0f;
-			if(ot < startTime)
+			if(!inputMode)
 			{
-				alpha = 1.0f;
-			} else 
-			{
-				alpha = 1 - ((ot - startTime) / fadeTime);
+				// logic
+				unsigned long endTime   = lines[i].msg->time + lines[i].msg->ttl;
+				const float fadeTime    = 2000.0f;
+				unsigned long startTime = endTime - (long)fadeTime;
 
+				if(ot < startTime)
+				{
+					alpha = 1.0f;
+				} else 
+				{
+					alpha = 1 - ((ot - startTime) / fadeTime);
+				}
+			} else
+			{
+				// different logic in input mode: display all messages
+				alpha = 1.0f;
 			}
-			
+
+			// set the alpha
 			lines[i].txtctrl->setAlpha (alpha);
 			lines[i].iconctrl->setAlpha(alpha);
-			//lines[i].txtctrl->setCaption(String(lines[i].msg->txt) + " ALPHA = " + TOSTRING(alpha));
 		}
 	}
+
+	// show/hide the scroll icons
+	scrollImgDown->setVisible(scrollOffset > 0 && inputMode);
+	scrollImgUp->setVisible(scrollOffset < (message_counter - linecount) && (message_counter - linecount) > 0  && inputMode);
 }
 
 
@@ -447,22 +521,28 @@ int Console::messageUpdate( float dt )
 	int results = pull(tmpWaitingMessages);
 
 	// nothing to add?
-	if (results == 0)
-		return 0;
-
 	int r = 0;
-	for (int i = 0; i < results; i++, r++)
+	if (results > 0)
 	{
-		// copy over to our storage
-		messages[message_counter] = tmpWaitingMessages[i];
+		for (int i = 0; i < results; i++, r++)
+		{
+			// copy over to our storage
+			messages[message_counter] = tmpWaitingMessages[i];
 		
-		// increase pointer and overwrite oldest if overflown
-		message_counter++;
-		if(message_counter >= MESSAGES_MAX)
-			message_counter = 0;
+			// increase pointer and overwrite oldest if overflown
+			message_counter++;
+			if(message_counter >= MESSAGES_MAX)
+				message_counter = 0;
+		}
+		// new lines, update them
+		updateGUILines(dt);
+	}
+	else if (results == 0 && linesChanged)
+	{
+		// in inputmode we display the last lines, so change them
+		updateGUILines(dt);
 	}
 
-	updateGUILines(dt);
 	return r;
 }
 
@@ -478,6 +558,38 @@ void Console::putMessage( int type, Ogre::String txt, Ogre::String icon, unsigne
 	//t.channel = "default";
 
 	push(t);
+}
+
+void Console::saveChat(String filename)
+{
+	FILE *f = fopen(filename.c_str(), "a");
+	if(!f)
+	{
+		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + "Unable to open file " + filename, "error.png");
+		return;
+	}
+	fprintf(f, "==== \n");
+	for(int i = 0; i < message_counter; i++)
+	{
+		fprintf(f, "%d %s\n", messages[i].time, messages[i].txt);
+	}
+	fclose(f);
+	putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + "History saved as " + filename, "table_save.png");
+}
+
+void Console::outputCurrentPosition()
+{
+	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+	if(!b && RoRFrameListener::eflsingleton->person)
+	{
+		Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+	}
+	else
+	{
+		Vector3 pos = b->getPosition();
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+	}
 }
 
 #endif //MYGUI

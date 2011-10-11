@@ -69,9 +69,13 @@ public:
 protected:
 	static const unsigned int lineheight   = 16;
 	static const unsigned int LINES_MAX    = 200;
-	static const unsigned int MESSAGES_MAX = 2000;
+	static const unsigned int MESSAGES_MAX = 3000;
+	static const unsigned int scroll_size  = 5;
 	unsigned int top_border, bottom_border;
 	unsigned int linecount;
+	int scrollOffset;
+	bool inputMode, linesChanged;
+	MyGUI::ImageBox *scrollImgUp, *scrollImgDown;
 
 	int messageUpdate(float dt);
 	void updateGUILines( float dt );
@@ -79,6 +83,10 @@ protected:
 
 	void eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventCommandAccept(MyGUI::Edit* _sender);
+
+	void saveChat(Ogre::String filename);
+	void outputCurrentPosition();
+
 
 	MyGUI::Edit* mCommandEdit;
 	MyGUI::WindowPtr mMainWidget;
