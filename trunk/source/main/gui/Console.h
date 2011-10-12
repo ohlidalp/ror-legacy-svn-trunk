@@ -70,9 +70,8 @@ protected:
 	static const unsigned int lineheight   = 16;
 	static const unsigned int LINES_MAX    = 200;
 	static const unsigned int MESSAGES_MAX = 3000;
-	static const unsigned int scroll_size  = 5;
 	unsigned int top_border, bottom_border;
-	unsigned int linecount;
+	unsigned int linecount, scroll_size;
 	int scrollOffset;
 	bool inputMode, linesChanged;
 	MyGUI::ImageBox *scrollImgUp, *scrollImgDown;

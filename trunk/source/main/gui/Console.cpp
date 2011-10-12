@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // LINUX
 
 // class
-Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), linecount(10), scroll_size(5)
 {
 	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Back", "Console");
 	mMainWidget->setCaption(_L("Console"));
@@ -386,6 +386,8 @@ void Console::resized()
 	linecount = height / (float)lineheight;
 	if(linecount >= LINES_MAX)
 		linecount = LINES_MAX - 1;
+
+	scroll_size = linecount * 0.5f;
 
 	// add controls
 	for(unsigned int i = 0; i < linecount; i++)
