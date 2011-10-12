@@ -291,9 +291,9 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	} else if(msg == "/fadetest")
 	{
 		for(int i=0; i<10; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST1 " + TOSTRING(i), "cog.png", i*1000);
+			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST: down " + TOSTRING(i), "cog.png", i*1000);
 		for(int i=0; i<10; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST2 " + TOSTRING(i), "cog.png", (10-i)*1000);
+			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST: up " + TOSTRING(10-i), "cog.png", (10-i)*1000);
 		return;
 	}
 
