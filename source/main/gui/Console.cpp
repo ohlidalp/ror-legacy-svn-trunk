@@ -318,8 +318,11 @@ void Console::setNetChat(ChatSystem *c)
 	netChat = c;
 }
 
-std::wstring ansi_to_utf16(const char* srcPtr)
+std::string ansi_to_utf16(const char* srcPtr)
 {
+	// TODO: fix UTF8 handling
+	return std::string(srcPtr);
+#if 0
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
 	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
@@ -335,8 +338,9 @@ std::wstring ansi_to_utf16(const char* srcPtr)
 
 	// TODO: fix: use iconv to convert the string similar to the windows implementation above
 
-	return std::wstring(srcPtr);
+	return std::string(srcPtr);
 #endif
+#endif //0
 }
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
@@ -610,7 +614,7 @@ void Console::saveChat(String filename)
 	fprintf(f, "==== \n");
 	for(unsigned int i = 0; i < message_counter; i++)
 	{
-		fprintf(f, "%d %s\n", messages[i].time, messages[i].txt);
+		fprintf(f, "%ld %s\n", messages[i].time, messages[i].txt);
 	}
 	fclose(f);
 	putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + "History saved as " + filename, "table_save.png");

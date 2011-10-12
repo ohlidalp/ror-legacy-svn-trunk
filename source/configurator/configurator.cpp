@@ -1703,6 +1703,13 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			//existing, remove all elements
 			renderer_choice[counter]->Clear();
 		}
+
+		if(optIt->second.possibleValues.empty())
+		{
+			wxLogStatus(wxString::Format(wxT("option: \"%s\" has no values! IGNORING option."), conv(optIt->first.c_str()).c_str() ));
+			continue;
+		}
+
 		wxString s = conv(optIt->first.c_str());
 		renderer_name[counter] = optIt->first;
 #ifdef WIN32
@@ -1715,10 +1722,15 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 		// add all values and select current value
 		Ogre::String selection = "";
 		int valueCounter = 0;
+
+
 		for(Ogre::StringVector::iterator valIt = optIt->second.possibleValues.begin(); valIt != optIt->second.possibleValues.end(); valIt++)
 		{
 			if(*valIt == optIt->second.currentValue)
 				selection = *valIt;
+
+			// some debug:
+			//wxLogStatus(wxString::Format(wxT("option: \"%s\" . \"%s\""), conv(optIt->first.c_str()).c_str(), conv(valIt->c_str()).c_str() ));
 
 			Ogre::String valStr = *valIt;
 
@@ -1728,7 +1740,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 				int res_x=-1, res_y=-1, res_d=-1;
 				int res = sscanf(valIt->c_str(), "%d x %d @ %d-bit colour", &res_x, &res_y, &res_d);
 
-				wxLogStatus(wxString::Format("parsed resolution \"%s\" as \"%d x %d @ %d-bit\"", valIt->c_str(), res_x, res_y, res_d));
+				wxLogStatus(wxString::Format(wxT("parsed resolution \"%s\" as \"%d x %d @ %d-bit\""), conv(valIt->c_str()).c_str(), res_x, res_y, res_d));
 
 				// opengl has no colour info in there
 				if(res == 3)
@@ -1747,7 +1759,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 				}
 
 				// according to http://en.wikipedia.org/wiki/Display_resolution
-				char *ratio_str = "";
+				const char *ratio_str = "";
 				if     ( (float)res_x/(float)res_y - 1.25 < 0.0001f)
 					ratio_str = "5:4";
 				else if( (float)res_x/(float)res_y - 1.333333f < 0.0001f )
@@ -1763,7 +1775,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 				else if( (float)res_x/(float)res_y - 1.8962962f < 0.0001f )
 					ratio_str = "17:9";
 
-				char *type_str = "";
+				const char *type_str = "";
 				// 5:4
 				if     (res_x == 1280 && res_y == 1024)
 					type_str = "SXGA";

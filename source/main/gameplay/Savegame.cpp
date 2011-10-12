@@ -71,7 +71,7 @@ int Savegame::save(Ogre::String &filename)
 		struct savegame_header h;
 		memset(&h, 0, sizeof(h));
 		strcpy(h.ror_version, ROR_VERSION_STRING);
-		sprintf(h.savegame_version, current_version);
+		strcpy(h.savegame_version, current_version);
 		h.entries       = free_truck;
 		h.current_truck = current_truck;
 
