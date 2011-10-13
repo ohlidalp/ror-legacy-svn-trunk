@@ -45,6 +45,8 @@ public:
 	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
 	static Ogre::String getColouredName(client_t &c);
 
+	int getChatUserNames(std::vector<MyGUI::UString> &names);
+
 	static const Ogre::String commandColour, normalColour, whisperColour, scriptCommandColour;
 
 protected:

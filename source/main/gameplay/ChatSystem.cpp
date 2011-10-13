@@ -201,6 +201,18 @@ void ChatSystem::sendChat(Ogre::UTFString chatline)
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
 }
 
+int ChatSystem::getChatUserNames(std::vector<MyGUI::UString> &names)
+{
+	client_t c[MAX_PEERS];
+	if(net->getClientInfos(c)) return 0;
+
+	for(int i = 0; i < MAX_PEERS; i++)
+	{
+		names.push_back(c[i].user.username);
+	}
+	return names.size();
+}
+
 void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString chatline)
 {
 	char buffer[MAX_MESSAGE_LENGTH] = "";
@@ -210,7 +222,8 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 	const char *chat_msg = chatline.asUTF8_c_str();
 
 	client_t c[MAX_PEERS];
-	net->getClientInfos(c);
+	if(net->getClientInfos(c))
+		return;
 	int target_uid = -1, target_index = -1;
 	for(int i = 0; i < MAX_PEERS; i++)
 	{

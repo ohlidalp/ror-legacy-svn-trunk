@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // LINUX
 
 // class
-Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), linecount(10), scroll_size(5), angelscriptMode(false)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), autoCompleteIndex(-1), linecount(10), scroll_size(5), angelscriptMode(false)
 {
 	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Back", "Console");
 	mMainWidget->setCaption(_L("Console"));
@@ -65,11 +65,19 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	mCommandEdit->setProperty("MaxTextLength", "8192");
 	mCommandEdit->setWidgetStyle(MyGUI::WidgetStyle::Child);
 	mCommandEdit->setCaption("");
+	mCommandEdit->setTabPrinting(false);
 	mCommandEdit->setEnabled(false);
 	mCommandEdit->setVisible(false);
 
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
+
+	// auto complete list:
+	mAutoCompleteList = mMainWidget->createWidget<MyGUI::ListBox>("ListBox", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
+	//mAutoCompleteList->setProperty("WordWrap", "false");
+	mAutoCompleteList->setWidgetStyle(MyGUI::WidgetStyle::Child);
+	mAutoCompleteList->removeAllItems();
+	mAutoCompleteList->setVisible(false);
 
 	// scroll icons
 	scrollImgUp = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, 0, lineheight, lineheight * 2,  MyGUI::Align::Default, "ConsoleIconScrollUp");
@@ -153,7 +161,10 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 	{
 	case MyGUI::KeyCode::ArrowUp:
 		{
-			if(mHistoryPosition > 0)
+			if(autoCompleteIndex != -1)
+			{
+				walkAutoCompletion(false);
+			} else if(mHistoryPosition > 0)
 			{
 				if (mHistoryPosition == (int)mHistory.size() - 1)
 					mHistory[mHistoryPosition] = mCommandEdit->getCaption();
@@ -164,7 +175,10 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		break;
 	case MyGUI::KeyCode::ArrowDown:
 		{
-			if(mHistoryPosition < (int)mHistory.size() - 1)
+			if(autoCompleteIndex != -1)
+			{
+				walkAutoCompletion();
+			} if(mHistoryPosition < (int)mHistory.size() - 1)
 			{
 				mHistoryPosition++;
 				mCommandEdit->setCaption(mHistory[mHistoryPosition]);
@@ -189,16 +203,173 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 		break;
 	case MyGUI::KeyCode::Tab:
 		{
-			// TODO: auto-completion
-
+			initOrWalkAutoCompletion();
+		}
+		break;
+	case MyGUI::KeyCode::Space:
+		{
+			if(MyGUI::InputManager::getInstance().isControlPressed())
+				initOrWalkAutoCompletion();
+		}
+		break;
+	default:
+		{
+			// re-dice with possible new characters on the word?
+			abortAutoCompletion();
+			initOrWalkAutoCompletion();
 		}
 		break;
 	}
 }
 
+// init the auto-completion or walk it when it is already initialized
+void Console::initOrWalkAutoCompletion()
+{
+	if(autoCompleteIndex == -1)
+	{
+		// auto-complete just triggered, so get choices and show window
+		autoCompleteChoices.clear();
+		mAutoCompleteList->removeAllItems();
+
+		MyGUI::UString line = mCommandEdit->getCaption();
+		size_t cursor = mCommandEdit->getTextCursor();
+
+		// now search the current word we are working with
+		autoCompletionWordStart = cursor;
+		autoCompletionWordEnd   = cursor;
+
+		// the delimiters that decide where a word is finished
+		MyGUI::UString delimiters = " \\/\"\'|.,`!;<>~{}()+&%$@";
+
+		// walk the line and look for the word start and end or for the line start or end
+		for(; autoCompletionWordStart >= 0 && delimiters.find(line[autoCompletionWordStart]) == delimiters.npos; autoCompletionWordStart--)
+		{
+		}
+		for(; autoCompletionWordEnd < line.size() && delimiters.find(line[autoCompletionWordEnd]) == delimiters.npos; autoCompletionWordEnd++)
+		{
+		}
+
+		// extract the word
+		MyGUI::UString word = line.substr(autoCompletionWordStart, autoCompletionWordEnd - autoCompletionWordStart);
+
+		// word invalid? then abort auto-completion
+		if(word.empty()) return;
+
+		// add the incomplete version as first entry
+		autoCompleteChoices.push_back(word);
+		mAutoCompleteList->addItem(word);
+
+		// Auto-completion for the network usernames
+		if(net && netChat)
+		{
+			std::vector<MyGUI::UString> names;
+			int res = netChat->getChatUserNames(names);
+
+			for(int i = 0; i < names.size(); i++)
+			{
+				// TODO: case insensitive comparison between MyGUI::UString
+
+				MyGUI::UString a = names[i].substr(0, word.size());
+				//std::transform(a.begin(), a.end(), a.begin(), tolower);
+
+				MyGUI::UString b = word;
+				//std::transform(b.begin(), b.end(), b.begin(), tolower);
+
+				if(a == b)
+				{
+					autoCompleteChoices.push_back(names[i]);
+					mAutoCompleteList->addItem(names[i]);
+				}
+			}
+		}
+
+#ifdef USE_ANGELSCRIPT
+		// TODO: add auto-completion for AngelScript
+#endif // USE_ANGELSCRIPT
+
+		// no valid completions found, abort, we added the word to it as well ...
+		if(autoCompleteChoices.size() < 2) return;
+
+		// set completion to first guessed value, 0 = incomplete word
+		autoCompleteIndex = 1;
+		mAutoCompleteList->setIndexSelected(autoCompleteIndex);
+
+		// now try to position the auto-completion window in the best possible way
+		const int height = lineheight * autoCompleteChoices.size();
+		const int width  = 250; // TODO: use dynamic text width?
+
+		// TODO: the left position is not precise
+		mAutoCompleteList->setCoord(mCommandEdit->getLeft() + mCommandEdit->getTextSize().width,
+			width,
+			mCommandEdit->getTop() - height,
+			height
+			);
+		mAutoCompleteList->setVisible(true);
+
+	} else
+	{
+		walkAutoCompletion();
+	}
+}
+
+// walk the auto-completion
+void Console::walkAutoCompletion(bool direction)
+{
+	if(direction)
+	{
+		autoCompleteIndex++;
+		// + 1 due to first entry = incomplete word
+		if(autoCompleteIndex > autoCompleteChoices.size()) autoCompleteIndex = 0;
+	} else
+	{
+		autoCompleteIndex--;
+		// + 1 due to first entry = incomplete word
+		if(autoCompleteIndex < 0) autoCompleteIndex = autoCompleteChoices.size();
+	}
+
+	mAutoCompleteList->setIndexSelected(autoCompleteIndex);
+}
+
+// abort auto-completion
+void Console::abortAutoCompletion()
+{
+	// reset everything
+	autoCompleteIndex = -1;
+	autoCompleteChoices.clear();
+	mAutoCompleteList->removeAllItems();
+	mAutoCompleteList->setVisible(false);
+}
+
+void Console::finalizeAutoCompletion()
+{
+	// now add the word we chose
+	MyGUI::UString line = mCommandEdit->getCaption();
+
+	// construct final string
+	MyGUI::UString strA = line.substr(0, autoCompletionWordStart) + autoCompleteChoices[autoCompleteIndex];
+	MyGUI::UString strB = line.substr(autoCompletionWordEnd);
+	MyGUI::UString str  = strA + strB;
+
+	// and set the text
+	mCommandEdit->setCaption(str);
+
+	// and put the cursor to a useful position
+	mCommandEdit->setTextCursor(strA.size());
+}
+
 void Console::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	MyGUI::UString msg = _sender->getCaption();
+
+	// did we do auto completion?!
+	if(autoCompleteIndex != -1)
+	{
+		// yes, find out what the user selected
+		finalizeAutoCompletion();
+		return;
+	}
+
+
 	_sender->setCaption("");
 
 	// unfocus, so we return to the main game for the keyboard focus
