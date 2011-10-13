@@ -70,6 +70,8 @@ protected:
 	static const unsigned int lineheight   = 16;
 	static const unsigned int LINES_MAX    = 200;
 	static const unsigned int MESSAGES_MAX = 3000;
+	static const MyGUI::UString wordDelimiters;
+
 	unsigned int top_border, bottom_border;
 	unsigned int linecount, scroll_size;
 	int scrollOffset, autoCompleteIndex;
@@ -93,12 +95,14 @@ protected:
 
 	/// Auto-completion things start
 	std::vector<MyGUI::UString> autoCompleteChoices; // array containing the possible completions
-	size_t autoCompletionWordStart, autoCompletionWordEnd; // variables holding the current word start and end
+	int autoCompletionWordStart, autoCompletionWordEnd, autoCompletionCursor; // variables holding the current word start and end
+	MyGUI::UString autoCompletionWord;
 
 	void walkAutoCompletion(bool direction=true);
 	void initOrWalkAutoCompletion();
 	void finalizeAutoCompletion();
 	void abortAutoCompletion();
+	void findCurrentWord();
 	/// Auto-completion things end
 
 	Network *net;
