@@ -73,7 +73,7 @@ protected:
 	unsigned int top_border, bottom_border;
 	unsigned int linecount, scroll_size;
 	int scrollOffset;
-	bool inputMode, linesChanged;
+	bool inputMode, linesChanged, angelscriptMode;
 	MyGUI::ImageBox *scrollImgUp, *scrollImgDown;
 
 	int messageUpdate(float dt);

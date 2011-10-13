@@ -103,9 +103,12 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
-const Ogre::String ChatSystem::commandColour = "#941e8d";
-const Ogre::String ChatSystem::normalColour  = "#000000";
-const Ogre::String ChatSystem::whisperColour = "#967417";
+const Ogre::String ChatSystem::commandColour       = "#941e8d";
+const Ogre::String ChatSystem::normalColour        = "#000000";
+const Ogre::String ChatSystem::whisperColour       = "#967417";
+const Ogre::String ChatSystem::scriptCommandColour = "#32436f";
+
+
 
 
 ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colourNumber, bool remote) :

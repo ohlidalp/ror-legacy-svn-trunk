@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // LINUX
 
 // class
-Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), linecount(10), scroll_size(5)
+Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), linecount(10), scroll_size(5), angelscriptMode(false)
 {
 	mMainWidget = MyGUI::Gui::getInstance().createWidget<MyGUI::Window>("default", 0, 0, 400, 300,  MyGUI::Align::Center, "Back", "Console");
 	mMainWidget->setCaption(_L("Console"));
@@ -215,28 +215,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	mHistoryPosition = mHistory.size() - 1; // switch to the new line
 	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
 
-	// scripting?
-#ifdef USE_ANGELSCRIPT
-	if(msg[0] == '\\')
-	{
-		String command = msg.substr(1);
-
-		Ogre::StringUtil::trim(command);
-		if(command.empty()) return;
-
-		String nmsg = ">>> " + command;
-		putMessage(CONSOLE_MSGTYPE_SCRIPT, nmsg, "user_comment.png");
-		int res = ScriptEngine::getSingleton().executeString(command);
-		return;
-	}
-#endif //ANGELSCRIPT
-
 	// some specials
-	if(msg == "/pos")
-	{
-		outputCurrentPosition();
-		return;
-	} else if(msg == "/help")
+	if(msg == "/help")
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("possible commands:"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/help#000000 - this help information"), "help.png");
@@ -245,24 +225,38 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
+#ifdef USE_ANGELSCRIPT
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/as#000000 - toggle AngelScript Mode: no need to put the backslash before script commands"), "script_go.png");
+#endif // USE_ANGELSCRIPT
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/quit#000000 - exits"), "table_save.png");
+
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
+#ifdef USE_ANGELSCRIPT
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000\\game.log(\"hello world!\");#000000 - if first character of a line is as backslash, the line is interpreted as AngelScript code"), "information.png");
+#endif // USE_ANGELSCRIPT
+		return;
+	} else if(msg == "/pos")
+	{
+		outputCurrentPosition();
 		return;
 
 	} else if(msg == "/ver")
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + getVersionString(false), "information.png");
 		return;
+
 	} else if(msg == "/quit")
 	{
 		RoRFrameListener::eflsingleton->shutdown_final();
 		return;
+
 	} else if(msg == "/save")
 	{
 		saveChat(SSETTING("Log Path") + "chat-log.txt");
 		return;
+
 	} else if(msg.substr(0, 8) == "/whisper")
 	{
 		StringVector args = StringUtil::split(msg, " ");
@@ -274,6 +268,13 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		}
 		netChat->sendPrivateChat(args[1], args[2]);
 		return;
+
+	} else if(msg == "/as")
+	{
+		angelscriptMode = !angelscriptMode;
+		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + (_L("AngelScript Mode ") + angelscriptMode ? _L("enabled") : _L("disabled")), "information.png");
+		return;
+
 	} else if(msg == "/log")
 	{
 		// switch to console logging
@@ -295,11 +296,13 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		for(int i=0; i<600; i++)
 			putMessage(CONSOLE_MSGTYPE_INFO, "TEST " + TOSTRING(i), "cog.png");
 		return;
+
 	} else if(msg == "/test2")
 	{
 		for(int i=0; i<MESSAGES_MAX*3; i++)
 			putMessage(CONSOLE_MSGTYPE_INFO, "OVERFLOW_TEST " + TOSTRING(i) + " / size: " + TOSTRING(size()), "cog.png");
 		return;
+
 	} else if(msg == "/fadetest")
 	{
 		for(int i=0; i<10; i++)
@@ -307,11 +310,29 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		for(int i=0; i<10; i++)
 			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST: up " + TOSTRING(10-i), "cog.png", (10-i)*1000);
 		return;
+
 	}
 
-	// normal network chat
+	// scripting
+#ifdef USE_ANGELSCRIPT
+	if(msg[0] == '\\' || angelscriptMode)
+	{
+		String command = (angelscriptMode ? msg : msg.substr(1));
+
+		Ogre::StringUtil::trim(command);
+		if(command.empty()) return;
+
+		String nmsg = ChatSystem::scriptCommandColour + ">>> " + ChatSystem::normalColour + command;
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, nmsg, "script_go.png");
+		int res = ScriptEngine::getSingleton().executeString(command);
+		return;
+	}
+#endif //ANGELSCRIPT
+
+	// normal network chat as last chance to use this message
 	if(net && netChat)
 	{
+		// TODO: trim it before sending ...
 		netChat->sendChat(msg.c_str());
 		return;
 	}
