@@ -369,7 +369,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		return;
 	}
 
-
+	// we did not autoComplete, so try to handle the message
 	_sender->setCaption("");
 
 	// unfocus, so we return to the main game for the keyboard focus
