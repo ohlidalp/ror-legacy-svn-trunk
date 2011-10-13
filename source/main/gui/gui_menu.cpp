@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "BeamFactory.h"
 #include "Savegame.h"
+#include "network.h"
 
 #include "language.h"
 
@@ -160,16 +161,95 @@ void GUI_MainMenu::vehiclesListUpdate()
 {
 	vehiclesMenu->removeAllItems();
 	
+	bool netmode = (RoRFrameListener::eflsingleton->getNetwork() != 0);
+
 	int numTrucks = BeamFactory::getSingleton().getTruckCount();
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
-	for(int i = 0; i < numTrucks; i++)
-	{
-		if(!trucks[i]) continue;
-		
-		char tmp[255] = "";
-		sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
 
-		vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(i));
+	if(!netmode)
+	{
+		// simple iterate through :)
+		for(int i = 0; i < numTrucks; i++)
+		{
+			if(!trucks[i]) continue;
+
+			char tmp[255] = "";
+			sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
+
+			vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(i));
+		}
+	} else
+	{
+		// sort the list according to the network users
+		// get network clients
+		client_t c[MAX_PEERS];
+		RoRFrameListener::eflsingleton->getNetwork()->getClientInfos(c);
+		// iterate over them
+		for(int i = 0; i < MAX_PEERS; i++)
+		{
+			if(!c[i].used) continue;
+
+			// now search the vehicles of that user together
+			std::vector<int> matches;
+			for(int j = 0; j < numTrucks; j++)
+			{
+				if(!trucks[j]) continue;
+
+				if(trucks[j]->getSourceID() == c[i].user.uniqueid)
+				{
+					// match, found truck :)
+					matches.push_back(j);
+				}
+			}
+
+			// now add this user to the list
+			{
+				String username = ChatSystem::getColouredName(c[i]);
+				char tmp[512] = "";
+				strcpy(tmp, username.c_str());
+				strcat(tmp, " (");
+
+				// some more info
+				if(c[i].user.authstatus & AUTH_ADMIN)
+					strcat(tmp, "#c97100admin#000000, ");
+				if(c[i].user.authstatus & AUTH_RANKED)
+					strcat(tmp, "#00c900ranked#000000, ");
+				if(c[i].user.authstatus & AUTH_MOD)
+					strcat(tmp, "#c90000moderator#000000, ");
+				if(c[i].user.authstatus & AUTH_BANNED)
+					strcat(tmp, "banned, ");
+				if(c[i].user.authstatus & AUTH_BOT)
+					strcat(tmp, "#0000c9bot#000000, ");
+
+				strcat(tmp, "version:#0000dd");
+				strcpy(tmp, c[i].user.clientversion);
+				strcat(tmp, "#000000, ");
+
+				strcat(tmp, "language:#0000dd");
+				strcpy(tmp, c[i].user.language);
+				strcat(tmp, "#000000, ");
+
+				if(matches.empty())
+					strcat(tmp, _L("no vehicles"));
+				else
+					sprintf(tmp + strlen(tmp), _L("%lu vehicles"), matches.size());
+
+				strcat(tmp, " )");
+				// finally add the user line
+				vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(i));
+
+				// and add the vehicles below the user name
+				if(!matches.empty())
+				{
+					for(int j = 0; j < matches.size(); j++)
+					{
+						sprintf(tmp, "  %s", trucks[matches[j]]->realtruckname.c_str());
+						vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(i));
+					}
+				}
+			}
+
+		}
 	}
 }
 

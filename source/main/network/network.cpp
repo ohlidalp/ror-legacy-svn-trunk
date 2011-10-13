@@ -571,7 +571,7 @@ void Network::receivethreadstart()
 			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
 			LOG(" * received stream registration result: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid));
 		}
-		else if(header.command == MSG2_CHAT && header.source == -1)
+		else if(header.command == MSG2_CHAT || header.command == MSG2_PRIVCHAT && header.source == -1)
 		{
 			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
 			if(cs) cs->addReceivedPacket(header, buffer);
