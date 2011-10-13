@@ -244,6 +244,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/quit#000000 - exits"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
@@ -261,6 +262,17 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	} else if(msg == "/save")
 	{
 		saveChat(SSETTING("Log Path") + "chat-log.txt");
+		return;
+	} else if(msg.substr(0, 8) == "/whisper")
+	{
+		StringVector args = StringUtil::split(msg, " ");
+
+		if(args.size() != 3)
+		{
+			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("usage: /whisper username message"), "information.png");
+			return;
+		}
+		netChat->sendPrivateChat(args[1], args[2]);
 		return;
 	} else if(msg == "/log")
 	{
@@ -297,13 +309,10 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		return;
 	}
 
-	// network chat
+	// normal network chat
 	if(net && netChat)
 	{
 		netChat->sendChat(msg.c_str());
-
-		String nmsg = net->getNickname(true) + String("#000000: ") + msg;
-		putMessage(CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
 		return;
 	}
 }

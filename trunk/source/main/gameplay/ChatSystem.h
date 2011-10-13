@@ -40,10 +40,12 @@ public:
 	~ChatSystem();
 
 	void sendChat(Ogre::UTFString chatline);
+	void sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString chatline);
 
 	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
+	static Ogre::String getColouredName(client_t &c);
 
-	static const Ogre::String commandColour, normalColour;
+	static const Ogre::String commandColour, normalColour, whisperColour;
 
 protected:
 	Network *net;
