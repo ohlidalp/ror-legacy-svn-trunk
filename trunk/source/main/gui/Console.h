@@ -72,7 +72,7 @@ protected:
 	static const unsigned int MESSAGES_MAX = 3000;
 	unsigned int top_border, bottom_border;
 	unsigned int linecount, scroll_size;
-	int scrollOffset;
+	int scrollOffset, autoCompleteIndex;
 	bool inputMode, linesChanged, angelscriptMode;
 	MyGUI::ImageBox *scrollImgUp, *scrollImgDown;
 
@@ -89,6 +89,15 @@ protected:
 
 	MyGUI::Edit* mCommandEdit;
 	MyGUI::WindowPtr mMainWidget;
+	MyGUI::ListBox* mAutoCompleteList;
+
+	std::vector<MyGUI::UString> autoCompleteChoices;
+	size_t autoCompletionWordStart, autoCompletionWordEnd;
+
+	void walkAutoCompletion(bool direction=true);
+	void initOrWalkAutoCompletion();
+	void finalizeAutoCompletion();
+	void abortAutoCompletion();
 
 	Network *net;
 	ChatSystem *netChat;
