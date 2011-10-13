@@ -91,13 +91,15 @@ protected:
 	MyGUI::WindowPtr mMainWidget;
 	MyGUI::ListBox* mAutoCompleteList;
 
-	std::vector<MyGUI::UString> autoCompleteChoices;
-	size_t autoCompletionWordStart, autoCompletionWordEnd;
+	/// Auto-completion things start
+	std::vector<MyGUI::UString> autoCompleteChoices; // array containing the possible completions
+	size_t autoCompletionWordStart, autoCompletionWordEnd; // variables holding the current word start and end
 
 	void walkAutoCompletion(bool direction=true);
 	void initOrWalkAutoCompletion();
 	void finalizeAutoCompletion();
 	void abortAutoCompletion();
+	/// Auto-completion things end
 
 	Network *net;
 	ChatSystem *netChat;
