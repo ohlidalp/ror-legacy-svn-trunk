@@ -187,6 +187,12 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 			linesChanged = true;
 		}
 		break;
+	case MyGUI::KeyCode::Tab:
+		{
+			// TODO: auto-completion
+
+		}
+		break;
 	}
 }
 
@@ -315,7 +321,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 	// scripting
 #ifdef USE_ANGELSCRIPT
-	if(msg[0] == '\\' || angelscriptMode)
+	if(angelscriptMode || msg[0] == '\\')
 	{
 		String command = (angelscriptMode ? msg : msg.substr(1));
 
