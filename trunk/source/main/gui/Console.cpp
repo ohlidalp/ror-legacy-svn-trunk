@@ -500,7 +500,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
+		if(net)
+			putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
 #ifdef USE_ANGELSCRIPT
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/as#000000 - toggle AngelScript Mode: no need to put the backslash before script commands"), "script_go.png");
 #endif // USE_ANGELSCRIPT
@@ -509,6 +510,8 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
+		if(net)
+			putMessage(CONSOLE_MSGTYPE_INFO, _L("- click on a username in the vehicle menu to start a private chat"), "information.png");
 #ifdef USE_ANGELSCRIPT
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000\\game.log(\"hello world!\");#000000 - if first character of a line is as backslash, the line is interpreted as AngelScript code"), "information.png");
 #endif // USE_ANGELSCRIPT
