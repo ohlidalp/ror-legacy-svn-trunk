@@ -207,7 +207,7 @@ void GUI_MainMenu::vehiclesListUpdate()
 				String username = ChatSystem::getColouredName(c[i]);
 				char tmp[512] = "";
 				strcpy(tmp, username.c_str());
-				strcat(tmp, " (");
+				strcat(tmp, " #000000(");
 
 				// some more info
 				if(c[i].user.authstatus & AUTH_ADMIN)
@@ -222,11 +222,11 @@ void GUI_MainMenu::vehiclesListUpdate()
 					strcat(tmp, "#0000c9bot#000000, ");
 
 				strcat(tmp, "version:#0000dd");
-				strcpy(tmp, c[i].user.clientversion);
+				strcpy(tmp+strlen(tmp), c[i].user.clientversion);
 				strcat(tmp, "#000000, ");
 
 				strcat(tmp, "language:#0000dd");
-				strcpy(tmp, c[i].user.language);
+				strcpy(tmp+strlen(tmp), c[i].user.language);
 				strcat(tmp, "#000000, ");
 
 				if(matches.empty())
@@ -234,7 +234,7 @@ void GUI_MainMenu::vehiclesListUpdate()
 				else
 					sprintf(tmp + strlen(tmp), _L("%lu vehicles"), matches.size());
 
-				strcat(tmp, " )");
+				strcat(tmp, "#000000)");
 				// finally add the user line
 				vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(i));
 
