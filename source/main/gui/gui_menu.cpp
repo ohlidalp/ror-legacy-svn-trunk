@@ -292,6 +292,17 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		}
 	}
 
+	if(id.substr(0,6) == "USER_")
+	{
+		int user_uid = PARSEINT(id.substr(6));
+
+		// cannot whisper with self...
+		if(user_uid == RoRFrameListener::eflsingleton->getNetwork()->getUID()) return;
+
+		Console::getInstance().startPrivateChat(user_uid);
+	}
+
+
 	if(miname == _L("get new Vehicle") && mefl->person)
 	{
 		if(mefl->loading_state == NONE_LOADED)

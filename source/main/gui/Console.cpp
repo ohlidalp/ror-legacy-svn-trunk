@@ -134,15 +134,31 @@ bool Console::getVisible()
 }
 
 
-void Console::select()
+void Console::select(MyGUI::UString start)
 {
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 	mCommandEdit->setEnabled(true);
 	mCommandEdit->setVisible(true);
 	inputMode = true;
 	linesChanged = true;
+
+	if(!start.empty())
+	{
+		mCommandEdit->setCaption(start);
+		mCommandEdit->setTextCursor(start.size());
+	}
 }
 
+void Console::startPrivateChat(int target_uid)
+{
+	if(!net) return;
+
+	client_t *c = net->getClientInfo(target_uid);
+	if(!c) return;
+
+	Console::getInstance().setVisible(true);
+	Console::getInstance().select("/whisper " + MyGUI::UString(c->user.username) + " ");
+}
 
 void Console::unselect()
 {

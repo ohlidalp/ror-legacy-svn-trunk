@@ -54,10 +54,12 @@ public:
 	bool getVisible();
 
 	void unselect();
-	void select();
+	void select(MyGUI::UString start = "");
 
 	void setNetwork(Network *net);
 	void setNetChat(ChatSystem *net);
+
+	void startPrivateChat(int target_uid);
 
 	void frameEntered(float dt);
 
