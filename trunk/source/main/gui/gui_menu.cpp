@@ -214,7 +214,7 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 
 	// now add this user to the list
 	{
-		MyGUI::UString userStr = getUserString(user, matches.size());
+		MyGUI::UString userStr = "- " + getUserString(user, matches.size());
 		// finally add the user line
 		vehiclesMenu->addItem(userStr, MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(user.uniqueid));
 
@@ -224,7 +224,7 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 			for(int j = 0; j < matches.size(); j++)
 			{
 				char tmp[512] = "";
-				sprintf(tmp, "      %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
+				sprintf(tmp, "  + %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
 				MyGUI::UString vehName = MyGUI::UString(tmp);
 				vehiclesMenu->addItem(vehName, MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(matches[j]));
 			}
@@ -295,9 +295,9 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		}
 	}
 
-	if(id.substr(0,6) == "USER_")
+	if(id.substr(0,5) == "USER_")
 	{
-		int user_uid = PARSEINT(id.substr(6));
+		int user_uid = PARSEINT(id.substr(5));
 
 		// cannot whisper with self...
 		if(user_uid == RoRFrameListener::eflsingleton->getNetwork()->getUID()) return;
