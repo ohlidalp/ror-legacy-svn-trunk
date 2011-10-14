@@ -197,7 +197,7 @@ void ChatSystem::sendChat(Ogre::UTFString chatline)
 {
 	this->addPacket(MSG2_CHAT, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str()));
 
-	String nmsg = net->getNickname(true) + normalColour + chatline;
+	String nmsg = net->getNickname(true) + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
 }
 
@@ -252,7 +252,7 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 	this->addPacket(MSG2_PRIVCHAT, len, buffer);
 
 	// add local visual
-	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L("[whispered to ") + normalColour + getColouredName(c[target_index]) + "]" + normalColour + chatline;
+	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L("[whispered to ") + normalColour + getColouredName(c[target_index]) + "]" + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "script_key.png");
 }
 

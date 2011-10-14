@@ -60,7 +60,6 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 
 	// and the textbox inside
 	mCommandEdit = mMainWidget->createWidget<MyGUI::EditBox>("EditBoxChat", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
-	
 	mCommandEdit->setProperty("WordWrap", "false");
 	mCommandEdit->setProperty("TextAlign", "Left Bottom");
 	mCommandEdit->setProperty("ReadOnly", "false");
@@ -75,8 +74,8 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	mCommandEdit->eventKeyButtonPressed += MyGUI::newDelegate(this, &Console::eventButtonPressed);
 	mCommandEdit->eventEditSelectAccept += MyGUI::newDelegate(this, &Console::eventCommandAccept);
 
-	// auto complete list:
-	mAutoCompleteList = mMainWidget->createWidget<MyGUI::ListBox>("ListBox", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
+	// auto complete list, one layer higher so its visible above the chat
+	mAutoCompleteList = MyGUI::Gui::getInstance().createWidget<MyGUI::ListBox>("ListBox", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "Main", "ConsoleInput");
 	//mAutoCompleteList->setProperty("WordWrap", "false");
 	mAutoCompleteList->setWidgetStyle(MyGUI::WidgetStyle::Child);
 	mAutoCompleteList->removeAllItems();
@@ -376,7 +375,14 @@ void Console::initOrWalkAutoCompletion()
 
 	} else
 	{
-		walkAutoCompletion();
+		if(autoCompleteChoices.size() == 1)
+		{
+			// just one choice, just select that entry on 2nd tab press
+			finalizeAutoCompletion();
+		} else
+		{
+			walkAutoCompletion();
+		}
 	}
 }
 
