@@ -538,7 +538,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 	} else if(msg.substr(0, 8) == "/whisper")
 	{
-		StringVector args = StringUtil::split(msg, " ");
+		StringVector args = StringUtil::split(msg, " ", 2);
 
 		if(args.size() != 3)
 		{

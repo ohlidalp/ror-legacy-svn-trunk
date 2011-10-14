@@ -266,7 +266,7 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	}
 
 	// add local visual
-	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + "]" + normalColour + ": " + chatline;
+	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "script_key.png");
 }
 
