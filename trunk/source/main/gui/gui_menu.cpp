@@ -212,9 +212,12 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 
 	// now add this user to the list
 	{
+		printf(">>>>> 1\n");
 		MyGUI::UString userStr = getUserString(user, matches.size());
+		printf(">>>>> 2\n");
 		// finally add the user line
 		vehiclesMenu->addItem(userStr, MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(user.uniqueid));
+		printf(">>>>> 3\n");
 
 		// and add the vehicles below the user name
 		if(!matches.empty())
@@ -223,7 +226,8 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 			{
 				char tmp[512] = "";
 				sprintf(tmp, "  %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
-				vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(matches[j]));
+				MyGUI::UString vehName = MyGUI::UString(tmp);
+				vehiclesMenu->addItem(vehName, MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(matches[j]));
 			}
 		}
 	}

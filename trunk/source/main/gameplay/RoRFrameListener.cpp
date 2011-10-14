@@ -1957,28 +1957,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			c->select();
 		}
 	}
-#if 0
-	// TODO: FIX
-	if (NETCHAT->getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !chatting && !hidegui)
-	{
-		// enter chat mode
-		//INPUTENGINE.resetKeyLine();
-		//INPUTENGINE.setRecordInput(true);
-		//NETCHAT.setEnterText("", true, true);
-		chatting=true;
-	}
 
-	if (NETCHAT.getVisible() && INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SEND_CHAT, 0.5f) && chatting && !hidegui)
-	{
-		processConsoleInput();
-		//NETCHAT.setEnterText("", false);
-		chatting=false;
-		INPUTENGINE.setRecordInput(false);
-		INPUTENGINE.resetKeyLine();
-		mTimeUntilNextToggle = 0.5; // for enter/exit truck
-		return true;
-	}
-#endif //0
 	// update characters
 	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);

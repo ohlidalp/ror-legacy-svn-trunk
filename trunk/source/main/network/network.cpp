@@ -37,6 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRVersion.h"
 
 #include "gui_mp.h"
+#include "gui_menu.h"
 
 #ifdef USE_CRASHRPT
 # include "crashrpt.h"
@@ -601,6 +602,11 @@ void Network::receivethreadstart()
 
 			// now remove all possible streams
 			NetworkStreamManager::getSingleton().removeUser(header.source);
+
+#ifdef USE_MYGUI
+			// we can trigger this in the network thread as the function is thread safe.
+			GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif // USE_MYGUI
 			continue;
 		}
 		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
@@ -653,6 +659,11 @@ void Network::receivethreadstart()
 					MUTEX_UNLOCK(&clients_mutex);
 				}
 			}
+#ifdef USE_MYGUI
+			// we can trigger this in the network thread as the function is thread safe.
+			GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
+#endif // USE_MYGUI
+
 			continue;
 		}
 		else if(header.command == MSG2_GAME_CMD)
