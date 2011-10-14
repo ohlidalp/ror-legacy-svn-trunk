@@ -258,7 +258,12 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 
 String ChatSystem::getColouredName(client_t &c)
 {
-	return ChatSystem::getColouredName(tryConvertUTF(c.user.username), c.user.authstatus, c.user.colournum);
+	return getColouredName(c.user);
+}
+
+String ChatSystem::getColouredName(user_info_t &u)
+{
+	return ChatSystem::getColouredName(tryConvertUTF(u.username), u.authstatus, u.colournum);
 }
 
 String ChatSystem::getColouredName(String nick, int auth, int colourNumber)

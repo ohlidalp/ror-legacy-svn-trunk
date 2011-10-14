@@ -46,6 +46,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // the delimiters that decide where a word is finished
 const MyGUI::UString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
+const char *builtInCommands[] = {"/help", "/log", "/pos", "/ver", "/save", "/whisper", "/as", NULL};
 
 // class
 Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), autoCompleteIndex(-1), linecount(10), scroll_size(5), angelscriptMode(false)
@@ -165,6 +166,12 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 
 	switch(_key.toValue())
 	{
+	case MyGUI::KeyCode::Delete:
+		{
+			if(autoCompleteIndex != -1)
+				abortAutoCompletion();
+		}
+		break;
 	case MyGUI::KeyCode::ArrowUp:
 		{
 			if(autoCompleteIndex != -1)
@@ -335,8 +342,6 @@ void Console::initOrWalkAutoCompletion()
 		// auto-completion phrases for the built-in commands, ONLY at the line start
 		if(autoCompletionWordStart == 0)
 		{
-			char *builtInCommands[] = {"/help", "/log", "/pos", "/ver", "/save", "/whisper", "/as", NULL};
-
 			for(int i = 0; builtInCommands[i]; i++)
 			{
 				MyGUI::UString us = MyGUI::UString(builtInCommands[i]);
