@@ -44,6 +44,7 @@ public:
 
 	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
 	static Ogre::String getColouredName(client_t &c);
+	static Ogre::String getColouredName(user_info_t &u);
 
 	int getChatUserNames(std::vector<MyGUI::UString> &names);
 

@@ -29,6 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreSingleton.h"
 #include "OgrePrerequisites.h"
 
+#include "BeamData.h"
+
 #include <pthread.h>
 
 class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
@@ -45,6 +47,8 @@ public:
 	int getMenuHeight() { return menuHeight; };
 
 	void updatePositionUponMousePosition(int x, int y);
+	MyGUI::UString getUserString(user_info_t &user, int num_vehicles);
+	void addUserToMenu(user_info_t &user);
 
 	void triggerUpdateVehicleList();
 
