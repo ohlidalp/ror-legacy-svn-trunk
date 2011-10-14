@@ -215,8 +215,6 @@ int ChatSystem::getChatUserNames(std::vector<MyGUI::UString> &names)
 
 void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString chatline)
 {
-	char buffer[MAX_MESSAGE_LENGTH] = "";
-
 	// first: find id to username:
 	const char *target_username = targetUsername.c_str();
 	const char *chat_msg = chatline.asUTF8_c_str();
@@ -242,6 +240,16 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 		return;
 	}
 
+	sendPrivateChat(target_uid, chatline, getColouredName(c[target_index]));
+}
+
+
+
+void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre::UTFString username)
+{
+	char buffer[MAX_MESSAGE_LENGTH] = "";
+	const char *chat_msg = chatline.asUTF8_c_str();
+
 	// format: int of UID, then chat message
 	memcpy(buffer, &target_uid, sizeof(int));
 	strncpy(buffer + sizeof(int), chat_msg, MAX_MESSAGE_LENGTH - sizeof(int));
@@ -251,8 +259,14 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 
 	this->addPacket(MSG2_PRIVCHAT, len, buffer);
 
+	if(username.empty())
+	{
+		client_t *c = net->getClientInfo(target_uid);
+		if(c) username = getColouredName(*c);
+	}
+
 	// add local visual
-	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L("[whispered to ") + normalColour + getColouredName(c[target_index]) + "]" + normalColour + ": " + chatline;
+	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L("[whispered to ") + normalColour + username + "]" + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "script_key.png");
 }
 
