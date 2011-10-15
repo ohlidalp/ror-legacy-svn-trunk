@@ -46,7 +46,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // the delimiters that decide where a word is finished
 const MyGUI::UString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
-const char *builtInCommands[] = {"/help", "/log", "/pos", "/ver", "/save", "/whisper", "/as", NULL};
+const char *builtInCommands[] = {"/help", "/log", "/pos", "/goto", "/terrainheight", "/ver", "/save", "/whisper", "/as", NULL};
 
 // class
 Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), message_counter(0), mHistory(), mHistoryPosition(0), inputMode(false), linesChanged(false), scrollOffset(0), autoCompleteIndex(-1), linecount(10), scroll_size(5), angelscriptMode(false)
@@ -498,6 +498,9 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/help#000000 - this help information"), "help.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/goto <x> <y> <z>#000000  - jumps to the mentioned position"), "world.png");
+		if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->hfinder)
+			putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/terrainheight#000000  - get height of terrain at current position"), "world.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
 		if(net)
@@ -519,6 +522,26 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	} else if(msg == "/pos")
 	{
 		outputCurrentPosition();
+		return;
+
+	} else if(msg.substr(0, 5) == "/goto")
+	{
+		StringVector args = StringUtil::split(msg, " ");
+
+		if(args.size() != 4)
+		{
+			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("usage: /goto x y z"), "information.png");
+			return;
+		}
+
+		Vector3 pos = Vector3(PARSEREAL(args[1]), PARSEREAL(args[2]), PARSEREAL(args[3]));
+
+		jumpToPosition(pos);
+		return;
+
+	} else if(msg == "/terrainheight")
+	{
+		outputCurrentTerrainHeight();
 		return;
 
 	} else if(msg == "/ver")
@@ -941,6 +964,40 @@ void Console::outputCurrentPosition()
 	{
 		Vector3 pos = b->getPosition();
 		putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+	}
+}
+
+void Console::outputCurrentTerrainHeight()
+{
+	if(!RoRFrameListener::eflsingleton->hfinder) return;
+	Vector3 pos  = Vector3::ZERO;
+
+	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+	if(!b && RoRFrameListener::eflsingleton->person)
+	{
+		pos = RoRFrameListener::eflsingleton->person->getPosition();
+	}
+	else
+	{
+		pos = b->getPosition();
+	}
+
+	Real h = RoRFrameListener::eflsingleton->hfinder->getHeightAt(pos.x, pos.z);
+	putMessage(CONSOLE_MSGTYPE_INFO, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
+}
+
+void Console::jumpToPosition( Ogre::Vector3 pos )
+{
+	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
+	if(!b && RoRFrameListener::eflsingleton->person)
+	{
+		RoRFrameListener::eflsingleton->person->setPosition(pos);
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+	}
+	else
+	{
+		b->resetPosition(pos, false);
+		putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 }
 
