@@ -88,7 +88,10 @@ protected:
 	void eventCommandAccept(MyGUI::Edit* _sender);
 
 	void saveChat(Ogre::String filename);
+
 	void outputCurrentPosition();
+	void outputCurrentTerrainHeight();
+	void jumpToPosition(Ogre::Vector3 pos);
 
 
 	MyGUI::Edit* mCommandEdit;
