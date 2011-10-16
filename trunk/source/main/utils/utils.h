@@ -27,11 +27,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePrerequisites.h>
 #include <OgreUTFString.h>
 
+#ifdef USE_MYGUI
+#include <MyGUI.h>
+#endif //USE_MYGUI
 
 // from http://stahlforce.com/dev/index.php?tool=csc01
 Ogre::String hexdump(void *pAddressIn, long  lSize);
 
-Ogre::UTFString tryConvertUTF(char *buffer);
+Ogre::UTFString tryConvertUTF(const char *buffer);
 
 Ogre::String formatBytes(double bytes);
 
@@ -54,4 +57,9 @@ bool compareCaseInsensitive(std::string strFirst, std::string strSecond);
 Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node);
 
 void fixRenderWindowIcon (Ogre::RenderWindow *rw);
+
+#ifdef USE_MYGUI
+MyGUI::UString convertToMyGUIString(Ogre::UTFString str);
+Ogre::UTFString convertFromMyGUIString(MyGUI::UString str);
+#endif // USE_MYGUI
 #endif //UTILS_H_

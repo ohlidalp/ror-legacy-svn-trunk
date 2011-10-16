@@ -110,7 +110,7 @@ void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageL
 #endif // OGRE_VERSION
 {
 	Console *c = Console::getInstancePtrNoCreation();
-	if(c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, message, "page_white_code.png");
+	if(c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_LOGMESSAGE_SCRIPT, message, "page_white_code.png");
 }
 
 void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param)

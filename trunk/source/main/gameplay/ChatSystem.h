@@ -40,16 +40,16 @@ public:
 	~ChatSystem();
 
 	void sendChat(Ogre::UTFString chatline);
-	void sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString chatline);
+	void sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString chatline);
 	void sendPrivateChat(int targetUID, Ogre::UTFString chatline, Ogre::UTFString username = "");
 
-	static Ogre::String getColouredName(Ogre::String nick, int auth, int colourNumber);
-	static Ogre::String getColouredName(client_t &c);
-	static Ogre::String getColouredName(user_info_t &u);
+	static Ogre::UTFString getColouredName(Ogre::UTFString nick, int auth, int colourNumber);
+	static Ogre::UTFString getColouredName(client_t &c);
+	static Ogre::UTFString getColouredName(user_info_t &u);
 
-	int getChatUserNames(std::vector<MyGUI::UString> &names);
+	int getChatUserNames(std::vector<Ogre::UTFString> &names);
 
-	static const Ogre::String commandColour, normalColour, whisperColour, scriptCommandColour;
+	static const Ogre::UTFString commandColour, normalColour, whisperColour, scriptCommandColour;
 
 protected:
 	Network *net;

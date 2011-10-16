@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // LINUX
 
 // the delimiters that decide where a word is finished
-const MyGUI::UString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
+const Ogre::UTFString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
 const char *builtInCommands[] = {"/help", "/log", "/pos", "/goto", "/terrainheight", "/ver", "/save", "/whisper", "/as", NULL};
 
 // class
@@ -57,7 +57,7 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 
 	memset(&lines, 0, sizeof(lines));
 
-	mHistory.push_back(MyGUI::UString());
+	mHistory.push_back(Ogre::UTFString());
 
 	// and the textbox inside
 	mCommandEdit = mMainWidget->createWidget<MyGUI::EditBox>("EditBoxChat", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
@@ -81,6 +81,13 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	mAutoCompleteList->setWidgetStyle(MyGUI::WidgetStyle::Child);
 	mAutoCompleteList->removeAllItems();
 	mAutoCompleteList->setVisible(false);
+
+
+	popMenu = MyGUI::Gui::getInstance().createWidget<MyGUI::PopupMenu>("PopupMenu", 0, 0, 300, 143, MyGUI::Align::Default, "Main", "PopupMenu");
+	popMenu->removeAllItems();
+	//w->addItem("#ffffffExpandable Item  >", MyGUI::MenuItemType::Popup);
+	popMenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &Console::onPopUpBtn);
+	popMenu->setVisible(false);
 
 	// scroll icons
 	scrollImgUp = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, 0, lineheight, lineheight * 2,  MyGUI::Align::Default, "ConsoleIconScrollUp");
@@ -134,7 +141,7 @@ bool Console::getVisible()
 }
 
 
-void Console::select(MyGUI::UString start)
+void Console::select(Ogre::UTFString start)
 {
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 	mCommandEdit->setEnabled(true);
@@ -144,8 +151,9 @@ void Console::select(MyGUI::UString start)
 
 	if(!start.empty())
 	{
-		mCommandEdit->setCaption(start);
-		mCommandEdit->setTextCursor(start.size());
+		MyGUI::UString s = convertToMyGUIString(start);
+		mCommandEdit->setCaption(s);
+		mCommandEdit->setTextCursor(s.size());
 	}
 }
 
@@ -157,7 +165,7 @@ void Console::startPrivateChat(int target_uid)
 	if(!c) return;
 
 	Console::getInstance().setVisible(true);
-	Console::getInstance().select("/whisper " + MyGUI::UString(c->user.username) + " ");
+	Console::getInstance().select("/whisper " + UTFString(c->user.username) + " ");
 }
 
 void Console::unselect()
@@ -198,9 +206,9 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 			} else if(mHistoryPosition > 0)
 			{
 				if (mHistoryPosition == (int)mHistory.size() - 1)
-					mHistory[mHistoryPosition] = mCommandEdit->getCaption();
+					mHistory[mHistoryPosition] = convertFromMyGUIString(mCommandEdit->getCaption());
 				mHistoryPosition--;
-				mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+				mCommandEdit->setCaption(convertToMyGUIString(mHistory[mHistoryPosition]));
 			}
 		}
 		break;
@@ -214,7 +222,7 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 			} if(mHistoryPosition < (int)mHistory.size() - 1)
 			{
 				mHistoryPosition++;
-				mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+				mCommandEdit->setCaption(convertToMyGUIString(mHistory[mHistoryPosition]));
 			}
 		}
 		break;
@@ -266,7 +274,7 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 
 void Console::findCurrentWord()
 {
-	MyGUI::UString line = mCommandEdit->getCaption();
+	Ogre::UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
 	autoCompletionCursor = mCommandEdit->getTextCursor();
 
 	// look for word start
@@ -294,7 +302,7 @@ void Console::findCurrentWord()
 	autoCompletionWordEnd   = autoCompletionWordStart;
 	autoCompletionWordEnd   = std::min<int>(autoCompletionWordEnd, line.size() - 1);
 	autoCompletionWordEnd   = std::max<int>(autoCompletionWordEnd, 0);
-	for(int counter = 0; autoCompletionWordEnd < line.size(); autoCompletionWordEnd++)
+	for(int counter = 0; autoCompletionWordEnd < (int)line.size(); autoCompletionWordEnd++)
 	{
 		if(wordDelimiters.find(line[autoCompletionWordEnd]) != wordDelimiters.npos)
 		{
@@ -334,23 +342,23 @@ void Console::initOrWalkAutoCompletion()
 		// Auto-completion for the network usernames
 		if(net && netChat)
 		{
-			std::vector<MyGUI::UString> names;
+			std::vector<Ogre::UTFString> names;
 			int res = netChat->getChatUserNames(names);
 
-			for(int i = 0; i < names.size(); i++)
+			for(unsigned int i = 0; i < names.size(); i++)
 			{
-				// TODO: case insensitive comparison between MyGUI::UString
+				// TODO: case insensitive comparison between Ogre::UTFString
 
-				MyGUI::UString a = names[i].substr(0, autoCompletionWord.size());
+				Ogre::UTFString a = names[i].substr(0, autoCompletionWord.size());
 				//std::transform(a.begin(), a.end(), a.begin(), tolower);
 
-				MyGUI::UString b = autoCompletionWord;
+				Ogre::UTFString b = autoCompletionWord;
 				//std::transform(b.begin(), b.end(), b.begin(), tolower);
 
 				if(a == b)
 				{
 					autoCompleteChoices.push_back(names[i]);
-					mAutoCompleteList->addItem(names[i]);
+					mAutoCompleteList->addItem(convertToMyGUIString(names[i]));
 				}
 			}
 		}
@@ -360,11 +368,11 @@ void Console::initOrWalkAutoCompletion()
 		{
 			for(int i = 0; builtInCommands[i]; i++)
 			{
-				MyGUI::UString us = MyGUI::UString(builtInCommands[i]);
+				Ogre::UTFString us = Ogre::UTFString(builtInCommands[i]);
 				if(us.substr(0, autoCompletionWord.size()) == autoCompletionWord)
 				{
 					autoCompleteChoices.push_back(us);
-					mAutoCompleteList->addItem(us);
+					mAutoCompleteList->addItem(convertToMyGUIString(us));
 				}
 			}
 		}
@@ -414,7 +422,7 @@ void Console::walkAutoCompletion(bool direction)
 	{
 		autoCompleteIndex++;
 		// + 1 due to first entry = incomplete word
-		if(autoCompleteIndex >= autoCompleteChoices.size()) autoCompleteIndex = 0;
+		if(autoCompleteIndex >= (int)autoCompleteChoices.size()) autoCompleteIndex = 0;
 	} else
 	{
 		autoCompleteIndex--;
@@ -433,20 +441,20 @@ void Console::abortAutoCompletion()
 	autoCompleteChoices.clear();
 	mAutoCompleteList->removeAllItems();
 	mAutoCompleteList->setVisible(false);
-	autoCompletionWord = MyGUI::UString();
+	autoCompletionWord = Ogre::UTFString();
 }
 
 void Console::finalizeAutoCompletion()
 {
 	// now add the word we chose
-	MyGUI::UString line = mCommandEdit->getCaption();
+	Ogre::UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
 
 	// construct final string
-	MyGUI::UString strA = line.substr(0, autoCompletionWordStart) + autoCompleteChoices[autoCompleteIndex];
-	MyGUI::UString strB = line.substr(autoCompletionWordEnd + 1);
-	MyGUI::UString str  = strA + strB;
+	Ogre::UTFString strA = line.substr(0, autoCompletionWordStart) + autoCompleteChoices[autoCompleteIndex];
+	Ogre::UTFString strB = line.substr(autoCompletionWordEnd + 1);
+	Ogre::UTFString str  = strA + strB;
 	// and set the text
-	mCommandEdit->setCaption(str);
+	mCommandEdit->setCaption(convertToMyGUIString(str));
 
 	// and put the cursor to a useful position
 	mCommandEdit->setTextCursor(strA.size());	
@@ -458,7 +466,7 @@ void Console::finalizeAutoCompletion()
 
 void Console::eventCommandAccept(MyGUI::Edit* _sender)
 {
-	MyGUI::UString msg = _sender->getCaption();
+	Ogre::UTFString msg = convertFromMyGUIString(_sender->getCaption());
 
 	// did we do auto completion?!
 	if(autoCompleteIndex != -1)
@@ -489,130 +497,136 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	*mHistory.rbegin() = msg;
 	mHistory.push_back(""); // new, empty last entry
 	mHistoryPosition = mHistory.size() - 1; // switch to the new line
-	mCommandEdit->setCaption(mHistory[mHistoryPosition]);
+	mCommandEdit->setCaption(convertToMyGUIString(mHistory[mHistoryPosition]));
 
 	// some specials
-	if(msg == "/help")
+	if(msg[0] == '/')
 	{
-		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("possible commands:"), "help.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/help#000000 - this help information"), "help.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/goto <x> <y> <z>#000000  - jumps to the mentioned position"), "world.png");
-		if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->hfinder)
-			putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/terrainheight#000000  - get height of terrain at current position"), "world.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
-		if(net)
-			putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
-#ifdef USE_ANGELSCRIPT
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/as#000000 - toggle AngelScript Mode: no need to put the backslash before script commands"), "script_go.png");
-#endif // USE_ANGELSCRIPT
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("#dd0000/quit#000000 - exits"), "table_save.png");
-
-		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("tips:"), "help.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
-		if(net)
-			putMessage(CONSOLE_MSGTYPE_INFO, _L("- click on a username in the vehicle menu to start a private chat"), "information.png");
-#ifdef USE_ANGELSCRIPT
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("- use #dd0000\\game.log(\"hello world!\");#000000 - if first character of a line is as backslash, the line is interpreted as AngelScript code"), "information.png");
-#endif // USE_ANGELSCRIPT
-		return;
-	} else if(msg == "/pos")
-	{
-		outputCurrentPosition();
-		return;
-
-	} else if(msg.substr(0, 5) == "/goto")
-	{
-		StringVector args = StringUtil::split(msg, " ");
-
-		if(args.size() != 4)
+		if(msg == "/help")
 		{
-			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("usage: /goto x y z"), "information.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, ChatSystem::commandColour + _L("possible commands:"), "help.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/help#000000 - this help information"), "help.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/goto <x> <y> <z>#000000  - jumps to the mentioned position"), "world.png");
+			if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->hfinder)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/terrainheight#000000  - get height of terrain at current position"), "world.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
+			if(net)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/whisper <username> <message>#000000 - send someone a private message"), "script_key.png");
+	#ifdef USE_ANGELSCRIPT
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/as#000000 - toggle AngelScript Mode: no need to put the backslash before script commands"), "script_go.png");
+	#endif // USE_ANGELSCRIPT
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/quit#000000 - exits"), "table_save.png");
+
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, ChatSystem::commandColour + _L("tips:"), "help.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("- use #dd0000Arrow Up/Down Keys#000000 in the InputBox to reuse old messages"), "information.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("- use #dd0000Page Up/Down Keys#000000 in the InputBox to scroll through the history"), "information.png");
+			if(net)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("- click on a username in the vehicle menu to start a private chat"), "information.png");
+	#ifdef USE_ANGELSCRIPT
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("- use #dd0000\\game.log(\"hello world!\");#000000 - if first character of a line is as backslash, the line is interpreted as AngelScript code"), "information.png");
+	#endif // USE_ANGELSCRIPT
 			return;
-		}
-
-		Vector3 pos = Vector3(PARSEREAL(args[1]), PARSEREAL(args[2]), PARSEREAL(args[3]));
-
-		jumpToPosition(pos);
-		return;
-
-	} else if(msg == "/terrainheight")
-	{
-		outputCurrentTerrainHeight();
-		return;
-
-	} else if(msg == "/ver")
-	{
-		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + getVersionString(false), "information.png");
-		return;
-
-	} else if(msg == "/quit")
-	{
-		RoRFrameListener::eflsingleton->shutdown_final();
-		return;
-
-	} else if(msg == "/save")
-	{
-		saveChat(SSETTING("Log Path") + "chat-log.txt");
-		return;
-
-	} else if(msg.substr(0, 8) == "/whisper")
-	{
-		StringVector args = StringUtil::split(msg, " ", 2);
-
-		if(args.size() != 3)
+		} else if(msg == "/pos")
 		{
-			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("usage: /whisper username message"), "information.png");
+			outputCurrentPosition();
 			return;
-		}
-		netChat->sendPrivateChat(args[1], args[2]);
-		return;
 
-	} else if(msg == "/as")
-	{
-		angelscriptMode = !angelscriptMode;
-		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + (_L("AngelScript Mode ") + angelscriptMode ? _L("enabled") : _L("disabled")), "information.png");
-		return;
-
-	} else if(msg == "/log")
-	{
-		// switch to console logging
-		bool logging = BSETTING("Enable Ingame Console");
-		if(!logging)
+		} else if(msg.substr(0, 5) == "/goto")
 		{
-			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L(" logging to console enabled"), "information.png");
-			SETTINGS.setSetting("Enable Ingame Console", "Yes");
+			StringVector args = StringUtil::split(msg, " ");
+
+			if(args.size() != 4)
+			{
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, ChatSystem::commandColour + _L("usage: /goto x y z"), "information.png");
+				return;
+			}
+
+			Vector3 pos = Vector3(PARSEREAL(args[1]), PARSEREAL(args[2]), PARSEREAL(args[3]));
+
+			jumpToPosition(pos);
+			return;
+
+		} else if(msg == "/terrainheight")
+		{
+			outputCurrentTerrainHeight();
+			return;
+
+		} else if(msg == "/ver")
+		{
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, ChatSystem::commandColour + getVersionString(false), "information.png");
+			return;
+
+		} else if(msg == "/quit")
+		{
+			RoRFrameListener::eflsingleton->shutdown_final();
+			return;
+
+		} else if(msg == "/save")
+		{
+			saveChat(SSETTING("Log Path") + "chat-log.txt");
+			return;
+
+		} else if(msg.substr(0, 8) == "/whisper")
+		{
+			StringVector args = StringUtil::split(msg, " ", 2);
+
+			if(args.size() != 3)
+			{
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("usage: /whisper username message"), "information.png");
+				return;
+			}
+			netChat->sendPrivateChat(args[1], args[2]);
+			return;
+
+		} else if(msg == "/as")
+		{
+			angelscriptMode = !angelscriptMode;
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + (_L("AngelScript Mode ") + angelscriptMode ? _L("enabled") : _L("disabled")), "information.png");
+			return;
+
+		} else if(msg == "/log")
+		{
+			// switch to console logging
+			bool logging = BSETTING("Enable Ingame Console");
+			if(!logging)
+			{
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L(" logging to console enabled"), "information.png");
+				SETTINGS.setSetting("Enable Ingame Console", "Yes");
+			} else
+			{
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L(" logging to console disabled"), "information.png");
+				SETTINGS.setSetting("Enable Ingame Console", "No");
+			}
+			return;
+		
+		// some debugging things below ;)
+		} else if(msg == "/test1")
+		{
+			for(int i=0; i<600; i++)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_DEBUG, "TEST " + TOSTRING(i), "cog.png");
+			return;
+
+		} else if(msg == "/test2")
+		{
+			for(int i=0; i<MESSAGES_MAX*3; i++)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_DEBUG, "OVERFLOW_TEST " + TOSTRING(i) + " / size: " + TOSTRING(size()), "cog.png");
+			return;
+
+		} else if(msg == "/fadetest")
+		{
+			for(int i=0; i<10; i++)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_DEBUG, "FADE-TEST: down " + TOSTRING(i), "cog.png", i*1000);
+			for(int i=0; i<10; i++)
+				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_DEBUG, "FADE-TEST: up " + TOSTRING(10-i), "cog.png", (10-i)*1000);
+			return;
+
 		} else
 		{
-			putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L(" logging to console disabled"), "information.png");
-			SETTINGS.setSetting("Enable Ingame Console", "No");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L(" unknown command: ") + msg, "error.png");
 		}
-		return;
-		
-	// some debugging things below ;)
-	} else if(msg == "/test1")
-	{
-		for(int i=0; i<600; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "TEST " + TOSTRING(i), "cog.png");
-		return;
-
-	} else if(msg == "/test2")
-	{
-		for(int i=0; i<MESSAGES_MAX*3; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "OVERFLOW_TEST " + TOSTRING(i) + " / size: " + TOSTRING(size()), "cog.png");
-		return;
-
-	} else if(msg == "/fadetest")
-	{
-		for(int i=0; i<10; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST: down " + TOSTRING(i), "cog.png", i*1000);
-		for(int i=0; i<10; i++)
-			putMessage(CONSOLE_MSGTYPE_INFO, "FADE-TEST: up " + TOSTRING(10-i), "cog.png", (10-i)*1000);
-		return;
-
 	}
 
 	// scripting
@@ -625,7 +639,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		if(command.empty()) return;
 
 		String nmsg = ChatSystem::scriptCommandColour + ">>> " + ChatSystem::normalColour + command;
-		putMessage(CONSOLE_MSGTYPE_SCRIPT, nmsg, "script_go.png");
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, CONSOLE_LOCAL_SCRIPT, nmsg, "script_go.png");
 		int res = ScriptEngine::getSingleton().executeString(command);
 		return;
 	}
@@ -650,31 +664,6 @@ void Console::setNetChat(ChatSystem *c)
 	netChat = c;
 }
 
-std::string ansi_to_utf16(const char* srcPtr)
-{
-	// TODO: fix UTF8 handling
-	return std::string(srcPtr);
-#if 0
-#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
-	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
-	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
-	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
-	std::wstring ret = tmpBuff;
-	delete[] tmpBuff;
-	return ret;
-#else
-	// http://www.lemoda.net/c/iconv-example/iconv-example.html
-	
-	//iconv_t conv_desc iconv_open ("ANSI", "UTF16");
-	//if ((int) conv_desc == -1) return std::wstring();
-
-	// TODO: fix: use iconv to convert the string similar to the windows implementation above
-
-	return std::string(srcPtr);
-#endif
-#endif //0
-}
-
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
 void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
 #else
@@ -687,19 +676,17 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 	if(message.substr(0,4) == "SE| ")
 	{
 		msg = message.substr(4);
-		//putMessage(CONSOLE_MSGTYPE_SCRIPT, MyGUI::UString("#988310") + ansi_to_utf16(msg), "bricks.png");
-		putMessage(CONSOLE_MSGTYPE_SCRIPT, String("#988310") + ansi_to_utf16(msg.c_str()), "page_white_code.png");
+		putMessage(CONSOLE_MSGTYPE_SCRIPT, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "page_white_code.png");
 	} else
 	{
 		if(BSETTING("Enable Ingame Console"))
 		{
-			//putMessage(CONSOLE_MSGTYPE_LOG, MyGUI::UString("#988310") + ansi_to_utf16(msg), "book_open.png");
 			if(lml == LML_NORMAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script_error.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "script_error.png");
 			else if(lml == LML_TRIVIAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "script.png");
 			else if(lml == LML_CRITICAL)
-				putMessage(CONSOLE_MSGTYPE_LOG, String("#988310") + ansi_to_utf16(msg.c_str()), "script_lightning.png");
+				putMessage(CONSOLE_MSGTYPE_LOG, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "script_lightning.png");
 		}
 	}
 }
@@ -742,11 +729,14 @@ void Console::resized()
 		line.txtctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
 		line.txtctrl->setCaption("> LINE " + TOSTRING(i) + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		line.txtctrl->setVisible(false);
+		//line.txtctrl->eventMouseButtonClick += MyGUI::newDelegate(this, &Console::onLineClicked);
 
 		line.iconctrl = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, i*lineheight, lineheight, lineheight,  MyGUI::Align::Default, "ConsoleIcon"+TOSTRING(i));
 		line.iconctrl->setProperty("ImageTexture", "arrow_left.png");
 		line.iconctrl->setWidgetStyle(MyGUI::WidgetStyle::Child);
 		line.iconctrl->setVisible(false);
+		line.iconctrl->eventMouseButtonClick += MyGUI::newDelegate(this, &Console::onLineClicked);
+		line.iconctrl->eventMouseButtonDoubleClick += MyGUI::newDelegate(this, &Console::onLineClicked);
 		MyGUI::ISubWidget* waitDisplaySub = line.iconctrl->getSubWidgetMain();
 		MyGUI::RotatingSkin *rotatingIcon = waitDisplaySub->castType<MyGUI::RotatingSkin>();
 		rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
@@ -815,10 +805,11 @@ void Console::updateGUILines( float dt )
 		lines[ctrli].txtctrl->setVisible(true);
 		lines[ctrli].iconctrl->setVisible(true);
 
+		// set the controls data
+		lines[ctrli].txtctrl->setUserData(msgid);
+		lines[ctrli].iconctrl->setUserData(msgid);
 
-		MyGUI::UString txt = ansi_to_utf16(m.txt);
-
-		lines[ctrli].txtctrl->setCaption(txt);
+		lines[ctrli].txtctrl->setCaption(convertToMyGUIString(m.txt));
 		lines[ctrli].iconctrl->setProperty("ImageTexture", std::string(m.icon));
 		lines[ctrli].expired = false;
 
@@ -885,7 +876,7 @@ void Console::updateGUIVisual( float dt )
 
 	// show/hide the scroll icons
 	scrollImgDown->setVisible(scrollOffset > 0 && inputMode);
-	scrollImgUp->setVisible(scrollOffset < (message_counter - linecount) && (message_counter - linecount) > 0  && inputMode);
+	scrollImgUp->setVisible(scrollOffset < (int)(message_counter - linecount) && (message_counter - linecount) > 0  && inputMode);
 }
 
 
@@ -921,14 +912,16 @@ int Console::messageUpdate( float dt )
 	return r;
 }
 
-void Console::putMessage( int type, Ogre::String txt, Ogre::String icon, unsigned long ttl )
+void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::String icon, unsigned long ttl )
 {
 	msg_t t;
 
-	t.type    = type;
-	t.time    = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
-	t.ttl     = ttl;
-	strncpy(t.txt,  txt.c_str(), 2048);
+	t.type       = type;
+	t.sender_uid = sender_uid;
+	t.time       = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+	t.ttl        = ttl;
+	//strncpy(t.txt,  txt.c_str(), 2048);
+	t.txt        = txt;
 	strncpy(t.icon, icon.c_str(), 50);
 	//t.channel = "default";
 
@@ -940,7 +933,7 @@ void Console::saveChat(String filename)
 	FILE *f = fopen(filename.c_str(), "a");
 	if(!f)
 	{
-		putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + "Unable to open file " + filename, "error.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + "Unable to open file " + filename, "error.png");
 		return;
 	}
 	fprintf(f, "==== \n");
@@ -949,7 +942,7 @@ void Console::saveChat(String filename)
 		fprintf(f, "%ld %s\n", messages[i].time, messages[i].txt);
 	}
 	fclose(f);
-	putMessage(CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + "History saved as " + filename, "table_save.png");
+	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, ChatSystem::commandColour + "History saved as " + filename, "table_save.png");
 }
 
 void Console::outputCurrentPosition()
@@ -958,12 +951,12 @@ void Console::outputCurrentPosition()
 	if(!b && RoRFrameListener::eflsingleton->person)
 	{
 		Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 	else
 	{
 		Vector3 pos = b->getPosition();
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 }
 
@@ -983,7 +976,7 @@ void Console::outputCurrentTerrainHeight()
 	}
 
 	Real h = RoRFrameListener::eflsingleton->hfinder->getHeightAt(pos.x, pos.z);
-	putMessage(CONSOLE_MSGTYPE_INFO, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
+	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
 }
 
 void Console::jumpToPosition( Ogre::Vector3 pos )
@@ -992,13 +985,44 @@ void Console::jumpToPosition( Ogre::Vector3 pos )
 	if(!b && RoRFrameListener::eflsingleton->person)
 	{
 		RoRFrameListener::eflsingleton->person->setPosition(pos);
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("Character position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 	else
 	{
 		b->resetPosition(pos, false);
-		putMessage(CONSOLE_MSGTYPE_INFO, _L("Vehicle position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Vehicle position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
+}
+
+void Console::onPopUpBtn( MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item )
+{
+	//popUpContext
+}
+
+void Console::onLineClicked( MyGUI::Widget* _sender )
+{
+	int msg_id = -1;
+	try
+	{
+		msg_id = *(_sender->getUserData<int>());
+	}
+	catch (...)
+	{
+		return;
+	}
+	if(msg_id < 0) return;
+
+	popUpContext = messages[msg_id];
+	popUpContextNumber = msg_id;
+
+	// show popup control here
+	popMenu->removeAllItems();
+	popMenu->addItem(_L("Filter messages like this"), MyGUI::MenuItemType::Normal, "filter_this");
+	popMenu->addItem(_L("Remove all Filters"), MyGUI::MenuItemType::Normal, "filter_clear");
+
+	MyGUI::IntPoint point = MyGUI::InputManager::getInstance().getLastLeftPressed();
+	popMenu->setPosition(point);
+	popMenu->setVisible(true);
 }
 
 #endif //MYGUI

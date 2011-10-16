@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  * @param msg error text
  * @return 0 on success, everything else on error
  */
-int showError(Ogre::String title, Ogre::String message);
+int showError(Ogre::UTFString title, Ogre::UTFString message);
 
 /**
  * shows a simple info message box
@@ -38,7 +38,7 @@ int showError(Ogre::String title, Ogre::String message);
  * @param msg error text
  * @return 0 on success, everything else on error
  */
-int showInfo(Ogre::String title, Ogre::String message);
+int showInfo(Ogre::UTFString title, Ogre::UTFString message);
 
 /**
  * shows a generic message box
@@ -47,7 +47,7 @@ int showInfo(Ogre::String title, Ogre::String message);
  * @param type 0 for error, 1 for info
  * @return 0 on success, everything else on error
  */
-int showMsgBox(Ogre::String title, Ogre::String err, int type);
+int showMsgBox(Ogre::UTFString title, Ogre::UTFString err, int type);
 
 /**
  * shows a simple error message box, and allows the user to open a website to help further.
@@ -57,7 +57,7 @@ int showMsgBox(Ogre::String title, Ogre::String err, int type);
  * @param url the URL to open if the user wishs
  * @return 0 on success, everything else on error
  */
-int showWebError(Ogre::String title, Ogre::String message, Ogre::String url);
+int showWebError(Ogre::UTFString title, Ogre::UTFString message, Ogre::UTFString url);
 
 
 /**
@@ -68,7 +68,7 @@ int showWebError(Ogre::String title, Ogre::String message, Ogre::String url);
  * @param url the URL to open if the user wishs
  * @return 0 on success, everything else on error
  */
-int showOgreWebError(Ogre::String title, Ogre::String err, Ogre::String url);
+int showOgreWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString url);
 
 void showStoredOgreWebErrors();
 #endif //ERRORUTILS_H__

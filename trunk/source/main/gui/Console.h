@@ -34,9 +34,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef struct msg_t {
 	char type;
+	int sender_uid;
 	unsigned long time; // post time in milliseconds since RoR start
-	unsigned long ttl; // in milliseconds
-	char txt[2048];
+	unsigned long ttl;  // in milliseconds
+	Ogre::UTFString txt; // not POD, beware...
 	char icon[50];
 	//Ogre::String channel;
 } msg_t;
@@ -54,7 +55,7 @@ public:
 	bool getVisible();
 
 	void unselect();
-	void select(MyGUI::UString start = "");
+	void select(Ogre::UTFString start = "");
 
 	void setNetwork(Network *net);
 	void setNetChat(ChatSystem *net);
@@ -64,15 +65,41 @@ public:
 	void frameEntered(float dt);
 
 	enum {CONSOLE_MSGTYPE_LOG, CONSOLE_MSGTYPE_INFO, CONSOLE_MSGTYPE_SCRIPT, CONSOLE_MSGTYPE_NETWORK, CONSOLE_MSGTYPE_FLASHMESSAGE};
+	
+	enum {
+		// detailed message type identifier, mostly used for message filtering
+		CONSOLE_VEHILCE_ADD, 
+		CONSOLE_VEHILCE_DELETE,
+		CONSOLE_JOIN_GAME,
+		CONSOLE_LEAVE_GAME,
 
-	void putMessage(int type, Ogre::String msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 120000);
+		CONSOLE_HELP,
+		CONSOLE_CHAT,
+		CONSOLE_LOCAL_CHAT, // spoken word by self
+
+		CONSOLE_LOCAL_SCRIPT, // script self
+
+		CONSOLE_SYSTEM_NOTICE,
+		CONSOLE_SYSTEM_REPLY, // reply to a commands
+
+		CONSOLE_SYSTEM_DEBUG,
+
+		CONSOLE_FLASHMESSAGE,
+
+		CONSOLE_LOGMESSAGE,
+		CONSOLE_LOGMESSAGE_SCRIPT,
+
+		MSG_CUSTOM,
+		};
+
+	void putMessage(int type, int uid, Ogre::UTFString msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 30000);
 
 	void resized();
 protected:
 	static const unsigned int lineheight   = 16;
 	static const unsigned int LINES_MAX    = 200;
 	static const unsigned int MESSAGES_MAX = 3000;
-	static const MyGUI::UString wordDelimiters;
+	static const Ogre::UTFString wordDelimiters;
 
 	unsigned int top_border, bottom_border;
 	unsigned int linecount, scroll_size;
@@ -97,11 +124,15 @@ protected:
 	MyGUI::Edit* mCommandEdit;
 	MyGUI::WindowPtr mMainWidget;
 	MyGUI::ListBox* mAutoCompleteList;
+	MyGUI::PopupMenu *popMenu;
+
+	void onPopUpBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item);
+	void onLineClicked(MyGUI::Widget* _sender);
 
 	/// Auto-completion things start
-	std::vector<MyGUI::UString> autoCompleteChoices; // array containing the possible completions
+	std::vector<Ogre::UTFString> autoCompleteChoices; // array containing the possible completions
 	int autoCompletionWordStart, autoCompletionWordEnd, autoCompletionCursor; // variables holding the current word start and end
-	MyGUI::UString autoCompletionWord;
+	Ogre::UTFString autoCompletionWord;
 
 	void walkAutoCompletion(bool direction=true);
 	void initOrWalkAutoCompletion();
@@ -121,11 +152,25 @@ protected:
 		bool expired;
 	} mygui_console_line_t;
 
+	/// filter related things start
+	msg_t popUpContext;
+	int popUpContextNumber;
+	
+	void loadFilters();
+	void saveFilters();
+	
+	typedef struct console_filter_t {
+		int type; // type of filter: 0=filter unique message id, 1=user filter: filter username
+		int msg_uid;
+	} console_filter_t;
+	std::vector<console_filter_t> filters;
+	/// filter related things end
+
 	mygui_console_line_t lines[LINES_MAX];
 	msg_t messages[MESSAGES_MAX];
 	unsigned int message_counter;
 
-	std::vector<MyGUI::UString> mHistory;
+	std::vector<Ogre::UTFString> mHistory;
 	int mHistoryPosition;
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)

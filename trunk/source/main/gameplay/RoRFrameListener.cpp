@@ -19,11 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "RoRFrameListener.h"
 
-#include "OgrePrerequisites.h"
-#include "OgreTerrain.h"
-#include "OgreTerrainQuadTreeNode.h"
-#include "OgreTerrainMaterialGeneratorA.h"
-#include "OgreTerrainPaging.h"
+#include <OgrePrerequisites.h>
+#include <OgreTerrain.h>
+#include <OgreTerrainQuadTreeNode.h>
+#include <OgreTerrainMaterialGeneratorA.h>
+#include <OgreTerrainPaging.h>
 
 #include "ProceduralManager.h"
 #include "hdrlistener.h"
@@ -45,7 +45,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OverlayWrapper.h"
 #include "ShadowManager.h"
 #include "TruckHUD.h"
-#include "DotSceneLoader.h"
+//#include "DotSceneLoader.h"
 #include "AdvancedScreen.h"
 #include "vidcam.h"
 #include "RoRVersion.h"
@@ -1187,7 +1187,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			c->setNetChat(netChat);
 			char tmp[255] = "";
 			sprintf(tmp, _L("Press %s to start chatting"), INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE).c_str());
-			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, String(tmp), "information.png");
+			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_HELP, tryConvertUTF(tmp), "information.png");
 		}
 
 #ifdef USE_MUMBLE

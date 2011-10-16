@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "Savegame.h"
 #include "network.h"
+#include "utils.h"
 
 #include "language.h"
 
@@ -157,7 +158,7 @@ GUI_MainMenu::~GUI_MainMenu()
 {
 }
 
-MyGUI::UString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
+Ogre::UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 {
 	String username = ChatSystem::getColouredName(user);
 	char tmp[512] = "";
@@ -191,7 +192,7 @@ MyGUI::UString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 
 	strcat(tmp, "#000000)");
 
-	return MyGUI::UString(tmp);
+	return tryConvertUTF(tmp);
 }
 
 void GUI_MainMenu::addUserToMenu(user_info_t &user)
@@ -214,18 +215,18 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 
 	// now add this user to the list
 	{
-		MyGUI::UString userStr = "- " + getUserString(user, matches.size());
+		MyGUI::UString userStr = "- " + convertToMyGUIString(getUserString(user, matches.size()));
 		// finally add the user line
 		vehiclesMenu->addItem(userStr, MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(user.uniqueid));
 
 		// and add the vehicles below the user name
 		if(!matches.empty())
 		{
-			for(int j = 0; j < matches.size(); j++)
+			for(unsigned int j = 0; j < matches.size(); j++)
 			{
 				char tmp[512] = "";
 				sprintf(tmp, "  + %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
-				MyGUI::UString vehName = MyGUI::UString(tmp);
+				MyGUI::UString vehName = convertToMyGUIString(tryConvertUTF(tmp));
 				vehiclesMenu->addItem(vehName, MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(matches[j]));
 			}
 		}

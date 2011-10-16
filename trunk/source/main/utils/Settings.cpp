@@ -59,6 +59,11 @@ Ogre::String Settings::getSetting(Ogre::String key)
 	return settings[key];
 }
 
+Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key)
+{
+	return settings[key];
+}
+
 bool Settings::getBooleanSetting(Ogre::String key)
 {
 	String value = settings[key];
@@ -85,6 +90,11 @@ void Settings::setSettingScriptSafe(const Ogre::String &key, const Ogre::String 
 }
 
 void Settings::setSetting(Ogre::String key, Ogre::String value)
+{
+	settings[key] = value;
+}
+
+void Settings::setUTFSetting(Ogre::UTFString key, Ogre::UTFString value)
 {
 	settings[key] = value;
 }
@@ -121,20 +131,19 @@ void Settings::saveSettings()
 
 void Settings::saveSettings(Ogre::String configFile)
 {
-	//printf("saving Config to file: %s\n", configFile.c_str());
-	FILE *fd = fopen(configFile.c_str(), "w");
-	if (!fd)
-		return;
+	// use C++ for easier wstring usage ... :-/
+
+	ofstream f(configFile);
+	if(!f.is_open()) return;
 
 	// now save the settings to RoR.cfg
-	std::map<std::string, std::string>::iterator it;
+	settings_map_t::iterator it;
 	for(it = settings.begin(); it != settings.end(); it++)
 	{
 		if(it->first == "BinaryHash") continue;
-		fprintf(fd, "%s=%s\n", it->first.c_str(), it->second.c_str());
+		f << it->first << " = " << it->second << endl;
 	}
-
-	fclose(fd);
+	f.close();
 }
 
 void Settings::loadSettings(Ogre::String configFile, bool overwrite)

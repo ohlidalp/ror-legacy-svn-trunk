@@ -47,7 +47,7 @@ public:
 	int getMenuHeight() { return menuHeight; };
 
 	void updatePositionUponMousePosition(int x, int y);
-	MyGUI::UString getUserString(user_info_t &user, int num_vehicles);
+	Ogre::UTFString getUserString(user_info_t &user, int num_vehicles);
 	void addUserToMenu(user_info_t &user);
 
 	void triggerUpdateVehicleList();

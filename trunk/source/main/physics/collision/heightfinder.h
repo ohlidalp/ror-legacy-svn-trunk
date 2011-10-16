@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrain.h"
 #include "OgreTerrainGroup.h"
-#include "DotSceneLoader.h"
+//#include "DotSceneLoader.h"
 
 //using namespace Ogre;
 /**
@@ -72,6 +72,8 @@ public:
 };
 
 // new terrain height finder adapted to Ogitor scene loading
+#if 0
+// not used right now
 class OgitorSceneHeightFinder : public HeightFinder
 {
 protected:
@@ -90,6 +92,7 @@ public:
 		return mLoader->getTerrainGroup()->getHeightAtWorldPosition(x, 1000, z);
 	}
 };
+#endif //0
 
 
 

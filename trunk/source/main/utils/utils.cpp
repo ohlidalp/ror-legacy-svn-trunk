@@ -25,6 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornet.h"
 #include "RoRVersion.h"
 
+
+
 #include <fstream>
 
 using namespace Ogre;
@@ -85,20 +87,20 @@ String hexdump(void *pAddressIn, long  lSize)
 	return result;
 }
 
-UTFString tryConvertUTF(char *buffer)
+UTFString tryConvertUTF(const char *buffer)
 {
 	try
 	{
 		UTFString s = UTFString(buffer);
 		if(s.empty())
-			s = UTFString("(conversion error)");
+			s = UTFString("(UTF conversion error 1)");
 		return s;
 
 	} catch(...)
 	{
-		return UTFString();
+		return UTFString("(UTF conversion error 2)");
 	}
-	return UTFString();
+	return UTFString("(UTF conversion error 3)");
 }
 
 Ogre::String formatBytes(double bytes)
@@ -256,3 +258,14 @@ void fixRenderWindowIcon (Ogre::RenderWindow *rw)
 #endif // WIN32
 #endif //ROR_EMBEDDED
 }
+
+#ifdef USE_MYGUI
+MyGUI::UString convertToMyGUIString(Ogre::UTFString str)
+{
+	return MyGUI::UString(str.asWStr());
+}
+Ogre::UTFString convertFromMyGUIString(MyGUI::UString str)
+{
+	return Ogre::UTFString(str.asWStr());
+}
+#endif // USE_MYGUI

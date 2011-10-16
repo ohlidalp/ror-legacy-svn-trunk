@@ -5179,14 +5179,14 @@ void Beam::updateNetworkInfo()
 	{
 		client_t *c = net->getClientInfo(sourceid);
 		if(!c) return;
-		networkUsername = String(c->user.username);
+		networkUsername = UTFString(c->user.username);
 		networkAuthlevel = c->user.authstatus;
 	} else
 	{
 		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(!strlen(info->username)) return;
-		networkUsername = String(info->username);
+		if(UTFString(info->username).empty()) return;
+		networkUsername = UTFString(info->username);
 		networkAuthlevel = info->authstatus;
 	}
 
@@ -5209,7 +5209,7 @@ void Beam::updateNetworkInfo()
 	else
 	{
 		char wname[256];
-		sprintf(wname, "netlabel-%s",truckname);
+		sprintf(wname, "netlabel-%s", truckname);
 		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkUsername));
 		netMT->setFontName("highcontrast_black");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
