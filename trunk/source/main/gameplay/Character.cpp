@@ -169,12 +169,12 @@ void Character::updateNetLabel()
 	{
 		netMT = new MovableText("netlabel-"+myName, networkUsername);
 		personode->attachObject(netMT);
-		netMT->setFontName("highcontrast_black");
+		netMT->setFontName("Cyberbit");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
 		netMT->setAdditionalHeight(2);
 		netMT->showOnTop(false);
 		netMT->setCharacterHeight(8);
-		netMT->setColor(ColourValue::White);
+		netMT->setColor(ColourValue::Black);
 	}
 
 	//LOG(" *label caption: " + String(networkUsername));
@@ -185,6 +185,7 @@ void Character::updateNetLabel()
 	catch (...)
 	{
 	}
+	/*
 	if(networkAuthLevel & AUTH_ADMIN)
 	{
 		netMT->setFontName("highcontrast_red");
@@ -195,6 +196,7 @@ void Character::updateNetLabel()
 	{
 		netMT->setFontName("highcontrast_black");
 	}
+	*/
 
 	// update character colour
 	updateCharacterColour();

@@ -692,7 +692,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 			mt->setAdditionalHeight(1);
 			mt->showOnTop(false);
 			mt->setCharacterHeight(0.3);
-			mt->setColor(ColourValue::White);
+			mt->setColor(ColourValue::Black);
 			mt->setRenderingDistance(200);
 
 			SceneNode *n2 = smgr->getRootSceneNode()->createChildSceneNode();
@@ -1543,7 +1543,7 @@ int Collisions::createCollisionDebugVisualization()
 				mt->setAdditionalHeight(1);
 				mt->showOnTop(false);
 				mt->setCharacterHeight(0.3);
-				mt->setColor(ColourValue::White);
+				mt->setColor(ColourValue::Black);
 				mo_node->attachObject(mt);
 				*/
 
@@ -1604,7 +1604,7 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 		mt->setAdditionalHeight(1);
 		mt->showOnTop(false);
 		mt->setCharacterHeight(0.3);
-		mt->setColor(ColourValue::White);
+		mt->setColor(ColourValue::Black);
 		mt->setRenderingDistance(200);
 		
 		n->attachObject(mt);

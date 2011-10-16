@@ -71,6 +71,8 @@ void ContentManager::loadMainResource(String name, String group)
 
 void ContentManager::initBootstrap(void)
 {
+	LanguageEngine::Instance().setup();
+
 	LOG("Loading Bootstrap");
 	loadMainResource("OgreCore", "Bootstrap");
 	LOG("Loading Wallpapers");
@@ -83,8 +85,6 @@ bool ContentManager::init(void)
     //Set listener if none has already been set
     if (!Ogre::ResourceGroupManager::getSingleton().getLoadingListener())
         Ogre::ResourceGroupManager::getSingleton().setLoadingListener(this);
-
-	LanguageEngine::Instance().setup();
 
 	//try to get correct paths
 	//note: we don't have LogManager available yet!

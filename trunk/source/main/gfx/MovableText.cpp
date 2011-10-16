@@ -36,7 +36,7 @@ using namespace Ogre;
 #define POS_TEX_BINDING    0
 #define COLOUR_BINDING     1
 
-MovableText::MovableText(const String &name, const String &caption, const String &fontName, Real charHeight, const ColourValue &color)
+MovableText::MovableText(const UTFString &name, const UTFString &caption, const UTFString &fontName, Real charHeight, const ColourValue &color)
 : mpCam(NULL)
 , mpWin(NULL)
 , mpFont(NULL)
@@ -72,7 +72,7 @@ MovableText::~MovableText()
 		delete mRenderOp.vertexData;
 }
 
-void MovableText::setFontName(const String &fontName)
+void MovableText::setFontName(const UTFString &fontName)
 {
 	if((Ogre::MaterialManager::getSingletonPtr()->resourceExists(mName + "Material")))
 	{
@@ -106,7 +106,7 @@ void MovableText::setFontName(const String &fontName)
 	}
 }
 
-void MovableText::setCaption(const String &caption)
+void MovableText::setCaption(const UTFString &caption)
 {
 	if (caption != mCaption)
 	{
@@ -251,7 +251,7 @@ void MovableText::_setupGeometry()
 	bool first = true;
 
 	// Use iterator
-	String::iterator i, iend;
+	UTFString::iterator i, iend;
 	iend = mCaption.end();
 	bool newLine = true;
 	Real len = 0.0f;
@@ -272,7 +272,7 @@ void MovableText::_setupGeometry()
 		if (newLine)
 		{
 			len = 0.0f;
-			for (String::iterator j = i; j != iend && *j != '\n'; j++)
+			for (UTFString::iterator j = i; j != iend && *j != '\n'; j++)
 			{
 				if (*j == ' ')
 					len += mSpaceWidth;

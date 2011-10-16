@@ -200,8 +200,8 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 
 void ChatSystem::sendChat(Ogre::UTFString chatline)
 {
-	// wstring -> UTF8 !
-	this->addPacket(MSG2_UTF_CHAT, chatline.size() * sizeof(wchar_t), (char *)(chatline.asUTF8_c_str()));
+	const char *utf8_line = chatline.asUTF8_c_str();
+	this->addPacket(MSG2_UTF_CHAT, strlen(utf8_line), (char *)utf8_line);
 
 	// we let the message bounce back to us, no need to fake here
 	//String nmsg = net->getNickname(true) + normalColour + ": " + chatline;
