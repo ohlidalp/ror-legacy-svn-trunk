@@ -239,7 +239,8 @@ bool Network::connect()
 	// beware of the wchar_t converted to UTF8 for networking
 	user_info_t c;
 	memset(&c, 0, sizeof(user_info_t));
-	strncpy((char *)c.username, nickname.asUTF8_c_str(), MAX_USERNAME_LEN);
+	// cut off the UTF string on the highest level, otherwise you will break UTF info
+	strncpy((char *)c.username, nickname.substr(0, MAX_USERNAME_LEN * 0.5f).asUTF8_c_str(), MAX_USERNAME_LEN);
 	strncpy(c.serverpassword, sha1pwresult, 40);
 	strncpy(c.usertoken, usertokenhash.c_str(), 40);
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));

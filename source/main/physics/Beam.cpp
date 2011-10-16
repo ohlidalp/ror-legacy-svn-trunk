@@ -3962,6 +3962,30 @@ void Beam::updateSoundSources()
 	BES_GFX_STOP(BES_GFX_updateSoundSources);
 }
 
+void Beam::updateLabels(float dt)
+{
+	if (netLabelNode && netMT && netMT->isVisible())
+	{
+		// this ensures that the nickname is always in a readable size
+		netLabelNode->setPosition(position+Vector3(0, (maxy-miny), 0));
+		Vector3 vdir=(position)-mCamera->getPosition();
+		float vlen=vdir.length();
+		float h = vlen/30.0;
+		if(h<0.6)
+			h=0.6;
+		netMT->setCharacterHeight(h);
+		if(vlen>1000)
+			netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
+		else if (vlen>20 && vlen <= 1000)
+			netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
+		else
+			netMT->setCaption(networkUsername);
+
+		//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
+		netMT->setVisible(true);
+	}
+}
+
 void Beam::updateVisual(float dt)
 {
 	BES_GFX_START(BES_GFX_updateVisual);
@@ -4153,28 +4177,6 @@ void Beam::updateVisual(float dt)
 	for (i=0; i<free_flexbody; i++) flexbodies[i]->flexit();
 	//}
 	BES_GFX_STOP(BES_GFX_updateFlexBodies);
-
-	if (netLabelNode && netMT && netMT->isVisible())
-	{
-		// this ensures that the nickname is always in a readable size
-		netLabelNode->setPosition(position+Vector3(0, (maxy-miny), 0));
-		Vector3 vdir=(position)-mCamera->getPosition();
-		float vlen=vdir.length();
-		float h = vlen/30.0;
-		if(h<0.6)
-			h=0.6;
-		netMT->setCharacterHeight(h);
-		if(vlen>1000)
-			netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
-		else if (vlen>20 && vlen <= 1000)
-			netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
-		else
-			netMT->setCaption(networkUsername);
-
-		//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
-		netMT->setVisible(true);
-	}
-
 	BES_GFX_STOP(BES_GFX_updateVisual);
 }
 
@@ -4997,7 +4999,7 @@ void Beam::setDebugOverlayState(int mode)
 			//t.txt->setAdditionalHeight(0);
 			t.txt->showOnTop(true);
 			t.txt->setCharacterHeight(0.5);
-			t.txt->setColor(ColourValue::White);
+			t.txt->setColor(ColourValue::Black);
 			t.txt->setRenderingDistance(2);
 
 			t.node = parentNode->createChildSceneNode();
@@ -5041,7 +5043,7 @@ void Beam::setDebugOverlayState(int mode)
 			//t.txt->setAdditionalHeight(0);
 			t.txt->showOnTop(true);
 			t.txt->setCharacterHeight(1);
-			t.txt->setColor(ColourValue::White);
+			t.txt->setColor(ColourValue::Black);
 			t.txt->setRenderingDistance(2);
 
 			t.node = parentNode->createChildSceneNode();
@@ -5194,6 +5196,7 @@ void Beam::updateNetworkInfo()
 	{
 		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
 		netMT->setCaption(networkUsername);
+		/*
 		if(networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
@@ -5204,20 +5207,22 @@ void Beam::updateNetworkInfo()
 		{
 			netMT->setFontName("highcontrast_black");
 		}
+		*/
 		netLabelNode->setVisible(true);
 	}
 	else
 	{
 		char wname[256];
 		sprintf(wname, "netlabel-%s", truckname);
-		netMT = new MovableText(wname, ColoredTextAreaOverlayElement::StripColors(networkUsername));
-		netMT->setFontName("highcontrast_black");
+		netMT = new MovableText(wname, networkUsername);
+		netMT->setFontName("Cyberbit");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
 		//netMT->setAdditionalHeight(2);
 		netMT->showOnTop(false);
 		netMT->setCharacterHeight(2);
-		netMT->setColor(ColourValue::White);
+		netMT->setColor(ColourValue::Black);
 
+		/*
 		if(networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
@@ -5228,6 +5233,7 @@ void Beam::updateNetworkInfo()
 		{
 			netMT->setFontName("highcontrast_black");
 		}
+		*/
 
 		netLabelNode=parentNode->createChildSceneNode();
 		netLabelNode->attachObject(netMT);

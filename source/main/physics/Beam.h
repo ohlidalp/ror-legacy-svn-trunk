@@ -156,6 +156,7 @@ public:
 	void updateFlares(float dt, bool isCurrent=false);
 	void updateProps();
 	void updateVisual(float dt=0);
+	void updateLabels(float dt=0);
 	//v=0: full detail
 	//v=1: no beams
 	void setDetailLevel(int v);

@@ -160,6 +160,9 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
 #endif //USE_MYGUI
 
+	// add own username to truck
+	if(net) b->updateNetworkInfo();
+
 	return b;
 }
 
@@ -647,11 +650,16 @@ bool BeamFactory::enterRescueTruck()
 	return true;
 }
 
+
 void BeamFactory::updateVisual(float dt)
 {
 	for (int t=0; t<free_truck; t++)
 	{
 		if(!trucks[t]) continue;
+		
+		// always update the labels
+		trucks[t]->updateLabels(dt);
+
 		if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished)
 		{
 			trucks[t]->updateSkidmarks();

@@ -41,10 +41,10 @@ public:
     enum VerticalAlignment      {V_BELOW, V_ABOVE};
 
 protected:
-	String			mFontName;
-	String			mType;
+	UTFString			mFontName;
+	UTFString			mType;
 	String			mName;
-	String			mCaption;
+	UTFString			mCaption;
 	HorizontalAlignment	mHorizontalAlignment;
 	VerticalAlignment	mVerticalAlignment;
 
@@ -72,7 +72,7 @@ protected:
 
     /******************************** public methods ******************************/
 public:
-	MovableText(const String &name, const String &caption, const String &fontName = "Cyberbit", Real charHeight = 1.0, const ColourValue &color = ColourValue::White);
+	MovableText(const UTFString &name, const UTFString &caption, const UTFString &fontName = "Cyberbit", Real charHeight = 1.0, const ColourValue &color = ColourValue::Black);
 	virtual ~MovableText();
 
 	// Add to build on Shoggoth:
@@ -81,8 +81,8 @@ public:
 #endif //OGRE_VERSION
 
     // Set settings
-	void    setFontName(const String &fontName);
-	void    setCaption(const String &caption);
+	void    setFontName(const UTFString &fontName);
+	void    setCaption(const UTFString &caption);
 	void    setColor(const ColourValue &color);
 	void    setCharacterHeight(Real height);
 	void    setSpaceWidth(Real width);
@@ -91,8 +91,8 @@ public:
     void    showOnTop(bool show=true);
 
     // Get settings
-	const   String          &getFontName() const {return mFontName;}
-    const   String          &getCaption() const {return mCaption;}
+	const   UTFString          &getFontName() const {return mFontName;}
+    const   UTFString          &getCaption() const {return mCaption;}
 	const   ColourValue     &getColor() const {return mColor;}
 
     uint    getCharacterHeight() const {return (uint) mCharHeight;}
