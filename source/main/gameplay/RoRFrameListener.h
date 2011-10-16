@@ -358,7 +358,7 @@ protected:
 	float terrainxsize;
 	float terrainzsize;
 
-	DotSceneLoader* mLoader;
+	//DotSceneLoader* mLoader;
 
 	Camera* mCamera;
 	Vector3 cdoppler;

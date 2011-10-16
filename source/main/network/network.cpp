@@ -139,7 +139,7 @@ Network::~Network()
 	pthread_cond_destroy(&send_work_cv);
 }
 
-void Network::netFatalError(String errormsg, bool exitProgram)
+void Network::netFatalError(UTFString errormsg, bool exitProgram)
 {
 	if(shutdown)
 		return;
@@ -147,7 +147,7 @@ void Network::netFatalError(String errormsg, bool exitProgram)
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
-	showError(_L("Network Connection Problem"), _L("Network fatal error: ")+errormsg);
+	showError(_L("Network Connection Problem"), _L("Network fatal error: ") + errormsg);
 	if(exitProgram)
 		exit(124);
 }
@@ -184,6 +184,12 @@ bool Network::connect()
 		netFatalError(_L("Establishing network session: error getting server version"), false);
 		return false;
 	}
+	if(header.command == MSG2_WRONG_VER)
+	{
+		netFatalError(_L("server uses a different protocol version"));
+		return false;
+	}
+	
 	if(header.command != MSG2_HELLO)
 	{
 		netFatalError(_L("Establishing network session: error getting server hello"));
@@ -230,9 +236,10 @@ bool Network::connect()
 	String usertokenhash = SSETTING("User Token Hash");
 
 	// construct user credentials
+	// beware of the wchar_t converted to UTF8 for networking
 	user_info_t c;
 	memset(&c, 0, sizeof(user_info_t));
-	strncpy(c.username, nickname.c_str(), 20);
+	strncpy((char *)c.username, nickname.asUTF8_c_str(), MAX_USERNAME_LEN);
 	strncpy(c.serverpassword, sha1pwresult, 40);
 	strncpy(c.usertoken, usertokenhash.c_str(), 40);
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
@@ -308,7 +315,7 @@ bool Network::connect()
 	return true;
 }
 
-Ogre::String Network::getNickname(bool colour)
+Ogre::UTFString Network::getNickname(bool colour)
 {
 	if(colour)
 		return ChatSystem::getColouredName(nickname, myauthlevel, userdata.colournum);
@@ -572,7 +579,7 @@ void Network::receivethreadstart()
 			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
 			LOG(" * received stream registration result: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid));
 		}
-		else if(header.command == MSG2_CHAT || header.command == MSG2_PRIVCHAT && header.source == -1)
+		else if(header.command == MSG2_UTF_CHAT || (header.command == MSG2_UTF_PRIVCHAT && header.source == -1))
 		{
 			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
 			if(cs) cs->addReceivedPacket(header, buffer);
@@ -617,9 +624,9 @@ void Network::receivethreadstart()
 				memcpy(&userdata, buffer, sizeof(user_info_t));
 				CharacterFactory::getSingleton().localUserAttributesChanged(myuid);
 				// update our nickname
-				nickname = String(userdata.username);
+				nickname = UTFString(userdata.username);
 				// save it in the Settings as well
-				SETTINGS.setSetting("Nickname", nickname);
+				SETTINGS.setUTFSetting(L"Nickname", nickname);
 				// update auth status
 				myauthlevel = userdata.authstatus;
 

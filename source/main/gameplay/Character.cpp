@@ -150,17 +150,17 @@ void Character::updateNetLabel()
 	{
 		client_t *info = net->getClientInfo(this->source);
 		if(!info) return;
-		if(!strlen(info->user.username)) return;
+		if(tryConvertUTF(info->user.username).empty()) return;
 		this->colourNumber = info->user.colournum;
-		networkUsername = info->user.username;
+		networkUsername = tryConvertUTF(info->user.username);
 		networkAuthLevel = info->user.authstatus;
 	} else
 	{
 		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(!strlen(info->username)) return;
+		if(tryConvertUTF(info->username).empty()) return;
 		this->colourNumber = info->colournum;
-		networkUsername = String(info->username);
+		networkUsername = tryConvertUTF(info->username);
 		networkAuthLevel = info->authstatus;
 	}
 
@@ -178,7 +178,13 @@ void Character::updateNetLabel()
 	}
 
 	//LOG(" *label caption: " + String(networkUsername));
-	netMT->setCaption(networkUsername);
+	try
+	{
+		netMT->setCaption(networkUsername);
+	}
+	catch (...)
+	{
+	}
 	if(networkAuthLevel & AUTH_ADMIN)
 	{
 		netMT->setFontName("highcontrast_red");

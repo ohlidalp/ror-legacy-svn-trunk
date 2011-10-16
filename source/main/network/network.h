@@ -55,20 +55,20 @@ private:
 	pthread_cond_t send_work_cv;
 	client_t clients[MAX_PEERS];
 	pthread_mutex_t clients_mutex;
-	std::string mySname;
+	Ogre::UTFString mySname;
 	long mySport;
 	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
 	pthread_mutex_t msgsend_mutex;
 	RoRFrameListener *mefl;
-	Ogre::String nickname;
+	Ogre::UTFString nickname;
 	int rconauthed;
 	bool shutdown;
 	user_info_t userdata;
 	SoundScriptManager* ssm;
-	Ogre::String getUserChatName(client_t *c);
+	Ogre::UTFString getUserChatName(client_t *c);
 	void calcSpeed();
 	std::map<int, float> lagDataClients;
-	std::map<Ogre::String, Ogre::String> downloadingMods;
+	//std::map<Ogre::String, Ogre::String> downloadingMods;
 	void updatePlayerList();
 	server_info_t server_settings;
 	bool initiated;
@@ -85,13 +85,13 @@ public:
 	// methods
 	bool connect();
 	void disconnect();
-	void netFatalError(String error, bool exit=true);
+	void netFatalError(UTFString error, bool exit=true);
 
 	void sendthreadstart();
 	void receivethreadstart();
 
 	char *getTerrainName() { return server_settings.terrain; };
-	Ogre::String getNickname(bool colour=false);
+	Ogre::UTFString getNickname(bool colour=false);
 	unsigned int getUserID() { return myuid; };
 	static unsigned long getNetTime();
 	client_t *getClientInfo(unsigned int uid);

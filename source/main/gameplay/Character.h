@@ -88,7 +88,7 @@ protected:
 	int colourNumber;
 	Ogre::MovableText *netMT;
 	MapEntity *mapEnt;
-	Ogre::String networkUsername;
+	Ogre::UTFString networkUsername;
 	int networkAuthLevel;
 	Ogre::String lastmode;
 	

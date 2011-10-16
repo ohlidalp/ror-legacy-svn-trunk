@@ -177,10 +177,10 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		client_t *c = net->getClientInfo(reg->sourceid);
 		if(c)
 		{
-			String username = ChatSystem::getColouredName(*c);
-			String message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
+			Ogre::UTFString username = ChatSystem::getColouredName(*c);
+			Ogre::UTFString message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
 			Console *console = Console::getInstancePtrNoCreation();
-			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, message, "car_add.png");
+			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_VEHILCE_ADD, message, "car_add.png");
 		}
 	}
 

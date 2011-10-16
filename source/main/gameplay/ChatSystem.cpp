@@ -103,10 +103,10 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
-const Ogre::String ChatSystem::commandColour       = "#941e8d";
-const Ogre::String ChatSystem::normalColour        = "#000000";
-const Ogre::String ChatSystem::whisperColour       = "#967417";
-const Ogre::String ChatSystem::scriptCommandColour = "#32436f";
+const Ogre::UTFString ChatSystem::commandColour       = L"#941e8d";
+const Ogre::UTFString ChatSystem::normalColour        = L"#000000";
+const Ogre::UTFString ChatSystem::whisperColour       = L"#967417";
+const Ogre::UTFString ChatSystem::scriptCommandColour = L"#32436f";
 
 
 
@@ -131,7 +131,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 		}
 
 		String msg = username + commandColour + _L(" joined the game");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_add.png");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_JOIN_GAME, msg, "user_add.png");
 	}
 #endif //SOCKETW
 }
@@ -141,7 +141,7 @@ ChatSystem::~ChatSystem()
 	if(remote)
 	{
 		String msg = username + commandColour + _L(" left the game");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_delete.png");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LEAVE_GAME, msg, "user_delete.png");
 	}
 }
 
@@ -163,45 +163,52 @@ void ChatSystem::sendStreamData()
 
 void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
-	if(type == MSG2_CHAT)
+	if(type == MSG2_UTF_CHAT)
 	{
 		// some chat code
 		if(source == -1)
 		{
 			// server said something
-			String msg = getASCIIFromCharString(buffer, 255);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_gray.png");
+			UTFString msg = tryConvertUTF(buffer);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_gray.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + normalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "user_comment.png");
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
+		} else if(source == (int)net->getUID())
+		{
+			// our message bounced back :D
+			UTFString msg = net->getNickname(true) + normalColour + ": " + tryConvertUTF(buffer);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
 		}
 	}
-	else if(type == MSG2_PRIVCHAT)
+	else if(type == MSG2_UTF_PRIVCHAT)
 	{
 		// some private chat message
 		if(source == -1)
 		{
 			// server said something
-			String msg = whisperColour + _L(" [whispered] ") + normalColour +  getASCIIFromCharString(buffer, 255);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "script_key.png");
+			String msg = whisperColour + _L(" [whispered] ") + normalColour +  tryConvertUTF(buffer);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + _L(" [whispered] ") + normalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, msg, "script_key.png");
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
 		}
 	}
 }
 
 void ChatSystem::sendChat(Ogre::UTFString chatline)
 {
-	this->addPacket(MSG2_CHAT, chatline.size(), const_cast<char *>(chatline.asUTF8_c_str()));
+	// wstring -> UTF8 !
+	this->addPacket(MSG2_UTF_CHAT, chatline.size() * sizeof(wchar_t), (char *)(chatline.asUTF8_c_str()));
 
-	String nmsg = net->getNickname(true) + normalColour + ": " + chatline;
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "user_comment.png");
+	// we let the message bounce back to us, no need to fake here
+	//String nmsg = net->getNickname(true) + normalColour + ": " + chatline;
+	//Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, nmsg, "user_comment.png");
 }
 
-int ChatSystem::getChatUserNames(std::vector<MyGUI::UString> &names)
+int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
 {
 	client_t c[MAX_PEERS];
 	if(net->getClientInfos(c)) return 0;
@@ -213,19 +220,16 @@ int ChatSystem::getChatUserNames(std::vector<MyGUI::UString> &names)
 	return names.size();
 }
 
-void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString chatline)
+void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString chatline)
 {
 	// first: find id to username:
-	const char *target_username = targetUsername.c_str();
-	const char *chat_msg = chatline.asUTF8_c_str();
-
 	client_t c[MAX_PEERS];
 	if(net->getClientInfos(c))
 		return;
 	int target_uid = -1, target_index = -1;
 	for(int i = 0; i < MAX_PEERS; i++)
 	{
-		if(!strcmp(c[i].user.username, target_username))
+		if(UTFString(c[i].user.username) == targetUsername)
 		{
 			// found it :)
 			target_uid = c[i].user.uniqueid;
@@ -236,7 +240,7 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 
 	if(target_uid < 0)
 	{
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
 		return;
 	}
 
@@ -248,16 +252,17 @@ void ChatSystem::sendPrivateChat(Ogre::String targetUsername, Ogre::UTFString ch
 void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre::UTFString username)
 {
 	char buffer[MAX_MESSAGE_LENGTH] = "";
-	const char *chat_msg = chatline.asUTF8_c_str();
+	
+	const char *chat_msg = (const char *)chatline.asUTF8_c_str();
 
 	// format: int of UID, then chat message
 	memcpy(buffer, &target_uid, sizeof(int));
 	strncpy(buffer + sizeof(int), chat_msg, MAX_MESSAGE_LENGTH - sizeof(int));
 
-	size_t len = sizeof(int) + strlen(chat_msg);
+	size_t len = sizeof(int) + chatline.size() * sizeof(wchar_t);
 	buffer[len] = 0;
 
-	this->addPacket(MSG2_PRIVCHAT, len, buffer);
+	this->addPacket(MSG2_UTF_PRIVCHAT, len, buffer);
 
 	if(username.empty())
 	{
@@ -266,21 +271,21 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	}
 
 	// add local visual
-	String nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, nmsg, "script_key.png");
+	UTFString nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
 }
 
-String ChatSystem::getColouredName(client_t &c)
+Ogre::UTFString ChatSystem::getColouredName(client_t &c)
 {
 	return getColouredName(c.user);
 }
 
-String ChatSystem::getColouredName(user_info_t &u)
+Ogre::UTFString ChatSystem::getColouredName(user_info_t &u)
 {
-	return ChatSystem::getColouredName(tryConvertUTF(u.username), u.authstatus, u.colournum);
+	return ChatSystem::getColouredName(UTFString(u.username), u.authstatus, u.colournum);
 }
 
-String ChatSystem::getColouredName(String nick, int auth, int colourNumber)
+Ogre::UTFString ChatSystem::getColouredName(Ogre::UTFString nick, int auth, int colourNumber)
 {
 	Ogre::ColourValue col_val = PlayerColours::getSingleton().getColour(colourNumber);
 	char tmp[255] = "";
@@ -290,7 +295,7 @@ String ChatSystem::getColouredName(String nick, int auth, int colourNumber)
 	for(unsigned int i=0; i<nick.size(); i++)
 		if(nick[i] == '#') nick[i] = 'X';
 
-	return String(tmp) + nick;
+	return tryConvertUTF(tmp) + nick;
 
 #if 0
 	// old code: colour not depending on auth status anymore ...

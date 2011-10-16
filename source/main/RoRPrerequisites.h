@@ -37,6 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreVector2.h>
 #include <OgreColourValue.h>
 #include <OgreQuaternion.h>
+#include <OgreUTFString.h>
 
 // some config for angelscript, doesnt matter if we compile with angelscript or not as its just a definition
 #ifdef USE_ANGELSCRIPT
