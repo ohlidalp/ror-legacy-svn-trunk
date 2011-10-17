@@ -622,7 +622,11 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 
 void Character::updateNetLabelSize()
 {
-	if (!this || !net || !netMT || !netMT->isVisible()) return;
+	if (!this || !net || !netMT) return;
+
+	netMT->setVisible(getVisible());
+
+	if(!netMT->isVisible()) return;
 
 	Vector3 vdir = personode->getPosition() - mCamera->getPosition();
 	float vlen=vdir.length();
@@ -638,7 +642,7 @@ void Character::updateNetLabelSize()
 		netMT->setCaption(networkUsername);
 
 	//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
-	netMT->setVisible(true);
+	//netMT->setVisible(true);
 }
 
 int Character::setBeamCoupling(bool enabled, Beam *truck)
