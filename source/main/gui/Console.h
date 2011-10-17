@@ -39,6 +39,7 @@ typedef struct msg_t {
 	unsigned long ttl;  // in milliseconds
 	Ogre::UTFString txt; // not POD, beware...
 	char icon[50];
+	bool forcevisible;
 	//Ogre::String channel;
 } msg_t;
 
@@ -80,11 +81,10 @@ public:
 		CONSOLE_LOCAL_SCRIPT, // script self
 
 		CONSOLE_SYSTEM_NOTICE,
+		CONSOLE_SYSTEM_ERROR,
 		CONSOLE_SYSTEM_REPLY, // reply to a commands
 
 		CONSOLE_SYSTEM_DEBUG,
-
-		CONSOLE_FLASHMESSAGE,
 
 		CONSOLE_LOGMESSAGE,
 		CONSOLE_LOGMESSAGE_SCRIPT,
@@ -92,7 +92,7 @@ public:
 		MSG_CUSTOM,
 		};
 
-	void putMessage(int type, int uid, Ogre::UTFString msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 30000);
+	void putMessage(int type, int uid, Ogre::UTFString msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 30000, bool forcevisible = false);
 
 	void resized();
 protected:

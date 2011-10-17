@@ -55,11 +55,6 @@ public:
 	void showPressureOverlay(bool show);
 	void showEditorOverlay(bool show);
 
-	void flashMessage();
-	void hideFlashMessage();
-	void flashMessage(const char* txt, float time=1, float charHeight=-1);
-	void flashMessage(Ogre::String txt, float time=1, float charHeight=-1);
-
 	void windowResized(Ogre::RenderWindow* rw);
 	void resizeOverlay(struct loadedOverlay_t);
 
@@ -78,7 +73,6 @@ public:
 
 	Ogre::RenderWindow* win;
 	TruckHUD *truckhud;
-	float timeUntilUnflash;
 
 	//members
 	Ogre::Overlay *directionOverlay;
@@ -97,7 +91,6 @@ public:
 	Ogre::Overlay *editorOverlay;
 	Ogre::Overlay *truckeditorOverlay;
 	Ogre::Overlay *mouseOverlay;
-	Ogre::Overlay *flashOverlay;
 	Ogre::Overlay *racing;
 
 	Ogre::OverlayElement* guiGear;
@@ -145,7 +138,6 @@ public:
 	Ogre::TextAreaOverlayElement* directionArrowDistance;
 	Ogre::TextAreaOverlayElement* alt_value_taoe;
 	Ogre::TextAreaOverlayElement* boat_depth_value_taoe;
-	ColoredTextAreaOverlayElement* flashMessageTE;
 
 	Ogre::LineStreamOverlayElement *fpsLineStream, *netLineStream, *netlagLineStream;
 

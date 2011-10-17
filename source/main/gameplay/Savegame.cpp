@@ -24,7 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "RoRVersion.h"
-#include "Ogre.h"
+#include <Ogre.h>
+
+#include "language.h"
 
 #include "RoRFrameListener.h"
 #include "OverlayWrapper.h"
@@ -58,7 +60,8 @@ int Savegame::save(Ogre::String &filename)
 	// TODO: show error
 	if(!f) 
 	{
-		logMessage("error opening savegame");
+		LOG(_L("error opening savegame"));
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
 		return 1;
 	}
 
@@ -203,7 +206,9 @@ int Savegame::save(Ogre::String &filename)
 		}
 	}
 	// and we are done :)
-	logMessage("saving done");
+	LOG(_L("saving done"));
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("saving done"), "information.png");
+
 	fclose(f);
 	return 0;
 }
@@ -218,7 +223,8 @@ int Savegame::load(Ogre::String &filename)
 
 	if(!f)
 	{
-		logMessage("error opening savegame");
+		LOG(_L("error opening savegame"));
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
 		return 1;
 	}
 
@@ -232,8 +238,9 @@ int Savegame::load(Ogre::String &filename)
 		fread(&h, sizeof(h), 1, f);
 		if(strcmp(h.savegame_version, current_version))
 		{
-			String errstr = "unknown savegame version: " + String(h.savegame_version) + " supported version: " + String(current_version);
-			logMessage(errstr);
+			String errstr = _L("unknown savegame version: ") + String(h.savegame_version) + _L(" supported version: ") + String(current_version);
+			LOG(errstr);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, errstr, "error.png");
 			fclose(f);
 			return 1;
 		}
@@ -278,7 +285,8 @@ int Savegame::load(Ogre::String &filename)
 		// check magic first, to prevent reading corrupt data
 		if(dh.magic != entry_magic)
 		{
-			logMessage("savegame corrupted: " + filename);
+			LOG(_L("savegame corrupted: ") + filename);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("savegame corrupted: ") + filename, "error.png");
 			fclose(f);
 			return 1;
 		}
@@ -461,16 +469,8 @@ int Savegame::load(Ogre::String &filename)
 	BeamFactory::getSingleton().setCurrentTruck(h.current_truck);
 
 	// and we are done :)
-	logMessage("loading done.");
+	LOG(_L("loading done."));
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("loading done."), "error.png");
 	fclose(f);
 	return 0;
 }
-
-
-void Savegame::logMessage(Ogre::String m)
-{
-	LOG(m);
-	if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->getOverlayWrapper())
-		RoRFrameListener::eflsingleton->getOverlayWrapper()->flashMessage(m);
-}
-
