@@ -41,7 +41,6 @@ template<> OverlayWrapper* Ogre::Singleton<OverlayWrapper>::ms_Singleton = 0;
 OverlayWrapper::OverlayWrapper(Ogre::RenderWindow* win) : 
 	win(win)
 {
-	timeUntilUnflash=-1;
 	init();
 }
 
@@ -403,24 +402,6 @@ int OverlayWrapper::init()
 	guipedbrake=loadOverlayElement("tracks/pedalbrake");
 	guipedacc=loadOverlayElement("tracks/pedalacc");
 
-	flashOverlay = loadOverlay("tracks/FlashMessage");
-
-	OverlayContainer *flashPanel = static_cast<OverlayContainer*>(OverlayManager::getSingleton().createOverlayElement("Panel", "tracks/FlashMessage/Panel"));
-
-	// create flash message
-	flashMessageTE = static_cast<ColoredTextAreaOverlayElement*>(OverlayManager::getSingleton().createOverlayElement("ColoredTextArea", "tracks/Message2"));
-	flashMessageTE->setMetricsMode(Ogre::GMM_RELATIVE);
-	flashMessageTE->setPosition(0.1f, 0.1f);
-	flashMessageTE->setDimensions(0.8f, 0.3f);
-	flashMessageTE->setFontName("Cyberbit");
-	flashMessageTE->setCharHeight(0.05f);
-	flashMessageTE->setCaption("/");
-	flashMessageTE->setColourTop(ColourValue(1.0f,0.6f, 0.0f));
-	flashMessageTE->setColourBottom(ColourValue(0.8f,0.4f, 0.0f));
-	flashPanel->addChild(flashMessageTE);
-	flashOverlay->add2D(flashPanel);
-
-
 	pressureOverlay = loadOverlay("tracks/PressureOverlay");
 	pressureNeedleOverlay = loadOverlay("tracks/PressureNeedleOverlay");
 	editorOverlay = loadOverlay("tracks/EditorOverlay");
@@ -446,71 +427,7 @@ int OverlayWrapper::init()
 
 void OverlayWrapper::update(float dt)
 {
-	if (timeUntilUnflash > 0)
-	{
-		timeUntilUnflash-=dt;
-	} else if (flashOverlay->isVisible())
-	{
-		flashOverlay->hide();
-	}
 }
-
-
-void OverlayWrapper::flashMessage(Ogre::String txt, float time, float charHeight)
-{
-	flashMessage(txt.c_str(), time, charHeight);
-}
-
-void OverlayWrapper::flashMessage(const char* txt, float time, float charHeight)
-{
-	Console *c = Console::getInstancePtrNoCreation();
-	if(c && txt)
-	{
-		c->setVisible(true);
-		c->putMessage(Console::CONSOLE_MSGTYPE_FLASHMESSAGE, Console::CONSOLE_FLASHMESSAGE, tryConvertUTF(txt), "bell.png", (unsigned long)(time * 2000.0f)); //2k = a bit longer
-	}
-
-	if(!txt || time < 0)
-	{
-		// hide
-		flashMessageTE->setCaption("");
-		flashOverlay->hide();
-		timeUntilUnflash=0;
-		return;
-	}
-	try
-	{
-		// catch any non UTF chars
-		flashMessageTE->setCaption(txt);
-	} catch(...)
-	{
-	}
-
-	if(charHeight != -1)
-		flashMessageTE->setCharHeight(charHeight);
-	else
-		// set original height
-		flashMessageTE->setCharHeight(0.05f);
-
-	flashOverlay->show();
-	timeUntilUnflash=time;
-}
-
-void OverlayWrapper::flashMessage()
-{
-	flashOverlay->show();
-	timeUntilUnflash=1;
-}
-
-void OverlayWrapper::hideFlashMessage()
-{
-	flashMessage(0, -1, -1);
-	flashOverlay->hide();
-}
-
-
-
-
 
 void OverlayWrapper::showDebugOverlay(int mode)
 {

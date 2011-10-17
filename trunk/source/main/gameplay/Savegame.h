@@ -35,9 +35,6 @@ protected:
 	static const char *current_version;
 	static const int  entry_magic = 0xCAFED00D;
 	 
-
-	void logMessage(Ogre::String m);
-
 	// data structures for the file format below
 	// Rigs of Rods savegame file format:
 	

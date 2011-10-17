@@ -188,8 +188,7 @@ void GameScript::registerForEvent(int eventValue)
 
 void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 {
-	if(mefl && mefl->getOverlayWrapper())
-		mefl->getOverlayWrapper()->flashMessage(txt, time, charHeight);
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
 }
 
 void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 &vec)

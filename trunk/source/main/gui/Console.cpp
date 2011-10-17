@@ -799,6 +799,11 @@ void Console::updateGUILines( float dt )
 			// expired, take the next message instead, when not in input mode
 			msgi++;
 			continue;
+		} else
+		{
+			// look if its enforced to be visible
+			if(m.forcevisible && !getVisible())
+				setVisible(true);
 		}
 
 		// not empty, not expired, add content
@@ -912,7 +917,7 @@ int Console::messageUpdate( float dt )
 	return r;
 }
 
-void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::String icon, unsigned long ttl )
+void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::String icon, unsigned long ttl, bool forcevisible )
 {
 	msg_t t;
 
@@ -920,6 +925,7 @@ void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::S
 	t.sender_uid = sender_uid;
 	t.time       = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
 	t.ttl        = ttl;
+	t.forcevisible = forcevisible;
 	//strncpy(t.txt,  txt.c_str(), 2048);
 	t.txt        = txt;
 	strncpy(t.icon, icon.c_str(), 50);

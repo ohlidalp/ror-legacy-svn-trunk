@@ -2016,18 +2016,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			mWindow->update();
 			mWindow->writeContentsToFile(tmpfn);
 		}
-		LOG("Wrote screenshot : " + tmpfn);
-
-		// hide any old flash message
-		if(ow) ow->hideFlashMessage();
 
 		MyGUI::PointerManager::getInstance().setVisible(true);
 
 		// show new flash message
-		char tmp1[256];
-		String ssmsg = _L("wrote screenshot:");
-		sprintf(tmp1, "%s %d", ssmsg.c_str(), mNumScreenShots);
-		if(ow) ow->flashMessage(tmp1);
+		String ssmsg = _L("wrote screenshot:") + TOSTRING(mNumScreenShots);
+		LOG(ssmsg);
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ssmsg, "camera.png", 10000);
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCKEDIT_RELOAD, 0.5f) && curr_truck)
@@ -2069,9 +2064,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = curr_truck->savePosition(slot); };
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = curr_truck->savePosition(slot); };
 		if(slot != -1 && !res)
-			if(ow) ow->flashMessage("Position saved under slot " + TOSTRING(slot+1), 3);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Position saved under slot ") + TOSTRING(slot+1), "infromation.png");
 		else if(slot != -1 && res)
-			if(ow) ow->flashMessage("Error while saving position saved under slot " + TOSTRING(slot+1)+" : "+TOSTRING(res), 3);
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Error while saving position saved under slot ") + TOSTRING(slot+1), "error.png");
 
 		if(res == -10)
 		{
@@ -2086,9 +2081,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = curr_truck->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = curr_truck->loadPosition(slot); };
 			if(slot != -1 && res==0)
-				if(ow) ow->flashMessage("Loaded position from slot " + TOSTRING(slot+1), 3);
+				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Loaded position from slot ") + TOSTRING(slot+1), "infromation.png");
 			else if(slot != -1 && res!=0)
-				if(ow) ow->flashMessage("Could not load position from slot " + TOSTRING(slot+1) + "", 3);
+				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Could not load position from slot ") + TOSTRING(slot+1), "error.png");
 		}
 	}
 
@@ -2099,7 +2094,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov>10)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
-		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 
 		// save the settings
 		if (cameramode == CAMERA_INT)
@@ -2114,7 +2109,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(fov<160)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
-		if(ow) ow->flashMessage(_L("FOV: ") + TOSTRING(fov));
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 
 		// save the settings
 		if (cameramode == CAMERA_INT)
@@ -2154,13 +2149,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			cameramode = CAMERA_FREE_FIXED;
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to fixed free camera mode");
-			if(ow) ow->flashMessage(_L("fixed free camera"));
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
 		} else if(cameramode == CAMERA_FREE_FIXED)
 		{
 			cameramode = CAMERA_FREE;
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to free camera mode from fixed mode");
-			if(ow) ow->flashMessage(_L("free camera"));
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 		}
 	}
 
@@ -2173,7 +2168,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if(mDOF) mDOF->setFocusMode(DOFManager::Manual);
 			cameramode = storedcameramode;
 			LOG("exiting free camera mode");
-			if(ow) ow->flashMessage(_L("normal camera"));
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000);
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
 			// enter free camera mode
@@ -2181,7 +2176,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			storedcameramode = cameramode;
 			cameramode = CAMERA_FREE;
 			LOG("entering free camera mode");
-			if(ow) ow->flashMessage(_L("free camera"));
+			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 		}
 	}
 
@@ -2466,11 +2461,21 @@ bool RoRFrameListener::updateEvents(float dt)
 										{
 											switch(curr_truck->engine->getAutoMode())
 											{
-												case AUTOMATIC: ow->flashMessage(_L("Automatic shift")); break;
-												case SEMIAUTO: ow->flashMessage(_L("Manual shift - Auto clutch")); break;
-												case MANUAL: ow->flashMessage(_L("Fully Manual: sequential shift")); break;
-												case MANUAL_STICK: ow->flashMessage(_L("Fully manual: stick shift")); break;
-												case MANUAL_RANGES: ow->flashMessage(_L("Fully Manual: stick shift with ranges")); break;
+												case AUTOMATIC: 
+													Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
+													break;
+												case SEMIAUTO:
+													Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
+													break;
+												case MANUAL:
+													Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
+													break;
+												case MANUAL_STICK:
+													Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
+													break;
+												case MANUAL_RANGES:
+													Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
+													break;
 											}
 										}
 									}
@@ -2516,19 +2521,19 @@ bool RoRFrameListener::updateEvents(float dt)
 													{
 														curr_truck->engine->setGearRange(0);
 														gear_changed = true;
-														if(ow) ow->flashMessage(_L("Low range selected"));
+														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Low range selected"), "cog.png", 3000);
 													}
 												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && curgearrange !=1 && curr_truck->engine->getNumGearsRanges()>1)
 													{
 														curr_truck->engine->setGearRange(1);
 														gear_changed = true;
-														if(ow) ow->flashMessage(_L("Mid range selected"));
+														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Mid range selected"), "cog.png", 3000);
 													}
 												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange!=2 && curr_truck->engine->getNumGearsRanges()>2)
 													{
 														curr_truck->engine->setGearRange(2);
 														gear_changed = true;
-														if(ow) ow->flashMessage(_L("High range selected"));
+														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("High range selected"), "cog.png", 3000);
 													}
 											}
 //zaxxon
@@ -2591,11 +2596,11 @@ bool RoRFrameListener::updateEvents(float dt)
 						//Toggle Auto shift
 						if(!curr_truck->getAxleLockCount())
 						{
-							if(ow) ow->flashMessage(_L("No differential installed on current vehicle!"));
+							Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No differential installed on current vehicle!"), "warning.png", 3000);
 						} else
 						{
 							curr_truck->toggleAxleLock();
-							if(ow) ow->flashMessage(String(_L("Differentials switched to: ")) + (curr_truck->getAxleLockName()) );
+							Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Differentials switched to: ") + curr_truck->getAxleLockName(), "cog.png", 3000);
 						}
 					}
 
@@ -3125,7 +3130,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if( update_time )
 			{
 				SkyManager::getSingleton().setTimeFactor(time_factor);
-				if(ow) ow->flashMessage(Ogre::String("Time set to ") + SkyManager::getSingleton().getPrettyTime(), 2.0);
+				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Time set to ") + SkyManager::getSingleton().getPrettyTime(), "weather_sun.png", 1000);
 			}
 		}
 #endif //CAELUM
@@ -3210,7 +3215,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			if(!BeamFactory::getSingleton().enterRescueTruck())
 			{
-				if(ow) ow->flashMessage(_L("No rescue truck found!"), 3);
+				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
 			}
 		}
 
@@ -6182,7 +6187,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 				if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
 				{
 					//boy, thats bad
-					if(ow) ow->flashMessage(_L("Please clear the place first"), 4);
+					Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Please clear the place first"), "error.png");
 					collisions->clearEventCache();
 					return;
 				}
@@ -6500,7 +6505,7 @@ void RoRFrameListener::reloadCurrentTruck()
 
 	if(BeamFactory::getSingleton().getTruckCount() + 1 >= MAX_TRUCKS)
 	{
-		if(ow) ow->flashMessage(String("unable to load new truck: limit reached. Please restart RoR"), 30);
+		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("unable to load new truck: limit reached. Please restart RoR"), "error.png");
 		return;
 	}
 
@@ -6542,7 +6547,7 @@ void RoRFrameListener::reloadCurrentTruck()
 
 	// notice the user about the amount of possible reloads
 	String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
-	if(ow) ow->flashMessage(msg, 10.0f);
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, msg, "information.png");
 
 	// dislocate the old truck, so its out of sight
 	curr_truck->resetPosition(100000, 100000, false, 100000);
