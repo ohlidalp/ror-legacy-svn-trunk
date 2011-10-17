@@ -132,6 +132,24 @@ void LanguageEngine::setup()
 	LOG("* Language successfully loaded");
 }
 
+void LanguageEngine::postSetup()
+{
+	// set some overlay used fonts to the new font config
+	String newfont = "Cyberbit";
+	const char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
+	for(int i=0;overlays[i]!=0;i++)
+	{
+		try
+		{
+			Ogre::TextAreaOverlayElement *ot = (Ogre::TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(overlays[i]);
+			if(ot) ot->setFontName(newfont);
+		}
+		catch (...)
+		{
+		}
+	}
+}
+
 Ogre::String LanguageEngine::lookUp(Ogre::String name)
 {
 #ifdef USE_MOFILEREADER
