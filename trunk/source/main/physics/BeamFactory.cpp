@@ -778,9 +778,12 @@ void BeamFactory::removeInstance(stream_del_t *del)
 				// clear the trucks array
 				if(it2->second)
 				{
+					// TODO: properly delete trucks
+					// hide the truck
+					it2->second->deleteNetTruck();
+
+					// hide it in the array
 					trucks[it2->second->trucknum] = 0;
-					// deletes the stream
-					
 					
 					// TODO: fix deletion
 					//delete it2->second;

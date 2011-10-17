@@ -5248,12 +5248,13 @@ void Beam::updateNetworkInfo()
 
 void Beam::deleteNetTruck()
 {
+	// TODO: properly delete things ...
 	//park and recycle vehicle
 	state=RECYCLE;
-	if(netMT)
-		netMT->setCaption("");
+	netMT->setVisible(false);
 	resetPosition(100000, 100000, false, 100000);
 	netLabelNode->setVisible(false);
+	updateVisual();
 }
 
 void *threadstart(void* vid)
