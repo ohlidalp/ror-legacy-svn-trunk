@@ -81,7 +81,6 @@ void ContentManager::initBootstrap(void)
 
 bool ContentManager::init(void)
 {
-
     //Set listener if none has already been set
     if (!Ogre::ResourceGroupManager::getSingleton().getLoadingListener())
         Ogre::ResourceGroupManager::getSingleton().setLoadingListener(this);
@@ -246,6 +245,8 @@ bool ContentManager::init(void)
 	{
 		LOG("catched error while initializing Content Resource groups: " + e.getFullDescription());
 	}
+
+	LanguageEngine::Instance().postSetup();
 
 	return true;
 }

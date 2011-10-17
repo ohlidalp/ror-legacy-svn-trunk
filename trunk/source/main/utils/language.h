@@ -60,6 +60,7 @@ class LanguageEngine
 public:
     static LanguageEngine & Instance();
     void setup();
+	void postSetup();
 	Ogre::String lookUp(Ogre::String name);
 
 	Ogre::String getMyGUIFontConfigFilename();
