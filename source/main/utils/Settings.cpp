@@ -133,7 +133,7 @@ void Settings::saveSettings(Ogre::String configFile)
 {
 	// use C++ for easier wstring usage ... :-/
 
-	ofstream f(configFile);
+	ofstream f(configFile.c_str());
 	if(!f.is_open()) return;
 
 	// now save the settings to RoR.cfg
