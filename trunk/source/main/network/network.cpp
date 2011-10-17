@@ -580,8 +580,9 @@ void Network::receivethreadstart()
 			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
 			LOG(" * received stream registration result: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid));
 		}
-		else if(header.command == MSG2_UTF_CHAT || (header.command == MSG2_UTF_PRIVCHAT && header.source == -1))
+		else if(header.source == -1 && (header.command == MSG2_UTF_CHAT || header.command == MSG2_UTF_PRIVCHAT))
 		{
+			// NOTE: this is only a shortcut for server messages, other UIDs propagate over the standard way
 			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
 			if(cs) cs->addReceivedPacket(header, buffer);
 			continue;
