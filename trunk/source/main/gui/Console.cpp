@@ -939,7 +939,7 @@ void Console::saveChat(String filename)
 	FILE *f = fopen(filename.c_str(), "a");
 	if(!f)
 	{
-		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + "Unable to open file " + filename, "error.png");
+		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("Unable to open file ") + filename, "error.png");
 		return;
 	}
 	fprintf(f, "==== \n");
@@ -948,7 +948,7 @@ void Console::saveChat(String filename)
 		fprintf(f, "%ld %s\n", messages[i].time, messages[i].txt);
 	}
 	fclose(f);
-	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, ChatSystem::commandColour + "History saved as " + filename, "table_save.png");
+	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, ChatSystem::commandColour + _L("History saved as ") + filename, "table_save.png");
 }
 
 void Console::outputCurrentPosition()
