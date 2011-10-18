@@ -509,6 +509,7 @@ void Network::receivethreadstart()
 #endif
 	};
 
+
 	socket.set_timeout(0,0);
 	while (!shutdown)
 	{
