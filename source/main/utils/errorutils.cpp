@@ -57,9 +57,9 @@ int showMsgBox(Ogre::UTFString title, Ogre::UTFString err, int type)
 	if(type == 1) mtype = MB_ICONINFORMATION;
 	MessageBoxW( NULL, err.asWStr_c_str(), title.asWStr_c_str(), MB_OK | mtype | MB_TOPMOST);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	printf("\n\n%s: %s\n\n", title.c_str(), err.c_str());
+	printf("\n\n%s: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str());
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	printf("\n\n%s: %s\n\n", title.c_str(), err.c_str());
+	printf("\n\n%s: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str());
 	//CFOptionFlags flgs;
 	//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, T("A network error occured"), T("Bad server port."), NULL, NULL, NULL, &flgs);
 #endif
@@ -83,7 +83,7 @@ int showOgreWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString
 	if(ror) ror->tryShutdown();
 	
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
+	printf("\n\n%s: %s / url: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str(), url.asUTF8_c_str());
 #endif	
 	return 0;
 #else
@@ -113,9 +113,9 @@ int showWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString url
 		ShellExecuteW(NULL, command, url.asWStr_c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
+	printf("\n\n%s: %s / url: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str(), url.asUTF8_c_str());
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	printf("\n\n%s: %s / url: %s\n\n", title.c_str(), err.c_str(), url.c_str());
+	printf("\n\n%s: %s / url: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str(), url.asUTF8_c_str());
 	//CFOptionFlags flgs;
 	//CFUserNotificationDisplayAlert(0, kCFUserNotificationStopAlertLevel, NULL, NULL, NULL, "An exception has occured!", err.c_str(), NULL, NULL, NULL, &flgs);
 #endif
