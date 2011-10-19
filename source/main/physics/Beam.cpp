@@ -2030,8 +2030,10 @@ bool Beam::frameStep(Real dt)
 
 	// TODO: move this to the correct spot
 	// update all dashboards
+	/*
 	updateDashBoards(dt);
 	dash->update(dt);
+	*/
 
 
 	//update visual - antishaking
@@ -5493,7 +5495,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 
 	// HACK: add layout for testing
-	dash->loadDashBoard("dash_test.layout");
+	//dash->loadDashBoard("dash_test.layout");
 
 	return res;
 }
