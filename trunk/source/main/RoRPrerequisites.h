@@ -113,6 +113,7 @@ class Cache_Entry;
 class Collisions;
 class ColoredTextAreaOverlayElement;
 class Dashboard;
+class DashBoard;
 class DashBoardManager;
 class DotSceneLoader;
 class DOFManager;

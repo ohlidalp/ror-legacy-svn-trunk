@@ -25,10 +25,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <OgreSingleton.h>
 
+#include <MyGUI.h>
+
 #define DD_MAXCHAR 255
 #define DD_MAX_SCREWPROP  6
 #define DD_MAX_AEROENGINE 6
 #define DD_MAX_WING       6
+#define MAX_DASH          6
+
+#define MAX_CONTROLS      1024
 
 typedef union dataContainer_t
 {
@@ -156,9 +161,10 @@ public:
 	~DashBoardManager(void);
 
 	// Getter / Setter
-	inline bool  getBool(size_t key)  { return data[key].data.value_bool; };
-	inline int   getInt(size_t key)   { return data[key].data.value_int; };
-	inline float getFloat(size_t key) { return data[key].data.value_float; };
+	inline bool  _getBool(size_t key)  { return data[key].data.value_bool; };
+	inline int   _getInt(size_t key)   { return data[key].data.value_int; };
+	inline float _getFloat(size_t key) { return data[key].data.value_float; };
+	inline float getNumeric(size_t key);
 	inline char *getChar(size_t key)  { return data[key].data.value_char; };
 
 	inline void setBool(size_t key, bool &val)   { data[key].data.value_bool  = val; };
@@ -166,10 +172,74 @@ public:
 	inline void setFloat(size_t key, float &val) { data[key].data.value_float = val; };
 	inline void setChar(size_t key, const char *val)  { strncpy(data[key].data.value_char, val, DD_MAXCHAR); };
 
-protected:
-	dashData_t data[DD_MAX];
+	inline int getDataType(size_t key) { return data[key].type; };
 
+	int getLinkIDForName(Ogre::String &str);
+
+	int loadDashBoard(Ogre::String filename);
+
+	void update(float &dt);
+
+	void setVisible(bool visible);
+	bool getVisible() { return visible; };
+
+protected:
+	bool visible;
+	dashData_t data[DD_MAX];
+	DashBoard *dashboards[MAX_DASH];
+	int free_dashboard;
 };
 
+class DashBoard
+{
+	//friend class DashBoardManager;
+public:
+	DashBoard(DashBoardManager *manager, Ogre::String filename);
+	~DashBoard();
+
+	void setVisible(bool visible);
+	bool getVisible() { return visible; };
+
+	void update(float &dt);
+protected:
+	DashBoardManager *manager;
+	Ogre::String filename;
+	MyGUI::VectorWidgetPtr widgets;
+	bool visible;
+
+	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXT, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE };
+	enum {DIRECTION_NONE, DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT };
+	enum {CONDITION_NONE, CONDITION_GREATER, CONDITION_LESSER};
+
+	// linking attributes
+	typedef struct layoutLink_t
+	{
+		int linkID; // DD_*
+		char animationType; // ANIM_*
+
+		float wmin;  // rotation/offeset whatever (widget min/max)
+		float wmax;
+		float vmin; // value min/max
+		float vmax;
+		int condition; // CONDITION_*
+		float conditionArgument;
+		char direction; // DIRECTION_*
+		char format[255]; // string format
+		char texture[255]; // texture filename
+		char name[255]; // widget name
+
+		MyGUI::Widget *widget;
+		MyGUI::RotatingSkin *rotImg;
+		MyGUI::ImageBox *img;
+		MyGUI::TextBox *txt;
+		MyGUI::IntSize  initialSize;
+		MyGUI::IntPoint initialPosition;
+	} layoutLink_t;
+
+	void loadLayout(Ogre::String filename);
+
+	layoutLink_t controls[MAX_CONTROLS];
+	int free_controls;
+};
 
 #endif //DASHBOARDMANAGER_H__
