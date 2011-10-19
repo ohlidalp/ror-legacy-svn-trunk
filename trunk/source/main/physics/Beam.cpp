@@ -66,6 +66,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Scripting.h"
 #include "PreviewRenderer.h"
 
+#include "DashBoardManager.h"
+
 #include "rornet.h"
 #include "MeshObject.h"
 
@@ -111,6 +113,7 @@ Beam::~Beam()
 	}
 
 	// delete all classes we might have constructed
+	if(dash) delete dash; dash=0;
 
 	// destruct and remove every tiny bit of stuff we created :-|
 	if(nettimer) delete nettimer; nettimer=0;
@@ -304,6 +307,7 @@ Beam::~Beam()
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
+	dash = new DashBoardManager();
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
@@ -5567,4 +5571,379 @@ void Beam::updateAI(float dt)
 			}
 		}
 	}
+}
+
+void Beam::updateDashBoards(float &dt)
+{
+	// some temp vars
+	Vector3 dir;
+
+	//special case for the editor
+	if (editorId >= 0)
+	{
+		String str = "Position: X=" + TOSTRING(nodes[editorId].AbsPosition.x) + "  Y="+TOSTRING(nodes[editorId].AbsPosition.y) + "  Z="+TOSTRING(nodes[editorId].AbsPosition.z);
+		// TODO: FIX THIS?
+		//str += "Angles: 0.0 " + TOSTRING(editor->pturn)+ "  "+TOSTRING(editor->ppitch);
+		//str += "Object: " + String(editor->curtype);
+		dash->setChar(DD_EDITOR_NODE_INFO, str.c_str());
+	}
+
+	// engine and gears
+	if(engine)
+	{
+		// gears first
+		int gear = engine->getGear();
+		dash->setInt(DD_ENGINE_GEAR, gear);
+
+		int numGears = engine->getNumGears();
+		dash->setInt(DD_ENGINE_NUM_GEAR, numGears);
+		
+		String str = String();
+
+		// now construct that classic gear string
+		if (gear > 0)
+			str = TOSTRING(gear) + "/" + TOSTRING(numGears);
+		else if (gear==0)
+			str = String("N");
+		else
+			str = String("R");
+
+		dash->setInt(DD_ENGINE_NUM_GEAR, numGears);
+
+		// autogears
+		int autoGear = engine->getAutoShift();
+		dash->setInt(DD_ENGINE_AUTO_GEAR, autoGear);
+
+		// clutch
+		float clutch = engine->getClutch();
+		dash->setFloat(DD_ENGINE_CLUTCH, clutch);
+
+		// accelerator
+		float acc = engine->getAcc();
+		dash->setFloat(DD_ACCELERATOR, brake);
+
+		// RPM
+		float rpm = 0.072f * engine->getRPM(); // MAGICC ;)
+		dash->setFloat(DD_ENGINE_RPM, rpm);
+
+		// turbo
+		float turbo = engine->getTurboPSI() * 3.34f; // MAGIC :/
+		dash->setFloat(DD_ENGINE_TURBO, turbo);
+
+		// ignition
+		bool ign = (engine->contact > 0);
+		dash->setBool(DD_ENGINE_IGNITION, ign);
+
+		// battery
+		bool batt = (engine->contact && !engine->running);
+		dash->setBool(DD_ENGINE_BATTERY, batt);
+
+		// clutch warning
+		bool cw = (fabs(engine->getTorque()) >= engine->getClutchForce() * 10.0f);
+		dash->setBool(DD_ENGINE_CLUTCH_WARNING, cw);
+
+	}
+
+	// brake
+	float dash_brake = brake / brakeforce;
+	dash->setFloat(DD_BRAKE, dash_brake);
+	
+	// speedo
+	float speed_kph = WheelSpeed;
+	dash->setFloat(DD_ENGINE_SPEEDO_KPH, speed_kph);
+	float speed_mph = speed_kph * 0.621371192f; // 1 kph = 0.621371192 mph
+	dash->setFloat(DD_ENGINE_SPEEDO_MPH, speed_mph);
+
+	// roll
+	{
+		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition;
+		dir.normalise();
+		float angle = asin(dir.dotProduct(Vector3::UNIT_Y));
+		if (angle < -1) angle = -1;
+		if (angle >  1) angle =  1;
+
+		// TODO: angle -> percent?
+		dash->setFloat(DD_ROLL, angle);
+	}
+
+	// active shocks / roll correction
+	if (free_active_shock)
+	{
+		// TOFIX: certainly not working:
+		float roll_corr = - stabratio * 10.0f;
+		dash->setFloat(DD_ROLL_CORR, roll_corr);
+		
+		bool corr_active = (stabcommand > 0);
+		dash->setBool(DD_ROLL_CORR_ACTIVE, corr_active);
+	}
+
+	// pitch
+	{
+		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+		dir.normalise();
+		float angle = asin(dir.dotProduct(Vector3::UNIT_Y));
+		if (angle < -1) angle = -1;
+		if (angle >  1) angle =  1;
+
+		// TODO: angle -> percent?
+		dash->setFloat(DD_PITCH, angle);
+	}
+
+	// parking brake
+	bool pbrake = (parkingbrake > 0);
+	dash->setBool(DD_PARKINGBRAKE, pbrake);
+
+	// locked lamp
+	bool locked = isLocked();
+	dash->setBool(DD_LOCKED, locked);
+	
+	// low pressure lamp
+	bool low_pres = (canwork == 0);
+	dash->setBool(DD_LOW_PRESSURE, locked);
+
+	// lights
+	bool lightsOn = (lights > 0);
+	dash->setBool(DD_LIGHTS, lightsOn);
+
+	// Traction Control
+	if(tc_present)
+	{
+		int dash_tc_mode = 1; // 0 = not present, 1 = off, 2 = on, 3 = active
+		if(tc_mode)
+		{
+			if(tractioncontrol)
+				dash_tc_mode = 3;
+			else
+				dash_tc_mode = 2;
+		}
+		dash->setInt(DD_TRACTIONCONTROL_MODE, dash_tc_mode);
+	}
+
+	// Anti Lock Brake
+	if(alb_present)
+	{
+		int dash_alb_mode = 1; // 0 = not present, 1 = off, 2 = on, 3 = active
+		if(alb_mode)
+		{
+			if(antilockbrake)
+				dash_alb_mode = 3;
+			else
+				dash_alb_mode = 2;
+		}
+		dash->setInt(DD_ANTILOCKBRAKE_MODE, dash_alb_mode);
+	}
+
+	// load secured lamp
+	if (isTied())
+	{
+		int ties_mode = 0; // 0 = not locked, 1 = prelock, 2 = lock
+		if (fabs(commandkey[0].commandValue) > 0.000001f)
+			ties_mode = 1;
+		else
+			ties_mode = 2;
+		dash->setInt(DD_TIES_MODE, ties_mode);
+	}
+
+	// Boat things now: screwprops and alike
+	if(free_screwprop)
+	{
+		// the throttle and rudder
+		for(int i = 0; i < free_screwprop && i < DD_MAX_SCREWPROP; i++)
+		{
+			float throttle = screwprops[i]->getThrotle();
+			dash->setFloat(DD_SCREW_THROTTLE_0 + i, throttle);
+
+			float steering = screwprops[i]->getRudder();
+			dash->setFloat(DD_SCREW_STEER_0 + i, steering);
+		}
+
+		// water depth display, only if we have a screwprop at least
+		{
+			//position
+			Vector3 dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+			dir.normalise();
+
+			char tmp[50]="";
+			int low_node = getLowestNode();
+			if(low_node != -1)
+			{
+				Vector3 pos = nodes[low_node].AbsPosition;
+				float depth =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
+				dash->setFloat(DD_WATER_DEPTH, depth);
+			}
+		}
+		
+		// waterspeed
+		{
+			Vector3 hdir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+			hdir.normalise();
+			float knots = hdir.dotProduct(nodes[cameranodepos[0]].Velocity) * 1.9438f; // 1.943 = m/s in knots/s
+			dash->setFloat(DD_WATER_SPEED, knots);
+		}
+	}
+
+	// now airplane things, aeroengines, etc.
+	if(free_aeroengine)
+	{
+		for(int i = 0; i < free_aeroengine && i < DD_MAX_AEROENGINE; i++)
+		{
+			float throttle = aeroengines[i]->getThrotle();
+			dash->setFloat(DD_AEROENGINE_THROTTLE_0 + i, throttle);
+
+			bool failed = aeroengines[i]->isFailed();
+			dash->setBool(DD_AEROENGINE_FAILED_0 + i, failed);
+
+			float pcent = aeroengines[i]->getRPMpc();
+			dash->setFloat(DD_AEROENGINE_RPM_0 + i, pcent);
+		}
+	}
+	
+	// wings stuff, you dont need an aeroengine
+	if(free_wing)
+	{
+		for(int i = 0; i < free_wing && i < DD_MAX_WING; i++)
+		{
+			// Angle of Attack (AOA)
+			float aoa = wings[i].fa->aoa;
+			dash->setFloat(DD_WING_AOA_0 + i, aoa);
+		}
+	}
+
+	// some things only activate when a wing or an aeroengine is present
+	if(free_wing || free_aeroengine)
+	{
+		//airspeed
+		{
+			float ground_speed_kt = nodes[0].Velocity.length() * 1.9438f; // 1.943 = m/s in knots/s
+
+			//tropospheric model valid up to 11.000m (33.000ft)
+			float altitude              = nodes[0].AbsPosition.y;
+			float sea_level_temperature = 273.15 + 15.0; //in Kelvin // MAGICs D:
+			float sea_level_pressure    = 101325; //in Pa
+			float airtemperature        = sea_level_temperature - altitude * 0.0065f; //in Kelvin
+			float airpressure           = sea_level_pressure * pow(1.0f - 0.0065f * altitude / 288.15f, 5.24947f); //in Pa
+			float airdensity            = airpressure * 0.0000120896f; //1.225 at sea level
+
+			float knots = ground_speed_kt * sqrt(airdensity / 1.225f); //KIAS
+			dash->setFloat(DD_AIRSPEED, knots);
+		}
+		
+		// altimeter (height above ground)
+		{
+			float alt = nodes[0].AbsPosition.y * 1.1811f; // MAGIC
+			dash->setFloat(DD_ALTITUDE, alt);
+
+			char altc[10];
+			sprintf(altc, "%03u", (int)(nodes[0].AbsPosition.y / 30.48f)); // MAGIC
+			dash->setChar(DD_ALTITUDE_STRING, altc);
+		}
+	}
+
+#if 0
+
+
+	// ADI - attitude director indicator
+	//roll
+	Vector3 rollv=curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition-curr_truck->nodes[curr_truck->cameranoderoll[0]].RelPosition;
+	rollv.normalise();
+	float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
+
+	//pitch
+	Vector3 dirv=curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition-curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition;
+	dirv.normalise();
+	float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
+	Vector3 upv=dirv.crossProduct(-rollv);
+	if (upv.y<0) rollangle=3.14159-rollangle;
+	ow->adibugstexture->setTextureRotate(Radian(-rollangle));
+	ow->aditapetexture->setTextureVScroll(-pitchangle*0.25);
+	ow->aditapetexture->setTextureRotate(Radian(-rollangle));
+
+	// HSI - Horizontal Situation Indicator
+	Vector3 idir=curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition-curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition;
+	//			idir.normalise();
+	float dirangle=atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
+	ow->hsirosetexture->setTextureRotate(Radian(dirangle));
+	if (curr_truck->autopilot)
+	{
+		ow->hsibugtexture->setTextureRotate(Radian(dirangle)-Degree(curr_truck->autopilot->heading));
+		float vdev=0;
+		float hdev=0;
+		curr_truck->autopilot->getRadioFix(localizers, free_localizer, &vdev, &hdev);
+		if (hdev>15) hdev=15;
+		if (hdev<-15) hdev=-15;
+		ow->hsivtexture->setTextureUScroll(-hdev*0.02);
+		if (vdev>15) vdev=15;
+		if (vdev<-15) vdev=-15;
+		ow->hsihtexture->setTextureVScroll(-vdev*0.02);
+	}
+
+	// VVI - Vertical Velocity Indicator 
+	float vvi=curr_truck->nodes[0].Velocity.y*196.85;
+	if (vvi<1000.0 && vvi>-1000.0) angle=vvi*0.047;
+	if (vvi>1000.0 && vvi<6000.0) angle=47.0+(vvi-1000.0)*0.01175;
+	if (vvi>6000.0) angle=105.75;
+	if (vvi<-1000.0 && vvi>-6000.0) angle=-47.0+(vvi+1000.0)*0.01175;
+	if (vvi<-6000.0) angle=-105.75;
+	ow->vvitexture->setTextureRotate(Degree(-angle+90.0));
+
+
+	if (curr_truck->aeroengines[0]->getType() == AeroEngine::AEROENGINE_TYPE_TURBOPROP)
+	{
+		Turboprop *tp=(Turboprop*)curr_truck->aeroengines[0];
+		//pitch
+		ow->airpitch1texture->setTextureRotate(Degree(-tp->pitch*2.0));
+		//torque
+		pcent=100.0*tp->indicated_torque/tp->max_torque;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airtorque1texture->setTextureRotate(Degree(-angle));
+	}
+
+	if (ftp>1 && curr_truck->aeroengines[1]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOPROP)
+	{
+		Turboprop *tp=(Turboprop*)curr_truck->aeroengines[1];
+		//pitch
+		ow->airpitch2texture->setTextureRotate(Degree(-tp->pitch*2.0));
+		//torque
+		pcent=100.0*tp->indicated_torque/tp->max_torque;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airtorque2texture->setTextureRotate(Degree(-angle));
+	}
+
+	if (ftp>2 && curr_truck->aeroengines[2]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOPROP)
+	{
+		Turboprop *tp=(Turboprop*)curr_truck->aeroengines[2];
+		//pitch
+		ow->airpitch3texture->setTextureRotate(Degree(-tp->pitch*2.0));
+		//torque
+		pcent=100.0*tp->indicated_torque/tp->max_torque;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airtorque3texture->setTextureRotate(Degree(-angle));
+	}
+
+	if (ftp>3 && curr_truck->aeroengines[3]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOPROP)
+	{
+		Turboprop *tp=(Turboprop*)curr_truck->aeroengines[3];
+		//pitch
+		ow->airpitch4texture->setTextureRotate(Degree(-tp->pitch*2.0));
+		//torque
+		pcent=100.0*tp->indicated_torque/tp->max_torque;
+		if (pcent<60.0) angle=-5.0+pcent*1.9167;
+		else if (pcent<110.0) angle=110.0+(pcent-60.0)*4.075;
+		else angle=314.0;
+		ow->airtorque4texture->setTextureRotate(Degree(-angle));
+	}
+
+	//starters
+	if (curr_truck->aeroengines[0]->getIgnition()) ow->engstarto1->setMaterialName("tracks/engstart-on"); else ow->engstarto1->setMaterialName("tracks/engstart-off");
+	if (ftp>1 && curr_truck->aeroengines[1]->getIgnition()) ow->engstarto2->setMaterialName("tracks/engstart-on"); else ow->engstarto2->setMaterialName("tracks/engstart-off");
+	if (ftp>2 && curr_truck->aeroengines[2]->getIgnition()) ow->engstarto3->setMaterialName("tracks/engstart-on"); else ow->engstarto3->setMaterialName("tracks/engstart-off");
+	if (ftp>3 && curr_truck->aeroengines[3]->getIgnition()) ow->engstarto4->setMaterialName("tracks/engstart-on"); else ow->engstarto4->setMaterialName("tracks/engstart-off");
+}
+#endif //0
 }
