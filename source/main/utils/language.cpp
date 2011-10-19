@@ -135,7 +135,7 @@ void LanguageEngine::setup()
 void LanguageEngine::postSetup()
 {
 	// set some overlay used fonts to the new font config
-	String newfont = "Cyberbit";
+	String newfont = "CyberbitEnglish";
 	const char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
 	for(int i=0;overlays[i]!=0;i++)
 	{
@@ -226,17 +226,7 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	}
 	*/
 
-	// set some overlay used fonts to the new font config
-	/*
-	String newfont = "Cyberbit";
-	const char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
-	for(int i=0;overlays[i]!=0;i++)
-	{
-		((Ogre::TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(overlays[i]))->setFontName(newfont);
-	}
-	*/
-
-	//fontCacheInit("Cyberbit");
+	//fontCacheInit("CyberbitEnglish");
 	//generateAllFontTextures();
 }
 #endif //NOLANG

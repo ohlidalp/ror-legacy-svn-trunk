@@ -287,9 +287,9 @@ void DashBoard::update( float &dt )
 			else if(controls[i].direction == DIRECTION_DOWN)
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top + translation);
 			else if(controls[i].direction == DIRECTION_LEFT)
-				controls[i].widget->setPosition(controls[i].initialPosition.left + translation, controls[i].initialPosition.top);
-			else if(controls[i].direction == DIRECTION_RIGHT)
 				controls[i].widget->setPosition(controls[i].initialPosition.left - translation, controls[i].initialPosition.top);
+			else if(controls[i].direction == DIRECTION_RIGHT)
+				controls[i].widget->setPosition(controls[i].initialPosition.left + translation, controls[i].initialPosition.top);
 		}
 		
 	}

@@ -173,8 +173,8 @@ void example_usage()
 	// use only for debugging:
 	// generateAllFontTextures()
 
-	// example: i want to use the TTF font Cyberbit in my application:
-	fontCacheInit("Cyberbit");
+	// example: i want to use the TTF font CyberbitEnglish in my application:
+	fontCacheInit("CyberbitEnglish");
 
-	// from now you can use font Cyberbit_cache in your application :)
+	// from now you can use font CyberbitEnglish_cache in your application :)
 }
