@@ -5262,16 +5262,13 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 	enforceCameraFOVUpdate = true;
 
-	if (currentTruck)
-		currentTruck->desactivate();
-
 	if (!currentTruck)
 	{
 		// get out
 		if(previousTruck && person)
 			person->setPosition(previousTruck->getPosition());
 
-		// detach person to truck
+		// detach person from truck
 		if(person)
 			person->setBeamCoupling(false);
 
@@ -5301,9 +5298,9 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 		//getting outside
 		Vector3 position = Vector3::ZERO;
-		if(currentTruck)
+		if(previousTruck)
 		{
-			currentTruck->prepareInside(false);
+			previousTruck->prepareInside(false);
 
 			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
 			if(previousTruck->cinecameranodepos[0] != -1)
@@ -5348,6 +5345,8 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	else
 	{
 		//getting inside
+		currentTruck->desactivate();
+
 
 		//person->setVisible(false);
 		if(ow &&!hidegui)

@@ -920,6 +920,7 @@ void Beam::desactivate()
 	if (state!=NETWORKED && state!=RECYCLE)
 	{
 		state=DESACTIVATED;
+		dash->setVisible(true);
 		sleepcount=0;
 	}
 }
@@ -2026,6 +2027,15 @@ bool Beam::frameStep(Real dt)
 	{
 		debugText="SL - Fasttrack: "+TOSTRING(fasted*100/(fasted+slowed))+"% "+TOSTRING(steps)+" steps";
 	};
+
+	// TODO: move this to the correct spot
+	// update all dashboards
+	/*
+	updateDashBoards(dt);
+	dash->update(dt);
+	*/
+
+
 	//update visual - antishaking
 	//	int t;
 	//	for (t=0; t<numtrucks; t++)
@@ -3477,6 +3487,7 @@ void Beam::prepareInside(bool inside)
 	else
 	{
 		//going outside
+		dash->setVisible(false);
 
 		// disable cabin light before going out
 		if(cablightNode && cablight)
@@ -5481,6 +5492,11 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 	LOG("BEAM: truck memory used: " + TOSTRING(mem)  + " B (" + TOSTRING(mem/1024)  + " kB)");
 	LOG("BEAM: truck memory allocated: " + TOSTRING(memr)  + " B (" + TOSTRING(memr/1024)  + " kB)");
+
+
+	// HACK: add layout for testing
+	//dash->loadDashBoard("dash_test.layout");
+
 	return res;
 }
 
@@ -5623,7 +5639,7 @@ void Beam::updateDashBoards(float &dt)
 		dash->setFloat(DD_ACCELERATOR, brake);
 
 		// RPM
-		float rpm = 0.072f * engine->getRPM(); // MAGICC ;)
+		float rpm = engine->getRPM();
 		dash->setFloat(DD_ENGINE_RPM, rpm);
 
 		// turbo
@@ -5838,6 +5854,9 @@ void Beam::updateDashBoards(float &dt)
 			dash->setChar(DD_ALTITUDE_STRING, altc);
 		}
 	}
+
+
+	// TODO: compass value
 
 #if 0
 
