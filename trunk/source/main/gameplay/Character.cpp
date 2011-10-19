@@ -169,7 +169,7 @@ void Character::updateNetLabel()
 	{
 		netMT = new MovableText("netlabel-"+myName, networkUsername);
 		personode->attachObject(netMT);
-		netMT->setFontName("Cyberbit");
+		netMT->setFontName("CyberbitEnglish");
 		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
 		netMT->setAdditionalHeight(2);
 		netMT->showOnTop(false);
