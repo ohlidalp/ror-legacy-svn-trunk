@@ -333,7 +333,7 @@ public:
 	Ogre::SceneNode *getSceneNode() { return parentNode; };
 
 protected:
-
+	void updateDashBoards(float &dt);
 	void updateSimpleSkeleton();
 	SceneNode *simpleSkeletonNode;
 
@@ -341,6 +341,8 @@ protected:
 	Vector3 lastposition;
 	Vector3 lastlastposition;
 	Real minCameraRadius;
+
+	DashBoardManager *dash;
 
 	Real replayTimer;
 	Real replayPrecision;
