@@ -2030,10 +2030,8 @@ bool Beam::frameStep(Real dt)
 
 	// TODO: move this to the correct spot
 	// update all dashboards
-	/*
+	
 	updateDashBoards(dt);
-	dash->update(dt);
-	*/
 
 
 	//update visual - antishaking
@@ -5624,7 +5622,7 @@ void Beam::updateDashBoards(float &dt)
 		else
 			str = String("R");
 
-		dash->setInt(DD_ENGINE_NUM_GEAR, numGears);
+		dash->setInt(DD_ENGINE_GEAR_STRING, numGears);
 
 		// autogears
 		int autoGear = engine->getAutoShift();
@@ -5678,8 +5676,8 @@ void Beam::updateDashBoards(float &dt)
 		if (angle < -1) angle = -1;
 		if (angle >  1) angle =  1;
 
-		// TODO: angle -> percent?
-		dash->setFloat(DD_ROLL, angle);
+		float f = Radian(angle).valueDegrees();
+		dash->setFloat(DD_ROLL, f);
 	}
 
 	// active shocks / roll correction
@@ -5701,8 +5699,8 @@ void Beam::updateDashBoards(float &dt)
 		if (angle < -1) angle = -1;
 		if (angle >  1) angle =  1;
 
-		// TODO: angle -> percent?
-		dash->setFloat(DD_PITCH, angle);
+		float f = Radian(angle).valueDegrees();
+		dash->setFloat(DD_PITCH, f);
 	}
 
 	// parking brake

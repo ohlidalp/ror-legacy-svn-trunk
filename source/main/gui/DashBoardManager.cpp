@@ -80,12 +80,12 @@ DashBoardManager::DashBoardManager(void) : visible(true), free_dashboard(0)
 	INITDATA(DD_AEROENGINE_THROTTLE_3   , DC_FLOAT, "aeroengine_throttle_3");
 	INITDATA(DD_AEROENGINE_THROTTLE_4   , DC_FLOAT, "aeroengine_throttle_4");
 	INITDATA(DD_AEROENGINE_THROTTLE_5   , DC_FLOAT, "aeroengine_throttle_5");
-	INITDATA(DD_AEROENGINE_FAILED_0     , DC_BOOL , "aeroengine_onfire_0");
-	INITDATA(DD_AEROENGINE_FAILED_1     , DC_BOOL , "aeroengine_onfire_1");
-	INITDATA(DD_AEROENGINE_FAILED_2     , DC_BOOL , "aeroengine_onfire_2");
-	INITDATA(DD_AEROENGINE_FAILED_3     , DC_BOOL , "aeroengine_onfire_3");
-	INITDATA(DD_AEROENGINE_FAILED_4     , DC_BOOL , "aeroengine_onfire_4");
-	INITDATA(DD_AEROENGINE_FAILED_5     , DC_BOOL , "aeroengine_onfire_5");
+	INITDATA(DD_AEROENGINE_FAILED_0     , DC_BOOL , "aeroengine_failed_0");
+	INITDATA(DD_AEROENGINE_FAILED_1     , DC_BOOL , "aeroengine_failed_1");
+	INITDATA(DD_AEROENGINE_FAILED_2     , DC_BOOL , "aeroengine_failed_2");
+	INITDATA(DD_AEROENGINE_FAILED_3     , DC_BOOL , "aeroengine_failed_3");
+	INITDATA(DD_AEROENGINE_FAILED_4     , DC_BOOL , "aeroengine_failed_4");
+	INITDATA(DD_AEROENGINE_FAILED_5     , DC_BOOL , "aeroengine_failed_5");
 	INITDATA(DD_AEROENGINE_RPM_0        , DC_FLOAT, "aeroengine_rpm_0");
 	INITDATA(DD_AEROENGINE_RPM_1        , DC_FLOAT, "aeroengine_rpm_1");
 	INITDATA(DD_AEROENGINE_RPM_2        , DC_FLOAT, "aeroengine_rpm_2");
@@ -202,12 +202,17 @@ void DashBoard::update( float &dt )
 			float val = manager->getNumeric(controls[i].linkID);
 			// calculate the angle
 			float angle = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
+
+			if(fabs(val - controls[i].last) < 0.2f) continue;
+			controls[i].last = val;
+
 			// enforce limits
 			if     (angle < controls[i].wmin) angle = controls[i].wmin;
 			else if(angle > controls[i].wmax) angle = controls[i].wmax;
 			// rotate finally
 			controls[i].rotImg->setAngle(Ogre::Degree(angle).valueRadians());
-		} else if(controls[i].animationType == ANIM_LAMP)
+		}
+		else if(controls[i].animationType == ANIM_LAMP)
 		{
 			// or a lamp?
 			bool state = false;
@@ -225,6 +230,9 @@ void DashBoard::update( float &dt )
 				state = (manager->getNumeric(controls[i].linkID) > 0);
 			}
 
+			if(state == controls[i].lastState) continue;
+			controls[i].lastState = state;
+
 			// switch states
 			if(state)
 			{
@@ -233,33 +241,25 @@ void DashBoard::update( float &dt )
 			{
 				controls[i].img->setImageTexture(String(controls[i].texture) + "-off.png");
 			}
-		} else if(controls[i].animationType == ANIM_TEXT)
-		{
-			float val = manager->getNumeric(controls[i].linkID);
-
-			MyGUI::UString s;
-			if(strlen(controls[i].format) == 0)
-			{
-				s = Ogre::StringConverter::toString(val);
-			} else
-			{
-				char tmp[1024] = "";
-				sprintf(tmp, controls[i].format, val);
-				s = MyGUI::UString(tmp);
-			}
-
-			controls[i].txt->setCaption(s);
 		} else if(controls[i].animationType == ANIM_SERIES)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
-			
+
 			String fn = String(controls[i].texture) + String("-") + TOSTRING((int)val) + String(".png");
+
+			if(fabs(val - controls[i].last) < 0.2f) continue;
+			controls[i].last = val;
+
 			controls[i].img->setImageTexture(fn);
-		} else if(controls[i].animationType == ANIM_SCALE)
+		}
+		else if(controls[i].animationType == ANIM_SCALE)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
-			float scale = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
 
+			if(fabs(val - controls[i].last) < 0.2f) continue;
+			controls[i].last = val;
+
+			float scale = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
 			if(controls[i].direction == DIRECTION_UP)
 			{
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top - scale);
@@ -281,6 +281,10 @@ void DashBoard::update( float &dt )
 		} else if(controls[i].animationType == ANIM_TRANSLATE)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
+
+			if(fabs(val - controls[i].last) < 0.2f) continue;
+			controls[i].last = val;
+
 			float translation = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
 			if(controls[i].direction == DIRECTION_UP)
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top - translation);
@@ -290,6 +294,26 @@ void DashBoard::update( float &dt )
 				controls[i].widget->setPosition(controls[i].initialPosition.left - translation, controls[i].initialPosition.top);
 			else if(controls[i].direction == DIRECTION_RIGHT)
 				controls[i].widget->setPosition(controls[i].initialPosition.left + translation, controls[i].initialPosition.top);
+		}
+		else if(controls[i].animationType == ANIM_TEXT)
+		{
+			float val = manager->getNumeric(controls[i].linkID);
+
+			if(fabs(val - controls[i].last) < 0.2f) continue;
+			controls[i].last = val;
+
+			MyGUI::UString s;
+			if(strlen(controls[i].format) == 0)
+			{
+				s = Ogre::StringConverter::toString(val);
+			} else
+			{
+				char tmp[1024] = "";
+				sprintf(tmp, controls[i].format, val);
+				s = MyGUI::UString(tmp);
+			}
+
+			controls[i].txt->setCaption(s);
 		}
 		
 	}
@@ -316,6 +340,8 @@ void DashBoard::loadLayout( Ogre::String filename )
 		ctrl.widget          = w;
 		ctrl.initialSize     = w->getSize();
 		ctrl.initialPosition = w->getPosition();
+		ctrl.last            = 1337.1337f; // force update
+		ctrl.lastState       = true;
 		
 		// establish the link
 		{
