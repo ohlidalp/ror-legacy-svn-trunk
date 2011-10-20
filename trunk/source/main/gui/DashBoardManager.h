@@ -234,6 +234,10 @@ protected:
 		MyGUI::TextBox *txt;
 		MyGUI::IntSize  initialSize;
 		MyGUI::IntPoint initialPosition;
+
+
+		float last;
+		bool lastState;
 	} layoutLink_t;
 
 	void loadLayout(Ogre::String filename);
