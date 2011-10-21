@@ -1617,7 +1617,7 @@ void Beam::resetAngle(float rot)
 
 	// Set up matrix for yaw rotation
 	Matrix3 matrix;
-	matrix.FromEulerAnglesXYZ(Radian(0), Radian(-rot - PI/2), Radian(0));
+	matrix.FromEulerAnglesXYZ(Radian(0), Radian(-rot - Math::PI/2), Radian(0));
 
 	for (int i = 0; i < free_node; i++)
 	{
@@ -2032,6 +2032,8 @@ bool Beam::frameStep(Real dt)
 	// update all dashboards
 	
 	updateDashBoards(dt);
+	dash->update(dt);
+
 
 
 	//update visual - antishaking
@@ -3417,7 +3419,7 @@ Quaternion Beam::specialGetRotationTo(const Vector3& src, const Vector3& dest) c
 		if (axis.isZeroLength()) // pick another if colinear
 			axis = Vector3::UNIT_Y.crossProduct(src);
 		axis.normalise();
-		q.FromAngleAxis(Radian(PI), axis);
+		q.FromAngleAxis(Radian(Math::PI), axis);
 	}
 	else
 	{
@@ -5492,8 +5494,15 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 	LOG("BEAM: truck memory allocated: " + TOSTRING(memr)  + " B (" + TOSTRING(memr/1024)  + " kB)");
 
 
-	// HACK: add layout for testing
-	//dash->loadDashBoard("dash_test.layout");
+	// now load any dashboards
+	if(dashBoardLayout.empty())
+	{
+		// TODO: defaults?
+	} else
+	{
+		dash->loadDashBoard(dashBoardLayout);
+	}
+	dash->setVisible(false);
 
 	return res;
 }
@@ -5853,6 +5862,9 @@ void Beam::updateDashBoards(float &dt)
 		}
 	}
 
+	dash->setFloat(DD_ODOMETER_TOTAL, odometerTotal);
+	dash->setFloat(DD_ODOMETER_USER, odometerUser);
+	
 
 	// TODO: compass value
 

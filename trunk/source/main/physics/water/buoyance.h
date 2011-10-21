@@ -35,7 +35,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustPool.h"
 #include "DustManager.h"
 
-#define PI 3.1415926535897932384626433832795
 using namespace Ogre;
 
 #define BUOY_NORMAL 0

@@ -102,6 +102,10 @@ DashBoardManager::DashBoardManager(void) : visible(true), free_dashboard(0)
 	INITDATA(DD_ALTITUDE                , DC_FLOAT, "altitude");
 	INITDATA(DD_ALTITUDE_STRING         , DC_CHAR , "altitude_string");
 	INITDATA(DD_EDITOR_NODE_INFO        , DC_CHAR , "editor_node_info");
+
+	INITDATA(DD_ODOMETER_TOTAL          , DC_FLOAT, "odometer_total");
+	INITDATA(DD_ODOMETER_USER           , DC_FLOAT, "odometer_user");
+
 }
 
 

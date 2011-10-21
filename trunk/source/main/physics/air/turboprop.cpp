@@ -221,7 +221,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 	//evaluate the rotation speed
 	float velacc=0;
 	for (int i=0; i<numblades; i++) velacc+=(nodes[nodep[i]].Velocity-nodes[noderef].Velocity).length();
-	rpm=(velacc/numblades)*9.549/radius;
+	rpm=(velacc/numblades) * RAD_PER_SEC_TO_RPM / radius;
 	//check for broken prop
 	Vector3 avg=Vector3::ZERO;
 	for (int i=0; i<numblades; i++) avg+=nodes[nodep[i]].RelPosition;
@@ -297,7 +297,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 		axis.normalise();
 	}
 	//estimate amount of energy
-	float estrotenergy=0.5*numblades*nodes[nodep[0]].mass*radius*radius*(rpm/9.549)*(rpm/9.549);
+	float estrotenergy=0.5*numblades*nodes[nodep[0]].mass*radius*radius*(rpm/RAD_PER_SEC_TO_RPM)*(rpm/RAD_PER_SEC_TO_RPM);
 	//for each blade
 	float totthrust=0;
 	float tottorque=0;
@@ -362,7 +362,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 			tottorque+=tipf.dotProduct(totaltipforce)*radius;
 			//correct amount of energy
 			float correctfactor=0;
-			if (rpm>100) correctfactor=(rotenergy-estrotenergy)/(numblades*radius*dt*rpm/9.549);
+			if (rpm>100) correctfactor=(rotenergy-estrotenergy)/(numblades*radius*dt*rpm/RAD_PER_SEC_TO_RPM);
 			if (correctfactor>1000.0) correctfactor=1000.0;
 			if (correctfactor<-1000.0) correctfactor=-1000.0;
 			nodes[nodep[i]].Forces+=totaltipforce+correctfactor*tipf;
@@ -378,7 +378,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 		}
 	}
 	//compute the next energy level
-	rotenergy+=(double)tottorque*dt*rpm/9.549;
+	rotenergy+=(double)tottorque*dt*rpm/RAD_PER_SEC_TO_RPM;
 //	sprintf(debug, "pitch %i thrust %i totenergy=%i apparentenergy=%i", (int)pitch, (int)totthrust, (int)rotenergy, (int)estrotenergy);
 	//prop wash
 	float speed=nodes[noderef].Velocity.length();
