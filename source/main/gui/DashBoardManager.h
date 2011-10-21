@@ -150,6 +150,10 @@ enum {
 	DD_ALTITUDE_STRING,
 
 	DD_EDITOR_NODE_INFO,   // editor node info string
+
+	DD_ODOMETER_TOTAL,
+	DD_ODOMETER_USER,
+
 	DD_MAX
 };
 

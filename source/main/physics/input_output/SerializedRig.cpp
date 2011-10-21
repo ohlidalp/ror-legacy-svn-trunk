@@ -223,6 +223,10 @@ SerializedRig::SerializedRig()
 	default_node_surface=NODE_SURFACE_COEF_DEFAULT;
 	default_node_loadweight=NODE_LOADWEIGHT_DEFAULT;
 
+	odometerTotal = 0;
+	odometerUser  = 0;
+	dashBoardLayout = String();
+
 	memset(default_node_options, 0, 49);
 	memset(texname, 0, 1023);
 	memset(helpmat, 0, 255);
@@ -416,27 +420,29 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	int lockgroup_default = NODE_LOCKGROUP_DEFAULT;
 
 	parser_warning(c, "Start of truck loading: " + filename, PARSER_INFO);
+
+
+	DataStreamPtr ds = DataStreamPtr();
 	String group = "";
 	try
 	{
-		if(!CACHE.checkResourceLoaded(filename, group))
-		{
-			parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
-			return -1;
-		}
+		CACHE.checkResourceLoaded(filename, group);
+		// error on ds open lower
+		// open the stream and start reading :)
+		ResourceGroupManager::getSingleton().openResource(filename, group);
 	} catch(Ogre::Exception& e)
 	{
-		if(e.getNumber() == Ogre::Exception::ERR_ITEM_NOT_FOUND)
-		{
-			parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
-			return -1;
-		}
 	}
 
 	//this->cacheEntryInfo = CACHE.getResourceInfo(filename);
+	if(ds.isNull() || !ds->isReadable())
+	{
+		Console *console = Console::getInstancePtrNoCreation();
+		if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unable to open file): " + filename, "error.png"); console->setVisible(true); };
+		parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
+		return -1;
+	}
 
-	// open the stream and start reading :)
-	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 
 	// read in truckname on first line
 	c.line = ds->getLine(true);
@@ -1373,6 +1379,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (id != free_node)
 				{
+					Console *console = Console::getInstancePtrNoCreation();
+					if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (lost sync in nodes numbers): " + filename, "error.png"); console->setVisible(true); };
+
 					parser_warning(c, "lost sync in nodes numbers after node " + TOSTRING(free_node) + "(got " + TOSTRING(id) + " instead)", PARSER_FATAL_ERROR);
 					return -2;
 				};
@@ -2026,6 +2035,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 				{
+					Console *console = Console::getInstancePtrNoCreation();
+					if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Wrong values in shocks2 section): " + filename, "error.png"); console->setVisible(true); };
+
 					parser_warning(c, "Error: Wrong values in shocks2 section ("+TOSTRING(id1)+","+TOSTRING(id2)+")", PARSER_FATAL_ERROR);
 					return -7;
 				}
@@ -2256,6 +2268,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				if (id1>=free_node || id2>=free_node)
 				{
+					Console *console = Console::getInstancePtrNoCreation();
+					if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unknown node number in animators section): " + filename, "error.png"); console->setVisible(true); };
+
 					parser_warning(c, "Error: unknown node number in animators section ("+TOSTRING(id1)+","+TOSTRING(id2)+")", PARSER_FATAL_ERROR);
 					return -8;
 				}
@@ -2613,6 +2628,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/transred"));
 							if(mat.getPointer() == 0)
 							{
+
+								Console *console = Console::getInstancePtrNoCreation();
+								if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Material not found! Try to ensure that tracks/transred exists and retry): " + filename, "error.png"); console->setVisible(true); };
+
 								parser_warning(c, "Material not found! Try to ensure that tracks/transred exists and retry.", PARSER_FATAL_ERROR);
 								return -9;
 							}
@@ -4147,6 +4166,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					int use = StringConverter::parseInt(String(value));
 					useMaxRPMforGUI = (use == 1);
 				}
+				else if(!strncmp(keyword, "dashboard", 255) && strnlen(value, 255) > 0)
+				{
+					dashBoardLayout = String(value);
+				}
 
 			}
 			else if (c.mode == BTS_MINIMASS)
@@ -5132,6 +5155,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName(texname));
 		if(mat.isNull())
 		{
+			
+			Console *console = Console::getInstancePtrNoCreation();
+			if(console) { console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Material '"+String(texname)+"' missing!): " + filename, "error.png"); console->setVisible(true); };
+
 			parser_warning(c, "Material '"+String(texname)+"' missing!", PARSER_FATAL_ERROR);
 			return -13;
 		}

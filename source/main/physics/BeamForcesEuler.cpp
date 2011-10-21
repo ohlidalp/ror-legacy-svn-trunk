@@ -1511,15 +1511,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	{
 		if (engine && free_wheel)
 		{
-			engine->setSpin(wspeed*9.549);
+			engine->setSpin(wspeed * RAD_PER_SEC_TO_RPM);
 		}
 	} else
 	{
 		if (engine && free_wheel && wheels[0].radius != 0)
 		{
-			engine->setSpin(wspeed*9.549/wheels[0].radius);
+			engine->setSpin(wspeed * RAD_PER_SEC_TO_RPM / wheels[0].radius);
 		}
 	}
+
+	// calculate driven distance
+	// distance [in meter/second] = speed [radians/second] * (2 * PI * radius [in meter]);
+	float distance_driven = fabs(((wspeed * RAD_PER_SEC_TO_RPM) * (2.0f * Math::PI * wheels[0].radius) * dt) / 60);
+	odometerTotal += distance_driven;
+	odometerUser  += distance_driven;
 
 	BES_STOP(BES_CORE_Wheels);
 	BES_START(BES_CORE_Shocks);
@@ -1527,7 +1533,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	//update position
 //		if(free_node != 0)
 //			aposition/=(Real)(free_node);
-	//variable shocks for stabilisation
+	//variable shocks for stabilization
 	if (free_active_shock && stabcommand)
 	{
 		if ((stabcommand==1 && stabratio<0.1) || (stabcommand==-1 && stabratio>-0.1))

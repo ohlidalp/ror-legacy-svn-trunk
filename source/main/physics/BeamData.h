@@ -77,6 +77,9 @@ static const int   MAX_WINGS                  = 40;              //!< maximum nu
 static const int   MAX_CPARTICLES             = 10;              //!< maximum number of custom particles per truck
 static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum number of pressure beams per truck
 
+
+static const float RAD_PER_SEC_TO_RPM         = 9.54929659643f;  //!< Convert radian/second to RPM (60/2*PI)
+
 /* other global static definitions */
 static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file format version number
 
@@ -1021,6 +1024,11 @@ struct rig
 
 	MaterialReplacer *materialReplacer;
 	Ogre::String subMeshGroundModelName;
+
+	float odometerTotal;
+	float odometerUser;
+
+	Ogre::String dashBoardLayout;
 };
 
 // some non-beam structs
