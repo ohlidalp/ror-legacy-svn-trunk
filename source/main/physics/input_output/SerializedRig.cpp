@@ -429,7 +429,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		CACHE.checkResourceLoaded(filename, group);
 		// error on ds open lower
 		// open the stream and start reading :)
-		ResourceGroupManager::getSingleton().openResource(filename, group);
+		ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 	} catch(Ogre::Exception& e)
 	{
 	}
