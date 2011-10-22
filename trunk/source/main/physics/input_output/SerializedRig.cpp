@@ -440,7 +440,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	if(ds.isNull() || !ds->isReadable())
 	{
 		Console *console = Console::getInstancePtrNoCreation();
-		if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unable to open file): " + filename + "\n" + errorStr, "error.png", 30000, true);
+		if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unable to open file): " + filename + " : " + errorStr, "error.png", 30000, true);
 		parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
 		return -1;
 	}
