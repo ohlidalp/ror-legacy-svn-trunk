@@ -2057,7 +2057,7 @@ void MyDialog::getSettingsControls()
 	} else
 	{
 		settings["Language"] = std::string("English (U.S.)");
-		settings["Language Short"] = std::string("");
+		settings["Language Short"] = std::string("en_US");
 	} 
 }
 
@@ -2185,7 +2185,9 @@ bool MyDialog::LoadConfig()
 	while (i.hasMoreElements())
 	{
 		sname = i.peekNextKey();
+		Ogre::StringUtil::trim(sname);
 		svalue = i.getNext();
+		Ogre::StringUtil::trim(svalue);
 		// filter out some things that shouldnt be in there (since we cannot use RoR normally anymore after those)
 		if(sname == Ogre::String("Benchmark") || sname == Ogre::String("streamCacheGenerationOnly")|| sname == Ogre::String("regen-cache-only"))
 			continue;
