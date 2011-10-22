@@ -460,7 +460,7 @@ const wxLanguageInfo *getLanguageInfoByName(const wxString name)
 {
 	if(name.size() == 2)
 	{
-		for(int i=0;i<400;i++)
+		for(int i=0;i<wxLANGUAGE_USER_DEFINED;i++)
 		{
 			const wxLanguageInfo *info = wxLocale::GetLanguageInfo(i);
 			if(!info)
@@ -471,7 +471,7 @@ const wxLanguageInfo *getLanguageInfoByName(const wxString name)
 		}
 	} else
 	{
-		for(int i=0;i<400;i++)
+		for(int i=0;i<wxLANGUAGE_USER_DEFINED;i++)
 		{
 			const wxLanguageInfo *info = wxLocale::GetLanguageInfo(i);
 			if(!info)
@@ -2056,7 +2056,7 @@ void MyDialog::getSettingsControls()
 		}
 	} else
 	{
-		settings["Language"] = std::string("US English");
+		settings["Language"] = std::string("English (U.S.)");
 		settings["Language Short"] = std::string("");
 	} 
 }
