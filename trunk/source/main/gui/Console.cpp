@@ -936,18 +936,22 @@ void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::S
 
 void Console::saveChat(String filename)
 {
-	FILE *f = fopen(filename.c_str(), "a");
-	if(!f)
+	// use C++ for easier wstring usage ... :-/
+	ofstream f(filename.c_str(), ios_base::app|ios_base::out); // in append mode
+	if(!f.is_open())
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("Unable to open file ") + filename, "error.png");
 		return;
 	}
-	fprintf(f, "==== \n");
+
+	// now save the chat
+	f << " ==== " << endl;
 	for(unsigned int i = 0; i < message_counter; i++)
 	{
-		fprintf(f, "%ld %s\n", messages[i].time, messages[i].txt);
+		f << messages[i].time << " | " << messages[i].txt << endl;
 	}
-	fclose(f);
+	f.close();
+	
 	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, ChatSystem::commandColour + _L("History saved as ") + filename, "table_save.png");
 }
 
