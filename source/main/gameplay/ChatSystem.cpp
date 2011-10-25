@@ -103,10 +103,10 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
-const Ogre::UTFString ChatSystem::commandColour       = L"#941e8d";
-const Ogre::UTFString ChatSystem::normalColour        = L"#000000";
-const Ogre::UTFString ChatSystem::whisperColour       = L"#967417";
-const Ogre::UTFString ChatSystem::scriptCommandColour = L"#32436f";
+const Ogre::UTFString ChatSystem::commandColour       = U("#941e8d");
+const Ogre::UTFString ChatSystem::normalColour        = U("#000000");
+const Ogre::UTFString ChatSystem::whisperColour       = U("#967417");
+const Ogre::UTFString ChatSystem::scriptCommandColour = U("#32436f");
 
 
 

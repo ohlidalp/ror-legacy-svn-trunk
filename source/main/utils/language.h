@@ -28,10 +28,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // #define USE_MOFILEREADER  = windows gettext replacement
 // #define !USE_MOFILEREADER = using linux gettext
 
+# define U(str) Ogre::UTFString(L##str)
+
 #ifdef NOLANG
 // no language mode
 // used when building with wxwidgets for example (as they ship their own i18n)
-# define _L(str) Ogre::String(str)
+# define _L(str) ANSI_TO_UTF(str)
 
 #else // NOLANG
 
@@ -61,7 +63,7 @@ public:
     static LanguageEngine & Instance();
     void setup();
 	void postSetup();
-	Ogre::String lookUp(Ogre::String name);
+	Ogre::UTFString lookUp(Ogre::String name);
 
 	Ogre::String getMyGUIFontConfigFilename();
     

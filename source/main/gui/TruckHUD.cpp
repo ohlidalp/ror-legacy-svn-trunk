@@ -25,12 +25,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TorqueCurve.h"
 #include "RoRFrameListener.h"
 
+#include "utils.h"
+
 using namespace std;
 using namespace Ogre;
 
 
-TruckHUD::TruckHUD() :
-	torqueLineStream(0)
+TruckHUD::TruckHUD()
 {
 	width = 450;
 	border = 10;
@@ -89,11 +90,7 @@ TruckHUD::TruckHUD() :
 	maxNegLatG[BOAT] = 9999;
 	maxNegLatG[MACHINE] = 9999;
 
-	lastTorqueModel = "";
-	lastTorqueRatio = 0;
-
 	truckHUD = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
-
 
 	updatetime=0;
 }
@@ -168,21 +165,21 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/DescriptionLine1");
 		if(desc.size() > 0)
-			descl->setCaption(desc[0]);
+			descl->setCaption(ANSI_TO_UTF(desc[0]));
 		else
 			descl->setCaption("");
 		checkOverflow(descl);
 
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/DescriptionLine2");
 		if(desc.size() > 1)
-			descl->setCaption(desc[1]);
+			descl->setCaption(ANSI_TO_UTF(desc[1]));
 		else
 			descl->setCaption("");
 		checkOverflow(descl);
 
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/DescriptionLine3");
 		if(desc.size() > 2)
-			descl->setCaption(desc[2]);
+			descl->setCaption(ANSI_TO_UTF(desc[2]));
 		else
 			descl->setCaption("");
 		checkOverflow(descl);
@@ -206,25 +203,25 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			average_deformation += current_deformation;
 		}
 
-		char beamcountstr[256];
-		sprintf(beamcountstr, "%d", beamCount);
+		wchar_t beamcountstr[256];
+		swprintf(beamcountstr, 256, L"%d", beamCount);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamTotal");
-		descl->setCaption(_L("beam count: ") + String(beamcountstr));
+		descl->setCaption(_L("beam count: ") + UTFString(beamcountstr));
 		checkOverflow(descl);
 
-		char beambrokenstr[256];
-		sprintf(beambrokenstr, "%0.2f", ((float)beambroken/(float)beamCount)*100);
+		wchar_t beambrokenstr[256];
+		swprintf(beambrokenstr, 256, L"%0.2f", ((float)beambroken/(float)beamCount)*100);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamBroken");
-		descl->setCaption(_L("broken: ") + TOSTRING(beambroken) + string(" (") + beambrokenstr + string("%)"));
+		descl->setCaption(_L("broken: ") + TOUTFSTRING(beambroken) + U(" (") + UTFString(beambrokenstr) + U("%)"));
 		checkOverflow(descl);
 
-		char beamhealthstr[256];
+		wchar_t beamhealthstr[256];
 		float health = ((float)beambroken/(float)beamCount) * 10 + ((float)beamdeformed/(float)beamCount);
 		if(health<1)
 		{
-			sprintf(beamhealthstr, "%0.2f", (1-health)*100);
+			swprintf(beamhealthstr, 256, L"%0.2f", (1-health)*100);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
-			descl->setCaption(_L("health: ") + string(beamhealthstr) + string("%"));
+			descl->setCaption(_L("health: ") + UTFString(beamhealthstr) + U("%"));
 			checkOverflow(descl);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
 			descl->setColour(ColourValue(0.6,0.8,0.4,1));
@@ -234,48 +231,48 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			health = ((float)beambroken/(float)beamCount) * 3;
 			if(health>1)
 				health=1;
-			sprintf(beamhealthstr, "%0.2f", (health)*100);
+			swprintf(beamhealthstr, 256, L"%0.2f", (health)*100);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
-			descl->setCaption(_L("destruction: ") + string(beamhealthstr) + string("%"));
+			descl->setCaption(_L("destruction: ") + UTFString(beamhealthstr) + U("%"));
 			checkOverflow(descl);
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamHealth");
 			descl->setColour(ColourValue(0.8,0.4,0.4,1));
 			checkOverflow(descl);
 		}
-		char beamdeformedstr[256];
-		sprintf(beamdeformedstr, "%0.2f", ((float)beamdeformed/(float)beamCount)*100);
+		wchar_t beamdeformedstr[256];
+		swprintf(beamdeformedstr, 256, L"%0.2f", ((float)beamdeformed/(float)beamCount)*100);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/BeamDeformed");
-		descl->setCaption(_L("deformed: ") + TOSTRING(beamdeformed) + string(" (") + beamdeformedstr + string("%)"));
+		descl->setCaption(_L("deformed: ") + TOUTFSTRING(beamdeformed) + U(" (") + UTFString(beamdeformedstr) + U("%)"));
 		checkOverflow(descl);
 
-		char beamavdeformedstr[256];
-		sprintf(beamavdeformedstr, "%0.4f", ((float)average_deformation/(float)beamCount));
+		wchar_t beamavdeformedstr[256];
+		swprintf(beamavdeformedstr, 256, L"%0.4f", ((float)average_deformation/(float)beamCount));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageBeamDeformation");
-		descl->setCaption(_L("average deformation: ") + string(beamavdeformedstr));
+		descl->setCaption(_L("average deformation: ") + UTFString(beamavdeformedstr));
 		checkOverflow(descl);
 
-		char beamstressstr[256];
-		sprintf(beamstressstr, "%+08.0f", 1-(float)beamstress/(float)beamCount);
+		wchar_t beamstressstr[256];
+		swprintf(beamstressstr, 256, L"%+08.0f", 1-(float)beamstress/(float)beamCount);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageBeamStress");
-		descl->setCaption(_L("average stress: ") + string(beamstressstr));
+		descl->setCaption(_L("average stress: ") + UTFString(beamstressstr));
 		checkOverflow(descl);
 
 		int nodeCount = truck->getNodeCount();
 		int wcount =  truck->getWheelNodeCount();
-		char nodecountstr[256];
-		sprintf(nodecountstr, "%d (wheels: %d)", nodeCount, wcount);
+		wchar_t nodecountstr[256];
+		swprintf(nodecountstr, 256, L"%d (wheels: %d)", nodeCount, wcount);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/NodeCount");
-		descl->setCaption(_L("node count: ") + String(nodecountstr));
+		descl->setCaption(_L("node count: ") + UTFString(nodecountstr));
 		checkOverflow(descl);
 
-		char truckmassstr[256];
-		String massstr = _L("current mass:");
-		sprintf(truckmassstr, "%s %8.2f kg (%.2f tons)", massstr.c_str(), mass, mass/1000);
+		wchar_t truckmassstr[256];
+		UTFString massstr = _L("current mass:");
+		swprintf(truckmassstr, 256, L"%ls %8.2f kg (%.2f tons)", massstr.asWStr_c_str(), mass, mass/1000);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/TruckWeight");
-		descl->setCaption(truckmassstr);
+		descl->setCaption(UTFString(truckmassstr));
 		checkOverflow(descl);
 
-		char geesstr[256];
+		wchar_t geesstr[256];
 		Vector3 accv=truck->cameranodeacc/truck->cameranodecount;
 		truck->cameranodeacc=Vector3::ZERO;
 		truck->cameranodecount=0;
@@ -288,9 +285,10 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		if(RoRFrameListener::eflsingleton)
 			gravity = RoRFrameListener::eflsingleton->getGravity();
 		float vertacc=(fabs(gravity))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
-		sprintf(geesstr, _L("Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg"), vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
+		UTFString tmp = _L("Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg");
+		swprintf(geesstr, 256, tmp.asWStr_c_str(), vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
-		descl->setCaption(geesstr);
+		descl->setCaption(UTFString(geesstr));
 		checkOverflow(descl);
 
 		//maxGees
@@ -311,7 +309,8 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			if(latacc < maxNegLatG[truck->driveable])
 				maxNegLatG[truck->driveable] = latacc;
 
-			sprintf(geesstr, _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg"), 
+			tmp = _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg");
+			swprintf(geesstr, 256, tmp.asWStr_c_str(), 
 					maxPosVerG[truck->driveable]/(fabs(gravity)), 
 					maxNegVerG[truck->driveable]/(fabs(gravity)), 
 					maxPosSagG[truck->driveable]/(fabs(gravity)), 
@@ -321,7 +320,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				);
 
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees2");
-			descl->setCaption(geesstr);
+			descl->setCaption(UTFString(geesstr));
 			checkOverflow(descl);
 		}
 	}
@@ -341,72 +340,31 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 	//OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM")->setCaption(rpmstring);
 
 	// always update these statistics, also if not visible!
-	String rpmsstr = _L("current RPM:");
+	UTFString rpmsstr = _L("current RPM:");
 	if(truck->driveable == TRUCK && truck->engine)
 	{
-		char rpmstring[256];
-		sprintf(rpmstring, "%s %.0f / %.0f", rpmsstr.c_str(), truck->engine->getRPM(), truck->engine->getMaxRPM()*1.25);
+		wchar_t rpmstring[256];
+		UTFString rpmsstr = _L("current RPM:");
+		swprintf(rpmstring, 256, L"%ls %.0f / %.0f", rpmsstr.asWStr_c_str(), truck->engine->getRPM(), truck->engine->getMaxRPM()*1.25);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
-		descl->setCaption(rpmstring);
+		descl->setCaption(UTFString(rpmstring));
 		checkOverflow(descl);
 
-		/*
-		// TODO: FIX
-		if(visible && truck->engine->getTorqueCurve())
-		{
-			// torque curve handling
-			if(!torqueLineStream) initTorqueOverlay();
-
-			// update
-			String model = truck->engine->getTorqueCurve()->getTorqueModel();
-			SimpleSpline *usedSpline = truck->engine->getTorqueCurve()->getUsedSpline();
-			float ratio = truck->engine->getRPM() / float(truck->engine->getMaxRPM());
-
-			if(lastTorqueModel != model && usedSpline)
-			{
-				// update the torque curve
-				LOG("regenerating torque displayed curve");
-				for(int i=0;i<1000;i++)
-				{
-					float factor = i/1000.0f;
-					float res = usedSpline->interpolate(factor).y;
-					//LOG(TOSTRING(i)+ " - "+TOSTRING(res)+ " - "+TOSTRING(factor));
-					torqueLineStream->setExactValue(0, i, res);
-				}
-				lastTorqueModel = model;
-			}
-			// now proceed
-			// reset old ratio:
-			torqueLineStream->setExactValue(1, lastTorqueRatio * 1000.0f, 0);
-
-			// no overflow
-			if(ratio <= 1 && usedSpline)
-			{
-				// get data for the new ratio
-				float res = usedSpline->interpolate(ratio).y;
-				float x = ratio * 1000.0f;
-
-				//update the new point
-				torqueLineStream->setExactValue(1, x, res);
-
-				lastTorqueRatio = ratio;
-			}
-		}
-		*/
-	} else if (truck->driveable == AIRPLANE){
-		char rpmstring[256];
+	} else if (truck->driveable == AIRPLANE)
+	{
+		wchar_t rpmstring[256];
 
 		if(truck->aeroengines[0] && truck->aeroengines[1] && truck->aeroengines[2] && truck->aeroengines[3])
-			sprintf(rpmstring, "%s %.0f / %.0f / %.0f / %.0f", rpmsstr.c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM(), truck->aeroengines[2]->getRPM(), truck->aeroengines[3]->getRPM());
+			swprintf(rpmstring, 256, L"%ls %.0f / %.0f / %.0f / %.0f", rpmsstr.asWStr_c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM(), truck->aeroengines[2]->getRPM(), truck->aeroengines[3]->getRPM());
 		else if(truck->aeroengines[0] && truck->aeroengines[1] && truck->aeroengines[2] && !truck->aeroengines[3])
-			sprintf(rpmstring, "%s %.0f / %.0f / %.0f", rpmsstr.c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM(), truck->aeroengines[2]->getRPM());
+			swprintf(rpmstring, 256, L"%ls %.0f / %.0f / %.0f", rpmsstr.asWStr_c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM(), truck->aeroengines[2]->getRPM());
 		else if(truck->aeroengines[0] && truck->aeroengines[1] && !truck->aeroengines[2] && !truck->aeroengines[3])
-			sprintf(rpmstring, "%s %.0f / %.0f", rpmsstr.c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM());
+			swprintf(rpmstring, 256, L"%ls %.0f / %.0f", rpmsstr.asWStr_c_str(), truck->aeroengines[0]->getRPM(), truck->aeroengines[1]->getRPM());
 		else if(truck->aeroengines[0] && !truck->aeroengines[1] && !truck->aeroengines[2] && !truck->aeroengines[3])
-			sprintf(rpmstring, "%s %.0f", rpmsstr.c_str(), truck->aeroengines[0]->getRPM());
+			swprintf(rpmstring, 256, L"%ls %.0f", rpmsstr.asWStr_c_str(), truck->aeroengines[0]->getRPM());
 
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
-		descl->setCaption(rpmstring);
+		descl->setCaption(UTFString(rpmstring));
 		checkOverflow(descl);
 	} else
 	{
@@ -414,12 +372,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		descl->setCaption("");
 	}
 
-	String cspeedstr = _L("current Speed:");
-	String maxspstr = _L("max Speed:");
+	UTFString cspeedstr = _L("current Speed:");
+	UTFString maxspstr = _L("max Speed:");
 
 	if(truck->driveable == TRUCK)
 	{
-		char velostring[256];
+		wchar_t velostring[256];
 		float velocityKMH = (truck->WheelSpeed * 3.6);
 		if(velocityKMH > maxVelos[truck->driveable])
 			maxVelos[truck->driveable] = velocityKMH;
@@ -430,23 +388,23 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		if (fabs(velocityKMH) < 1)
 			velocityKMH = 0;
 		float velocityMPH = velocityKMH / 1.609;
-			sprintf(velostring, "%s %+.0f km/h (%+.0f mp/h)", cspeedstr.c_str(), ceil(velocityKMH), ceil(velocityMPH));
+			swprintf(velostring, 256, L"%ls %+.0f km/h (%+.0f mp/h)", cspeedstr.asWStr_c_str(), ceil(velocityKMH), ceil(velocityMPH));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
 
 		float velocityMaxMPH = maxVelos[truck->driveable] / 1.609;
 		float velocityMinMPH = minVelos[truck->driveable] / 1.609;
-		sprintf(velostring, "%s %+.0fkmh/%+.0fmph, min: %+.0fkmh/%+.0fmph", maxspstr.c_str(), ceil(maxVelos[truck->driveable]), ceil(velocityMaxMPH), ceil(minVelos[truck->driveable]), ceil(velocityMinMPH));
+		swprintf(velostring, 256, L"%ls %+.0fkmh/%+.0fmph, min: %+.0fkmh/%+.0fmph", maxspstr.asWStr_c_str(), ceil(maxVelos[truck->driveable]), ceil(velocityMaxMPH), ceil(minVelos[truck->driveable]), ceil(velocityMinMPH));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
 		descl->setCaption("");
 	}
 		else if(truck->driveable == AIRPLANE)
 	{
-		char velostring[256];
+		wchar_t velostring[256];
 		float velocity = truck->nodes[0].Velocity.length()*1.9438;
 
 		if(velocity > maxVelos[truck->driveable])
@@ -457,25 +415,25 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		// round values if zero ==> no flickering +/-
 		if (fabs(velocity) < 1)
 			velocity = 0;
-		sprintf(velostring, "%s %+.0f kn", cspeedstr.c_str(), ceil(velocity));
+		swprintf(velostring, 256, L"%ls %+.0f kn", cspeedstr.asWStr_c_str(), ceil(velocity));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
-		sprintf(velostring, "%s %+.0fkn, min: %+.0f kn", maxspstr.c_str(), ceil(maxVelos[truck->driveable]), ceil(minVelos[truck->driveable]));
+		swprintf(velostring, 256, L"%ls %+.0fkn, min: %+.0f kn", maxspstr.asWStr_c_str(), ceil(maxVelos[truck->driveable]), ceil(minVelos[truck->driveable]));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
 
 		float alt = truck->nodes[0].AbsPosition.y*1.1811;
-		String altstr = _L("Altitude:");
-		sprintf(velostring, "%s %+.0f m", altstr.c_str(), ceil(alt));
+		UTFString altstr = _L("Altitude:");
+		swprintf(velostring, 256, L"%ls %+.0f m", altstr.asWStr_c_str(), ceil(alt));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
 		descl->setCaption(velostring);
 		checkOverflow(descl);
 	}
 		else if(truck->driveable == BOAT)
 	{
-		char velostring[256];
+		wchar_t velostring[256];
 		Vector3 hdir=truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
 		hdir.normalise();
 		float velocity=hdir.dotProduct(truck->nodes[truck->cameranodepos[0]].Velocity)*1.9438;
@@ -485,14 +443,14 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		if(velocity < minVelos[truck->driveable])
 			minVelos[truck->driveable] = velocity;
 
-		sprintf(velostring, "%s %+.0f kn", cspeedstr.c_str(),ceil(velocity));
+		swprintf(velostring, 256, L"%ls %+.0f kn", cspeedstr.asWStr_c_str(),ceil(velocity));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
 
-		sprintf(velostring, "%s %+.0fkn, min: %+.0f kn", maxspstr.c_str(),ceil(maxVelos[truck->driveable]), ceil(minVelos[truck->driveable]));
+		swprintf(velostring, 256, L"%ls %+.0fkn, min: %+.0f kn", maxspstr.asWStr_c_str(),ceil(maxVelos[truck->driveable]), ceil(minVelos[truck->driveable]));
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");
-		descl->setCaption(velostring);
+		descl->setCaption(UTFString(velostring));
 		checkOverflow(descl);
 
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
@@ -514,7 +472,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		for(int i=1;i<=COMMANDS_VISIBLE;i++)
 		{
 			char commandOverlayID[256];
-			sprintf(commandOverlayID, "tracks/TruckInfoBox/Command%d", i);
+			sprintf(commandOverlayID, "tracks/TruckInfoBox/Command%d", i); // no wchar needed
 			descl = OverlayManager::getSingleton().getOverlayElement(commandOverlayID);
 			descl->setCaption(string(""));
 		}
@@ -562,32 +520,4 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 	}
 	return true;
-}
-
-void TruckHUD::initTorqueOverlay()
-{
-	// TODO: fix
-	return;
-	OverlayContainer *lineStreamContainer = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("LineStream", "TorqueCurveLineStream"));
-	lineStreamContainer->_setPosition(0.37f,  0.6f);
-	lineStreamContainer->_setDimensions(0.62f, 0.2f);
-	lineStreamContainer->setMaterialName("Core/StatsBlockCenter");
-
-	torqueLineStream = dynamic_cast<Ogre::LineStreamOverlayElement *>(lineStreamContainer);
-	torqueLineStream->setNumberOfSamplesForTrace(1000);
-	torqueLineStream->setNumberOfTraces(2);
-	torqueLineStream->setMoveMode(0);
-	torqueLineStream->createVertexBuffer();
-	torqueLineStream->defaultStyle();
-
-	torqueLineStream->setTraceInfo(0, ColourValue::Red, "torque");
-	torqueLineStream->setTraceInfo(1, ColourValue::Green, "");
-
-	OverlayContainer *oPanel = (OverlayContainer *) (OverlayManager::getSingleton().createOverlayElement("Panel","TorqueCurveLinePanel"));
-	oPanel->_setPosition(0.37f,  0.6f);
-	oPanel->_setDimensions(0.62f, 0.2f);
-	oPanel->setMaterialName("Core/StatsBlockCenter");
-
-	truckHUD->add2D(oPanel);
-	truckHUD->add2D(lineStreamContainer);
 }

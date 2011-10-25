@@ -150,14 +150,14 @@ void LanguageEngine::postSetup()
 	}
 }
 
-Ogre::String LanguageEngine::lookUp(Ogre::String name)
+Ogre::UTFString LanguageEngine::lookUp(Ogre::String name)
 {
 #ifdef USE_MOFILEREADER
 	if(working)
 		return reader->Lookup(name.c_str());
 	return name;
 #else
-	return String(gettext(name.c_str()));
+	return UTFString(gettext(name.c_str()));
 #endif //MOFILEREADER
 }
 

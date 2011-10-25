@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "engine.h"
 #include "SerializedRig.h"
+#include "utils.h"
 
 #include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
@@ -688,13 +689,13 @@ int CacheSystem::incrementalCacheUpdate()
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0;
 	std::vector<Cache_Entry> changed_entries;
-	char tmp[512]="";
+	UTFString tmp;
 	for(it = entries.begin(); it != entries.end(); it++, counter++)
 	{
 		int progress = ((float)counter/(float)(entries.size()))*100;
 #ifdef USE_MYGUI
-		sprintf(tmp, _L("incremental check: deleted and changed files\n%s: %s"), it->type.c_str(), it->fname.c_str());
-		LoadingWindow::get()->setProgress(progress, String(tmp));
+		tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->type) + UTFString(L": ") + ANSI_TO_UTF(it->fname);
+		LoadingWindow::get()->setProgress(progress, tmp);
 #endif //MYGUI
 		if(it->type == "FileSystem")
 		{
@@ -703,8 +704,8 @@ int CacheSystem::incrementalCacheUpdate()
 			{
 				LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
-				sprintf(tmp, _L("incremental check: deleted and changed files\n%s not existing"), it->fname.c_str());
-				LoadingWindow::get()->setProgress(20, String(tmp));
+				tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
+				LoadingWindow::get()->setProgress(20, tmp);
 #endif // MYGUI
 				removeFileFromFileCache(it);
 				//entries.erase(it);
@@ -720,10 +721,10 @@ int CacheSystem::incrementalCacheUpdate()
 			String fn = getRealPath(it->dirname);
 			if(!fileExists(fn))
 			{
-				LOG("- "+fn+_L(" not existing"));
+				LOG("- "+fn+" not existing");
 #ifdef USE_MYGUI
-				sprintf(tmp, _L("incremental check: deleted and changed files\n%s not existing"), it->fname.c_str());
-				LoadingWindow::get()->setProgress(20, String(tmp));
+				tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
+				LoadingWindow::get()->setProgress(20, tmp);
 #endif //MYGUI
 				removeFileFromFileCache(it);
 				//entries.erase(it);
@@ -757,7 +758,7 @@ int CacheSystem::incrementalCacheUpdate()
 			if(check)
 			{
 				changedFiles++;
-				LOG("- "+fn+_L(" changed"));
+				LOG("- "+fn+" changed");
 				it->changedornew = true;
 				it->deleted = true; // see below
 				changed_entries.push_back(*it);
@@ -2094,7 +2095,8 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
-		LoadingWindow::get()->setProgress(progress, _L("Loading zips in group ") + group + "\n" + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
+		UTFString tmp = _L("Loading zips in group ") + ANSI_TO_UTF(group) + L"\n" + ANSI_TO_UTF(iterFiles->filename) + L"\n" + ANSI_TO_UTF(TOSTRING(i)) + L"/" + ANSI_TO_UTF(TOSTRING(filecount));
+		LoadingWindow::get()->setProgress(progress, tmp);
 #endif //MYGUI
 
 		loadSingleZip((Ogre::FileInfo)*iterFiles);

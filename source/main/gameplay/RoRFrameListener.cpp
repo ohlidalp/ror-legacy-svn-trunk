@@ -204,10 +204,10 @@ float RoRFrameListener::stopTimer()
 	// let the display on
 	if(ow)
 	{
-		char txt[256];
-		std::string fmt = _L("Last lap: %.2i'%.2i.%.2i");
-		sprintf(txt, fmt.c_str(), ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
-		ow->lasttime->setCaption(txt);
+		wchar_t txt[256] = L"";
+		UTFString fmt = _L("Last lap: %.2i'%.2i.%.2i");
+		swprintf(txt, 256, fmt.asWStr_c_str(), ((int)(time))/60,((int)(time))%60, ((int)(time*100.0))%100);
+		ow->lasttime->setCaption(UTFString(txt));
 		//ow->racing->hide();
 		ow->laptimes->hide();
 		ow->laptimems->hide();
@@ -220,15 +220,15 @@ float RoRFrameListener::stopTimer()
 void RoRFrameListener::updateRacingGUI()
 {
 	if(!ow) return;
-	// update raceing gui if required
+	// update racing gui if required
 	float time=rtime - raceStartTime;
-	char txt[10];
-	sprintf(txt, "%.2i", ((int)(time*100.0))%100);
+	wchar_t txt[10];
+	swprintf(txt, 10, L"%.2i", ((int)(time*100.0))%100);
 	ow->laptimems->setCaption(txt);
-	sprintf(txt, "%.2i", ((int)(time))%60);
+	swprintf(txt, 10, L"%.2i", ((int)(time))%60);
 	ow->laptimes->setCaption(txt);
-	sprintf(txt, "%.2i'", ((int)(time))/60);
-	ow->laptimemin->setCaption(txt);
+	swprintf(txt, 10, L"%.2i'", ((int)(time))/60);
+	ow->laptimemin->setCaption(UTFString(txt));
 }
 
 void RoRFrameListener::updateIO(float dt)
@@ -924,13 +924,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	if(BSETTING("regen-cache-only"))
 	{
 		CACHE.startup(scm, true);
-		String str = _L("Cache regeneration done.\n");
-		if(CACHE.newFiles > 0) str += StringConverter::toString(CACHE.newFiles) + _L(" new files\n");
-		if(CACHE.changedFiles > 0) str += StringConverter::toString(CACHE.changedFiles) + _L(" changed files\n");
-		if(CACHE.deletedFiles > 0) str += StringConverter::toString(CACHE.deletedFiles) + _L(" deleted files\n");
-		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str += _L("no changes");
-		str += _L("\n(These stats can be imprecise)");
-		showError(_L("Cache regeneration done"), str.c_str());
+		UTFString str = _L("Cache regeneration done.\n");
+		if(CACHE.newFiles > 0)     str = str + TOUTFSTRING(CACHE.newFiles) + _L(" new files\n");
+		if(CACHE.changedFiles > 0) str = str + TOUTFSTRING(CACHE.changedFiles) + _L(" changed files\n");
+		if(CACHE.deletedFiles > 0) str = str + TOUTFSTRING(CACHE.deletedFiles) + _L(" deleted files\n");
+		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str = str + _L("no changes");
+		str = str + _L("\n(These stats can be imprecise)");
+		showError(_L("Cache regeneration done"), str);
 		exit(0);
 	}
 
@@ -1185,9 +1185,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		{
 			c->setVisible(true);
 			c->setNetChat(netChat);
-			char tmp[255] = "";
-			sprintf(tmp, _L("Press %s to start chatting"), INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE).c_str());
-			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_HELP, tryConvertUTF(tmp), "information.png");
+			wchar_t tmp[255] = L"";
+			UTFString format = _L("Press %ls to start chatting");
+			swprintf(tmp, 255, format.asWStr_c_str(), ANSI_TO_WCHAR(INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE)));
+			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_HELP, UTFString(tmp), "information.png");
 		}
 
 #ifdef USE_MUMBLE

@@ -226,9 +226,10 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 				int etype = net->sendMessageRaw(socket, packet.packetBuffer, packet.size);
 				if (etype)
 				{
-					char emsg[256];
-					sprintf(emsg, _L("Error %i while sending data packet"), etype);
-					net->netFatalError(emsg);
+					wchar_t emsg[256];
+					UTFString tmp = _L("Error %i while sending data packet");
+					swprintf(emsg, 256, tmp.asWStr_c_str(), etype);
+					net->netFatalError(UTFString(emsg));
 					MUTEX_UNLOCK(&stream_mutex);
 					return;
 				}

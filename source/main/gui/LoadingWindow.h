@@ -37,8 +37,8 @@ class LoadingWindow :
 	~LoadingWindow();
 public:
 
-	void setProgress(int _percent, const Ogre::String& _text = "", bool _updateRenderFrame = true);
-	void setAutotrack(const Ogre::String& _text = "", bool _updateRenderFrame = true);
+	void setProgress(int _percent, const Ogre::UTFString& _text = "", bool _updateRenderFrame = true);
+	void setAutotrack(const Ogre::UTFString& _text = "", bool _updateRenderFrame = true);
 
 	void hide();
 

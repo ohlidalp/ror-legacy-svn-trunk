@@ -71,7 +71,7 @@ public:
 	const std::vector<DiffType>& availableDiffs();
 	void toggleDiff();
 	void calcTorque( differential_data_t& diff_data );
-	Ogre::String getDiffTypeName();
+	Ogre::UTFString getDiffTypeName();
 
 	//! a differential that always splits the torque evenly, this is the original method
     static void calcSeperatedDiff( differential_data_t& diff_data);
