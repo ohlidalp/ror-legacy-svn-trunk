@@ -34,7 +34,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // to use the ogre resource system
 class OgreScriptBuilder : public AngelScript::CScriptBuilder
 {
+public:
 	int LoadScriptSection(const char *filename);
+	Ogre::String getHash() { return hash; };
+protected:
+	Ogre::String hash;
+
 };
 
 #endif //OGRESCRIPTBUILDER_H__

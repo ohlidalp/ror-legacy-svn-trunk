@@ -332,6 +332,7 @@ SerializedRig::SerializedRig()
 	if(!virtuallyLoaded)
 		materialReplacer = new MaterialReplacer();
 
+	beamHash = String();
 
 	// get lights mode
 	flaresMode = 3; // on by default
@@ -5258,6 +5259,27 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		String fn = SSETTING("vehicleOutputFile");
 		serialize(fn, &scope_log);
 	}
+	
+
+	// now generate the hash of it
+	{
+		// copy whole truck into a string
+		string code;
+		ds->seek(0); // from start
+		code.resize(ds->size());
+		ds->read(&code[0], ds->size());
+
+		// and build the hash over it
+		char hash_result[250];
+		memset(hash_result, 0, 249);
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		beamHash = String(hash_result);
+	}
+
+
 
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;

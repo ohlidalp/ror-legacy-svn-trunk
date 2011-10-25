@@ -1029,6 +1029,7 @@ struct rig
 	float odometerUser;
 
 	Ogre::String dashBoardLayout;
+	Ogre::String beamHash;
 };
 
 // some non-beam structs

@@ -128,8 +128,8 @@ public:
 
 	AngelScript::asIScriptEngine *getEngine() { return engine; };
 
-	Ogre::String getTerrainName() { return terrainScriptName; };
-	Ogre::String getTerrainScriptHash() { return terrainScriptHash; };
+	Ogre::String getScriptName() { return scriptName; };
+	Ogre::String getScriptHash() { return scriptHash; };
 
 	// method from Ogre::LogListener
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
@@ -152,7 +152,7 @@ protected:
 	int wheelEventFunctionPtr;               //!< script function pointer
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
 	int defaultEventCallbackFunctionPtr;    //!< script function pointer for spawner events
-	Ogre::String terrainScriptName, terrainScriptHash;
+	Ogre::String scriptName, scriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
 	
 	InterThreadStoreVector< Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution

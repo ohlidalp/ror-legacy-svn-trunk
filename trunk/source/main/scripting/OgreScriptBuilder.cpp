@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <Ogre.h>
 
+#include "sha1.h"
+
 using namespace std;
 using namespace Ogre;
 
@@ -49,18 +51,16 @@ int OgreScriptBuilder::LoadScriptSection(const char *filename)
 	code.resize(ds->size());
 	ds->read(&code[0], ds->size());
 
-	// TODO: fix the script hashes
-	/*
-	// using SHA1 here is stupid, we need to replace it with something better
-	// then hash it
-	char hash_result[250];
-	memset(hash_result, 0, 249);
-	RoR::CSHA1 sha1;
-	sha1.UpdateHash((uint8_t *)script.c_str(), script.size());
-	sha1.Final();
-	sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
-	hash = string(hash_result);
-	*/
+	// hash it
+	{
+		char hash_result[250];
+		memset(hash_result, 0, 249);
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		hash = String(hash_result);
+	}
 
 	return ProcessScriptSection(code.c_str(), filename);
 }

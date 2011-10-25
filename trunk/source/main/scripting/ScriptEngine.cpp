@@ -78,7 +78,7 @@ void logString(const std::string &str)
 
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), terrainScriptName(), terrainScriptHash(), scriptLog(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), scriptName(), scriptHash(), scriptLog(0)
 {
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
@@ -834,8 +834,10 @@ void ScriptEngine::triggerEvent(int eventnum, int value)
 	}
 }
 
-int ScriptEngine::loadScript(Ogre::String scriptname)
+int ScriptEngine::loadScript(Ogre::String _scriptName)
 {
+	scriptName = _scriptName;
+
 	// Load the entire script file into the buffer
 	int result=0;
 
@@ -851,7 +853,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		// the code below should load a compilation result but it crashes for some reason atm ...
 		//AngelScript::asIScriptModule *mod = engine->GetModule("RoRScript", AngelScript::asGM_ALWAYS_CREATE);
 		/*
-		String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
+		String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptName + "c";
 		CBytecodeStream bstream(fn);
 		if(bstream.Existing())
 		{
@@ -873,10 +875,10 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 
 		mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-		result = builder.AddSectionFromFile(scriptname.c_str());
+		result = builder.AddSectionFromFile(scriptName.c_str());
 		if( result < 0 )
 		{
-			SLOG("Unkown error while loading script file: "+scriptname);
+			SLOG("Unkown error while loading script file: "+scriptName);
 			SLOG("Failed to add script file");
 			return result;
 		}
@@ -888,10 +890,9 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		}
 
 		// save the bytecode
-		string hash = "";
-		// TODO: fix hash!
+		scriptHash = builder.getHash();
 		{
-			String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptname + "c";
+			String fn = SSETTING("Cache Path") + "script" + scriptHash + "_" + scriptName + "c";
 			SLOG("saving script bytecode to file " + fn);
 			CBytecodeStream bstream(fn);
 			mod->SaveByteCode(&bstream);
@@ -977,7 +978,7 @@ int ScriptEngine::loadScript(Ogre::String scriptname)
 		else if( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
-			SLOG("An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptname + "' and try again.");
+			SLOG("An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptName + "' and try again.");
 
 			// Write some information about the script exception
 			int funcID = context->GetExceptionFunction();
