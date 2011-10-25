@@ -201,15 +201,16 @@ bool Network::connect()
 
 	if (strncmp(server_settings.protocolversion, RORNET_VERSION, strlen(RORNET_VERSION)))
 	{
-		char tmp[512] = "";
-		sprintf(tmp, _L("Establishing network session: wrong server version, you are using version '%s' and the server is using '%s'"), RORNET_VERSION, server_settings.protocolversion);
-		netFatalError(String(tmp));
+		wchar_t tmp[512] = L"";
+		UTFString tmp2 = _L("Establishing network session: wrong server version, you are using version '%s' and the server is using '%s'");
+		swprintf(tmp, 512, tmp2.asWStr_c_str(), RORNET_VERSION, server_settings.protocolversion);
+		netFatalError(UTFString(tmp));
 		return false;
 	}
 	// first handshake done, increase the timeout, important!
 	socket.set_timeout(0, 0);
 
-	//send credencials
+	//send credentials
 	nickname = SSETTING("Nickname");
 	String nick = nickname;
 	StringUtil::toLowerCase(nick);
@@ -271,13 +272,14 @@ bool Network::connect()
 	}
 	else if (header.command==MSG2_BANNED)
 	{
-		char tmp[512];
+		wchar_t tmp[512];
 		memset(tmp, 0, 512);
 		if(buffer && strnlen(buffer, 20)>0)
 		{
 			buffer[header.size]=0;
-			sprintf(tmp, _L("Establishing network session: sorry, you are banned:\n%s"), buffer);
-			netFatalError(tmp);
+			UTFString tmp2 = _L("Establishing network session: sorry, you are banned:\n%s");
+			swprintf(tmp, 512, tmp2.asWStr_c_str(), buffer);
+			netFatalError(UTFString(tmp));
 		} else
 		{
 			netFatalError(_L("Establishing network session: sorry, you are banned!"), false);

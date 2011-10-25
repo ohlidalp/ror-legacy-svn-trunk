@@ -103,14 +103,14 @@ UTFString tryConvertUTF(const char *buffer)
 	return UTFString("(UTF conversion error 3)");
 }
 
-Ogre::String formatBytes(double bytes)
+Ogre::UTFString formatBytes(double bytes)
 {
-	char tmp[128]="";
-	const char *si_prefix[] = { "B", "KB", "MB", "GB", "TB", "EB", "ZB", "YB" };
+	wchar_t tmp[128] = L"";
+	const wchar_t *si_prefix[] = { L"B", L"KB", L"MB", L"GB", L"TB", L"EB", L"ZB", L"YB" };
 	int base = 1024;
 	int c = std::min((int)(log(bytes)/log((float)base)), (int)sizeof(si_prefix) - 1);
-	sprintf(tmp, "%1.2f %s", bytes / pow((float)base, c), si_prefix[c]);
-	return Ogre::String(tmp);
+	swprintf(tmp, 128, L"%1.2f %ls", bytes / pow((float)base, c), si_prefix[c]);
+	return Ogre::UTFString(tmp);
 }
 
 // replace non-ASCII characters with underscores to prevent std::string problems
@@ -259,13 +259,29 @@ void fixRenderWindowIcon (Ogre::RenderWindow *rw)
 #endif //ROR_EMBEDDED
 }
 
-#ifdef USE_MYGUI
-MyGUI::UString convertToMyGUIString(Ogre::UTFString str)
+Ogre::UTFString ANSI_TO_UTF(const Ogre::String& _source)
 {
-	return MyGUI::UString(str.asWStr());
+	return UTFString(ANSI_TO_WCHAR(_source)); // UTF converts from wstring
 }
-Ogre::UTFString convertFromMyGUIString(MyGUI::UString str)
+
+std::wstring ANSI_TO_WCHAR(const Ogre::String& _source)
 {
-	return Ogre::UTFString(str.asWStr());
+#ifdef WIN32
+	const char* srcPtr = _source.c_str();
+	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
+	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
+	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
+	std::wstring ret = tmpBuff;
+	delete[] tmpBuff;
+	return ret;
+#endif // WIN32
 }
-#endif // USE_MYGUI
+
+void trimUTFString( Ogre::UTFString &str, bool left, bool right)
+{
+	static const String delims = " \t\r";
+	if(right)
+		str.erase(str.find_last_not_of(delims)+1); // trim right
+	if(left)
+		str.erase(0, str.find_first_not_of(delims)); // trim left
+}

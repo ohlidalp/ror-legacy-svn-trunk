@@ -372,12 +372,12 @@ void SelectorWindow::getData()
 			continue;
 		counter2++;
 
-		String title = _L(itc->second.title.c_str());
+		UTFString title = _L(itc->second.title.c_str());
 		if(title.empty())
 			title = _L("unknown");
-		String txt = "["+TOSTRING(counter2)+"/"+TOSTRING(counter)+"] (" + TOSTRING(usage)+") " + title;
+		UTFString txt = U("[") + TOUTFSTRING(counter2) + U("/") + TOUTFSTRING(counter) + U("] (") + TOUTFSTRING(usage) + U(") ") + title;
 
-		mTypeComboBox->addItem(txt, itc->second.number);
+		mTypeComboBox->addItem(convertToMyGUIString(txt), itc->second.number);
 	}
 	if(mTypeComboBox->getItemCount() != 0) mTypeComboBox->setIndexSelected(0);
 	if(counter2 > 0)
@@ -477,7 +477,7 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 			return false;
 		} else if(v[0] == "wheels")
 		{
-			String wheelsStr = TOSTRING(ce->wheelcount) + "x" + TOSTRING(ce->propwheelcount);
+			String wheelsStr = TOUTFSTRING(ce->wheelcount) + "x" + TOUTFSTRING(ce->propwheelcount);
 			return (wheelsStr == v[1]);
 		} else if(v[0] == "file")
 		{
@@ -582,8 +582,8 @@ void SelectorWindow::onEntrySelected(int entryID)
 		mEntryNameStaticText->setCaption(skin->name);
 
 		String descriptiontxt = skin->description + String("\n");
-		descriptiontxt += _L("Author(s): ") + skin->authorName + String("\n");
-		descriptiontxt += _L("Description: ") + skin->description + String("\n");
+		descriptiontxt = descriptiontxt +_L("Author(s): ") + skin->authorName + String("\n");
+		descriptiontxt = descriptiontxt +_L("Description: ") + skin->description + String("\n");
 
 		try
 		{
@@ -667,7 +667,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	} else
 		mConfigComboBox->setVisible(false);
 
-	String authorstxt="";
+	UTFString authorstxt;
 	std::vector<String> authornames;
 	if(entry->authors.size() > 0)
 	{
@@ -692,97 +692,91 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 				if(found)
 					continue;
 				authornames.push_back(name);
-				authorstxt+= " " + name;
+				authorstxt = authorstxt + U(" ") + name;
 			}
 	} else
 		authorstxt = _L("no author information available");
 
 	try
 	{
-		mEntryNameStaticText->setCaption(entry->dname);
+		mEntryNameStaticText->setCaption(convertToMyGUIString(ANSI_TO_UTF(entry->dname)));
 	} catch(...)
 	{
 		mEntryNameStaticText->setCaption("ENCODING ERROR");
 	}
 
-	String c = "#257900"; // colour key shortcut
-	String nc = "#000000"; // colour key shortcut
-	String newline = "\n";
+	UTFString c       = U("#257900"); // colour key shortcut
+	UTFString nc      = U("#000000"); // colour key shortcut
+	UTFString newline = U("\n");
 
-	String descriptiontxt = "#003dae" + entry->description + nc + newline;
-	descriptiontxt += _L("Author(s): ") + c + authorstxt + nc +newline;
+	UTFString descriptiontxt = U("#003dae") + ANSI_TO_UTF(entry->description) + nc + newline;
+	descriptiontxt = descriptiontxt +_L("Author(s): ") + c + authorstxt + nc +newline;
 
 	
-	if(entry->version > 0) descriptiontxt                += _L("Version: ")  + c + TOSTRING(entry->version) + nc + newline;
-	if(entry->wheelcount > 0) descriptiontxt             += _L("Wheels: ")   + c + TOSTRING(entry->wheelcount) + "x" + TOSTRING(entry->propwheelcount) + nc + newline;
-	if(entry->truckmass > 0) descriptiontxt              += _L("Mass: ")     + c + TOSTRING((int)(entry->truckmass/1000.0f)) + " " + _L("tons") + nc + newline;
-	if(entry->loadmass > 0) descriptiontxt               += _L("Load Mass: ") + c + TOSTRING((int)(entry->loadmass/1000.0f)) + " " + _L("tons") + nc + newline;
-	if(entry->nodecount > 0) descriptiontxt              += _L("Nodes: ")    + c + TOSTRING(entry->nodecount) + nc + newline;
-	if(entry->beamcount > 0) descriptiontxt              += _L("Beams: ")    + c + TOSTRING(entry->beamcount) + nc + newline;
-	if(entry->shockcount > 0) descriptiontxt             += _L("Shocks: ")   + c + TOSTRING(entry->shockcount) + nc + newline;
-	if(entry->hydroscount > 0) descriptiontxt            += _L("Hydros: ")   + c + TOSTRING(entry->hydroscount) + nc + newline;
-	if(entry->soundsourcescount > 0) descriptiontxt      += _L("SoundSources: ") + c + TOSTRING(entry->soundsourcescount) + nc + newline;
-	if(entry->commandscount > 0) descriptiontxt          += _L("Commands: ") + c + TOSTRING(entry->commandscount) + nc + newline;
-	if(entry->rotatorscount > 0) descriptiontxt          += _L("Rotators: ") + c + TOSTRING(entry->rotatorscount) + nc + newline;
-	if(entry->exhaustscount > 0) descriptiontxt          += _L("Exhausts: ") + c + TOSTRING(entry->exhaustscount) + nc + newline;
-	if(entry->flarescount > 0) descriptiontxt            += _L("Flares: ")   + c + TOSTRING(entry->flarescount) + nc + newline;
-	if(entry->torque > 0) descriptiontxt                 += _L("Torque: ")   + c + TOSTRING(entry->torque) + nc + newline;
-	if(entry->flexbodiescount > 0) descriptiontxt        += _L("Flexbodies: ") + c + TOSTRING(entry->flexbodiescount) + nc + newline;
-	if(entry->propscount > 0) descriptiontxt             += _L("Props: ")    + c + TOSTRING(entry->propscount) + nc + newline;
-	if(entry->wingscount > 0) descriptiontxt             += _L("Wings: ")    + c + TOSTRING(entry->wingscount) + nc + newline;
-	if(entry->hasSubmeshs) descriptiontxt                += _L("Using Submeshs: ") + c + TOSTRING(entry->hasSubmeshs) + nc + newline;
-	if(entry->numgears > 0) descriptiontxt               += _L("Transmission Gear Count: ") + c + TOSTRING(entry->numgears) + nc + newline;
-	if(entry->minrpm > 0) descriptiontxt                 += _L("Engine RPM: ") + c + TOSTRING(entry->minrpm) + " - " + TOSTRING(entry->maxrpm) + nc + newline;
-	if(!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt += _L("Unique ID: ") + c + entry->uniqueid + nc + newline;
-	if(!entry->guid.empty() && entry->guid != "no-guid") descriptiontxt += _L("GUID: ") + c + entry->guid + nc + newline;
-	if(entry->usagecounter > 0) descriptiontxt           += _L("Times used: ") + c + TOSTRING(entry->usagecounter) + nc + newline;
+	if(entry->version > 0) descriptiontxt                = descriptiontxt + _L("Version: ")   + c + TOUTFSTRING(entry->version) + nc + newline;
+	if(entry->wheelcount > 0) descriptiontxt             = descriptiontxt + _L("Wheels: ")    + c + TOUTFSTRING(entry->wheelcount) + U("x") + TOUTFSTRING(entry->propwheelcount) + nc + newline;
+	if(entry->truckmass > 0) descriptiontxt              = descriptiontxt + _L("Mass: ")      + c + TOUTFSTRING((int)(entry->truckmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if(entry->loadmass > 0) descriptiontxt               = descriptiontxt + _L("Load Mass: ") + c + TOUTFSTRING((int)(entry->loadmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if(entry->nodecount > 0) descriptiontxt              = descriptiontxt + _L("Nodes: ")     + c + TOUTFSTRING(entry->nodecount) + nc + newline;
+	if(entry->beamcount > 0) descriptiontxt              = descriptiontxt + _L("Beams: ")     + c + TOUTFSTRING(entry->beamcount) + nc + newline;
+	if(entry->shockcount > 0) descriptiontxt             = descriptiontxt + _L("Shocks: ")    + c + TOUTFSTRING(entry->shockcount) + nc + newline;
+	if(entry->hydroscount > 0) descriptiontxt            = descriptiontxt + _L("Hydros: ")    + c + TOUTFSTRING(entry->hydroscount) + nc + newline;
+	if(entry->soundsourcescount > 0) descriptiontxt      = descriptiontxt + _L("SoundSources: ") + c + TOUTFSTRING(entry->soundsourcescount) + nc + newline;
+	if(entry->commandscount > 0) descriptiontxt          = descriptiontxt + _L("Commands: ")  + c + TOUTFSTRING(entry->commandscount) + nc + newline;
+	if(entry->rotatorscount > 0) descriptiontxt          = descriptiontxt + _L("Rotators: ")  + c + TOUTFSTRING(entry->rotatorscount) + nc + newline;
+	if(entry->exhaustscount > 0) descriptiontxt          = descriptiontxt + _L("Exhausts: ")  + c + TOUTFSTRING(entry->exhaustscount) + nc + newline;
+	if(entry->flarescount > 0) descriptiontxt            = descriptiontxt + _L("Flares: ")    + c + TOUTFSTRING(entry->flarescount) + nc + newline;
+	if(entry->torque > 0) descriptiontxt                 = descriptiontxt + _L("Torque: ")    + c + TOUTFSTRING(entry->torque) + nc + newline;
+	if(entry->flexbodiescount > 0) descriptiontxt        = descriptiontxt + _L("Flexbodies: ") + c + TOUTFSTRING(entry->flexbodiescount) + nc + newline;
+	if(entry->propscount > 0) descriptiontxt             = descriptiontxt + _L("Props: ")     + c + TOUTFSTRING(entry->propscount) + nc + newline;
+	if(entry->wingscount > 0) descriptiontxt             = descriptiontxt + _L("Wings: ")     + c + TOUTFSTRING(entry->wingscount) + nc + newline;
+	if(entry->hasSubmeshs) descriptiontxt                = descriptiontxt + _L("Using Submeshs: ") + c + TOUTFSTRING(entry->hasSubmeshs) + nc + newline;
+	if(entry->numgears > 0) descriptiontxt               = descriptiontxt + _L("Transmission Gear Count: ") + c + TOUTFSTRING(entry->numgears) + nc + newline;
+	if(entry->minrpm > 0) descriptiontxt                 = descriptiontxt + _L("Engine RPM: ") + c + TOUTFSTRING(entry->minrpm) + U(" - ") + TOUTFSTRING(entry->maxrpm) + nc + newline;
+	if(!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt = descriptiontxt + _L("Unique ID: ") + c + entry->uniqueid + nc + newline;
+	if(!entry->guid.empty() && entry->guid != "no-guid") descriptiontxt = descriptiontxt + _L("GUID: ") + c + entry->guid + nc + newline;
+	if(entry->usagecounter > 0) descriptiontxt           = descriptiontxt + _L("Times used: ") + c + TOUTFSTRING(entry->usagecounter) + nc + newline;
 
 	if(entry->addtimestamp > 0)
 	{
 		char tmp[255] = "";
 		time_t epch = entry->addtimestamp;
 		sprintf(tmp, "%s", asctime(gmtime(&epch)));
-		descriptiontxt += _L("Date and Time installed: ") + c + String(tmp) + nc + newline;
+		descriptiontxt = descriptiontxt +_L("Date and Time installed: ") + c + String(tmp) + nc + newline;
 	}
 
-	String driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
-	if(entry->nodecount > 0) descriptiontxt += _L("Vehicle Type: ") + c + driveableStr[entry->driveable] + nc + newline;
+	UTFString driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
+	if(entry->nodecount > 0) descriptiontxt = descriptiontxt +_L("Vehicle Type: ") + c + driveableStr[entry->driveable] + nc + newline;
 
-	descriptiontxt += "#448b9a\n"; // different colour for the props
+	descriptiontxt = descriptiontxt +"#448b9a\n"; // different colour for the props
 
-	if(entry->forwardcommands) descriptiontxt += _L("[forwards commands]") + newline;
-	if(entry->importcommands) descriptiontxt += _L("[imports commands]") + newline;
-	if(entry->rollon) descriptiontxt += _L("[is rollon]") + newline;
-	if(entry->rescuer) descriptiontxt += _L("[is rescuer]") + newline;
-	if(entry->custom_particles) descriptiontxt += _L("[uses custom particles]") + newline;
-	if(entry->fixescount > 0) descriptiontxt += _L("[has fixes]") + newline;
+	if(entry->forwardcommands) descriptiontxt = descriptiontxt +_L("[forwards commands]") + newline;
+	if(entry->importcommands) descriptiontxt = descriptiontxt +_L("[imports commands]") + newline;
+	if(entry->rollon) descriptiontxt = descriptiontxt +_L("[is rollon]") + newline;
+	if(entry->rescuer) descriptiontxt = descriptiontxt +_L("[is rescuer]") + newline;
+	if(entry->custom_particles) descriptiontxt = descriptiontxt +_L("[uses custom particles]") + newline;
+	if(entry->fixescount > 0) descriptiontxt = descriptiontxt +_L("[has fixes]") + newline;
 	// t is the default, do not display it
-	//if(entry->enginetype == 't') descriptiontxt += _L("[TRUCK ENGINE]") + newline;
-	if(entry->enginetype == 'c') descriptiontxt += _L("[car engine]") + newline;
-	if(entry->type == "Zip") descriptiontxt += _L("[zip archive]") + newline;
-	if(entry->type == "FileSystem") descriptiontxt += _L("[unpacked in directory]") + newline;
+	//if(entry->enginetype == 't') descriptiontxt = descriptiontxt +_L("[TRUCK ENGINE]") + newline;
+	if(entry->enginetype == 'c') descriptiontxt = descriptiontxt +_L("[car engine]") + newline;
+	if(entry->type == "Zip") descriptiontxt = descriptiontxt +_L("[zip archive]") + newline;
+	if(entry->type == "FileSystem") descriptiontxt = descriptiontxt +_L("[unpacked in directory]") + newline;
 
-	descriptiontxt += "#666666\n"; // now grey-ish colour
+	descriptiontxt = descriptiontxt +"#666666\n"; // now grey-ish colour
 
-	if(!entry->dirname.empty()) descriptiontxt += _L("Source: ") + entry->dirname + newline;
-	if(!entry->fname.empty()) descriptiontxt += _L("Filename: ") + entry->fname + newline;
-	if(!entry->hash.empty() && entry->hash != "none") descriptiontxt += _L("Hash: ") + entry->hash + newline;
-	if(!entry->hash.empty()) descriptiontxt += _L("Mod Number: ") + TOSTRING(entry->number) + newline;
+	if(!entry->dirname.empty()) descriptiontxt = descriptiontxt +_L("Source: ") + entry->dirname + newline;
+	if(!entry->fname.empty()) descriptiontxt = descriptiontxt +_L("Filename: ") + entry->fname + newline;
+	if(!entry->hash.empty() && entry->hash != "none") descriptiontxt = descriptiontxt +_L("Hash: ") + entry->hash + newline;
+	if(!entry->hash.empty()) descriptiontxt = descriptiontxt +_L("Mod Number: ") + TOUTFSTRING(entry->number) + newline;
 	
 	if(!entry->sectionconfigs.empty())
 	{
-		descriptiontxt += String("\n\n#e10000") + String(_L("Please select a configuration below!")) + nc + String("\n\n");
+		descriptiontxt = descriptiontxt + U("\n\n#e10000") + _L("Please select a configuration below!") + nc + U("\n\n");
 	}
 
-	StringUtil::trim(descriptiontxt);
+	trimUTFString(descriptiontxt);
 
-	try
-	{
-		mEntryDescriptionStaticText->setCaption(descriptiontxt);
-	} catch(...)
-	{
-		mEntryDescriptionStaticText->setCaption("ENCODING ERROR");
-	}
+	mEntryDescriptionStaticText->setCaption(convertToMyGUIString(descriptiontxt));
 }
 
 void SelectorWindow::setPreviewImage(Ogre::String texture)

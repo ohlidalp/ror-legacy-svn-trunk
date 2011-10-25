@@ -19,7 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Replay.h"
 
-#include "Ogre.h"
+#include <Ogre.h>
+
+#include "utils.h"
+
 #ifdef USE_MYGUI 
 #include "gui_manager.h"
 #endif // MYGUI
@@ -176,11 +179,11 @@ void Replay::updateGUI()
 		pr->setProgressPosition(0);
 	} else
 	{
-		char tmp[128]="";
+		wchar_t tmp[128] = L"";
 		unsigned long t = curFrameTime;
-		std::string format = _L("Position: %0.6f s, frame %i / %i");
-		sprintf(tmp, format.c_str(), ((float)t)/1000000.0f, curOffset, numFrames);
-		txt->setCaption(String(tmp));
+		UTFString format = _L("Position: %0.6f s, frame %i / %i");
+		swprintf(tmp, 128, format.asWStr_c_str(), ((float)t)/1000000.0f, curOffset, numFrames);
+		txt->setCaption(convertToMyGUIString(tmp, 128));
 		pr->setProgressPosition(abs(curOffset));
 	}
 #endif // MYGUI

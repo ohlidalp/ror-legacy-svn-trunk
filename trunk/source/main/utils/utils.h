@@ -36,7 +36,7 @@ Ogre::String hexdump(void *pAddressIn, long  lSize);
 
 Ogre::UTFString tryConvertUTF(const char *buffer);
 
-Ogre::String formatBytes(double bytes);
+Ogre::UTFString formatBytes(double bytes);
 
 
 Ogre::String getASCIIFromCharString(char *str, int maxlen);
@@ -58,8 +58,35 @@ Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node);
 
 void fixRenderWindowIcon (Ogre::RenderWindow *rw);
 
+std::wstring ANSI_TO_WCHAR(const Ogre::String& _source);
+Ogre::UTFString ANSI_TO_UTF(const Ogre::String& _source);
+
+void trimUTFString(Ogre::UTFString &str, bool left = true, bool right = true);
+
 #ifdef USE_MYGUI
-MyGUI::UString convertToMyGUIString(Ogre::UTFString str);
-Ogre::UTFString convertFromMyGUIString(MyGUI::UString str);
+inline MyGUI::UString convertToMyGUIString(char *charstr)
+{
+	return MyGUI::UString(ANSI_TO_WCHAR(charstr));
+}
+
+inline MyGUI::UString convertToMyGUIString(wchar_t *charstr, int len)
+{
+	return MyGUI::UString(charstr, len);
+}
+
+inline MyGUI::UString convertToMyGUIString(std::wstring str)
+{
+	return MyGUI::UString(str);
+}
+
+inline MyGUI::UString convertToMyGUIString(Ogre::UTFString str)
+{
+	return MyGUI::UString(str.asWStr());
+}
+inline Ogre::UTFString convertFromMyGUIString(MyGUI::UString str)
+{
+	return Ogre::UTFString(str.asWStr());
+}
 #endif // USE_MYGUI
+
 #endif //UTILS_H_

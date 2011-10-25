@@ -25,6 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Settings.h"
 
+#include "utils.h"
+
 #include "language.h"
 
 LoadingWindow::LoadingWindow() :
@@ -52,11 +54,11 @@ bool LoadingWindow::getFrameForced()
 	return true;
 }
 
-void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _updateRenderFrame)
+void LoadingWindow::setProgress(int _percent, const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
 	if(BSETTING("REPO_MODE")) return;
 	mMainWidget->setVisible(true);
-	mInfoStaticText->setCaption(_text);
+	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 
 	mBarProgress->setProgressAutoTrack(false);
 	mBarProgress->setProgressPosition(_percent);
@@ -64,11 +66,11 @@ void LoadingWindow::setProgress(int _percent, const Ogre::String& _text, bool _u
 	if( _updateRenderFrame ) renderOneFrame();
 }
 
-void LoadingWindow::setAutotrack(const Ogre::String& _text, bool _updateRenderFrame)
+void LoadingWindow::setAutotrack(const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
 	if(BSETTING("REPO_MODE")) return;
 	mMainWidget->setVisible(true);
-	mInfoStaticText->setCaption(_text);
+	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 	mBarProgress->setProgressPosition(0);
 	mBarProgress->setProgressAutoTrack(true);
 

@@ -52,8 +52,8 @@ protected:
 	ground_model_t *active_gm;
 	ground_model_t *selected_gm;
 
-	std::map < Ogre::String , std::pair < Ogre::String , Ogre::String > > helpTexts;
-	std::map < Ogre::String , std::pair < Ogre::Real , Ogre::Real > > minMaxs;
+	std::map < Ogre::UTFString , std::pair < Ogre::UTFString , Ogre::UTFString > > helpTexts;
+	std::map < Ogre::UTFString , std::pair < Ogre::Real , Ogre::Real > > minMaxs;
 
 	void updateControls(ground_model_t *gm, bool setCombo=true);
 	
@@ -64,7 +64,7 @@ protected:
 	void notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void notifyHelpWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void applyChanges();
-	void showHelp(String title, String msg, int x, int y);
+	void showHelp(Ogre::UTFString title, UTFString msg, int x, int y);
 };
 
 #endif //GUI_FRICTION_H__

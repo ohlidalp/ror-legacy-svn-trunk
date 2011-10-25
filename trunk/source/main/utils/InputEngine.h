@@ -367,7 +367,7 @@ struct eventInfo_t
 	Ogre::String name;
 	int eventID;
 	Ogre::String defaultKey;
-	Ogre::String description;
+	Ogre::UTFString description;
 };
 
 extern eventInfo_t eventInfo[];

@@ -59,7 +59,7 @@ void Axle::calcTorque( differential_data_t& diff_data )
 	if(current_callback) current_callback( diff_data );
 }
 
-Ogre::String Axle::getDiffTypeName()
+Ogre::UTFString Axle::getDiffTypeName()
 {
 	if(available_diff_method.size() <= 0) return "invalid";
 
@@ -71,7 +71,7 @@ Ogre::String Axle::getDiffTypeName()
 		case OPEN_DIFF: return _L("Open"); break;
 		case LOCKED_DIFF: return _L("Locked"); break;
 	}
-	return "invalid";
+	return _L("invalid");
 }
 
 diff_callback Axle::getDiffEquation(DiffType type)

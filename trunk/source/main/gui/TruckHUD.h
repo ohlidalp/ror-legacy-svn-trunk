@@ -37,18 +37,6 @@ public:
 	bool isVisible();
   
 protected:
-
-	Ogre::LineStreamOverlayElement *torqueLineStream; //!< pointer to the linestream overlay, which is the element that renders the curve
-	Ogre::String lastTorqueModel; //!< name of the last used torque model, needed to detect a change in the model
-	Ogre::Real lastTorqueRatio; //!< last RPM ratio, used to clear the last torque peak
-
-	/**
-	 * creates the required overlays to display a torque curve
-	 */
-	void initTorqueOverlay();
-
-
-private:
     static TruckHUD *myInstance;
 	std::map<int, float> maxVelos;
 	std::map<int, float> minVelos;

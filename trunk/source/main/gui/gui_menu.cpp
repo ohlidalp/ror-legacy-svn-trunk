@@ -160,39 +160,38 @@ GUI_MainMenu::~GUI_MainMenu()
 
 Ogre::UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 {
-	String username = ChatSystem::getColouredName(user);
-	char tmp[512] = "";
-	strcpy(tmp, username.c_str());
-	strcat(tmp, " #000000(");
+	UTFString tmp = ChatSystem::getColouredName(user);
+
+	tmp = tmp + U(" #000000(");
 
 	// some more info
 	if(user.authstatus & AUTH_ADMIN)
-		strcat(tmp, "#c97100admin#000000, ");
+		tmp = tmp + _L("#c97100admin#000000, ");
 	if(user.authstatus & AUTH_RANKED)
-		strcat(tmp, "#00c900ranked#000000, ");
+		tmp = tmp + _L("#00c900ranked#000000, ");
 	if(user.authstatus & AUTH_MOD)
-		strcat(tmp, "#c90000moderator#000000, ");
+		tmp = tmp + _L("#c90000moderator#000000, ");
 	if(user.authstatus & AUTH_BANNED)
-		strcat(tmp, "banned, ");
+		tmp = tmp + _L("banned, ");
 	if(user.authstatus & AUTH_BOT)
-		strcat(tmp, "#0000c9bot#000000, ");
+		tmp = tmp + _L("#0000c9bot#000000, ");
 
-	strcat(tmp, "#0000ddversion:#000000 ");
-	strcpy(tmp+strlen(tmp), user.clientversion);
-	strcat(tmp, ", ");
+	tmp = tmp + _L("#0000ddversion:#000000 ");
+	tmp = tmp + tryConvertUTF(user.clientversion);
+	tmp = tmp + U(", ");
 
-	strcat(tmp, "#0000ddlanguage:#000000 ");
-	strcpy(tmp+strlen(tmp), user.language);
-	strcat(tmp, ", ");
+	tmp = tmp + _L("#0000ddlanguage:#000000 ");
+	tmp = tmp + tryConvertUTF(user.language);
+	tmp = tmp + U(", ");
 
 	if(num_vehicles == 0)
-		strcat(tmp, _L("no vehicles"));
+		tmp = tmp + _L("no vehicles");
 	else
-		sprintf(tmp + strlen(tmp), _L("%d vehicles"), num_vehicles);
+		tmp = tmp + TOUTFSTRING(num_vehicles) + _L(" vehicles");
 
-	strcat(tmp, "#000000)");
+	tmp = tmp + U( "#000000)");
 
-	return tryConvertUTF(tmp);
+	return tmp;
 }
 
 void GUI_MainMenu::addUserToMenu(user_info_t &user)
@@ -283,7 +282,7 @@ void GUI_MainMenu::onVehicleMenu(MyGUI::MenuControl* _sender, MyGUI::MenuItem* _
 
 void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _item)
 {
-	String miname = _item->getCaption();
+	UTFString miname = UTFString(_item->getCaption().asWStr());
 	String id     = _item->getItemId();
 
 	if(id.substr(0,6) == "TRUCK_")

@@ -60,7 +60,7 @@ int Savegame::save(Ogre::String &filename)
 	// TODO: show error
 	if(!f) 
 	{
-		LOG(_L("error opening savegame"));
+		LOG("error opening savegame");
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
 		return 1;
 	}
@@ -206,7 +206,7 @@ int Savegame::save(Ogre::String &filename)
 		}
 	}
 	// and we are done :)
-	LOG(_L("saving done"));
+	LOG("saving done");
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("saving done"), "information.png");
 
 	fclose(f);
@@ -223,7 +223,7 @@ int Savegame::load(Ogre::String &filename)
 
 	if(!f)
 	{
-		LOG(_L("error opening savegame"));
+		LOG("error opening savegame");
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
 		return 1;
 	}
@@ -469,7 +469,7 @@ int Savegame::load(Ogre::String &filename)
 	BeamFactory::getSingleton().setCurrentTruck(h.current_truck);
 
 	// and we are done :)
-	LOG(_L("loading done."));
+	LOG("loading done.");
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("loading done."), "error.png");
 	fclose(f);
 	return 0;
