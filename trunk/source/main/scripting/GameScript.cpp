@@ -451,8 +451,10 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	}
 
 	// add some hard coded values
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, SSETTING("TerrainName").c_str(), CURLFORM_END);
-	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Hash", CURLFORM_COPYCONTENTS, SSETTING("TerrainHash").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, RoRFrameListener::eflsingleton->terrainName.c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileName", CURLFORM_COPYCONTENTS, RoRFrameListener::eflsingleton->terrainFileName.c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileHash", CURLFORM_COPYCONTENTS, RoRFrameListener::eflsingleton->terrainFileHash.c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ModHash", CURLFORM_COPYCONTENTS, RoRFrameListener::eflsingleton->terrainModHash.c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptName", CURLFORM_COPYCONTENTS, mse->getScriptName().c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptHash", CURLFORM_COPYCONTENTS, mse->getScriptHash().c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SSETTING("Nickname").c_str(), CURLFORM_END);
