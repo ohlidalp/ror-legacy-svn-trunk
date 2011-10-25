@@ -1187,7 +1187,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			c->setNetChat(netChat);
 			wchar_t tmp[255] = L"";
 			UTFString format = _L("Press %ls to start chatting");
-			swprintf(tmp, 255, format.asWStr_c_str(), ANSI_TO_WCHAR(INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE)));
+			swprintf(tmp, 255, format.asWStr_c_str(), ANSI_TO_WCHAR(INPUTENGINE.getKeyForCommand(EV_COMMON_ENTER_CHATMODE)).c_str());
 			c->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_HELP, UTFString(tmp), "information.png");
 		}
 

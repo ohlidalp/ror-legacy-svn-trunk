@@ -49,12 +49,13 @@ typedef struct dashData_t
 {
 	char type; // DC_*
 	dataContainer_t data;
-	char *name; // char string of name
+	const char *name; // char string of name
 
 	dashData_t() : type(DC_INVALID)
 	{
 	}
-	dashData_t(char type, char *name) : type(type), name(name)
+
+	dashData_t(char type, const char *name) : type(type), name(name)
 	{
 	};
 
