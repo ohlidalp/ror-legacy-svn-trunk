@@ -25,7 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornet.h"
 #include "RoRVersion.h"
 
-
+#ifndef WIN32
+#include <iconv.h>
+#endif //WIN32
 
 #include <fstream>
 
@@ -274,6 +276,23 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String& _source)
 	std::wstring ret = tmpBuff;
 	delete[] tmpBuff;
 	return ret;
+#else
+	/*
+	const char* srcPtr = _source.c_str();
+	iconv_t i = iconv_open("UTF-8", "ANSI");
+	if ( i == (iconv_t) -1 ) return wstring();
+
+	char * smile = "263a";  // the smile sign unicode
+	size_t inbytes = sizeof (smile);
+	size_t outbytes = inbytes;
+	size_t nread=0;
+	char ** outbuf = (char **)malloc(outbytes+1);
+
+	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
+	std::wstring ret = tmpBuff;
+	delete[] tmpBuff;
+	*/
+	return std::wstring();
 #endif // WIN32
 }
 
