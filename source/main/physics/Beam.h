@@ -258,6 +258,10 @@ public:
 	SceneNode *netLabelNode;
 
 	std::string getTruckName();
+	std::string getTruckFileName();
+	std::string getTruckHash();
+
+	
 	std::vector<authorinfo_t> getAuthors();
 	std::vector<std::string> getDescription();
 
@@ -513,6 +517,17 @@ inline std::string Beam::getTruckName()
 {
 	return realtruckname;
 }
+
+inline std::string Beam::getTruckFileName()
+{
+	return realtruckfilename;
+}
+
+inline std::string Beam::getTruckHash()
+{
+	return beamHash;
+}
+
 
 inline std::vector<authorinfo_t> Beam::getAuthors()
 {

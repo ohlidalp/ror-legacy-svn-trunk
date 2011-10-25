@@ -3675,6 +3675,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		SETTINGS.setSetting("TerrainHash", String(hash_result));
+		SETTINGS.setSetting("TerrainName", terrainfile);
 	}
 
 	loadedTerrain = terrainfile;
