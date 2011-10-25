@@ -780,6 +780,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	terrainHasTruckShop=false;
 
+	terrainName = String();
+	terrainFileName = String();
+	terrainFileHash = String();
+	terrainModHash = String();
+
 	// we dont use overlays in embedded mode
 	if(!isEmbedded)
 		ow = new OverlayWrapper(win);
@@ -1985,7 +1990,8 @@ bool RoRFrameListener::updateEvents(float dt)
 			// add some more data into the image
 			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
 			as->addData("terrain_Name", loadedTerrain);
-			as->addData("terrain_Hash", SSETTING("TerrainHash"));
+			as->addData("terrain_ModHash", SSETTING("TerrainModHash"));
+			as->addData("terrain_FileHash", SSETTING("TerrainModHash"));
 			as->addData("Truck_Num", TOSTRING(BeamFactory::getSingleton().getCurrentTruckNumber()));
 			if(curr_truck)
 			{
@@ -3674,8 +3680,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		sha1.HashFile(const_cast<char*>(fn.c_str()));
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
-		SETTINGS.setSetting("TerrainHash", String(hash_result));
-		SETTINGS.setSetting("TerrainName", terrainfile);
+		terrainModHash = String(hash_result);
 	}
 
 	loadedTerrain = terrainfile;
@@ -3736,8 +3741,34 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// set the terrain cache entry
 	//loaded_terrain = CACHE.getResourceInfo(terrainfile);
 
+	terrainFileName = terrainfile;
+
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(terrainfile, group);
+
+	// now generate the hash of it
+	{
+		// copy whole file into a string
+		string code;
+		ds->seek(0); // from start
+		code.resize(ds->size());
+		ds->read(&code[0], ds->size());
+
+		// and build the hash over it
+		char hash_result[250];
+		memset(hash_result, 0, 249);
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+		terrainFileHash = String(hash_result);
+		ds->seek(0); // to start
+	}
+
+
+
 	ds->readLine(line, 1023);
+	terrainName = String(line);
+
 	//geometry
 	ds->readLine(geom, 1023);
 

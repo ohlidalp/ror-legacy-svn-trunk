@@ -188,7 +188,6 @@ protected:
 	//	SceneNode *pitch_node;
 	//	SceneNode *rollcorr_node;
 
-
 	SceneManager *mSceneMgr;
 	Root *mRoot;
 	//	bool usejoy;
@@ -245,6 +244,10 @@ public:
 
 	int loading_state;
 
+	Ogre::String terrainName;
+	Ogre::String terrainFileName;
+	Ogre::String terrainFileHash;
+	Ogre::String terrainModHash;
 
 	static RoRFrameListener *eflsingleton;
 	void removeBeam(Beam *);
