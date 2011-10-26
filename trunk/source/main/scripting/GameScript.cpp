@@ -473,10 +473,23 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	if(BeamFactory::getSingleton().getCurrentTruck())
 	{
 		Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_Name",     CURLFORM_COPYCONTENTS, truck->getTruckName().c_str(), CURLFORM_END);
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_FileName", CURLFORM_COPYCONTENTS, truck->getTruckFileName().c_str(), CURLFORM_END);
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Truck_Hash",     CURLFORM_COPYCONTENTS, truck->getTruckHash().c_str(), CURLFORM_END);
+
+		// look for any locked trucks
+		int i = 0;
+		for(std::vector<hook_t>::iterator it = truck->hooks.begin(); it != truck->hooks.end(); it++, i++)
+		{
+			Beam *trailer = it->lockTruck;
+			if (trailer && trailer->getTruckName() != trailer->getTruckName())
+			{
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_Name",     CURLFORM_COPYCONTENTS, trailer->getTruckName().c_str(), CURLFORM_END);
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_FileName", CURLFORM_COPYCONTENTS, trailer->getTruckFileName().c_str(), CURLFORM_END);
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_Hash",     CURLFORM_COPYCONTENTS, trailer->getTruckHash().c_str(), CURLFORM_END);
+			}
+		}
+		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_Count",     CURLFORM_COPYCONTENTS, TOSTRING(i).c_str(), CURLFORM_END);
 	}
 
 	const RenderTarget::FrameStats& stats = mefl->getRenderWindow()->getStatistics();
