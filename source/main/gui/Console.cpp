@@ -633,6 +633,9 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 #ifdef USE_ANGELSCRIPT
 	if(angelscriptMode || msg[0] == '\\')
 	{
+		// we want to notify any running scripts that we might change something (prevent cheating)
+		ScriptEngine::getSingleton().triggerEvent(SE_ABGELSCRIPT_MANIPULATIONS);
+
 		String command = (angelscriptMode ? msg : msg.substr(1));
 
 		Ogre::StringUtil::trim(command);

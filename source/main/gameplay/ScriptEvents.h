@@ -55,6 +55,8 @@ enum scriptEvents
 	SE_TRUCK_TRACTIONCONTROL_TOGGLE    = 0x00200000, //!< triggered when the user toggles the tractioncontrol system, the argument refers to the truck number
 	SE_TRUCK_ANTILOCKBRAKE_TOGGLE      = 0x00400000, //!< triggered when the user toggles the antilockbrake, the argument refers to the truck number
 
+	SE_ABGELSCRIPT_MANIPULATIONS       = 0x00800000, //!< triggered when the user tries to dynamically use the scripting capabilities (prevent cheating)
+
 	SE_ALL_EVENTS                      = 0xffffffff,
 
 };
