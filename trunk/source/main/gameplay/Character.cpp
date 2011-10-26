@@ -158,7 +158,7 @@ void Character::updateNetLabel()
 	{
 		user_info_t *info = net->getLocalUserData();
 		if(!info) return;
-		if(tryConvertUTF(info->username).empty()) return;
+		if(String(info->username).empty()) return;
 		this->colourNumber = info->colournum;
 		networkUsername = tryConvertUTF(info->username);
 		networkAuthLevel = info->authstatus;

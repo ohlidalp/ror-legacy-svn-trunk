@@ -177,11 +177,11 @@ Ogre::UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 		tmp = tmp + _L("#0000c9bot#000000, ");
 
 	tmp = tmp + _L("#0000ddversion:#000000 ");
-	tmp = tmp + tryConvertUTF(user.clientversion);
+	tmp = tmp + ANSI_TO_UTF(user.clientversion);
 	tmp = tmp + U(", ");
 
 	tmp = tmp + _L("#0000ddlanguage:#000000 ");
-	tmp = tmp + tryConvertUTF(user.language);
+	tmp = tmp + ANSI_TO_UTF(user.language);
 	tmp = tmp + U(", ");
 
 	if(num_vehicles == 0)
@@ -225,7 +225,7 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 			{
 				char tmp[512] = "";
 				sprintf(tmp, "  + %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
-				MyGUI::UString vehName = convertToMyGUIString(tryConvertUTF(tmp));
+				MyGUI::UString vehName = convertToMyGUIString(ANSI_TO_UTF(tmp));
 				vehiclesMenu->addItem(vehName, MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(matches[j]));
 			}
 		}
