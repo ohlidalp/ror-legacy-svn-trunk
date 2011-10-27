@@ -166,9 +166,15 @@ public:
 	void registerForEvent(int eventValue);
 
 	/**
+	 * DEPRECATED: use message
 	 * shows a message to the user
 	 */
 	void flashMessage(std::string &txt, float time, float charHeight);
+
+	/**
+	 * shows a message to the user over the console system
+	 */
+	void message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible);
 
 	/**
 	 * set direction arrow
