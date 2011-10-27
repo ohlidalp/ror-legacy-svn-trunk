@@ -195,6 +195,12 @@ void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
 }
 
+void GameScript::message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible)
+{
+	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, icon, timeMilliseconds, forceVisible);
+
+}
+
 void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 &vec)
 {
 	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Ogre::Vector3(vec.x, vec.y, vec.z));
