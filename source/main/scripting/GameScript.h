@@ -249,6 +249,13 @@ public:
 	int addScriptFunction(const std::string &arg);
 	
 	/** 
+	 * Checks if a global function exists in the script
+	 * (Wrapper for ScriptEngine::functionExists)
+	 * @param arg A declaration for the function.
+	*/
+	int scriptFunctionExists(const std::string &arg);
+	
+	/** 
 	 * Deletes a global function from the script
 	 * (Wrapper for ScriptEngine::deleteFunction)
 	 * @param arg A declaration for the function.

@@ -440,6 +440,7 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "void cameraLookAt(vector3 &in)",       AngelScript::asMETHOD(GameScript,cameraLookAt),       AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 
 	result = engine->RegisterObjectMethod("GameScriptClass", "int addScriptFunction(const string &in)", AngelScript::asMETHOD(GameScript,addScriptFunction), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+	result = engine->RegisterObjectMethod("GameScriptClass", "int scriptFunctionExists(const string &in)", AngelScript::asMETHOD(GameScript,scriptFunctionExists), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int deleteScriptFunction(const string &in)", AngelScript::asMETHOD(GameScript,deleteScriptFunction), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int addScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,addScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int deleteScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,deleteScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
@@ -469,7 +470,7 @@ void ScriptEngine::init()
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_DELETED_TRUCK", SE_GENERIC_DELETED_TRUCK); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_INPUT_EVENT", SE_GENERIC_INPUT_EVENT); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_GENERIC_MOUSE_BEAM_INTERACTION", SE_GENERIC_MOUSE_BEAM_INTERACTION); MYASSERT(result>=0);
-	result = engine->RegisterEnumValue("scriptEvents", "SE_ABGELSCRIPT_MANIPULATIONS", SE_ABGELSCRIPT_MANIPULATIONS); MYASSERT(result>=0);
+	result = engine->RegisterEnumValue("scriptEvents", "SE_ANGELSCRIPT_MANIPULATIONS", SE_ANGELSCRIPT_MANIPULATIONS); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_ALL_EVENTS", SE_ALL_EVENTS); MYASSERT(result>=0);
 	
 
@@ -712,9 +713,18 @@ int ScriptEngine::addFunction(const Ogre::String &arg)
 	return r;
 }
 
+int ScriptEngine::functionExists(const Ogre::String &arg)
+{
+	if(!engine) return -1;
+	if(!context) context = engine->CreateContext();
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
+
+	if(mod == 0) return AngelScript::asNO_FUNCTION;
+	else return mod->GetFunctionIdByDecl(arg.c_str());
+}
+
 int ScriptEngine::deleteFunction(const Ogre::String &arg)
 {
-	SLOG("ScriptEngine::DeleteFunction");
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
@@ -765,7 +775,6 @@ int ScriptEngine::deleteFunction(const Ogre::String &arg)
 
 int ScriptEngine::addVariable(const Ogre::String &arg)
 {
-	SLOG("ScriptEngine::addVariable");
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
@@ -783,7 +792,6 @@ int ScriptEngine::addVariable(const Ogre::String &arg)
 
 int ScriptEngine::deleteVariable(const Ogre::String &arg)
 {
-	SLOG("ScriptEngine::deleteVariable");
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
