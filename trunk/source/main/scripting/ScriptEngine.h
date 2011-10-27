@@ -105,6 +105,12 @@ public:
 	int addFunction(const Ogre::String& arg);
 	
 	/** 
+	 * Checks if a global function exists
+	 * @param arg A declaration for the function.
+	*/
+	int functionExists(const Ogre::String& arg);
+	
+	/** 
 	 * Deletes a global function from the script
 	 * @param arg A declaration for the function.
 	*/

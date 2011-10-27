@@ -634,7 +634,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	if(angelscriptMode || msg[0] == '\\')
 	{
 		// we want to notify any running scripts that we might change something (prevent cheating)
-		ScriptEngine::getSingleton().triggerEvent(SE_ABGELSCRIPT_MANIPULATIONS);
+		ScriptEngine::getSingleton().triggerEvent(SE_ANGELSCRIPT_MANIPULATIONS);
 
 		String command = (angelscriptMode ? msg : msg.substr(1));
 

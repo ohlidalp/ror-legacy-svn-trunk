@@ -103,6 +103,8 @@ bool GameScript::getCaelumAvailable()
 {
 #ifdef USE_CAELUM
 	return SkyManager::getSingletonPtr() != 0;
+#else
+	return false;
 #endif // USE_CAELUM
 }
 
@@ -185,7 +187,7 @@ int GameScript::getCurrentTruckNumber()
 void GameScript::registerForEvent(int eventValue)
 {
 	if(!mse) return;
-	//mse->eventMask += eventValue;
+	mse->eventMask += eventValue;
 }
 
 void GameScript::flashMessage(std::string &txt, float time, float charHeight)
@@ -635,6 +637,11 @@ void GameScript::boostCurrentTruck(float factor)
 int GameScript::addScriptFunction(const std::string &arg)
 {
 	return mse->addFunction(arg);
+}
+
+int GameScript::scriptFunctionExists(const std::string &arg)
+{
+	return mse->functionExists(arg);
 }
 
 int GameScript::deleteScriptFunction(const std::string &arg)
