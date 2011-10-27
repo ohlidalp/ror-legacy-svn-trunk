@@ -31,14 +31,16 @@
 #include "SkyManager.h"
 #include "CacheSystem.h"
 #include "as_ogre.h"
+#include "language.h"
 #include "SelectorWindow.h"
 #include "sha1.h"
 #include "collisions.h"
 #include "RoRVersion.h"
 #include "engine.h"
+#include "utils.h"
 
 /* class that implements the interface for the scripts */
-GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl)
+GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl), apiThread()
 {
 }
 
@@ -405,7 +407,24 @@ static size_t curlWriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void
 }
 #endif //USE_CURL
 
-int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
+void *onlineAPIThread(void *_params)
+{
+	// copy over params
+	GameScript::OnlineAPIParams_t params = *(GameScript::OnlineAPIParams_t *)_params;
+
+	// call the function
+	params.cls->useOnlineAPIDirectly(params);
+
+	// free the params
+	params.dict->Release();
+	free(_params);
+	_params = NULL;
+
+	pthread_exit(NULL);
+	return NULL;
+}
+
+int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 {
 #ifdef USE_CURL
 	struct curlMemoryStruct chunk;
@@ -419,7 +438,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::const_iterator it;
-	for(it = d.dict.begin(); it != d.dict.end(); it++)
+	for(it = params.dict->dict.begin(); it != params.dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
 		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
@@ -501,14 +520,14 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	CURL *curl = curl_easy_init();
 	if(!curl)
 	{
-		result = "ERROR: failed to init curl";
+		LOG("ERROR: failed to init curl");
 		return 1;
 	}
 
 	char *curl_err_str[CURL_ERROR_SIZE];
 	memset(curl_err_str, 0, CURL_ERROR_SIZE);
 
-	string url = "http://" + string(REPO_SERVER) + apiquery;
+	string url = "http://" + string(REPO_SERVER) + params.apiquery;
 	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
 
 	/* send all data to this function  */
@@ -542,6 +561,8 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 
 	curl_formfree(formpost);
 
+	std::string result;
+
 	if(chunk.memory)
 	{
 		// convert memory into std::string now
@@ -558,12 +579,44 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	{
 		const char *errstr = curl_easy_strerror(res);
 		result = "ERROR: " + string(errstr);
-		return 1;
 	}
 
-	return 0;
+	LOG("online API result: " + result);
+
+	Console *con = Console::getInstancePtrNoCreation();
+	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Online API result: ") + ANSI_TO_UTF(result), "information.png");
 #endif //USE_CURL
-	return 1;
+	return 0;
+}
+
+int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
+{
+	// malloc this, so we are safe from this function scope
+	OnlineAPIParams_t *params = (OnlineAPIParams_t *)malloc(sizeof(OnlineAPIParams_t));
+	params->cls      = this;
+	strncpy(params->apiquery, apiquery.c_str(), 2048);
+
+	//wrap a new dict around this, as we dont know if or when the script will release it
+	AngelScript::CScriptDictionary *newDict = new AngelScript::CScriptDictionary(mse->getEngine());
+	// copy over the dict, the main data
+	newDict->dict    = d.dict;
+	// assign it to the data container
+	params->dict     = newDict;
+	// tell the script that there will be no direct feedback
+	result           = "asynchronous";
+
+	Console *con = Console::getInstancePtrNoCreation();
+	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
+
+	// create the thread
+	LOG("creating thread for online API usage...");
+	int rc = pthread_create(&apiThread, NULL, onlineAPIThread, (void *)params);
+	if(rc)
+	{
+		LOG("useOnlineAPI/pthread error code: " + TOSTRING(rc));
+		return 1;
+	}
+	return 0;
 }
 
 void GameScript::boostCurrentTruck(float factor)

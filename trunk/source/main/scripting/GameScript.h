@@ -50,6 +50,7 @@ class GameScript
 protected:
 	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly
 	RoRFrameListener *mefl;     //!< local pointer to the main RoRFrameListener, used as proxy mostly
+	pthread_t apiThread;
 
 public:
 	/**
@@ -286,8 +287,17 @@ public:
 	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
 	
+	typedef struct OnlineAPIParams_t {
+		GameScript *cls;
+		char apiquery[2048];
+		AngelScript::CScriptDictionary *dict;
+		OnlineAPIParams_t() {};
+	} OnlineAPIParams_t;
+
 	float rangeRandom(float from, float to);
 	int useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &dict, std::string &result);
+	int useOnlineAPIDirectly(OnlineAPIParams_t params);
+
 	int getLoadedTerrain(std::string &result);
 	Ogre::Vector3 getPersonPosition();
 
