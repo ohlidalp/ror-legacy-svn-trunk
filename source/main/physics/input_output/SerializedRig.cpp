@@ -5332,11 +5332,11 @@ void SerializedRig::serialize(Ogre::String targetFilename, ScopeLog *scope_log)
 		root[L"errors"]     = new JSONValue(TOSTRING(errors_count).c_str());
 		root[L"fatals"]     = new JSONValue(TOSTRING(fatals_count).c_str());
 		root[L"rorversion"] = new JSONValue(ROR_VERSION_STRING);
+		root[L"hash"]       = new JSONValue(beamHash.c_str());
 
-		
 		if(!virtuallyLoaded) // && mSceneNode)
 		{
-	 		// now calculate the bounds with respct of the nodes and beams
+	 		// now calculate the bounds with respect of the nodes and beams
 			//AxisAlignedBox aab = getWorldAABB(mSceneNode);
 			calcBox();
 			AxisAlignedBox aab = AxisAlignedBox(minx, miny, minz, maxx, maxy, maxz);
