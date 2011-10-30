@@ -92,7 +92,7 @@ public:
 		MSG_CUSTOM,
 		};
 
-	void putMessage(int type, int uid, Ogre::UTFString msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 30000, bool forcevisible = false);
+	void putMessage(int type, int uid, Ogre::UTFString msg, Ogre::String icon = "bullet_black.png", unsigned long ttl = 30000, bool forcevisible = true);
 
 	void resized();
 protected:
