@@ -47,6 +47,8 @@ ELSEIF(APPLE)
   SET(ROR_BINTOOL_DIR             ${RoR_SOURCE_DIR}/tools/linux/binaries)
 ENDIF(WIN32)
 
+set(CMAKE_DEBUG_POSTFIX _d)
+
 # hide some settings
 mark_as_advanced(
   CMAKE_DEBUG_POSTFIX

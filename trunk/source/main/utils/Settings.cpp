@@ -350,7 +350,11 @@ bool Settings::setupPaths()
 	//setup config files names
 	char plugins_fname[1024];
 	strcpy(plugins_fname, program_path);
+#ifdef _DEBUG
+	strcat(plugins_fname, "plugins_d.cfg");
+#else
 	strcat(plugins_fname, "plugins.cfg");
+#endif
 
 	char ogreconf_fname[1024];
 	strcpy(ogreconf_fname, user_path);
