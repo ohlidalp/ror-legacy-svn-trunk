@@ -32,8 +32,6 @@ OgreFramework::OgreFramework() : hwnd(Ogre::String()), mainhwnd(Ogre::String()),
 OgreFramework::~OgreFramework()
 {
 	LOG("Shutdown OGRE...");
-    //if(m_pTrayMgr)      delete m_pTrayMgr;
-    //if(m_pRoot)			delete m_pRoot;
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
