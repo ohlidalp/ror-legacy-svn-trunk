@@ -145,8 +145,11 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 
   target_link_libraries(${BINNAME} 
 	debug
-	${Boost_LIBRARIES} ${Ogre_LIBRARIES_DEBUG} ${Ogre_Terrain_LIBRARIES_DEBUG} ${Ogre_Paging_LIBRARIES_DEBUG} ${Ogre_RTShader_LIBRARIES_DEBUG} ${Ois_LIBRARIES_DEBUG} ${OS_LIBS} ${optional_libs_debug}
+	${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
+	#${Boost_LIBRARIES} ${Ogre_LIBRARIES_DEBUG} ${Ogre_Terrain_LIBRARIES_DEBUG} ${Ogre_Paging_LIBRARIES_DEBUG} ${Ogre_RTShader_LIBRARIES_DEBUG} ${Ois_LIBRARIES_DEBUG} ${OS_LIBS} ${optional_libs_debug}
 	optimized
+	${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
+	general
 	${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
 	)
 endmacro(add_ror_project)
