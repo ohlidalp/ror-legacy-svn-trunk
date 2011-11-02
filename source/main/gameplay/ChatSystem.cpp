@@ -130,19 +130,23 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 			username = getColouredName(*c);
 		}
 
+#ifdef USE_MYGUI
 		String msg = username + commandColour + _L(" joined the game");
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_JOIN_GAME, msg, "user_add.png");
+#endif //USE_MYGUI
 	}
 #endif //SOCKETW
 }
 
 ChatSystem::~ChatSystem()
 {
+#ifdef USE_MYGUI
 	if(remote)
 	{
 		String msg = username + commandColour + _L(" left the game");
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LEAVE_GAME, msg, "user_delete.png");
 	}
+#endif //USE_MYGUI
 }
 
 void ChatSystem::sendStreamSetup()
@@ -163,6 +167,7 @@ void ChatSystem::sendStreamData()
 
 void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
+#ifdef USE_MYGUI
 	if(type == MSG2_UTF_CHAT)
 	{
 		// some chat code
@@ -196,16 +201,13 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
 		}
 	}
+#endif //USE_MYGUI
 }
 
 void ChatSystem::sendChat(Ogre::UTFString chatline)
 {
 	const char *utf8_line = chatline.asUTF8_c_str();
 	this->addPacket(MSG2_UTF_CHAT, strlen(utf8_line), (char *)utf8_line);
-
-	// we let the message bounce back to us, no need to fake here
-	//String nmsg = net->getNickname(true) + normalColour + ": " + chatline;
-	//Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, nmsg, "user_comment.png");
 }
 
 int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
@@ -240,7 +242,9 @@ void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString
 
 	if(target_uid < 0)
 	{
+#ifdef USE_MYGUI
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
+#endif // USE_MYGUI
 		return;
 	}
 
@@ -271,8 +275,10 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	}
 
 	// add local visual
+#ifdef USE_MYGUI
 	UTFString nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
+#endif // USE_MYGUI
 }
 
 Ogre::UTFString ChatSystem::getColouredName(client_t &c)
