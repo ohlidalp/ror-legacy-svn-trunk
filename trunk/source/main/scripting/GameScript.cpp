@@ -511,9 +511,12 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 			Beam *trailer = it->lockTruck;
 			if (trailer && trailer->getTruckName() != trailer->getTruckName())
 			{
-				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_Name",     CURLFORM_COPYCONTENTS, trailer->getTruckName().c_str(), CURLFORM_END);
-				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_FileName", CURLFORM_COPYCONTENTS, trailer->getTruckFileName().c_str(), CURLFORM_END);
-				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_" + TOSTRING(i) + "_Hash",     CURLFORM_COPYCONTENTS, trailer->getTruckHash().c_str(), CURLFORM_END);
+				String name = "Trailer_" + TOSTRING(i) + "_Name";
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, name.c_str(),     CURLFORM_COPYCONTENTS, trailer->getTruckName().c_str(), CURLFORM_END);
+				String filename = "Trailer_" + TOSTRING(i) + "_FileName";
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, filename.c_str(), CURLFORM_COPYCONTENTS, trailer->getTruckFileName().c_str(), CURLFORM_END);
+				String hash = "Trailer_" + TOSTRING(i) + "_Hash";
+				curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, hash.c_str(),     CURLFORM_COPYCONTENTS, trailer->getTruckHash().c_str(), CURLFORM_END);
 			}
 		}
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_Count",     CURLFORM_COPYCONTENTS, TOSTRING(i).c_str(), CURLFORM_END);
