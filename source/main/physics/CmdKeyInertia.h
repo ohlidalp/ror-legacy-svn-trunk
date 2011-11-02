@@ -37,6 +37,7 @@ public:
 	int setCmdKeyDelay(int number,Ogre::Real startDelay,Ogre::Real stopDelay,Ogre::String startFunction, Ogre::String stopFunction);
 	void resetCmdKeyDelay(int maxCmdKeys);
 protected: 
+	int maxCmdKeys;
 
 	struct cmdKeyInertia_s
 	{

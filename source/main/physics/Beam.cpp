@@ -337,7 +337,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	materialFunctionMapper = new MaterialFunctionMapper();
 	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
 	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
-	rotaInertia  = new CmdKeyInertia(MAX_ROTATORS);
+	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
 	free_soundsource=0;
 	debugVisuals=0;
 	netMT = 0;

@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
-CmdKeyInertia::CmdKeyInertia(int maxCmdKeys)
+CmdKeyInertia::CmdKeyInertia(int maxCmdKeys) : maxCmdKeys(maxCmdKeys)
 {
 	loadDefaultInertiaModels();
 
@@ -47,12 +47,14 @@ CmdKeyInertia::~CmdKeyInertia()
 
 Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 {
+	if(cmdKey >= maxCmdKeys) return cmdInput;
+
 	if (cmdKeyInertia[cmdKey].startSpline==0 || cmdKeyInertia[cmdKey].stopSpline==0)
 		return cmdInput;
 
 	Real calculatedOutput=cmdKeyInertia[cmdKey].lastOutput;
 	Real lastOutput=cmdKeyInertia[cmdKey].lastOutput;
-	//rel difference to calculate if we have to use start values(accelarating) or stop values
+	//rel difference to calculate if we have to use start values(accelerating) or stop values
 	Real relDiff=fabs(cmdInput)-fabs(lastOutput);
 	// difference to calculate if were are on the negative side
 	Real absDiff=cmdInput-lastOutput;
@@ -92,6 +94,8 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 
 int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, String startFunction, String stopFunction)
 {
+	if(cmdKey >= maxCmdKeys) return 0;
+
 	//Delay values should always be greater than 0
 	if (startDelay>0)
 		cmdKeyInertia[cmdKey].startDelay=startDelay;
