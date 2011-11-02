@@ -248,6 +248,9 @@ void SelectorWindow::eventListChangePositionModelListAccept(MyGUI::ListPtr _send
 void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index)
 {
 	if(!mMainWidget->getVisible()) return;
+	
+	if(_index < 0 || _index >= mModelList->getItemCount()) return;
+	
 	try
 	{
 		int entryID = *mModelList->getItemDataAt<int>(_index);

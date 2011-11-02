@@ -81,10 +81,6 @@ void GameState::exit()
     m_pSceneMgr->destroyCamera(m_pCamera);
     if(m_pSceneMgr)
         OgreFramework::getSingletonPtr()->m_pRoot->destroySceneManager(m_pSceneMgr);
-
-	// hack: leave game here
-
-	std::exit(0);
 }
 
 void GameState::createScene()

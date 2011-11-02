@@ -36,6 +36,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MeshObject.h"
 #include "SceneMouse.h"
 
+#include "RigsOfRods.h"
+
 #include "CharacterFactory.h"
 #include "BeamFactory.h"
 
@@ -3566,8 +3568,8 @@ void RoRFrameListener::shutdown_final()
 	if (curr_truck) curr_truck->prepareShutdown();
 	INPUTENGINE.prepareShutdown();
 
-	// hard exit
-	exit(0);
+	RigsOfRods *ror = RigsOfRods::getSingletonPtr();
+	if(ror) ror->tryShutdown();
 
 	shutdownall=true;
 	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
