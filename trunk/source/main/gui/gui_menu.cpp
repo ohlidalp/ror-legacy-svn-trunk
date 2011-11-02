@@ -19,7 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 13th of August 2009
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
+
 #include "gui_menu.h"
 #include "gui_friction.h"
 #include "gui_manager.h"

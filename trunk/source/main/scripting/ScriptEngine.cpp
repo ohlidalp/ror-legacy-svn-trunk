@@ -109,8 +109,10 @@ void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageL
 void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
 #endif // OGRE_VERSION
 {
+#ifdef USE_MYGUI
 	Console *c = Console::getInstancePtrNoCreation();
 	if(c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_LOGMESSAGE_SCRIPT, message, "page_white_code.png");
+#endif // USE_MYGUI
 }
 
 void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *param)

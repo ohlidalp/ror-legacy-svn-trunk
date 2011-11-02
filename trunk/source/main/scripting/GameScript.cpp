@@ -192,13 +192,16 @@ void GameScript::registerForEvent(int eventValue)
 
 void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 {
+#ifdef USE_MYGUI
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
+#endif // USE_MYGUI
 }
 
 void GameScript::message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible)
 {
+#ifdef USE_MYGUI
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, icon, timeMilliseconds, forceVisible);
-
+#endif // USE_MYGUI
 }
 
 void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 &vec)
@@ -594,8 +597,10 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 
 	LOG("online API result: " + result);
 
+#ifdef USE_MYGUI
 	Console *con = Console::getInstancePtrNoCreation();
 	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Online API result: ") + ANSI_TO_UTF(result), "information.png");
+#endif // USE_MYGUI
 #endif //USE_CURL
 	return 0;
 }
@@ -616,8 +621,10 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	// tell the script that there will be no direct feedback
 	result           = "asynchronous";
 
+#ifdef USE_MYGUI
 	Console *con = Console::getInstancePtrNoCreation();
 	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
+#endif // USE_MYGUI
 
 	// create the thread
 	LOG("creating thread for online API usage...");

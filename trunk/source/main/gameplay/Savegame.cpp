@@ -61,7 +61,9 @@ int Savegame::save(Ogre::String &filename)
 	if(!f) 
 	{
 		LOG("error opening savegame");
+#ifdef USE_MYGUI
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
+#endif // USE_MYGUI
 		return 1;
 	}
 
@@ -207,7 +209,9 @@ int Savegame::save(Ogre::String &filename)
 	}
 	// and we are done :)
 	LOG("saving done");
+#ifdef USE_MYGUI
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("saving done"), "information.png");
+#endif // USE_MYGUI
 
 	fclose(f);
 	return 0;
@@ -224,7 +228,9 @@ int Savegame::load(Ogre::String &filename)
 	if(!f)
 	{
 		LOG("error opening savegame");
+#ifdef USE_MYGUI
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("error opening savegame"), "error.png");
+#endif // USE_MYGUI
 		return 1;
 	}
 
@@ -240,7 +246,9 @@ int Savegame::load(Ogre::String &filename)
 		{
 			String errstr = _L("unknown savegame version: ") + String(h.savegame_version) + _L(" supported version: ") + String(current_version);
 			LOG(errstr);
+#ifdef USE_MYGUI
 			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, errstr, "error.png");
+#endif // USE_MYGUI
 			fclose(f);
 			return 1;
 		}
@@ -286,7 +294,9 @@ int Savegame::load(Ogre::String &filename)
 		if(dh.magic != entry_magic)
 		{
 			LOG(_L("savegame corrupted: ") + filename);
+#ifdef USE_MYGUI
 			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("savegame corrupted: ") + filename, "error.png");
+#endif // USE_MYGUI
 			fclose(f);
 			return 1;
 		}
@@ -470,7 +480,9 @@ int Savegame::load(Ogre::String &filename)
 
 	// and we are done :)
 	LOG("loading done.");
+#ifdef USE_MYGUI
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("loading done."), "error.png");
+#endif // USE_MYGUI
 	fclose(f);
 	return 0;
 }
