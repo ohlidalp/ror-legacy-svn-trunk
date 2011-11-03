@@ -1988,7 +1988,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		while(fileExists(tmpfn))
 			tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 
+#ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setVisible(false);
+#endif // USE_MYGUI
 		if(String(screenshotformat) == "png")
 		{
 
@@ -2030,7 +2032,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			mWindow->writeContentsToFile(tmpfn);
 		}
 
+#ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setVisible(true);
+#endif // USE_MYGUI
 
 		// show new flash message
 		String ssmsg = _L("wrote screenshot:") + TOSTRING(mNumScreenShots);
@@ -6623,7 +6627,7 @@ void RoRFrameListener::reloadCurrentTruck()
 	String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
 #ifdef USE_MYGUI
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, msg, "information.png");
-#endif USE_MYGUI
+#endif //USE_MYGUI
 
 	// dislocate the old truck, so its out of sight
 	curr_truck->resetPosition(100000, 100000, false, 100000);

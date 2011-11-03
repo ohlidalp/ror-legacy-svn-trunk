@@ -113,7 +113,9 @@ Beam::~Beam()
 	}
 
 	// delete all classes we might have constructed
+#ifdef USE_MYGUI
 	if(dash) delete dash; dash=0;
+#endif // USE_MYGUI
 
 	// destruct and remove every tiny bit of stuff we created :-|
 	if(nettimer) delete nettimer; nettimer=0;
@@ -307,7 +309,9 @@ Beam::~Beam()
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false)
 {
+#ifdef USE_MYGUI
 	dash = new DashBoardManager();
+#endif // USE_MYGUI
 	net=_net;
 	if(net && !networking) networking = true; // enable networking if some network class is existing
 
@@ -920,7 +924,9 @@ void Beam::desactivate()
 	if (state!=NETWORKED && state!=RECYCLE)
 	{
 		state=DESACTIVATED;
+#ifdef USE_MYGUI
 		dash->setVisible(true);
+#endif // USE_MYGUI
 		sleepcount=0;
 	}
 }
@@ -2031,8 +2037,10 @@ bool Beam::frameStep(Real dt)
 	// TODO: move this to the correct spot
 	// update all dashboards
 	
+#ifdef USE_MYGUI
 	updateDashBoards(dt);
 	dash->update(dt);
+#endif // USE_MYGUI
 
 
 
@@ -3487,7 +3495,9 @@ void Beam::prepareInside(bool inside)
 	else
 	{
 		//going outside
+#ifdef USE_MYGUI
 		dash->setVisible(false);
+#endif // USE_MYGUI
 
 		// disable cabin light before going out
 		if(cablightNode && cablight)
@@ -5494,6 +5504,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 	LOG("BEAM: truck memory allocated: " + TOSTRING(memr)  + " B (" + TOSTRING(memr/1024)  + " kB)");
 
 
+#ifdef USE_MYGUI
 	// now load any dashboards
 	if(dashBoardLayout.empty())
 	{
@@ -5503,6 +5514,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 		dash->loadDashBoard(dashBoardLayout);
 	}
 	dash->setVisible(false);
+#endif // USE_MYGUI
 
 	return res;
 }
@@ -5598,6 +5610,7 @@ void Beam::updateAI(float dt)
 
 void Beam::updateDashBoards(float &dt)
 {
+#ifdef USE_MYGUI
 	// some temp vars
 	Vector3 dir;
 
@@ -5975,4 +5988,6 @@ void Beam::updateDashBoards(float &dt)
 	if (ftp>3 && curr_truck->aeroengines[3]->getIgnition()) ow->engstarto4->setMaterialName("tracks/engstart-on"); else ow->engstarto4->setMaterialName("tracks/engstart-off");
 }
 #endif //0
+
+#endif // USE_MYGUI
 }

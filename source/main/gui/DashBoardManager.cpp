@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 19th of October 2011
 
+#ifdef USE_MYGUI
+
 #include "DashBoardManager.h"
 #include "Settings.h"
 #include "language.h"
@@ -551,3 +553,6 @@ void DashBoard::setVisible(bool v)
 		(*iter)->setVisible(v);
 	}
 }
+
+#endif // USE_MYGUI
+
