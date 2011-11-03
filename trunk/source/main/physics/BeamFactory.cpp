@@ -174,6 +174,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	LOG(" new beam truck for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid));
 
+#ifdef USE_SOCKTEW
 	// log a message about this
 	if(net)
 	{
@@ -188,6 +189,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 #endif // USE_MYGUI
 		}
 	}
+#endif // USE_SOCKETW
 
 
 	bool networked=true, networking=false;

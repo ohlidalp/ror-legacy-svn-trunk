@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 19th of October 2011
 
+#ifdef USE_MYGUI
+
 #ifndef DASHBOARDMANAGER_H__
 #define DASHBOARDMANAGER_H__
 
@@ -252,3 +254,5 @@ protected:
 };
 
 #endif //DASHBOARDMANAGER_H__
+
+#endif // USE_MYGUI

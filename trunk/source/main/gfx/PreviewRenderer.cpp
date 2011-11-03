@@ -254,7 +254,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	if(SkyManager::getSingletonPtr())
 	{
 		SkyManager::getSingleton().notifyCameraChanged(renderCamera);
-		SkyManager::getSingleton().forceUpdate(0.01f);
+//		SkyManager::getSingleton().forceUpdate(0.01f);
 	}
 #endif // USE_CAELUM
 

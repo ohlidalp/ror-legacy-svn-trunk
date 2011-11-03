@@ -212,6 +212,7 @@ void ChatSystem::sendChat(Ogre::UTFString chatline)
 
 int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
 {
+#ifdef USE_SOCKETW
 	client_t c[MAX_PEERS];
 	if(net->getClientInfos(c)) return 0;
 
@@ -220,10 +221,14 @@ int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
 		names.push_back(c[i].user.username);
 	}
 	return names.size();
+#else
+	return 0;
+#endif // USE_SOCKETW
 }
 
 void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString chatline)
 {
+#ifdef USE_SOCKETW
 	// first: find id to username:
 	client_t c[MAX_PEERS];
 	if(net->getClientInfos(c))
@@ -249,12 +254,14 @@ void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString
 	}
 
 	sendPrivateChat(target_uid, chatline, getColouredName(c[target_index]));
+#endif // USE_SOCKETW
 }
 
 
 
 void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre::UTFString username)
 {
+#ifdef USE_SOCKETW
 	char buffer[MAX_MESSAGE_LENGTH] = "";
 	
 	const char *chat_msg = (const char *)chatline.asUTF8_c_str();
@@ -279,6 +286,7 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	UTFString nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
 	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
 #endif // USE_MYGUI
+#endif // USE_SOCKETW
 }
 
 Ogre::UTFString ChatSystem::getColouredName(client_t &c)
