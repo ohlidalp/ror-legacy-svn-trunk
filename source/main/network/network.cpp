@@ -484,6 +484,12 @@ void Network::disconnect()
 	LOG("Network error while disconnecting: ");
 }
 
+int Network::sendScriptMessage(char* content, unsigned int len)
+{
+	int result = sendmessage(&socket, MSG2_GAME_CMD, 0, len, content);
+	if(result<0) LOG("An error occurred while sending a script message to the server.");
+	return result;
+}
 
 unsigned long Network::getNetTime()
 {

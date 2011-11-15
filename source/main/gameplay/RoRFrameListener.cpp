@@ -82,6 +82,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "screwprop.h"
 #include "FlexAirfoil.h"
 #include "PreviewRenderer.h"
+#include "ExtinguishableFireAffector.h"
 
 #ifdef USE_MYGUI
 #include "gui_manager.h"
@@ -1734,6 +1735,17 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			ParticleSystem* pParticleSys = mSceneMgr->createParticleSystem(paname, String(sname));
 			pParticleSys->setCastShadows(false);
 			pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
+
+			// Some affectors may need its instance name (e.g. for script feedback purposes)
+			unsigned short affCount = pParticleSys->getNumAffectors();
+			ParticleAffector* pAff;
+			for(unsigned short i = 0; i<affCount; ++i)
+			{
+				pAff = pParticleSys->getAffector(i);
+				if(pAff->getType()=="ExtinguishableFire")
+					((ExtinguishableFireAffector*)pAff)->setInstanceName(obj->instanceName);
+			}
+
 			SceneNode *sn = tenode->createChildSceneNode();
 			sn->attachObject(pParticleSys);
 			sn->pitch(Degree(90));
