@@ -448,6 +448,8 @@ void ScriptEngine::init()
 	result = engine->RegisterObjectMethod("GameScriptClass", "int addScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,addScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 	result = engine->RegisterObjectMethod("GameScriptClass", "int deleteScriptVariable(const string &in)", AngelScript::asMETHOD(GameScript,deleteScriptVariable), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
 
+	result = engine->RegisterObjectMethod("GameScriptClass", "int sendGameCmd(const string &in)", AngelScript::asMETHOD(GameScript,sendGameCmd), AngelScript::asCALL_THISCALL); MYASSERT(result>=0);
+
 	// enum scriptEvents
 	result = engine->RegisterEnum("scriptEvents"); MYASSERT(result>=0);
 	result = engine->RegisterEnumValue("scriptEvents", "SE_COLLISION_BOX_ENTER", SE_COLLISION_BOX_ENTER); MYASSERT(result>=0);
@@ -602,6 +604,30 @@ int ScriptEngine::framestep(Ogre::Real dt)
 	return 0;
 }
 
+int ScriptEngine::fireEvent(std::string instanceName, float intensity)
+{
+	if(!engine) return 0;
+	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
+	int functionPtr = mod->GetFunctionIdByDecl("void fireEvent(string, float)"); // TODO: this shouldn't be hard coded --neorej16
+	if(functionPtr<0) return 0;
+	if(!context) context = engine->CreateContext();
+	context->Prepare(functionPtr);
+
+	// Set the function arguments
+	std::string *instance_name = new std::string(instanceName);
+	context->SetArgObject(0, &instanceName);
+	context->SetArgFloat (1, intensity);
+
+	int r = context->Execute();
+	if( r == AngelScript::asEXECUTION_FINISHED )
+	{
+	  // The return value is only valid if the execution finished successfully
+		AngelScript::asDWORD ret = context->GetReturnDWord();
+	}
+	delete(instance_name);
+
+	return 0;
+}
 
 int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node, int type)
 {

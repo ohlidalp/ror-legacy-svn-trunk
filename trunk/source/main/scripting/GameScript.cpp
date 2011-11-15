@@ -38,6 +38,7 @@
 #include "RoRVersion.h"
 #include "engine.h"
 #include "utils.h"
+#include "network.h"
 
 /* class that implements the interface for the scripts */
 GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl), apiThread()
@@ -673,4 +674,11 @@ int GameScript::addScriptVariable(const std::string &arg)
 int GameScript::deleteScriptVariable(const std::string &arg)
 {
 	return mse->deleteVariable(arg);
+}
+
+int GameScript::sendGameCmd(const std::string& message)
+{
+	Network *net = mefl->getNetwork();
+	if(!net) return -11;
+	else return net->sendScriptMessage(const_cast<char*>(message.c_str()), message.size());
 }

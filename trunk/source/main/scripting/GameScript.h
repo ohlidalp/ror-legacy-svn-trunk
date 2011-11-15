@@ -315,6 +315,7 @@ public:
 	Ogre::Vector3 getPersonPosition();
 
 	void clearEventCache();
+	int sendGameCmd(const std::string& message);
 };
 
 #endif // GAMESCRIPT_H__
