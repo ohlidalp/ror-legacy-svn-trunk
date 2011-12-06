@@ -352,6 +352,8 @@ void DashBoard::loadLayout( Ogre::String filename )
 		// establish the link
 		{
 			String linkArgs = w->getUserString("link");
+			replaceString(linkArgs, "&gt;", ">");
+			replaceString(linkArgs, "&lt;", "<");
 			String linkName = "";
 			if(linkArgs.empty())
 			{
