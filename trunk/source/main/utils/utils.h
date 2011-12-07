@@ -92,8 +92,8 @@ inline Ogre::UTFString convertFromMyGUIString(MyGUI::UString str)
 
 inline void replaceString(std::string &str, std::string searchString, std::string replaceString)
 {
-	string::size_type pos = 0;
-	while ( (pos = str.find(searchString, pos)) != string::npos )
+	std::string::size_type pos = 0;
+	while ( (pos = str.find(searchString, pos)) != std::string::npos )
 	{
 		str.replace( pos, searchString.size(), replaceString );
 		pos++;

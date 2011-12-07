@@ -26,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "DashBoardManager.h"
 
+#include "utils.h"
+
 #include <Ogre.h>
 using namespace Ogre;
 
