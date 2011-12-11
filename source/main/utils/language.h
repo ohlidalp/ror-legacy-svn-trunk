@@ -37,7 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #else // NOLANG
 
-#include "Ogre.h"
+//#include "Ogre.h"
 #ifdef USE_MOFILEREADER
 // using mofilereader as gettext replacement
 # include "moFileReader.h"

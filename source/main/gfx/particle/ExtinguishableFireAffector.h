@@ -20,6 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __ExtinguishableFireAffector_H__
 #define __ExtinguishableFireAffector_H__
 
+#ifdef USE_ANGELSCRIPT
+
 #include "OgreParticleAffector.h"
 #include "OgreVector3.h"
 #include "OgreVector2.h"
@@ -159,5 +161,7 @@ namespace Ogre {
 	};
 
 }
+
+#endif // USE_ANGELSCRIPT
 
 #endif

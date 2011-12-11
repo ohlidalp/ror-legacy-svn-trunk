@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef USE_ANGELSCRIPT
+
 #include "FireExtinguisherAffector.h"
 #include "OgreParticleSystem.h"
 #include "OgreParticle.h"
@@ -133,3 +135,7 @@ namespace Ogre {
 	}
 
 }
+
+
+#endif //USE_ANGELSCRIPT
+
