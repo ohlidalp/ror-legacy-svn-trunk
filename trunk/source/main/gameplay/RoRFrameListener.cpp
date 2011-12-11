@@ -1737,6 +1737,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 
 			// Some affectors may need its instance name (e.g. for script feedback purposes)
+#ifdef USE_ANGELSCRIPT
 			unsigned short affCount = pParticleSys->getNumAffectors();
 			ParticleAffector* pAff;
 			for(unsigned short i = 0; i<affCount; ++i)
@@ -1745,6 +1746,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				if(pAff->getType()=="ExtinguishableFire")
 					((ExtinguishableFireAffector*)pAff)->setInstanceName(obj->instanceName);
 			}
+#endif // USE_ANGELSCRIPT
 
 			SceneNode *sn = tenode->createChildSceneNode();
 			sn->attachObject(pParticleSys);

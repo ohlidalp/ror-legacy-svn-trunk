@@ -33,9 +33,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreShaderParticleRenderer.h"
 #include "OgreBoxEmitterFactory.h"
+
+#ifdef USE_ANGELSCRIPT
 #include "FireExtinguisherAffectorFactory.h"
 #include "ExtinguishableFireAffectorFactory.h"
-
+#endif // USE_ANGELSCRIPT                      
 
 #include "utils.h"
 
@@ -137,6 +139,7 @@ bool ContentManager::init(void)
 	ParticleSystemManager::getSingleton().addEmitterFactory(mParticleEmitterFact);
 #endif // WIN32
 
+#ifdef USE_ANGELSCRIPT
 	// FireExtinguisherAffector
 	ParticleAffectorFactory* pAffFact = OGRE_NEW FireExtinguisherAffectorFactory();
 	ParticleSystemManager::getSingleton().addAffectorFactory(pAffFact);
@@ -144,6 +147,7 @@ bool ContentManager::init(void)
 	// ExtinguishableFireAffector
 	pAffFact = OGRE_NEW ExtinguishableFireAffectorFactory();
 	ParticleSystemManager::getSingleton().addAffectorFactory(pAffFact);
+#endif // USE_ANGELSCRIPT
 
 	// optional ones
 
