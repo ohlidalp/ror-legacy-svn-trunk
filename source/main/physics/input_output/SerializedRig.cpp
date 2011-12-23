@@ -5265,15 +5265,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		parser_warning(c, "vehicle uses no GUID, skinning will be impossible", PARSER_OBSOLETE);
 	}
 
-	if(!SSETTING("vehicleOutputFile").empty())
-	{
-		// serialize the truck in a special format :)
-		String fn = SSETTING("vehicleOutputFile");
-		serialize(fn, &scope_log);
-	}
-	
-
-	// now generate the hash of it
+   // now generate the hash of it
 	{
 		// copy whole truck into a string
 		string code;
@@ -5292,6 +5284,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	}
 
 
+	// WARNING: this must come LAST
+ 	if(!SSETTING("vehicleOutputFile").empty())
+	{
+		// serialize the truck in a special format :)
+		String fn = SSETTING("vehicleOutputFile");
+		serialize(fn, &scope_log);
+	}
+	
+
+ 
 
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;
