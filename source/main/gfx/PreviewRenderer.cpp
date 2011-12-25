@@ -291,6 +291,16 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				renderCamera->pitch(Ogre::Degree(yaw));
 				renderCamera->moveRelative(Ogre::Vector3(0.0, 0.0, radius));
 
+ 				char tmp[56];
+				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
+				String ifn = fn + skelmode + SSETTING("dirsep") + String(tmp);
+    			
+				if(fileExists(ifn))
+				{
+					LOG("rending skipped - already existing [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + ifn);
+					continue;
+				}
+
 				//Render into the texture
 				// only when rendering all images into one texture
 				//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
@@ -305,11 +315,9 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				}
 #endif //USE_CAELUM
 
-				char tmp[56];
-				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
-				renderTarget->writeContentsToFile(fn + skelmode + SSETTING("dirsep") + String(tmp));
+				renderTarget->writeContentsToFile(ifn);
 				
-				LOG("rendered [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + fn + skelmode + SSETTING("dirsep") + String(tmp));
+				LOG("rendered [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + ifn);
 			}
 		}
 	}
