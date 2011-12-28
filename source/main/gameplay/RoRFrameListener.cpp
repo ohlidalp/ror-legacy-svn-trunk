@@ -2012,8 +2012,8 @@ bool RoRFrameListener::updateEvents(float dt)
 			// add some more data into the image
 			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
 			as->addData("terrain_Name", loadedTerrain);
-			as->addData("terrain_ModHash", SSETTING("TerrainModHash"));
-			as->addData("terrain_FileHash", SSETTING("TerrainModHash"));
+			as->addData("terrain_ModHash", terrainModHash);
+			as->addData("terrain_FileHash", terrainFileHash);
 			as->addData("Truck_Num", TOSTRING(BeamFactory::getSingleton().getCurrentTruckNumber()));
 			if(curr_truck)
 			{
@@ -4638,6 +4638,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		size_t ll=ds->readLine(line, 1023);
 		if (line[0]=='/' || line[0]==';' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
+
+
+		if (!strncmp(line,"collision-tris", 14))
+		{
+			long amount = DEFAULT_MAX_COLLISION_TRIS;
+			int res = sscanf(line, "collision-tris %ld", &amount);
+			collisions->resizeMemory(amount);
+		}
 
 		if (!strncmp(line,"grid", 4))
 		{

@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 //these are absolute maximums per terrain
 #define MAX_COLLISION_BOXES 5000
-#define MAX_COLLISION_TRIS 100000
+#define DEFAULT_MAX_COLLISION_TRIS 100000
 //this is a power of two! Change with caution
 #define HASH_SIZE 20
 //how many elements per cell? power of 2 minus 2 is better
@@ -108,7 +108,7 @@ private:
 	collision_box_t collision_boxes[MAX_COLLISION_BOXES];
 	int free_collision_box;
 	//collision tris pool;
-	collision_tri_t collision_tris[MAX_COLLISION_TRIS];
+	collision_tri_t *collision_tris;
 	int free_collision_tri;
 	//collision hashtable
 	hash_t hashtable[1<<HASH_SIZE];
@@ -145,6 +145,7 @@ private:
 	void parseGroundConfig(Ogre::ConfigFile *cfg, Ogre::String groundModel=Ogre::String());
 
 	Ogre::Vector3 calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi);
+	long max_col_tris;
 public:
 	bool forcecam;
 	Ogre::Vector3 forcecampos;
@@ -156,7 +157,7 @@ public:
 
 	Collisions() {}; // for wrapper, DO NOT USE!
 
-  Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
+	Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
 
 	int addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int scripthandler=-1);
 	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
@@ -196,6 +197,7 @@ public:
 			size_t &index_count, unsigned* &indices,
 			const Vector3 &position = Vector3::ZERO,
 			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
+	void resizeMemory(long newSize);
 };
 
 
