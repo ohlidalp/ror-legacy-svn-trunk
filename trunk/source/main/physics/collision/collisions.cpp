@@ -116,10 +116,14 @@ Collisions::Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _deb
 	, forcecam(false)
 	, last_used_ground_model(0)
 	, last_called_cbox(0)
+	, collision_tris(0)
+	, max_col_tris(DEFAULT_MAX_COLLISION_TRIS)
 {
 	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
 	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
 	
+	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * DEFAULT_MAX_COLLISION_TRIS);
+
 	loadDefaultModels();
 	defaultgm = getGroundModelByString("concrete");
 	defaultgroundgm = getGroundModelByString("gravel");
@@ -129,6 +133,21 @@ Collisions::Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _deb
 		debugmo = smgr->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
 	}
+
+}
+
+void Collisions::resizeMemory(long newSize)
+{
+	if(collision_tris)
+	{
+		free(collision_tris);
+		collision_tris = 0;
+	}
+	
+	// reset
+	free_collision_tri = 0;
+	max_col_tris = newSize;
+	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * newSize);
 
 }
 
@@ -761,7 +780,7 @@ int Collisions::removeCollisionBox(int num)
 
 int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm)
 {
-	if(free_collision_tri >= MAX_COLLISION_TRIS) return -1;
+	if(free_collision_tri >= max_col_tris) return -1;
 	collision_tris[free_collision_tri].a=p1;
 	collision_tris[free_collision_tri].b=p2;
 	collision_tris[free_collision_tri].c=p3;
