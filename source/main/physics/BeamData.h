@@ -49,7 +49,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "rornet.h"
 
 /* maximum limits */
-static const int   MAX_TRUCKS                 = 64;              //!< maximum number of trucks for the engine
+static const int   MAX_TRUCKS                 = 5000;            //!< maximum number of trucks for the engine
 
 static const int   MAX_NODES                  = 1000;            //!< maximum number of nodes per truck
 static const int   MAX_BEAMS                  = 5000;            //!< maximum number of beams per truck
