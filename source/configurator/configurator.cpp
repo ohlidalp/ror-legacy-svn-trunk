@@ -1082,7 +1082,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutTitle(_("Used Software"), x_row1, y);
 	addAboutEntry(wxT("Ogre3D"),        wxT("3D rendering engine"), wxT("http://www.ogre3d.org"), x_row1, y);
 	addAboutEntry(wxT("Caelum"),        wxT("Atmospheric effects"), wxT("http://code.google.com/p/caelum/"), x_row1, y);
-	addAboutEntry(wxT("Angelscript"),   wxT("Scripting Backend"), wxT("http://www.angelcode.com/angelscript/"), x_row1, y);
+	addAboutEntry(wxT("AngelScript"),   wxT("Scripting Backend"), wxT("http://www.angelcode.com/angelscript/"), x_row1, y);
 	//addAboutEntry(wxT("LUA"),           wxT("Scripting Backend"), wxT("http://www.lua.org"), x_row1, y);
 	addAboutEntry(wxT("OpenAL Soft"),   wxT("Sound engine"), wxT("http://kcat.strangesoft.net/openal.html"), x_row1, y);
 	addAboutEntry(wxT("MyGUI"),         wxT("GUI System"), wxT("http://www.mygui.info"), x_row1, y);
