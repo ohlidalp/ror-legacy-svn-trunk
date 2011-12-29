@@ -692,6 +692,8 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 		// show character
 		setVisible(true);
 
+		personode->resetOrientation();
+
 		// cast shadows when using it on the outside
 		personode->getAttachedObject(0)->setCastShadows(true);
 	}
