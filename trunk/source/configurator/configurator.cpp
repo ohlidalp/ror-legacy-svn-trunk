@@ -353,6 +353,7 @@ private:
 	//wxTimer *controlstimer;
 	// any class wishing to process wxWidgets events must use this macro
 	DECLARE_EVENT_TABLE()
+	bool loadOgrePlugins(Ogre::String pluginsfile);
 };
 
 
@@ -1621,6 +1622,57 @@ void MyDialog::addAboutEntry(wxString name, wxString desc, wxString url, int &x,
 
 }
 
+bool MyDialog::loadOgrePlugins(Ogre::String pluginsfile)
+{
+	Ogre::StringVector pluginList;
+	Ogre::String pluginDir;
+	Ogre::ConfigFile cfg;
+
+	try
+	{
+		cfg.load( pluginsfile );
+	}
+	catch (Ogre::Exception)
+	{
+		Ogre::LogManager::getSingleton().logMessage(pluginsfile + " not found, automatic plugin loading disabled.");
+		return false;
+	}
+
+	pluginDir = cfg.getSetting("PluginFolder"); // Ignored on Mac OS X, uses Resources/ directory
+	pluginList = cfg.getMultiSetting("Plugin");
+
+#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE && OGRE_PLATFORM != OGRE_PLATFORM_IPHONE
+	if (pluginDir.empty())
+	{
+		// User didn't specify plugins folder, try current one
+		pluginDir = ".";
+	}
+#endif
+
+	char last_char = pluginDir[pluginDir.length()-1];
+	if (last_char != '/' && last_char != '\\')
+	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		pluginDir += "\\";
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		pluginDir += "/";
+#endif
+	}
+
+	for( Ogre::StringVector::iterator it = pluginList.begin(); it != pluginList.end(); ++it )
+	{
+		Ogre::String pluginFilename = pluginDir + (*it);
+		try
+		{
+			ogreRoot->loadPlugin(pluginFilename);
+		} catch(Ogre::Exception &e)
+		{
+			wxLogStatus(wxT("failed to load plugin: ") + pluginFilename + wxT(": ") + e.getFullDescription());
+		}
+	}
+	return true;
+}
+
 void MyDialog::loadOgre()
 {
 	if(ogreRoot) return;
@@ -1636,10 +1688,13 @@ void MyDialog::loadOgre()
 
 	wxString progdirPrefix=app->ProgramPath+wxFileName::GetPathSeparator();
 	const char *pluginsfile="plugins.cfg";
-	wxLogStatus(wxT(">> If it crashes after here, check your plugins.cfg (and remove the DirectX entry if under linux)!"));
-	ogreRoot = new Ogre::Root(Ogre::String((const char*)progdirPrefix.mb_str(wxConvUTF8))+pluginsfile,
+	// load plugins manually to catch errors
+	ogreRoot = new Ogre::Root("",
 									Ogre::String((const char*)confdirPrefix.mb_str(wxConvUTF8))+"ogre.cfg",
 									Ogre::String((const char*)logsdirPrefix.mb_str(wxConvUTF8))+"RoRConfig.log");
+
+	// load plugins manually
+	loadOgrePlugins(Ogre::String((const char*)progdirPrefix.mb_str(wxConvUTF8))+pluginsfile);
 
 	wxLogStatus(wxT("Root restore config"));
 	try

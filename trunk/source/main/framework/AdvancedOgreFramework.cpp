@@ -93,6 +93,58 @@ bool OgreFramework::configure(void)
 	return false;
 }
 
+
+bool OgreFramework::loadOgrePlugins(Ogre::String pluginsfile)
+{
+	Ogre::StringVector pluginList;
+	Ogre::String pluginDir;
+	Ogre::ConfigFile cfg;
+
+	try
+	{
+		cfg.load( pluginsfile );
+	}
+	catch (Ogre::Exception)
+	{
+		Ogre::LogManager::getSingleton().logMessage(pluginsfile + " not found, automatic plugin loading disabled.");
+		return false;
+	}
+
+	pluginDir = cfg.getSetting("PluginFolder"); // Ignored on Mac OS X, uses Resources/ directory
+	pluginList = cfg.getMultiSetting("Plugin");
+
+#if OGRE_PLATFORM != OGRE_PLATFORM_APPLE && OGRE_PLATFORM != OGRE_PLATFORM_IPHONE
+	if (pluginDir.empty())
+	{
+		// User didn't specify plugins folder, try current one
+		pluginDir = ".";
+	}
+#endif
+
+	char last_char = pluginDir[pluginDir.length()-1];
+	if (last_char != '/' && last_char != '\\')
+	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		pluginDir += "\\";
+#elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+		pluginDir += "/";
+#endif
+	}
+
+	for( Ogre::StringVector::iterator it = pluginList.begin(); it != pluginList.end(); ++it )
+	{
+		Ogre::String pluginFilename = pluginDir + (*it);
+		try
+		{
+			m_pRoot->loadPlugin(pluginFilename);
+		} catch(Exception &e)
+		{
+			LOG("failed to load plugin: " + pluginFilename + ": " + e.getFullDescription());
+		}
+	}
+	return true;
+}
+
 bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded)
 {
 	this->name     = name;
@@ -118,7 +170,10 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	String logFilename   = SSETTING("Log Path") + name + Ogre::String(".log");
 	String pluginsConfig = SSETTING("plugins.cfg");
 	String ogreConfig    = SSETTING("ogre.cfg");
-    m_pRoot = new Ogre::Root(pluginsConfig, ogreConfig, logFilename);
+    m_pRoot = new Ogre::Root("", ogreConfig, logFilename);
+
+	// load plugins manually
+	loadOgrePlugins(pluginsConfig);
 
 	// configure RoR
 	configure();
