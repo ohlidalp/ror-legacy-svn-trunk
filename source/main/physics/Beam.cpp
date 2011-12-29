@@ -1848,6 +1848,8 @@ void Beam::SyncReset()
 	origin=Vector3::ZERO; //to fix
 	if(pointCD) pointCD->reset();
 
+	float yPos = lowestnode != -1 ? nodes[lowestnode].AbsPosition.y : 0;
+
 	Vector3 cur_position = nodes[0].AbsPosition;
 	Vector3 cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 	float cur_rot = atan2(cur_dir.dotProduct(Vector3::UNIT_X), cur_dir.dotProduct(-Vector3::UNIT_Z));
@@ -1921,10 +1923,16 @@ void Beam::SyncReset()
 	if (autopilot) resetAutopilot();
 	for (i=0; i<free_flexbody; i++) flexbodies[i]->reset();
 
+	// reset on spot with backspace
 	if (reset_requested == 2)
 	{
 		resetAngle(cur_rot);
-		resetPosition(cur_position.x, cur_position.z, false);
+
+		if(yPos != 0)
+			resetPosition(cur_position.x, cur_position.z, false, yPos + 1);
+		else
+			resetPosition(cur_position.x, cur_position.z, false);
+
 	}
 
 	// reset commands (self centering && push once/twice forced to terminate moving commands)
