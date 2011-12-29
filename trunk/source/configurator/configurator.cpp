@@ -69,10 +69,12 @@ using namespace std;
 #include <wx/scrolwin.h>
 #include "statpict.h"
 #include <wx/log.h>
+#include <wx/zipstrm.h>
 #include <wx/timer.h>
 #include <wx/version.h>
 #include <wx/log.h>
 #include <wx/statline.h>
+#include <wx/wfstream.h>
 
 #if wxCHECK_VERSION(2, 8, 0)
 #include <wx/hyperlink.h>
@@ -143,7 +145,8 @@ public:
 	bool filesystemBootstrap();
 	void recurseCopy(wxString sourceDir, wxString destinationDir);
 	void initLogging();
-//private:
+	bool createUserPath();
+	//private:
 	wxString UserPath;
 	wxString ProgramPath;
 	wxString SkeletonPath;
@@ -654,41 +657,108 @@ void MyApp::recurseCopy(wxString sourceDir, wxString destinationDir)
 	} while (srcd.GetNext(&src));
 }
 
-bool MyApp::filesystemBootstrap()
+// from http://wiki.wxwidgets.org/WxZipInputStream
+bool extractZipFiles(const wxString& aZipFile, const wxString& aTargetDir)
 {
-	UserPath = conv(SSETTING("User Path"));
-	ProgramPath = conv(SSETTING("Program Path"));
+	bool ret = true;
 
-	/*
-	//old code: the installer copied the dir now
-	//skeleton
-	wxFileName tsk=wxFileName(ProgramPath, wxEmptyString);
-	tsk.AppendDir(wxT("skeleton"));
-	SkeletonPath=tsk.GetPath();
-	tsk=wxFileName(ProgramPath, wxEmptyString);
-	tsk.AppendDir(wxT("languages"));
-	languagePath=tsk.GetPath();
-	//okay
-	if (!wxFileName::DirExists(UserPath))
-	{
-		//maybe warn the user we are creating this space
-		wxFileName::Mkdir(UserPath);
-	}
-	//okay, the folder exists
-	//copy recursively the skeleton
-	recurseCopy(SkeletonPath, UserPath);
-	*/
+	//wxFileSystem fs;
+	std::auto_ptr<wxZipEntry> entry(new wxZipEntry());
 
-	if (!wxFileName::DirExists(UserPath))
+	do {  
+
+		wxFileInputStream in(aZipFile);
+
+		if (!in) {
+			wxLogError(_T("Can not open file '")+aZipFile+_T("'."));
+			ret = false;
+			break;
+		}
+		wxZipInputStream zip(in);
+
+		while (entry.reset(zip.GetNextEntry()), entry.get() != NULL) {
+			// access meta-data
+			wxString name = entry->GetName();
+			name = aTargetDir + wxFileName::GetPathSeparator() + name;
+
+			// read 'zip' to access the entry's data
+			if (entry->IsDir()) {
+				int perm = entry->GetMode();
+				wxFileName::Mkdir(name, perm, wxPATH_MKDIR_FULL);
+			} else {
+				zip.OpenEntry(*entry.get());
+				if (!zip.CanRead()) {
+					wxLogError(_T("Can not read zip entry '") + entry->GetName() + _T("'."));
+					ret = false;
+					break;
+				}
+
+				wxFileOutputStream file(name);
+
+				if (!file) {
+					wxLogError(_T("Can not create file '")+name+_T("'."));
+					ret = false;
+					break;
+				}
+				zip.Read(file);
+
+			}
+
+		}
+
+	} while(false);
+
+	return ret;
+}
+
+bool MyApp::createUserPath()
+{
+	wxFileName::Mkdir(UserPath);
+
+	auto_ptr<wxZipEntry> entry;
+
+	// first: figure out the zip path
+	wxFileName skeletonZip = wxFileName(ProgramPath, wxEmptyString);
+	skeletonZip.AppendDir(wxT("resources"));
+	skeletonZip.SetFullName(wxT("skeleton.zip"));
+	wxString skeletonZipFile = skeletonZip.GetFullPath();
+
+	if(!wxFileName::FileExists(skeletonZipFile))
 	{
-		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt is required to start RoR.\nPlease reinstall Rigs of Rods in order to restore it."), UserPath.c_str());
+		// tell the user
+		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nit could not be created since skeleton.zip was not found"), UserPath.c_str());
 		wxString caption = _("error upon loading RoR user directory");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
 		delete(w);
 		exit(1);
+
+		return false;
 	}
 
+	// unpack
+	extractZipFiles(skeletonZipFile, UserPath);
+
+	// tell the user
+	/*
+	wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt was created"), UserPath.c_str());
+	wxString caption = _("error upon loading RoR user directory");
+	wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+	w->ShowModal();
+	*/
+	return true;
+}
+
+bool MyApp::filesystemBootstrap()
+{
+	UserPath = conv(SSETTING("User Path"));
+	ProgramPath = conv(SSETTING("Program Path"));
+
+	// check if the user path is valid, if not create it
+	if (!wxFileName::DirExists(UserPath))
+	{
+		createUserPath();
+	}
 	return true;
 }
 
@@ -908,7 +978,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	wxPanel *ffPanel=new wxPanel(ctbook, -1);
 	ctbook->AddPage(ffPanel, _("Force Feedback"), false);
-
 #ifdef NETWORK
 	wxPanel *netPanel=new wxPanel(nbook, -1);
 	nbook->AddPage(netPanel, _("Network"), false);
