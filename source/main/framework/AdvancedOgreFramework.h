@@ -50,6 +50,7 @@ private:
 	Ogre::String name;
 
 	bool configure();
+	bool loadOgrePlugins(Ogre::String pluginsfile);
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
