@@ -506,7 +506,7 @@ void Character::update(float dt, bool inputDisabled)
 		int res = beamCoupling->calculateDriverPos(pos, rot);
 		if(!res)
 		{
-			setPosition(pos + rot * Vector3(0,-0.6f,0.07f)); // hack to position the chacaracter right perfect on the default seat
+			setPosition(pos + rot * Vector3(0,-0.6f,-0.1f)); // hack to position the character right perfect on the default seat
 			setOrientation(rot);
 			setAnimationMode("driving", 0);
 			Real lenght = persoanim->getAnimationState("driving")->getLength();
