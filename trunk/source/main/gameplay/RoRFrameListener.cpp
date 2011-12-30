@@ -4786,7 +4786,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			paged_geometry_t paged;
 			paged.geom = new PagedGeometry();
-			//paged.geom->setTempDir(SSETTING("User Path") + "cache" + SSETTING("dirsep"));
+			paged.geom->setTempDir(SSETTING("User Path") + "cache" + SSETTING("dirsep"));
 			paged.geom->setCamera(mCamera);
 			paged.geom->setPageSize(50);
 			paged.geom->setInfinite();
