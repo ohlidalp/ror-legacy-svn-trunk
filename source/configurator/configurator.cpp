@@ -992,9 +992,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is removed for now
+#if 0
 	wxPanel *updatePanel=new wxPanel(nbook, -1);
 	nbook->AddPage(updatePanel, _("Updates"), false);
-#endif
+#endif //0
+#endif // WIN32
 	aboutPanel=new wxScrolledWindow (nbook, -1);
 	nbook->AddPage(aboutPanel, _("About"), false);
 
@@ -1515,6 +1517,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// controls settings panel
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#if 0
 	wxSizer *sizer_updates = new wxBoxSizer(wxVERTICAL);
 	helphtmw = new wxHtmlWindow(updatePanel, update_html, wxPoint(0, 0), wxSize(480, 380));
 	helphtmw->SetPage(_("... loading ... (maybe you should check your internet connection)"));
@@ -1528,7 +1531,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	//sizer_updates->Add(btnu, 0, wxGROW);
 
 	updatePanel->SetSizer(sizer_updates);
-#endif
+#endif //0
+#endif // WIN32
 
 #ifdef USE_OPENCL
 	wxSizer *sizer_gpu = new wxBoxSizer(wxVERTICAL);
