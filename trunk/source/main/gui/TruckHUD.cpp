@@ -273,20 +273,9 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		checkOverflow(descl);
 
 		wchar_t geesstr[256];
-		Vector3 accv=truck->cameranodeacc/truck->cameranodecount;
-		truck->cameranodeacc=Vector3::ZERO;
-		truck->cameranodecount=0;
-		float longacc=accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition).normalisedCopy());
-		float latacc=accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition).normalisedCopy());
-		Ogre::Vector3 upv=(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition).crossProduct(-(truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranoderoll[0]].RelPosition));
-		upv.normalise();
-		
-		float gravity = DEFAULT_GRAVITY;
-		if(RoRFrameListener::eflsingleton)
-			gravity = RoRFrameListener::eflsingleton->getGravity();
-		float vertacc=(fabs(gravity))-(accv.dotProduct((truck->nodes[truck->cameranodepos[0]].RelPosition-(truck->nodes[truck->cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
+		Vector3 gees = truck->getGForces();
 		UTFString tmp = _L("Gees: Vertical %1.2fg // Saggital %1.2fg // Lateral %1.2fg");
-		swprintf(geesstr, 256, tmp.asWStr_c_str(), vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
+		swprintf(geesstr, 256, tmp.asWStr_c_str(), gees.x, gees.y, gees.z);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees");
 		descl->setCaption(UTFString(geesstr));
 		checkOverflow(descl);
@@ -294,20 +283,20 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		//maxGees
 		if(truck->driveable == TRUCK || truck->driveable == AIRPLANE || truck->driveable == BOAT)
 		{
-			if(vertacc > maxPosVerG[truck->driveable])
-				maxPosVerG[truck->driveable] = vertacc;
-			if(vertacc < maxNegVerG[truck->driveable])
-				maxNegVerG[truck->driveable] = vertacc;
+			if(gees.x > maxPosVerG[truck->driveable])
+				maxPosVerG[truck->driveable] = gees.x;
+			if(gees.x < maxNegVerG[truck->driveable])
+				maxNegVerG[truck->driveable] = gees.x;
 
-			if(longacc > maxPosSagG[truck->driveable])
-				maxPosSagG[truck->driveable] = longacc;
-			if(longacc < maxNegSagG[truck->driveable])
-				maxNegSagG[truck->driveable] = longacc;
+			if(gees.y > maxPosSagG[truck->driveable])
+				maxPosSagG[truck->driveable] = gees.y;
+			if(gees.y < maxNegSagG[truck->driveable])
+				maxNegSagG[truck->driveable] = gees.y;
 
-			if(latacc > maxPosLatG[truck->driveable])
-				maxPosLatG[truck->driveable] = latacc;
-			if(latacc < maxNegLatG[truck->driveable])
-				maxNegLatG[truck->driveable] = latacc;
+			if(gees.z > maxPosLatG[truck->driveable])
+				maxPosLatG[truck->driveable] = gees.z;
+			if(gees.z < maxNegLatG[truck->driveable])
+				maxNegLatG[truck->driveable] = gees.z;
 
 			tmp = _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg");
 			swprintf(geesstr, 256, tmp.asWStr_c_str(), 
