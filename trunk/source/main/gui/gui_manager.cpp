@@ -183,7 +183,7 @@ void GUIManager::eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _re
 Ogre::String GUIManager::getRandomWallpaperImage()
 {
 	
-	FileInfoListPtr files = Ogre::ResourceGroupManager::getSingleton().findResourceFileInfo("Wallpapers", "*", false);
+	FileInfoListPtr files = Ogre::ResourceGroupManager::getSingleton().findResourceFileInfo("Wallpapers", "*.jpg", false);
 	if(files.isNull() || files->empty())
 	{
 		return "";
