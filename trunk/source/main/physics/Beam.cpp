@@ -1929,7 +1929,7 @@ void Beam::SyncReset()
 		resetAngle(cur_rot);
 
 		if(yPos != 0)
-			resetPosition(cur_position.x, cur_position.z, false, yPos + 0.2f);
+			resetPosition(cur_position.x, cur_position.z, false, yPos + 0.02f);
 		else
 			resetPosition(cur_position.x, cur_position.z, false);
 
