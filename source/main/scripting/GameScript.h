@@ -299,6 +299,11 @@ public:
 	int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
 	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
+	int getSafeTextureUnitState(TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum);
+	int setMaterialTextureName(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, const std::string &textureName);
+	int setMaterialTextureRotate(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation);
+	int setMaterialTextureScroll(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy);
+	int setMaterialTextureScale(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v);
 	
 	typedef struct OnlineAPIParams_t {
 		GameScript *cls;
