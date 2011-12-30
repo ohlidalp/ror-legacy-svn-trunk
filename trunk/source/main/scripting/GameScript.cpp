@@ -338,6 +338,83 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 	return 1;
 }
 
+int GameScript::getSafeTextureUnitState(TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum)
+{
+	try
+	{
+		MaterialPtr m = MaterialManager::getSingleton().getByName(materialName);
+		if(m.isNull()) return 1;
+
+		// verify technique
+		if(techniqueNum < 0 || techniqueNum > m->getNumTechniques()) return 2;
+		Technique *t = m->getTechnique(techniqueNum);
+		if(!t) return 2;
+
+		//verify pass
+		if(passNum < 0 || passNum > t->getNumPasses()) return 3;
+		Pass *p = t->getPass(passNum);
+		if(!p) return 3;
+
+		//verify texture unit
+		if(textureUnitNum < 0 || textureUnitNum > p->getNumTextureUnitStates()) return 4;
+		TextureUnitState *tut = p->getTextureUnitState(textureUnitNum);
+		if(!tut) return 4;
+
+		*tu = tut;
+		return 0;
+	} catch(Exception e)
+	{
+		SLOG("Exception in getSafeTextureUnitState(): " + e.getFullDescription());
+	}
+	return 1;
+}
+
+int GameScript::setMaterialTextureName(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, const std::string &textureName)
+{
+	TextureUnitState *tu = 0;
+	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
+	if(res == 0 && tu != 0)
+	{
+		// finally, set it
+		tu->setTextureName(textureName);
+	}
+	return res;
+}
+
+int GameScript::setMaterialTextureRotate(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation)
+{
+	TextureUnitState *tu = 0;
+	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
+	if(res == 0 && tu != 0)
+	{
+		tu->setTextureRotate(Degree(rotation));
+	}
+	return res;
+}
+
+int GameScript::setMaterialTextureScroll(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy)
+{
+	TextureUnitState *tu = 0;
+	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
+	if(res == 0 && tu != 0)
+	{
+		tu->setTextureScroll(sx, sy);
+	}
+	return res;
+}
+
+int GameScript::setMaterialTextureScale(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v)
+{
+	TextureUnitState *tu = 0;
+	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
+	if(res == 0 && tu != 0)
+	{
+		tu->setTextureScale(u, v);
+	}
+	return res;
+}
+
+
 float GameScript::rangeRandom(float from, float to)
 {
 	return Ogre::Math::RangeRandom(from, to);

@@ -300,12 +300,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 
 			tmp = _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg");
 			swprintf(geesstr, 256, tmp.asWStr_c_str(), 
-					maxPosVerG[truck->driveable]/(fabs(gravity)), 
-					maxNegVerG[truck->driveable]/(fabs(gravity)), 
-					maxPosSagG[truck->driveable]/(fabs(gravity)), 
-					maxNegSagG[truck->driveable]/(fabs(gravity)), 
-					maxPosLatG[truck->driveable]/(fabs(gravity)), 
-					maxNegLatG[truck->driveable]/(fabs(gravity))
+					maxPosVerG[truck->driveable], 
+					maxNegVerG[truck->driveable], 
+					maxPosSagG[truck->driveable], 
+					maxNegSagG[truck->driveable], 
+					maxPosLatG[truck->driveable], 
+					maxNegLatG[truck->driveable]
 				);
 
 			descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/Gees2");
