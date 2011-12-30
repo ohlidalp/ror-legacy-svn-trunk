@@ -145,7 +145,7 @@ public:
 	bool filesystemBootstrap();
 	void recurseCopy(wxString sourceDir, wxString destinationDir);
 	void initLogging();
-	bool createUserPath();
+	bool checkUserPath();
 	//private:
 	wxString UserPath;
 	wxString ProgramPath;
@@ -712,41 +712,49 @@ bool extractZipFiles(const wxString& aZipFile, const wxString& aTargetDir)
 	return ret;
 }
 
-bool MyApp::createUserPath()
+bool MyApp::checkUserPath()
 {
-	wxFileName::Mkdir(UserPath);
+	wxFileName configPath = wxFileName(ProgramPath, wxEmptyString);
+	configPath.AppendDir(wxT("config"));
+	// check if the user path is valid, if not create it
 
-	auto_ptr<wxZipEntry> entry;
-
-	// first: figure out the zip path
-	wxFileName skeletonZip = wxFileName(ProgramPath, wxEmptyString);
-	skeletonZip.AppendDir(wxT("resources"));
-	skeletonZip.SetFullName(wxT("skeleton.zip"));
-	wxString skeletonZipFile = skeletonZip.GetFullPath();
-
-	if(!wxFileName::FileExists(skeletonZipFile))
+	if (!wxFileName::DirExists(UserPath) || !wxFileName::DirExists(configPath.GetFullPath()))
 	{
+		if(!wxFileName::DirExists(UserPath))
+			wxFileName::Mkdir(UserPath);
+
+		auto_ptr<wxZipEntry> entry;
+
+		// first: figure out the zip path
+		wxFileName skeletonZip = wxFileName(ProgramPath, wxEmptyString);
+		skeletonZip.AppendDir(wxT("resources"));
+		skeletonZip.SetFullName(wxT("skeleton.zip"));
+		wxString skeletonZipFile = skeletonZip.GetFullPath();
+
+		if(!wxFileName::FileExists(skeletonZipFile))
+		{
+			// tell the user
+			wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nit could not be created since skeleton.zip was not found"), UserPath.c_str());
+			wxString caption = _("error upon loading RoR user directory");
+			wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
+			w->ShowModal();
+			delete(w);
+			exit(1);
+
+			return false;
+		}
+
+		// unpack
+		extractZipFiles(skeletonZipFile, UserPath);
+
 		// tell the user
-		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nit could not be created since skeleton.zip was not found"), UserPath.c_str());
+		/*
+		wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt was created"), UserPath.c_str());
 		wxString caption = _("error upon loading RoR user directory");
 		wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 		w->ShowModal();
-		delete(w);
-		exit(1);
-
-		return false;
+		*/
 	}
-
-	// unpack
-	extractZipFiles(skeletonZipFile, UserPath);
-
-	// tell the user
-	/*
-	wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nIt was created"), UserPath.c_str());
-	wxString caption = _("error upon loading RoR user directory");
-	wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
-	w->ShowModal();
-	*/
 	return true;
 }
 
@@ -755,11 +763,8 @@ bool MyApp::filesystemBootstrap()
 	UserPath = conv(SSETTING("User Path"));
 	ProgramPath = conv(SSETTING("Program Path"));
 
-	// check if the user path is valid, if not create it
-	if (!wxFileName::DirExists(UserPath))
-	{
-		createUserPath();
-	}
+
+	checkUserPath();
 	return true;
 }
 
