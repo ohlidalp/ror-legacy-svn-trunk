@@ -5995,7 +5995,26 @@ void Beam::updateDashBoards(float &dt)
 	if (ftp>2 && curr_truck->aeroengines[2]->getIgnition()) ow->engstarto3->setMaterialName("tracks/engstart-on"); else ow->engstarto3->setMaterialName("tracks/engstart-off");
 	if (ftp>3 && curr_truck->aeroengines[3]->getIgnition()) ow->engstarto4->setMaterialName("tracks/engstart-on"); else ow->engstarto4->setMaterialName("tracks/engstart-off");
 }
+
 #endif //0
 
 #endif // USE_MYGUI
+}
+
+Ogre::Vector3 Beam::getGForces()
+{
+	Vector3 accv    = cameranodeacc / cameranodecount;
+	cameranodeacc   = Vector3::ZERO;
+	cameranodecount = 0;
+	float longacc   = accv.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition).normalisedCopy());
+	float latacc    = accv.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition).normalisedCopy());
+	Ogre::Vector3 upv = (nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition).crossProduct(-(nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition));
+	upv.normalise();
+
+	float gravity = DEFAULT_GRAVITY;
+	if(RoRFrameListener::eflsingleton)
+		gravity = RoRFrameListener::eflsingleton->getGravity();
+
+	float vertacc = (fabs(gravity)) - (accv.dotProduct((nodes[cameranodepos[0]].RelPosition - (nodes[cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
+	return Vector3(vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
 }

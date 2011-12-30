@@ -195,6 +195,7 @@ public:
 
 	float WheelSpeed;
 	float getWheelSpeed() { return WheelSpeed; };
+	Ogre::Vector3 getGForces();
 
 	int stabcommand;
 	int skeleton;
