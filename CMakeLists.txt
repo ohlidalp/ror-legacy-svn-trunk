@@ -24,6 +24,20 @@ macro(copy_files srcDir destDir)
     endforeach(filename)
 endmacro(copy_files)
 
+# check 64 bit
+set(ARCH_DIR "")
+if (WIN32) 
+	message( STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
+	message( STATUS "CMAKE_CL_64: ${CMAKE_CL_64}")
+	if (CMAKE_CL_64) 
+		set(ARCH_DIR "x64") 
+		message(STATUS "using 64 bit libraries")
+	else() 
+		set(ARCH_DIR "x86") 
+		message(STATUS "using 32 bit libraries")
+	endif() 
+endif() 
+
 #setup the default build mode
 
 # global cmake options
