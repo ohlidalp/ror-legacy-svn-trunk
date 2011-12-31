@@ -207,7 +207,7 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 void ChatSystem::sendChat(Ogre::UTFString chatline)
 {
 	const char *utf8_line = chatline.asUTF8_c_str();
-	this->addPacket(MSG2_UTF_CHAT, strlen(utf8_line), (char *)utf8_line);
+	this->addPacket(MSG2_UTF_CHAT, (unsigned int)strlen(utf8_line), (char *)utf8_line);
 }
 
 int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
@@ -220,7 +220,7 @@ int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
 	{
 		names.push_back(c[i].user.username);
 	}
-	return names.size();
+	return (int)names.size();
 #else
 	return 0;
 #endif // USE_SOCKETW
@@ -273,7 +273,7 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	size_t len = sizeof(int) + chatline.size() * sizeof(wchar_t);
 	buffer[len] = 0;
 
-	this->addPacket(MSG2_UTF_PRIVCHAT, len, buffer);
+	this->addPacket(MSG2_UTF_PRIVCHAT, (unsigned int)len, buffer);
 
 	if(username.empty())
 	{

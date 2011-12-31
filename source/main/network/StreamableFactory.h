@@ -136,7 +136,7 @@ public:
 		}
 
 		// count the stream creation results into the changes
-		changes += stream_creation_results.size();
+		changes += (int)stream_creation_results.size();
 
 		// then deletions:
 		// first registrations
