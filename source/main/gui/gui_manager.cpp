@@ -94,7 +94,7 @@ void GUIManager::createGui()
 	mGUI = new MyGUI::Gui();
 	mGUI->initialise(mResourceFileName);
 	
-	MyGUI::FontManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
+	MyGUI::ResourceManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
 
 	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)
 	MyGUI::InputManager::getInstance().injectMouseMove(mWindow->getWidth()*0.5f, mWindow->getHeight()*0.5f, 0);
