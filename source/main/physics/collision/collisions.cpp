@@ -460,14 +460,14 @@ void Collisions::hash_add(int cell_x, int cell_z, int value)
 		newcell->push_back(value);
 		cells.push_back(newcell);
 		if (pos!=hashfunc(cellid)) collision_count++;
-		if ((int)newcell->size()>largest_cellcount) largest_cellcount=newcell->size();
+		if ((int)newcell->size()>largest_cellcount) largest_cellcount=(int)newcell->size();
 	}
 	else if (hashtable[pos].cellid==cellid)
 	{
 		//there is already a cell ready
 		cell_t *cell=hashtable[pos].cell;
 		cell->push_back(value);
-		if ((int)cell->size()>largest_cellcount) largest_cellcount=cell->size();
+		if ((int)cell->size()>largest_cellcount) largest_cellcount=(int)cell->size();
 	}
 	else
 	{
@@ -1514,7 +1514,7 @@ int Collisions::createCollisionDebugVisualization()
 				groundheight+=0.1; // 10 cm hover
 				// ground height should fit
 
-				int deep = 0, cc=cell->size();
+				int deep = 0, cc=(int)cell->size();
 				float percent = cc / (float)CELL_BLOCKSIZE;
 
 				float percentd = percent;
@@ -1732,11 +1732,11 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 			size_t offset = (submesh->useSharedVertices)?shared_offset:current_offset;
 
 			unsigned int vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 0] = vindex + offset;
+			indices[index_offset + 0] = vindex + (unsigned int)offset;
 			vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 1] = vindex + offset;
+			indices[index_offset + 1] = vindex + (unsigned int)offset;
 			vindex = use32bitindexes? *pInt++ : *pShort++;
-			indices[index_offset + 2] = vindex + offset;
+			indices[index_offset + 2] = vindex + (unsigned int)offset;
 
 			index_offset += 3;
 		}

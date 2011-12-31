@@ -36,7 +36,7 @@ int convertCharSet(wchar_t *wcstring, const char *s)
 	size_t origsize = strlen(s) + 1;
 	size_t convertedChars = 0;
 	mbstowcs_s(&convertedChars, wcstring, origsize, s, _TRUNCATE);
-	return convertedChars;
+	return (int)convertedChars;
 #else
 	// TODO
 #endif //WIN32
@@ -143,7 +143,7 @@ void MumbleIntegration::update(Ogre::Vector3 cameraPos, Ogre::Vector3 avatarPos)
 	// TODO: separate teams
 	int teamID = 0;
 	sprintf((char *)lm->context, "%s:%s|%d", SSETTING("Server name").c_str(), SSETTING("Server port").c_str(), teamID);
-	lm->context_len = strnlen((char *)lm->context, 256);
+	lm->context_len = (int)strnlen((char *)lm->context, 256);
 }
 
 #endif // USE_MUMBLE

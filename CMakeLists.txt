@@ -8,7 +8,7 @@ endif(COMMAND cmake_policy)
 project(RoR)
 
 macro(copy_files srcDir destDir)
-    message(STATUS "Configuring ${destDir} ...")
+    message(STATUS "Copying ${srcDir} -> ${destDir} ...")
     #make_directory(${destDir})
 
     file(GLOB files RELATIVE ${srcDir} ${srcDir}/*)
@@ -27,6 +27,8 @@ endmacro(copy_files)
 # check 64 bit
 set(ARCH_DIR "")
 if (WIN32) 
+	# removed MinSizeRel and Debug builds unsupported
+	set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo" CACHE STRING "Configurations" FORCE)
 	message( STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 	message( STATUS "CMAKE_CL_64: ${CMAKE_CL_64}")
 	if (CMAKE_CL_64) 

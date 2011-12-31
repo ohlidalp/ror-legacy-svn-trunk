@@ -63,7 +63,7 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 
 	// create new render texture
 	Ogre::String texNameManual = "FontTextureRTT_"+font->getName();
-	Ogre::TexturePtr t = Ogre::TextureManager::getSingleton().createManual(texNameManual,"General",Ogre::TEX_TYPE_2D,fontBuffer->getWidth(),fontBuffer->getHeight(),fontBuffer->getDepth(),1,fontBuffer->getFormat(), Ogre::TU_RENDERTARGET);
+	Ogre::TexturePtr t = Ogre::TextureManager::getSingleton().createManual(texNameManual,"General",Ogre::TEX_TYPE_2D,(Ogre::uint)fontBuffer->getWidth(),(Ogre::uint)fontBuffer->getHeight(),(Ogre::uint)fontBuffer->getDepth(),1,fontBuffer->getFormat(), Ogre::TU_RENDERTARGET);
 	Ogre::TexturePtr fontTextureRTT = Ogre::TextureManager::getSingleton().getByName(texNameManual);
 	fontTextureRTT->getBuffer()->blitFromMemory(fontPb);
 

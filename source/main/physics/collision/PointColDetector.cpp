@@ -54,7 +54,7 @@ void PointColDetector::update()
 {
 	if (object_list->size()!=(unsigned int) object_list_size)
 	{
-		object_list_size = object_list->size();
+		object_list_size = (int)object_list->size();
 		update_structures();
 	}
 

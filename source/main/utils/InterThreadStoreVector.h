@@ -61,7 +61,7 @@ public:
 		int results = 0;
 		MUTEX_LOCK(&lock);
 		res = store;
-		results = res.size();
+		results = (int)res.size();
 		store.clear();
 		MUTEX_UNLOCK(&lock);
 		return results;

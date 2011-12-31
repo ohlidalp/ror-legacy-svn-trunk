@@ -191,8 +191,8 @@ void MapEntity::updateIcon()
 
 	if(!texture.isNull())
 	{
-		mIconSize.width = texture->getWidth();
-		mIconSize.height = texture->getHeight();
+		mIconSize.width  = (int)texture->getWidth();
+		mIconSize.height = (int)texture->getHeight();
 		mIcon->setSize(mIconSize);
 	}
 	

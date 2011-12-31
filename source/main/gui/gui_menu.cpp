@@ -215,7 +215,7 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 
 	// now add this user to the list
 	{
-		MyGUI::UString userStr = "- " + convertToMyGUIString(getUserString(user, matches.size()));
+		MyGUI::UString userStr = "- " + convertToMyGUIString(getUserString(user, (int)matches.size()));
 		// finally add the user line
 		vehiclesMenu->addItem(userStr, MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(user.uniqueid));
 

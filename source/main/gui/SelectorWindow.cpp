@@ -122,8 +122,8 @@ void SelectorWindow::notifyWindowChangeCoord(MyGUI::Window* _sender)
 void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
 	if(!mMainWidget->getVisible()) return;
-	int cid = mTypeComboBox->getIndexSelected();
-	int iid = mModelList->getIndexSelected();
+	int cid = (int)mTypeComboBox->getIndexSelected();
+	int iid = (int)mModelList->getIndexSelected();
 
 	bool searching = (mTypeComboBox->getCaption() == _L("Search Results"));
 
@@ -140,7 +140,7 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	{
 		int newitem = cid - 1;
 		if(cid == 0)
-			newitem = mTypeComboBox->getItemCount() - 1;
+			newitem = (int)mTypeComboBox->getItemCount() - 1;
 		try
 		{
 			mTypeComboBox->setIndexSelected(newitem);
@@ -818,8 +818,8 @@ void SelectorWindow::resizePreviewImage()
 	TexturePtr t = Ogre::TextureManager::getSingleton().load(lastImageTextureName,Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 	if(!t.isNull())
 	{
-		imgSize.width  = t->getWidth() * 10;
-		imgSize.height = t->getHeight() * 10;
+		imgSize.width  = (int)t->getWidth() * 10;
+		imgSize.height = (int)t->getHeight() * 10;
 	}
 
 	if(imgSize.width != 0)

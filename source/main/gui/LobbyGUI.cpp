@@ -433,7 +433,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	// save some history
 	*current_tab->mHistory.rbegin() = command;
 	current_tab->mHistory.push_back(""); // new, empty last entry
-	current_tab->mHistoryPosition = current_tab->mHistory.size() - 1; // switch to the new line
+	current_tab->mHistoryPosition = (int)current_tab->mHistory.size() - 1; // switch to the new line
 	commandBox->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
 }
 

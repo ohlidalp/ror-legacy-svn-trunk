@@ -290,7 +290,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	int cursubmesh=0;
 	if (msh->sharedVertexData) 
 	{
-		sharedcount=msh->sharedVertexData->vertexCount;
+		sharedcount=(int)msh->sharedVertexData->vertexCount;
 		//vertices
 		int source=msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION)->getSource();
 		sharedpbuf=msh->sharedVertexData->vertexBufferBinding->getBuffer(source);
@@ -312,7 +312,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices) 
 	{
 		submeshnums[cursubmesh]=i;
-		subnodecounts[cursubmesh]=msh->getSubMesh(i)->vertexData->vertexCount;
+		subnodecounts[cursubmesh]=(int)msh->getSubMesh(i)->vertexData->vertexCount;
 		//vertices
 		int source=msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_POSITION)->getSource();
 		subpbufs[cursubmesh]=msh->getSubMesh(i)->vertexData->vertexBufferBinding->getBuffer(source);

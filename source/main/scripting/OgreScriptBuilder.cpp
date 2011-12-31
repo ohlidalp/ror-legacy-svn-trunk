@@ -56,7 +56,7 @@ int OgreScriptBuilder::LoadScriptSection(const char *filename)
 		char hash_result[250];
 		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.UpdateHash((uint8_t *)code.c_str(), (uint32_t)code.size());
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		hash = String(hash_result);
