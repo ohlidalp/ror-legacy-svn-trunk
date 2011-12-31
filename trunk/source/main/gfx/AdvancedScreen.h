@@ -67,7 +67,7 @@ public:
 
 		// grab the image data
 		Ogre::PixelFormat pf = Ogre::PF_B8G8R8; //win->suggestPixelFormat();
-		long isize = mWidth * mHeight * PixelUtil::getNumElemBytes(pf);
+		long isize = mWidth * mHeight * (long)PixelUtil::getNumElemBytes(pf);
 		uchar *data = OGRE_ALLOC_T(uchar, isize, MEMCATEGORY_RENDERSYS);
 		Ogre::PixelBox pb(mWidth, mHeight, 1, pf, data);
 		win->copyContentsToMemory(pb);

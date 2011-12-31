@@ -133,8 +133,8 @@ public:
 	void autoShiftDown();
 	int getAutoShift();
 	void setManualClutch(float val);
-	int getNumGears() { return gearsRatio.size() - 2; };
-	int getNumGearsRanges() {return getNumGears()/6+1; }
+	size_t getNumGears() { return gearsRatio.size() - 2; };
+	size_t getNumGearsRanges() {return getNumGears()/6+1; }
 	float getMaxRPM() { return maxRPM; };
 	float getIdleRPM() { return iddleRPM; };
 	char getType() { return type; };

@@ -34,7 +34,7 @@ float iddle
 , shift_time(0.5f)
 , post_shift_time(0.2f)
 
-, numGears(gears.size() - 2)
+, numGears((int)gears.size() - 2)
 , gearsRatio( gears )
 , inertia(10.0)
 , clutchForce(10000.0f)

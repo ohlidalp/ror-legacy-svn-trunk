@@ -346,7 +346,7 @@ void RoRFrameListener::updateGUI(float dt)
 		int truck_getgear = curr_truck->engine->getGear();
 		if (truck_getgear>0)
 		{
-			int numgears = curr_truck->engine->getNumGears();
+			size_t numgears = curr_truck->engine->getNumGears();
 			String gearstr = TOSTRING(truck_getgear) + "/" + TOSTRING(numgears);
 			ow->guiGear->setCaption(gearstr);
 			ow->guiGear3D->setCaption(gearstr);
@@ -3811,7 +3811,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		char hash_result[250];
 		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.UpdateHash((uint8_t *)code.c_str(), (uint32_t)code.size());
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		terrainFileHash = String(hash_result);

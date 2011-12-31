@@ -1290,7 +1290,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 
 	if(r.engine)
 	{
-		entry.numgears = r.engine->getNumGears();
+		entry.numgears = (int)r.engine->getNumGears();
 		entry.minrpm  = r.engine->getIdleRPM();
 		entry.maxrpm  = r.engine->getMaxRPM();
 		entry.torque  = r.engine->getEngineTorque();
@@ -1320,7 +1320,7 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 	entry.wingscount = r.free_wing;
 	entry.turbopropscount = r.free_aeroengine;
 	entry.rotatorscount = r.free_rotator;
-	entry.exhaustscount = r.exhausts.size();
+	entry.exhaustscount = (int)r.exhausts.size();
 	entry.custom_particles = (r.free_cparticle==1);
 	entry.turbojetcount = r.free_aeroengine;
 	entry.flexbodiescount = r.free_flexbody;
@@ -1702,7 +1702,7 @@ String CacheSystem::filenamesSHA1()
 
 	CSHA1 sha1;
 	char *data = const_cast<char*>(filenames.c_str());
-	sha1.UpdateHash((uint8_t *)data, strlen(data));
+	sha1.UpdateHash((uint8_t *)data, (uint32_t)strlen(data));
 	sha1.Final();
 	sha1.ReportHash(result, CSHA1::REPORT_HEX_SHORT);
 	return String(result);
@@ -2083,7 +2083,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
 	FileInfoListPtr files = rgm.findResourceFileInfo(group, "*.zip");
 	FileInfoList::iterator iterFiles = files->begin();
-	int i=0, filecount=files->size();
+	size_t i=0, filecount=files->size();
 	for (; iterFiles!= files->end(); ++iterFiles, i++)
 	{
 		if(loadedZips[iterFiles->filename])
@@ -2111,7 +2111,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 {
 	FileInfoListPtr list = ResourceGroupManager::getSingleton().listResourceFileInfo(group, true);
-	int i=0, filecount=list->size();
+	size_t i=0, filecount=list->size();
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem,i++)
 	{
 		if(!listitem->archive) continue;
@@ -2150,7 +2150,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 {
 	FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(group, "*.zip");
 	FileInfoList::iterator iterFiles = files->begin();
-	int i=0, filecount=files->size();
+	size_t i=0, filecount=files->size();
 	for (; iterFiles!= files->end(); ++iterFiles, i++)
 	{
 		String zippath = iterFiles->archive->getName() + "\\" + iterFiles->filename;
@@ -2188,7 +2188,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 {
 	FileInfoListPtr list = ResourceGroupManager::getSingleton().listResourceFileInfo(group, true);
-	int i=0, filecount=list->size();
+	size_t i=0, filecount=list->size();
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem, i++)
 	{
 		if(!listitem->archive) continue;
