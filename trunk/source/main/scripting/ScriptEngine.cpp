@@ -119,7 +119,7 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
 {
 	AngelScript::asIScriptEngine *engine = ctx->GetEngine();
 	int funcID = ctx->GetExceptionFunction();
-	const AngelScript::asIScriptFunction *function = engine->GetFunctionDescriptorById(funcID);
+	const AngelScript::asIScriptFunction *function = engine->GetFunctionById(funcID);
 	SLOG("--- exception ---");
 	SLOG("desc: " + String(ctx->GetExceptionString()));
 	SLOG("func: " + String(function->GetDeclaration()));
@@ -1028,7 +1028,7 @@ int ScriptEngine::loadScript(Ogre::String _scriptName)
 
 			// Write some information about the script exception
 			int funcID = context->GetExceptionFunction();
-			AngelScript::asIScriptFunction *func = engine->GetFunctionDescriptorById(funcID);
+			AngelScript::asIScriptFunction *func = engine->GetFunctionById(funcID);
 			SLOG("func: " + String(func->GetDeclaration()));
 			SLOG("modl: " + String(func->GetModuleName()));
 			SLOG("sect: " + String(func->GetScriptSectionName()));
@@ -1054,23 +1054,23 @@ Ogre::StringVector ScriptEngine::getAutoComplete(Ogre::String command)
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 
-	for(int i = 0; i < mod->GetGlobalVarCount(); i++)
+	for(unsigned int i = 0; i < mod->GetGlobalVarCount(); i++)
 	{
 		const char *name = mod->GetGlobalVarDeclaration(i);
 		result.push_back(String(name));
 		//SLOG(" VAR > " + String(name));
 	}
 
-	for(int i = 0; i < mod->GetFunctionCount(); i++)
+	for(unsigned int i = 0; i < mod->GetFunctionCount(); i++)
 	{
 		int idx = mod->GetFunctionIdByIndex(i);
-		AngelScript::asIScriptFunction *desc = mod->GetFunctionDescriptorById(idx);
+		AngelScript::asIScriptFunction *desc = engine->GetFunctionById(idx); //mod->GetFunctionDescriptorById(idx);
 		result.push_back(String(desc->GetName()));
 		//SLOG(" FUNCTION > " + String(desc->GetName()));
 	}
 
 
-	for(int i = 0; i < engine->GetGlobalPropertyCount(); i++)
+	for(unsigned int i = 0; i < engine->GetGlobalPropertyCount(); i++)
 	{
 		const char *name;
 		int  typeId = 0;

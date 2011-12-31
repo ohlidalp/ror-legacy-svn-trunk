@@ -20,9 +20,9 @@ int CompareRelation(asIScriptEngine *engine, void *lobj, void *robj, int typeId,
 	if( ot )
 	{
 		// Check if the object type has a compatible opCmp method
-		for( int n = 0; n < ot->GetMethodCount(); n++ )
+		for(unsigned int n = 0; n < ot->GetMethodCount(); n++ )
 		{
-			asIScriptFunction *func = ot->GetMethodDescriptorByIndex(n);
+			asIScriptFunction *func = ot->GetMethodByIndex(n);
 			if( strcmp(func->GetName(), "opCmp") == 0 &&
 				func->GetReturnTypeId() == asTYPEID_INT32 &&
 				func->GetParamCount() == 1 )
@@ -74,9 +74,9 @@ int CompareEquality(asIScriptEngine *engine, void *lobj, void *robj, int typeId,
 	if( ot )
 	{
 		// Check if the object type has a compatible opEquals method
-		for( int n = 0; n < ot->GetMethodCount(); n++ )
+		for(unsigned int n = 0; n < ot->GetMethodCount(); n++ )
 		{
-			asIScriptFunction *func = ot->GetMethodDescriptorByIndex(n);
+			asIScriptFunction *func = ot->GetMethodByIndex(n);
 			if( strcmp(func->GetName(), "opEquals") == 0 &&
 				func->GetReturnTypeId() == asTYPEID_BOOL &&
 				func->GetParamCount() == 1 )
@@ -242,29 +242,29 @@ int WriteConfigToFile(asIScriptEngine *engine, const char *filename)
 		string typeDecl = engine->GetTypeDeclaration(type->GetTypeId());
 		if( type->GetFlags() & asOBJ_SCRIPT_OBJECT )
 		{
-			for( int m = 0; m < type->GetMethodCount(); m++ )
+			for(unsigned int m = 0; m < type->GetMethodCount(); m++ )
 			{
-				asIScriptFunction *func = type->GetMethodDescriptorByIndex(m);
+				asIScriptFunction *func = type->GetMethodByIndex(m);
 				fprintf(f, "intfmthd %s \"%s\"\n", typeDecl.c_str(), func->GetDeclaration(false));
 			}
 		}
 		else
 		{
-			int m;
+			unsigned int m;
 			for( m = 0; m < type->GetFactoryCount(); m++ )
 			{
-				asIScriptFunction *func = engine->GetFunctionDescriptorById(type->GetFactoryIdByIndex(m));
+				asIScriptFunction *func = engine->GetFunctionById(type->GetFactoryIdByIndex(m));
 				fprintf(f, "objbeh \"%s\" %d \"%s\"\n", typeDecl.c_str(), asBEHAVE_FACTORY, func->GetDeclaration(false));
 			}
 			for( m = 0; m < type->GetBehaviourCount(); m++ )
 			{
 				asEBehaviours beh;
-				asIScriptFunction *func = engine->GetFunctionDescriptorById(type->GetBehaviourByIndex(m, &beh));
+				asIScriptFunction *func = engine->GetFunctionById(type->GetBehaviourByIndex(m, &beh));
 				fprintf(f, "objbeh \"%s\" %d \"%s\"\n", typeDecl.c_str(), beh, func->GetDeclaration(false));
 			}
 			for( m = 0; m < type->GetMethodCount(); m++ )
 			{
-				asIScriptFunction *func = type->GetMethodDescriptorByIndex(m);
+				asIScriptFunction *func = type->GetMethodByIndex(m);
 				fprintf(f, "objmthd \"%s\" \"%s\"\n", typeDecl.c_str(), func->GetDeclaration(false));
 			}
 			for( m = 0; m < type->GetPropertyCount(); m++ )
@@ -280,7 +280,7 @@ int WriteConfigToFile(asIScriptEngine *engine, const char *filename)
 	c = engine->GetGlobalFunctionCount();
 	for( n = 0; n < c; n++ )
 	{
-		asIScriptFunction *func = engine->GetFunctionDescriptorById(engine->GetGlobalFunctionIdByIndex(n));
+		asIScriptFunction *func = engine->GetFunctionById(engine->GetGlobalFunctionIdByIndex(n));
 		fprintf(f, "func \"%s\"\n", func->GetDeclaration());
 	}
 
@@ -323,7 +323,7 @@ void PrintException(asIScriptContext *ctx, bool printStack)
 
 	asIScriptEngine *engine = ctx->GetEngine();
 	int funcId = ctx->GetExceptionFunction();
-	const asIScriptFunction *function = engine->GetFunctionDescriptorById(funcId);
+	const asIScriptFunction *function = engine->GetFunctionById(funcId);
 	printf("func: %s\n", function->GetDeclaration());
 	printf("modl: %s\n", function->GetModuleName());
 	printf("sect: %s\n", function->GetScriptSectionName());

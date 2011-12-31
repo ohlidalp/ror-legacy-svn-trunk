@@ -1159,8 +1159,8 @@ void Beam::calcNetwork()
 		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_STICK)!=0)  automode = MANUAL_STICK;
 		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_RANGES)!=0) automode = MANUAL_RANGES;
 		
-		bool contact = flagmask&NETMASK_ENGINE_CONT;
-		bool running = flagmask&NETMASK_ENGINE_RUN;
+		bool contact = ((flagmask&NETMASK_ENGINE_CONT) != 0);
+		bool running = ((flagmask&NETMASK_ENGINE_RUN)  != 0);
 
 		engine->netForceSettings(engspeed, engforce, engclutch, gear, running, contact, automode);
 	}
