@@ -553,7 +553,7 @@ void BeamEngine::shift(int val)
 
 void BeamEngine::shiftTo(int val)
 {
-	if (val==curGear || val>getNumGears()) return;
+	if (val==curGear || val>(int)getNumGears()) return;
 	if (automode<MANUAL)
 	{
 		shiftval=val-curGear;
