@@ -605,7 +605,7 @@ void CollisionTools::getStaticGeometry(
 
 				unsigned int vindex = use32bitindexes ? *(unsigned int *)pIndex : *(unsigned short *)pIndex;
 				pIndex = (char *)pIndex + (use32bitindexes ? 4 : 2);
-				indices.push_back(vindex + next_offset);
+				indices.push_back(vindex + (unsigned int)next_offset);
 			}
 			ibuf->unlock();
 

@@ -5277,7 +5277,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		char hash_result[250];
 		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)code.c_str(), code.size());
+		sha1.UpdateHash((uint8_t *)code.c_str(), (uint32_t)code.size());
 		sha1.Final();
 		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 		beamHash = String(hash_result);
@@ -6633,7 +6633,7 @@ int SerializedRig::parse_args(parsecontext_t &context, Ogre::StringVector &args,
 		args.clear();
 		throw(ParseException());
 	}
-	int n = args.size();
+	int n = (int)args.size();
 	if(n < minArgNum)
 	{
 		parser_warning(context, "Too less arguments: "+TOSTRING(n)+" provided, "+TOSTRING(minArgNum)+" required. ", PARSER_ERROR);

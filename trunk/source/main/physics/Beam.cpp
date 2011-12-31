@@ -133,7 +133,7 @@ Beam::~Beam()
 	// remove all scene nodes
 	if(deletion_sceneNodes.size() > 0)
 	{
-		int size = deletion_sceneNodes.size();
+		int size = (int)deletion_sceneNodes.size();
 		for(int i=0;i<size; i++)
 		{
 			if(!deletion_sceneNodes[i]) continue;
@@ -2296,7 +2296,7 @@ void Beam::sendStreamSetup()
 	if(!truckconfig.empty())
 	{
 		// insert section config
-		for(int i = 0; i < std::min<int>(truckconfig.size(), 10); i++)
+		for(int i = 0; i < std::min<int>((int)truckconfig.size(), 10); i++)
 			strncpy(reg.truckconfig[i], truckconfig[i].c_str(), 60);
 	}
 
@@ -2603,7 +2603,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 4.0f)
 	{
 		int shifter=engine->getGear();
-		int numgears= engine->getNumGears();
+		int numgears= (int)engine->getNumGears();
 		cstate -= (shifter + 2.0) / (numgears + 2.0);
 		div++;
 	}
@@ -5639,7 +5639,7 @@ void Beam::updateDashBoards(float &dt)
 		int gear = engine->getGear();
 		dash->setInt(DD_ENGINE_GEAR, gear);
 
-		int numGears = engine->getNumGears();
+		int numGears = (int)engine->getNumGears();
 		dash->setInt(DD_ENGINE_NUM_GEAR, numGears);
 		
 		String str = String();

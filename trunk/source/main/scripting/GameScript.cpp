@@ -757,5 +757,5 @@ int GameScript::sendGameCmd(const std::string& message)
 {
 	Network *net = mefl->getNetwork();
 	if(!net) return -11;
-	else return net->sendScriptMessage(const_cast<char*>(message.c_str()), message.size());
+	else return net->sendScriptMessage(const_cast<char*>(message.c_str()), (unsigned int)message.size());
 }

@@ -275,13 +275,13 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 void Console::findCurrentWord()
 {
 	Ogre::UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
-	autoCompletionCursor = mCommandEdit->getTextCursor();
+	autoCompletionCursor = (int)mCommandEdit->getTextCursor();
 
 	// look for word start
 	// now search the current word we are working with
 	autoCompletionWordStart = autoCompletionCursor - 1;
 	// enforce limits
-	autoCompletionWordStart = std::min<int>(autoCompletionWordStart, line.size() - 1);
+	autoCompletionWordStart = std::min<int>(autoCompletionWordStart, (int)line.size() - 1);
 	autoCompletionWordStart = std::max<int>(autoCompletionWordStart, 0);
 	for(int counter = 0; autoCompletionWordStart > 0; autoCompletionWordStart--)
 	{
@@ -295,12 +295,12 @@ void Console::findCurrentWord()
 	}
 	autoCompletionWordStart++;
 	// enforce limits
-	autoCompletionWordStart = std::min<int>(autoCompletionWordStart, line.size() - 1);
+	autoCompletionWordStart = std::min<int>(autoCompletionWordStart, (int)line.size() - 1);
 	autoCompletionWordStart = std::max<int>(autoCompletionWordStart, 0);
 
 	// find end
 	autoCompletionWordEnd   = autoCompletionWordStart;
-	autoCompletionWordEnd   = std::min<int>(autoCompletionWordEnd, line.size() - 1);
+	autoCompletionWordEnd   = std::min<int>(autoCompletionWordEnd, (int)line.size() - 1);
 	autoCompletionWordEnd   = std::max<int>(autoCompletionWordEnd, 0);
 	for(int counter = 0; autoCompletionWordEnd < (int)line.size(); autoCompletionWordEnd++)
 	{
@@ -313,7 +313,7 @@ void Console::findCurrentWord()
 		}
 	}
 	autoCompletionWordEnd--;
-	autoCompletionWordEnd   = std::min<int>(autoCompletionWordEnd, line.size() - 1);
+	autoCompletionWordEnd   = std::min<int>(autoCompletionWordEnd, (int)line.size() - 1);
 	autoCompletionWordEnd   = std::max<int>(autoCompletionWordEnd, 0);
 
 
@@ -427,7 +427,7 @@ void Console::walkAutoCompletion(bool direction)
 	{
 		autoCompleteIndex--;
 		// + 1 due to first entry = incomplete word
-		if(autoCompleteIndex < 0) autoCompleteIndex = autoCompleteChoices.size() - 1;
+		if(autoCompleteIndex < 0) autoCompleteIndex = (int)autoCompleteChoices.size() - 1;
 	}
 
 	mAutoCompleteList->setIndexSelected(autoCompleteIndex);
@@ -496,7 +496,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 	// record the history
 	*mHistory.rbegin() = msg;
 	mHistory.push_back(""); // new, empty last entry
-	mHistoryPosition = mHistory.size() - 1; // switch to the new line
+	mHistoryPosition = (int)mHistory.size() - 1; // switch to the new line
 	mCommandEdit->setCaption(convertToMyGUIString(mHistory[mHistoryPosition]));
 
 	// some specials

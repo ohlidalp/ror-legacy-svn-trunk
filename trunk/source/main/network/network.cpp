@@ -229,7 +229,7 @@ bool Network::connect()
 	if(strnlen(pwbuffer, 250)>0)
 	{
 		CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)pwbuffer, strnlen(pwbuffer, 250));
+		sha1.UpdateHash((uint8_t *)pwbuffer, (uint32_t)strnlen(pwbuffer, 250));
 		sha1.Final();
 		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
 	}
@@ -247,9 +247,9 @@ bool Network::connect()
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
 	strcpy(c.clientname, "RoR");
 	String lang = SSETTING("Language Short");
-	strncpy(c.language, lang.c_str(), std::min<int>(lang.size(), 10));
+	strncpy(c.language, lang.c_str(), std::min<int>((int)lang.size(), 10));
 	String guid = SSETTING("GUID");
-	strncpy(c.clientGUID, guid.c_str(), std::min<int>(guid.size(), 10));
+	strncpy(c.clientGUID, guid.c_str(), std::min<int>((int)guid.size(), 10));
 	strcpy(c.sessiontype, "normal");
 	if (sendmessage(&socket, MSG2_USER_INFO, 0, sizeof(user_info_t), (char*)&c))
 	{

@@ -175,7 +175,7 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 	if(usertoken.size()>0)
 	{
 		RoR::CSHA1 sha1;
-		sha1.UpdateHash((uint8_t *)usertoken.c_str(), usertoken.size());
+		sha1.UpdateHash((uint8_t *)usertoken.c_str(), (uint32_t)usertoken.size());
 		sha1.Final();
 		sha1.ReportHash(usertokensha1result, RoR::CSHA1::REPORT_HEX_SHORT);
 	}

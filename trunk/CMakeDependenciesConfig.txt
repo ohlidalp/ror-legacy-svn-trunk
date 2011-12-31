@@ -35,7 +35,7 @@ IF(WIN32)
 	endif(NOT ROR_DEPENDENCIES_DIR)
 
 	#### REQUIRED COMPONENTS
-	set(Ogre_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Ogre" CACHE PATH "The ogre include path to use")
+	set(Ogre_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/Ogre;${ROR_DEPENDENCIES_DIR}/include/Ogre/${ARCH_DIR}" CACHE PATH "The ogre include path to use")
 	set(Ogre_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/${ARCH_DIR}/Ogre" CACHE PATH "The ogre lib path to use")
 	set(Ogre_LIBRARIES "OgreMain" CACHE STRING "The ogre lib to link against")
 	set(Ogre_LIBRARIES_DEBUG "OgreMain_d" CACHE STRING "The ogre DEBUG lib to link against")
@@ -70,7 +70,7 @@ IF(WIN32)
 
 	# special include path for curl ...
 	if(ROR_USE_CURL)
-		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/curl" CACHE PATH "The curl include path to use")
+		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/curl;${ROR_DEPENDENCIES_DIR}/include/curl/curl/${ARCH_DIR}" CACHE PATH "The curl include path to use")
 		set(CURL_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/${ARCH_DIR}/curl" CACHE PATH "The curl lib path to use")
 		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
 		#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/curl ${EXECUTABLE_OUTPUT_PATH})
@@ -122,7 +122,7 @@ IF(WIN32)
 	endif(ROR_USE_MOFILEREADER)
 
 	if(ROR_USE_PAGED)
-		set(PAGED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/PagedGeometry" CACHE PATH "The paged include path to use")
+		set(PAGED_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/include/PagedGeometry;${ROR_DEPENDENCIES_DIR}/include/PagedGeometry/${ARCH_DIR}" CACHE PATH "The paged include path to use")
 		set(PAGED_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/lib/${ARCH_DIR}/PagedGeometry" CACHE PATH "The paged lib path to use")
 		set(PAGED_LIBRARIES    "PagedGeometry.lib" CACHE STRING "The paged lib to link against")
 		set(PAGED_LIBRARIES_DEBUG    "PagedGeometry_d.lib" CACHE STRING "The paged DEBUG lib to link against")
