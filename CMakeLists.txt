@@ -5,6 +5,11 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 # done with cmake check
 
+# WIN32: remove MinSizeRel and Debug builds : unsupported
+if (WIN32) 
+	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;" CACHE STRING "" FORCE)
+endif()
+	
 project(RoR)
 
 macro(copy_files srcDir destDir)
@@ -27,8 +32,6 @@ endmacro(copy_files)
 # check 64 bit
 set(ARCH_DIR "")
 if (WIN32) 
-	# removed MinSizeRel and Debug builds unsupported
-	set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo" CACHE STRING "Configurations" FORCE)
 	message( STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 	message( STATUS "CMAKE_CL_64: ${CMAKE_CL_64}")
 	if (CMAKE_CL_64) 
