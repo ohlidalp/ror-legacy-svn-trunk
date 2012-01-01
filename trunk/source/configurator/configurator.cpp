@@ -1176,7 +1176,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("pthreads"),      wxT("used for threading"), wxString(), x_row1, y);
 	addAboutEntry(wxT("curl"),          wxT("used for www-server communication"), wxT("http://curl.haxx.se/"), x_row1, y);
 	addAboutEntry(wxT("SocketW"),       wxT("used as cross-platform socket abstraction"), wxT("http://www.digitalfanatics.org/cal/socketw/index.html"), x_row1, y);
-	addAboutEntry(wxT("boost"),         wxT("used as glue inbetween the components"), wxT("http://www.boost.org"), x_row1, y);
+	#addAboutEntry(wxT("boost"),         wxT("used as glue inbetween the components"), wxT("http://www.boost.org"), x_row1, y);
 	addAboutEntry(wxT("wxWidgets"),     wxT("used as cross platform user interface toolkit"), wxT("http://www.wxwidgets.org"), x_row1, y);
 	y+=20;
 
