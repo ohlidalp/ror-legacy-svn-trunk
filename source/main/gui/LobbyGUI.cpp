@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "libircclient.h"
 
-#include <boost/algorithm/string/replace.hpp> // for replace_all
+//#include <boost/algorithm/string/replace.hpp> // for replace_all
 
 // class
 
@@ -95,7 +95,7 @@ void LobbyGUI::addTab(Ogre::String name)
 
 	Ogre::String realName = name;
 
-	boost::algorithm::replace_all(name, "#", "##");
+	//boost::algorithm::replace_all(name, "#", "##");
 
 	tabctx_t *t = &tabs[name];
 
@@ -280,8 +280,8 @@ void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
 	Ogre::String realchannel = channel;
 
 	// escape #
-	boost::algorithm::replace_all(channel, "#", "##");
-	boost::algorithm::replace_all(txt, "#", "##");
+	//boost::algorithm::replace_all(channel, "#", "##");
+	//boost::algorithm::replace_all(txt, "#", "##");
 
 
 	if(tabs.find(channel) == tabs.end())
@@ -390,7 +390,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	}
 
 	// unescape #
-	boost::algorithm::replace_all(command, "##", "#");
+	//boost::algorithm::replace_all(command, "##", "#");
 
 	if(current_tab->name.substr(0, 1) == "#")
 	{

@@ -38,8 +38,8 @@ else(WIN32)
 endif(WIN32)
 
 IF(WIN32)
-   include_directories(${Boost_INCLUDE_DIRS})
-   link_directories   (${Boost_LIBRARY_DIRS})
+   #include_directories(${Boost_INCLUDE_DIRS})
+   #link_directories   (${Boost_LIBRARY_DIRS})
    include_directories(${PThread_INCLUDE_DIRS})
    link_directories   (${PThread_LIBRARY_DIRS})
 
