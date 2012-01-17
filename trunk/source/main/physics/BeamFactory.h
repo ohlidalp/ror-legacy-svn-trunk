@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 
 #include "Beam.h"
+#include "TwoDReplay.h"
 
 class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
@@ -63,6 +64,8 @@ public:
 	void updateVisual(float dt);
 	void updateAI(float dt);
 
+	inline unsigned long getPhysFrame() { return physFrame; };
+
 	void calcPhysics(float dt);
 
 	Beam **getTrucks() { return trucks; };
@@ -90,6 +93,10 @@ protected:
 	Beam *trucks[MAX_TRUCKS];
 	int free_truck;
 	int current_truck;
+
+	TwoDReplay *tdr;
+
+	unsigned long physFrame;
 
 	int done_count;
 
