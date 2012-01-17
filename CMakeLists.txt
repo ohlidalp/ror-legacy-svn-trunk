@@ -1,14 +1,14 @@
 # ensure cmake features we need
-CMAKE_MINIMUM_REQUIRED( VERSION 2.6.0 )
+CMAKE_MINIMUM_REQUIRED( VERSION 2.6.2 )
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 # done with cmake check
 
 # WIN32: remove MinSizeRel and Debug builds : unsupported
-if (WIN32) 
-	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;" CACHE STRING "" FORCE)
-endif()
+#if (WIN32) 
+#	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
+#endif()
 	
 project(RoR)
 
@@ -29,6 +29,14 @@ macro(copy_files srcDir destDir)
     endforeach(filename)
 endmacro(copy_files)
 
+macro(copy_files_for_target TRGT SRC DST)
+	add_custom_command(
+	  TARGET ${TRGT}
+	  POST_BUILD
+	  COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
+	  )
+endmacro(copy_files_for_target)
+
 # check 64 bit
 set(ARCH_DIR "")
 if (WIN32) 
@@ -47,6 +55,7 @@ endif()
 
 # global cmake options
 SET(BUILD_SHARED_LIBS ON)
+SET(CMAKE_USE_RELATIVE_PATHS OFF)
 
 # setup paths
 SET(ROR_DEPENDENCY_DIR       "${RoR_SOURCE_DIR}/source/dependencies")

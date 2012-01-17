@@ -7,7 +7,6 @@ macro(setup_lib name)
       link_directories   (${${name}_LIBRARY_DIRS})
       add_definitions("-DUSE_${name}")
       set(optional_libs ${optional_libs};${${name}_LIBRARIES})
-      set(optional_libs_debug ${optional_libs_debug};${${name}_LIBRARIES_DEBUG})
       message(STATUS "${name} Enabled:      \tYES")
       message(STATUS "${name}_INCLUDE_DIRS: \t${${name}_INCLUDE_DIRS}")
       #if(${${name}_LIBRARY_DIRS})
@@ -49,8 +48,8 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 
   include_directories(${Ogre_INCLUDE_DIRS})
   link_directories   (${Ogre_LIBRARY_DIRS})
-  #include_directories(${Boost_INCLUDE_DIRS})
-  #link_directories   (${Boost_LIBRARY_DIRS})
+  include_directories(${Boost_INCLUDE_DIRS})
+  link_directories   (${Boost_LIBRARY_DIRS})
   
   include_directories(${Ogre_Terrain_INCLUDE_DIRS})
   link_directories   (${Ogre_Terrain_LIBRARY_DIRS})
@@ -77,7 +76,6 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   if(ROR_USE_ANGELSCRIPT)
     add_definitions("-DAS_USE_NAMESPACE")
     set(optional_libs ${optional_libs} angelscript_addons)
-    set(optional_libs_debug ${optional_libs_debug};angelscript_addons)
   endif()
 
   if(ROR_USE_OIS_G27)
@@ -89,7 +87,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   endif(ROR_FEAT_TIMING)
 
 
-  #add_definitions("-DBOOST_ALL_NO_LIB")
+  add_definitions("-DBOOST_ALL_NO_LIB")
   add_definitions("-DUSE_RTSHADER_SYSTEM")
   
   include_directories(${RoR_Main_SOURCE_DIR})
@@ -132,7 +130,6 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     endif()
     link_directories (${wxWidgets_LIB_DIR})
     set(optional_libs ${optional_libs};${wxWidgets_LIBRARIES})
-    set(optional_libs_debug ${optional_libs_debug};${wxWidgets_LIBRARIES})
 	
 	add_definitions("-DROR_EMBEDDED")
   endif()
@@ -143,15 +140,23 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     add_executable(${BINNAME}       ${${BINNAME}_headers} ${${BINNAME}_sources})
   ENDIF(WIN32)
 
-  target_link_libraries(${BINNAME} 
-	debug
-	${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
-	#${Ogre_LIBRARIES_DEBUG} ${Ogre_Terrain_LIBRARIES_DEBUG} ${Ogre_Paging_LIBRARIES_DEBUG} ${Ogre_RTShader_LIBRARIES_DEBUG} ${Ois_LIBRARIES_DEBUG} ${OS_LIBS} ${optional_libs_debug}
-	optimized
-	${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
-	general
-	${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
+  target_link_libraries(${BINNAME}
+		${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
 	)
+	
+  if(ROR_USE_MYGUI)
+    copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/MyGUI/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
+  endif(ROR_USE_MYGUI)
+  if(ROR_USE_OPENAL)
+    copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/OpenALSoft/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
+  endif(ROR_USE_OPENAL)
+  if(ROR_USE_CAELUM)
+    copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/Caelum/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
+  endif(ROR_USE_CAELUM)
+  if(ROR_USE_CRASHRPT)
+    copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/CrashRpt/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
+  endif(ROR_USE_CRASHRPT)
+	
 endmacro(add_ror_project)
 
 
