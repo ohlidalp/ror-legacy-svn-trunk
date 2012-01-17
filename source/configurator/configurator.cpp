@@ -1681,7 +1681,7 @@ bool MyDialog::loadOgrePlugins(Ogre::String pluginsfile)
 			ogreRoot->loadPlugin(pluginFilename);
 		} catch(Ogre::Exception &e)
 		{
-			wxLogStatus(wxT("failed to load plugin: ") + conv(pluginFilename) + wxT(": ") + e.getFullDescription());
+			wxLogStatus(wxT("failed to load plugin: ") + conv(pluginFilename) + wxT(": ") + conv(e.getFullDescription()));
 		}
 	}
 	return true;
