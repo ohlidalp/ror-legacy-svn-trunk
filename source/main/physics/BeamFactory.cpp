@@ -59,6 +59,8 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, free_truck(0)
 	, current_truck(-1)
 	, done_count(0)
+	, physFrame(0)
+	, tdr(0)
 {
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
@@ -70,6 +72,7 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")    thread_mode = THREAD_HT;
 	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode = THREAD_HT2;
 
+	tdr = new TwoDReplay();
 }
 
 Beam *BeamFactory::createLocal(int slotid)
@@ -686,6 +689,7 @@ void BeamFactory::updateAI(float dt)
 
 void BeamFactory::calcPhysics(float dt)
 {
+	physFrame++;
 	int t=0;
 	//this is the big "shaker"
 	if (current_truck!=-1)
@@ -731,6 +735,8 @@ void BeamFactory::calcPhysics(float dt)
 		}
 
 	}
+
+	if(tdr) tdr->update(dt);
 
 	//things always on
 	for (t=0; t<free_truck; t++)

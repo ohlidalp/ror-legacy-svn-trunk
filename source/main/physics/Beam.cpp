@@ -5542,7 +5542,7 @@ void Beam::updateAI(float dt)
 
 	Ogre::Vector3 mAgentPosition        = position;
 	Ogre::Quaternion mAgentOrientation  = Quaternion(Radian(getHeadingDirectionAngle()), Vector3::NEGATIVE_UNIT_Y);
-    mAgentOrientation.normalise();
+	mAgentOrientation.normalise();
 
 	/*
 	// this is for debugging purposes
@@ -5558,25 +5558,25 @@ void Beam::updateAI(float dt)
 	*/
 	
 	Ogre::Vector3 mVectorToTarget       = TargetPosition - mAgentPosition; // A-B = B->A
-    mAgentPosition.normalise();
+	mAgentPosition.normalise();
 	mAgentPosition.y=0;
 
-    Ogre::Vector3 mAgentHeading         = mAgentOrientation * mAgentPosition;
-    Ogre::Vector3 mTargetHeading        = TargetOrientation * TargetPosition;
-    mAgentHeading.normalise();
-    mTargetHeading.normalise();
+	Ogre::Vector3 mAgentHeading         = mAgentOrientation * mAgentPosition;
+	Ogre::Vector3 mTargetHeading        = TargetOrientation * TargetPosition;
+	mAgentHeading.normalise();
+	mTargetHeading.normalise();
 
-    // Orientation control - Ogre::Vector3::UNIT_Y is common up vector.
-    Ogre::Vector3 mAgentVO        = mAgentOrientation.Inverse() * Ogre::Vector3::UNIT_Y;
-    Ogre::Vector3 mTargetVO       = TargetOrientation * Ogre::Vector3::UNIT_Y;
+	// Orientation control - Ogre::Vector3::UNIT_Y is common up vector.
+	Ogre::Vector3 mAgentVO        = mAgentOrientation.Inverse() * Ogre::Vector3::UNIT_Y;
+	Ogre::Vector3 mTargetVO       = TargetOrientation * Ogre::Vector3::UNIT_Y;
 
-    // Compute new torque scalar (-1.0 to 1.0) based on heading vector to target.
-    Ogre::Vector3 mSteeringForce = mAgentOrientation.Inverse() * mVectorToTarget;
-    mSteeringForce.normalise();
+	// Compute new torque scalar (-1.0 to 1.0) based on heading vector to target.
+	Ogre::Vector3 mSteeringForce = mAgentOrientation.Inverse() * mVectorToTarget;
+	mSteeringForce.normalise();
 
-    float mYaw    = mSteeringForce.x;
-    float mPitch  = mSteeringForce.y;
-    float mRoll   = mTargetVO.getRotationTo( mAgentVO ).getRoll().valueRadians();
+	float mYaw    = mSteeringForce.x;
+	float mPitch  = mSteeringForce.y;
+	float mRoll   = mTargetVO.getRotationTo( mAgentVO ).getRoll().valueRadians();
 
 	/*
 	String txt = "AI:"+TOSTRING(mSteeringForce);
