@@ -33,6 +33,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
+const char colors[10][8] = {
+		"#FF4848",
+		"#5757FF",
+		"#1FCB4A",
+		"#BABA21",
+		"#FF800D",
+		"#892EE4",
+		"#1F88A7",
+		"#990099",
+		"#B9264F",
+		"#06DCFB"
+};
+
 int main(int argc, char**argv)
 {
 	if(argc != 2)
@@ -56,7 +69,7 @@ int main(int argc, char**argv)
 		printf("error opening ouput file: %s\n", fnout);
 		return 1;
 	}
-	fprintf(fileo, "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
+	fprintf(fileo, "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\"><g>\n");
 
 	// first: read and compare header
 
@@ -126,36 +139,29 @@ int main(int argc, char**argv)
 			// sort according to wheels
 			wframes.clear();
 
-			// sort
-			for(int f=0; f < data[t].size(); f++)
+			// sort: walk all frames and gather wheel frames
+			for(int f=0; f < data[t].size() - 1; f++)
 			{
 				r2d_memory_structure_rig_t &m = data[t][f];
-				for(int w=0; w<m.wframes.size();w++)
-				{
-					wframes.push_back(m.wframes[w]);
-				}
+				wframes.push_back(m.wframes[wi]);
 			}
-			printf("wheel %d=%d\n", wi, wframes.size());
 
 			// draw
-			float lx=0, ly=0;
-			fprintf(fileo, "<path id=\"truck_%d_wheel_%d\" d=\"M200 200 ", t, wi);
+			fprintf(fileo, "<path style=\"fill:none;stroke:%s;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.5\" id=\"truck_%d_wheel_%d\" d=\"M ", colors[wi], t, wi);
 			for(int j=0; j<wframes.size(); j++)
 			{
-				float x = (wframes[j].wheel_pos[0]-6000)*3;
-				float y = (wframes[j].wheel_pos[2]-6000)*3;
-				fprintf(fileo, "L%g %g ", x-lx, y-ly);
-
-				lx=x; ly=y;
+				float x = (wframes[j].wheel_pos[0]-6000)*6 + 200;
+				float y = (wframes[j].wheel_pos[2]-6000)*6 + 200;
+				fprintf(fileo, "%g,%g ", x, y);
 			}
-			fprintf(fileo, "\" stroke=\"red\" stroke-width=\"1\" fill=\"none\"/>\n");
+			fprintf(fileo, "\" />\n");
 
 		}
 	}
 
 
 	fclose(file);
-	fprintf(fileo, "</svg>\n");
+	fprintf(fileo, "</g></svg>\n");
 	fclose(fileo);
 	printf("done, saved as file %s\n", fnout);
 	return 0;
