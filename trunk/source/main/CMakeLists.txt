@@ -141,9 +141,10 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   ENDIF(WIN32)
 
   target_link_libraries(${BINNAME}
-		${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
+		${Boost_LIBRARIES} ${Ogre_LIBRARIES} ${Ogre_Terrain_LIBRARIES} ${Ogre_Paging_LIBRARIES} ${Ogre_RTShader_LIBRARIES} ${Ois_LIBRARIES} ${OS_LIBS} ${optional_libs}
 	)
 	
+if(WIN32)
   if(ROR_USE_MYGUI)
     copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/MyGUI/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
   endif(ROR_USE_MYGUI)
@@ -156,6 +157,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   if(ROR_USE_CRASHRPT)
     copy_files_for_target(${BINNAME} ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/CrashRpt/$(Configuration)/* ${EXECUTABLE_OUTPUT_PATH})
   endif(ROR_USE_CRASHRPT)
+endif()
 	
 endmacro(add_ror_project)
 
