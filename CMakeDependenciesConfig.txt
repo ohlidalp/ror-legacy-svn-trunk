@@ -17,23 +17,43 @@ set(ROR_BUILD_SIM       ON)
 
 # set some defaults
 IF(WIN32)
-macro(importLibWithDFlag libName dirName)
-	message(STATUS "adding imported lib: ${libName} : ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib")
-	add_library(${libName} STATIC IMPORTED)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELEASE        ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/RelWithDebInfo/${libName}.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_DEBUG          ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}_d.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_MINSIZEREL     ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/MinSizeRel/${libName}.lib)
-endmacro(importLibWithDFlag)
-
 macro(importLib libName dirName)
 	message(STATUS "adding imported lib: ${libName} : ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib")
 	add_library(${libName} STATIC IMPORTED)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELEASE        ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/RelWithDebInfo/${libName}.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_DEBUG          ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}.lib)
-	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_MINSIZEREL     ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/MinSizeRel/${libName}.lib)
+	
+	# default is release mode:
+	SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+
+	# then the special config
+	if(EXISTS ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELEASE        ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+	endif()
+	if(EXISTS ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/RelWithDebInfo/${libName}.lib)
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/RelWithDebInfo/${libName}.lib)
+	else()
+		# fallback to release
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+	endif()
+	if(EXISTS ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}_d.lib)
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_DEBUG          ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}_d.lib)
+	else()
+		# fallback to release
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+	endif()
+	if(EXISTS ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}.lib)
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_DEBUG          ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Debug/${libName}.lib)
+	else()
+		# fallback to release
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+	endif()
+	if(EXISTS ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/MinSizeRel/${libName}.lib)
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_MINSIZEREL     ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/MinSizeRel/${libName}.lib)
+	else()
+		# fallback to release
+		SET_PROPERTY(TARGET ${libName} PROPERTY  IMPORTED_LOCATION_RELWITHDEBINFO ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib)
+	endif()
 endmacro(importLib)
+
 		
 	set(ROR_USE_OIS_G27      "FALSE" CACHE BOOL "use OIS With G27 patches")
 	set(ROR_USE_MOFILEREADER "TRUE" CACHE BOOL "use mofilereader")
@@ -60,16 +80,16 @@ endmacro(importLib)
 		"${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/Ogre/RTShaderSystem;"
 		"${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/Ogre/Property;"
 		"The ogre include path to use")
-	importLibWithDFlag(OgreMain Ogre)
-	importLibWithDFlag(Terrain Ogre)
-	importLibWithDFlag(Paging Ogre)
-	importLibWithDFlag(RTShaderSystem Ogre)
-	importLibWithDFlag(Property Ogre)
+	importLib(OgreMain Ogre)
+	importLib(Terrain Ogre)
+	importLib(Paging Ogre)
+	importLib(RTShaderSystem Ogre)
+	importLib(Property Ogre)
 	set(Ogre_LIBRARIES "OgreMain;Terrain;Paging;RTShaderSystem;Property" CACHE STRING "The Ogre libs to link against")
 	#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/Ogre ${EXECUTABLE_OUTPUT_PATH})
 
 	set(Ois_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/ois" CACHE PATH "The OIS include path to use")
-	importLibWithDFlag(ois_static OIS)
+	importLib(ois_static OIS)
 	set(Ois_LIBRARIES "OIS" CACHE STRING "The OIS libs to link against")
 
 	set(Boost_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/boost" CACHE PATH "The boost include path to use")
@@ -80,6 +100,7 @@ endmacro(importLib)
 	if(ROR_USE_CURL)
 		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/curl" CACHE PATH "The curl include path to use")
 		set(CURL_LIBRARIES "libcurl.lib" CACHE STRING "The curl lib to link against")
+		importLib(libcurl curl)
 		#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/curl ${EXECUTABLE_OUTPUT_PATH})
 	endif(ROR_USE_CURL)
 	
@@ -98,9 +119,9 @@ endmacro(importLib)
 	#### OPTIONAL COMPONENTS
 	if(ROR_USE_MYGUI)
 		set(MYGUI_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/MyGUI" CACHE PATH "The mygui include path to use")
-		importLibWithDFlag(MyGUIEngine MyGUI)
-		importLibWithDFlag(MyGUI.OgrePlatform MyGUI)
-		set(MYGUI_LIBRARIES "MyGUI.OgrePlatform;MyGUIEngine" CACHE STRING "The mygui libs to link against")
+		importLib(MyGUIEngineStatic MyGUI)
+		importLib(MyGUI.OgrePlatform MyGUI)
+		set(MYGUI_LIBRARIES "MyGUI.OgrePlatform;MyGUIEngineStatic" CACHE STRING "The mygui libs to link against")
 	endif(ROR_USE_MYGUI)
 
 	if(ROR_USE_OPENAL)
