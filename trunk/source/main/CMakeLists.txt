@@ -135,6 +135,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   endif()
 
   IF(WIN32)
+	add_definitions("-DMYGUI_STATIC")
     add_executable(${BINNAME} WIN32 ${${BINNAME}_headers} ${${BINNAME}_sources} ${RoR_Main_SOURCE_DIR}/${folder}/icon.rc)
   ELSE(WIN32)
     add_executable(${BINNAME}       ${${BINNAME}_headers} ${${BINNAME}_sources})
