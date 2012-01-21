@@ -220,7 +220,6 @@ public:
 	
 	// this is for stats only, maybe protect it by getter later
 	int changedFiles, newFiles, deletedFiles;
-	bool fileExists(Ogre::String);
 
 	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true, bool ownGroup=true);
 	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);

@@ -295,7 +295,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
 				String ifn = fn + skelmode + SSETTING("dirsep") + String(tmp);
     			
-				if(fileExists(ifn))
+				if(fileExists(ifn.c_str()))
 				{
 					LOG("rending skipped - already existing [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + ifn);
 					continue;

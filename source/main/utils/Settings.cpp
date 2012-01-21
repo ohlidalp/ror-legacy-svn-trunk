@@ -336,16 +336,27 @@ bool Settings::setupPaths()
 	if(!get_system_paths(program_path, user_path))
 		return false;
 
-	char local_config[1024]="";
-	sprintf(local_config, "%s%sconfig%sconfig%sRoR.cfg",program_path, dsStr, dsStr, dsStr);
-	if(fileExists(string(local_config)))
+	std::string local_config = string(program_path) + string(dsStr) + string("config");
+	if(folderExists(local_config.c_str()))
+	{
 		sprintf(user_path, "%s%sconfig%s",program_path, dsStr, dsStr);
+	}
 
-	//NEXT, derive the resources and stream paths from the base paths (depends on configuration)
-	//from now we are mostly platform neutral
-	//default mode (released)
+	// check for resource folder: first the normal version (in the executables directory)
 	strcpy(resources_path, program_path);
 	path_add(resources_path, "resources");
+	if(!folderExists(resources_path))
+	{
+		// if not existing: check one dir up (dev version)
+		strcpy(resources_path, program_path);
+		path_descend(resources_path);
+		path_add(resources_path, "resources");
+		if(!folderExists(resources_path))
+		{
+			showError(_L("Startup error"), _L("Resources folder not found. Check if correctly installed."));
+			exit(1);
+		}
+	}
 
 	//setup config files names
 	char plugins_fname[1024];
@@ -395,7 +406,7 @@ bool Settings::setupPaths()
 	StringUtil::toLowerCase(settings["Program Path"]);
 #endif
 	// now enable the user to override that:
-	if(fileExists(string("config.cfg")))
+	if(fileExists("config.cfg"))
 	{
 		loadSettings("config.cfg", true);
 

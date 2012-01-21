@@ -5,10 +5,10 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 # done with cmake check
 
-# WIN32: remove MinSizeRel and Debug builds : unsupported
-#if (WIN32) 
-#	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
-#endif()
+# WIN32: remove MinSizeRel builds : unsupported
+if (WIN32) 
+	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
+endif()
 	
 project(RoR)
 
@@ -30,8 +30,8 @@ macro(copy_files srcDir destDir)
 endmacro(copy_files)
 
 macro(copy_files_for_target TRGT SRC)
-	set(mysrc ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/${SRC}/$(ConfigurationName)/*)
-	set(mydst ${EXECUTABLE_OUTPUT_PATH})
+	set(mysrc ${SRC})
+	set(mydst ${EXECUTABLE_OUTPUT_PATH}/$(ConfigurationName)/)
 if (WIN32) 
 	STRING(REGEX REPLACE "/" "\\\\" mysrc ${mysrc}) 
 	STRING(REGEX REPLACE "/" "\\\\" mydst ${mydst}) 
@@ -39,9 +39,13 @@ endif()
 	add_custom_command(
 	  TARGET ${TRGT}
 	  POST_BUILD
-	  COMMAND xcopy ${mysrc} ${mydst}
+	  COMMAND xcopy /S /Y ${mysrc} ${mydst}
 	  )
 endmacro(copy_files_for_target)
+
+macro(copy_lib_files_for_target TRGT SRC)
+	copy_files_for_target("${TRGT}" "${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/${SRC}/$(ConfigurationName)/*" ${SRC})
+endmacro(copy_lib_files_for_target)
 
 # check 64 bit
 set(ARCH_DIR "")
@@ -114,10 +118,10 @@ if(WIN32)
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /DEBUG /LARGEADDRESSAWARE /OPT:NOREF /MAP /DYNAMICBASE:NO /FIXED /NXCOMPAT:NO")
 
 	# fix executable paths for windows
-	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY})
-	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${RUNTIME_OUTPUT_DIRECTORY})
-	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${RUNTIME_OUTPUT_DIRECTORY})
-	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${RUNTIME_OUTPUT_DIRECTORY})
+	#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${RUNTIME_OUTPUT_DIRECTORY})
+	#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${RUNTIME_OUTPUT_DIRECTORY})
+	#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${RUNTIME_OUTPUT_DIRECTORY})
+	#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${RUNTIME_OUTPUT_DIRECTORY})
 
 ELSEIF(UNIX)
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG          "${CMAKE_EXE_LINKER_FLAGS_DEBUG}          -O0 -ggdb")
@@ -133,10 +137,3 @@ include(CMakeDependenciesConfig.txt)
 
 
 add_subdirectory(source)
-
-# fill the bin dir with binaries
-copy_files(${ROR_BINTOOL_DIR} ${EXECUTABLE_OUTPUT_PATH})
-
-if(WIN32)
-	copy_files(${ROR_DEPENDENCIES_DIR}/bin ${EXECUTABLE_OUTPUT_PATH})
-endif(WIN32)

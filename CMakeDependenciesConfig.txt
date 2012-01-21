@@ -86,7 +86,6 @@ endmacro(importLib)
 	importLib(OgreRTShaderSystem Ogre)
 	importLib(OgreProperty Ogre)
 	set(Ogre_LIBRARIES "OgreMain;OgreTerrain;OgrePaging;OgreRTShaderSystem;OgreProperty" CACHE STRING "The Ogre libs to link against")
-	#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/Ogre ${EXECUTABLE_OUTPUT_PATH})
 
 	set(Ois_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/ois" CACHE PATH "The OIS include path to use")
 	importLib(ois_static OIS)
@@ -101,12 +100,10 @@ endmacro(importLib)
 		set(CURL_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/curl" CACHE PATH "The curl include path to use")
 		set(CURL_LIBRARIES "libcurl_imp" CACHE STRING "The curl lib to link against")
 		importLib(libcurl_imp curl)
-		#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/curl ${EXECUTABLE_OUTPUT_PATH})
 	endif(ROR_USE_CURL)
 	
 	set(PThread_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/pthread" CACHE PATH "The pthread include path to use")
 	set(PThread_LIBRARIES "optimized;${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/pthread/Release/pthread.lib" CACHE STRING "The pthread lib to link against")
-	#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/pthread ${EXECUTABLE_OUTPUT_PATH})
 	include_directories(${PThread_INCLUDE_DIRS})
 
 	# directX

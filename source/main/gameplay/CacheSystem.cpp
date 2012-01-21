@@ -621,12 +621,6 @@ bool CacheSystem::loadCache()
 	}
 	return true;
 }
-bool CacheSystem::fileExists(String filename)
-{
-	std::fstream file;
-	file.open(filename.c_str());
-	return file.is_open();
-}
 
 Ogre::String CacheSystem::fileTime(String filename)
 {
@@ -700,7 +694,7 @@ int CacheSystem::incrementalCacheUpdate()
 		if(it->type == "FileSystem")
 		{
 			String fn = getRealPath(it->dirname + "/" + it->fname);
-			if(!fileExists(fn))
+			if(!fileExists(fn.c_str()))
 			{
 				LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
@@ -719,7 +713,7 @@ int CacheSystem::incrementalCacheUpdate()
 		else if(it->type == "Zip")
 		{
 			String fn = getRealPath(it->dirname);
-			if(!fileExists(fn))
+			if(!fileExists(fn.c_str()))
 			{
 				LOG("- "+fn+" not existing");
 #ifdef USE_MYGUI
