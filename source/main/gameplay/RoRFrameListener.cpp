@@ -130,6 +130,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#include <Windows.h>
+#else
+	#include <stdio.h>
+	#include <wchar.h>
 #endif
 
 // some gcc fixes
@@ -1673,7 +1676,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			collisions->loadGroundModelsConfigFile(String(ptline + 15));
 			continue;
 		}
-		if (!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11) && strlen(ptline) > 12)
+		if ((!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11)) && strlen(ptline) > 12)
 		{
 			String modelName = String(ptline + 12);
 			gm = collisions->getGroundModelByString(modelName);

@@ -75,6 +75,10 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	tdr = new TwoDReplay();
 }
 
+BeamFactory::~BeamFactory()
+{
+}
+
 Beam *BeamFactory::createLocal(int slotid)
 {
 	// do not use this ...
@@ -763,6 +767,7 @@ void BeamFactory::calcPhysics(float dt)
 				if(trucks[t]->networking)
 					trucks[t]->sendStreamData();
 			}
+			break;
 		}
 	}
 }
