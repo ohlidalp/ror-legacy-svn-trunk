@@ -29,11 +29,17 @@ macro(copy_files srcDir destDir)
     endforeach(filename)
 endmacro(copy_files)
 
-macro(copy_files_for_target TRGT SRC DST)
+macro(copy_files_for_target TRGT SRC)
+	set(mysrc ${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/${SRC}/$(ConfigurationName)/*)
+	set(mydst ${EXECUTABLE_OUTPUT_PATH})
+if (WIN32) 
+	STRING(REGEX REPLACE "/" "\\\\" mysrc ${mysrc}) 
+	STRING(REGEX REPLACE "/" "\\\\" mydst ${mydst}) 
+endif() 
 	add_custom_command(
 	  TARGET ${TRGT}
 	  POST_BUILD
-	  COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DST}
+	  COMMAND xcopy ${mysrc} ${mydst}
 	  )
 endmacro(copy_files_for_target)
 
