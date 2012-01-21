@@ -1196,7 +1196,7 @@ void Beam::calcNetwork()
 	setCustomLightVisible(3, ((flagmask&NETMASK_CLIGHT4)>0));
 
 #ifdef USE_OPENAL
-	if (flagmask&NETMASK_HORN && ssm)
+	if ((flagmask & NETMASK_HORN) && ssm)
 		ssm->trigStart(trucknum, SS_TRIG_HORN);
 	else if(ssm)
 		ssm->trigStop(trucknum, SS_TRIG_HORN);
@@ -2520,7 +2520,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	}
 
 	//shifterseq, to amimate sequentiell shifting
-	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 3.0f)
+	if ((flag_state & ANIM_FLAG_SHIFTER) && option3 == 3.0f)
 	{
 	// opt1 &opt2 = 0   this is a shifter
 		if (!option1 &&  !option2)
@@ -2566,7 +2566,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	}
 
 	//shifterman1, left/right
-	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 1.0f)
+	if ((flag_state & ANIM_FLAG_SHIFTER) && option3 == 1.0f)
 	{
 		int shifter=engine->getGear();
 		if (!shifter)
@@ -2584,7 +2584,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	}
 
 	//shifterman2, up/down
-	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 2.0f)
+	if ((flag_state & ANIM_FLAG_SHIFTER) && option3 == 2.0f)
 	{
 		int shifter=engine->getGear();
 		cstate = 0.5f;
@@ -2600,7 +2600,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	}
 
 	//shifterlinear, to amimate cockpit gearselect gauge and autotransmission stick
-	if (flag_state & ANIM_FLAG_SHIFTER && option3 == 4.0f)
+	if ((flag_state & ANIM_FLAG_SHIFTER) && option3 == 4.0f)
 	{
 		int shifter=engine->getGear();
 		int numgears= (int)engine->getNumGears();
@@ -2976,14 +2976,14 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 	{
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
-			if (beams[i].shock && beams[i].shock->flags & !SHOCK_FLAG_ISTRIGGER) // this is NOT a trigger beam
+			if (beams[i].shock && (beams[i].shock->flags & !SHOCK_FLAG_ISTRIGGER)) // this is NOT a trigger beam
 			{
 				// hard (normal) shock bump
 				k = beams[i].shock->sbd_spring;
 				d = beams[i].shock->sbd_damp;
 			}
 		}
-		if (beams[i].shock && beams[i].shock->flags & SHOCK_FLAG_ISTRIGGER && beams[i].shock->trigger_enabled)  // this is a trigger and its enabled
+		if (beams[i].shock && (beams[i].shock->flags & SHOCK_FLAG_ISTRIGGER) && beams[i].shock->trigger_enabled)  // this is a trigger and its enabled
 		{
 			if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L) // that has hit boundary
 			{
@@ -2994,7 +2994,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdshort; scount++)   // (cylce blockerbeamID +1) to (blockerbeamID + beams tob lock)
 					{
-						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{
 							if (triggerdebug && !beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 1)
 							{
@@ -3009,7 +3009,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
 					{
-						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{									
 							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 9)
 							{
@@ -3124,7 +3124,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
 					{
-						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{									
 							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 6)
 							{
@@ -3139,7 +3139,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				{
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdshort; scount++)   // (cylce blockerbeamID +1) to (blockerbeamID + beams tob lock)
 					{
-						if (beams[scount].shock && beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER)  // dont mess anything up if the user set the number too big
+						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{
 							if (triggerdebug && !beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 10)
 							{
@@ -3150,7 +3150,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 						}
 					}
 				} else
-				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH && beams[i].shock->trigger_switch_state) // this is a switch that was activated and is back inside boundaries again
+				if ((beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH) && beams[i].shock->trigger_switch_state) // this is a switch that was activated and is back inside boundaries again
 				{
 					beams[i].shock->trigger_switch_state = 0.0f;  //trigger_switch resetted
 					if(triggerdebug && beams[i].shock->last_debug_state != 7)
@@ -3159,7 +3159,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 						beams[i].shock->last_debug_state = 7;
 					}
 				} else
-				if (beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
+				if ((beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER) && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
 				{
 					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
 					if(triggerdebug && beams[i].shock->last_debug_state != 8)
