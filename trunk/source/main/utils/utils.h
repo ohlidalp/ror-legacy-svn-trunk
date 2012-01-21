@@ -46,7 +46,8 @@ int getTimeStamp();
 
 Ogre::String getVersionString(bool multiline = true);
 
-bool fileExists(std::string filename);
+bool fileExists(const char *filename);
+bool folderExists(const char *pathname);
 
 int isPowerOfTwo (unsigned int x);
 

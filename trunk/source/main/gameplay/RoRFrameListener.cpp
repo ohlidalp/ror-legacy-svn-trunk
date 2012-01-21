@@ -2002,7 +2002,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	{
 		int mNumScreenShots=0;
 		String tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
-		while(fileExists(tmpfn))
+		while(fileExists(tmpfn.c_str()))
 			tmpfn = SSETTING("User Path") + String("screenshot_") + TOSTRING(++mNumScreenShots) + String(".") + String(screenshotformat);
 
 #ifdef USE_MYGUI

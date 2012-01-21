@@ -26,7 +26,6 @@ if(WIN32)
 	add_definitions("-D_UNICODE -D_CRT_SECURE_NO_WARNINGS -DUNICODE")
 	include_directories(${wxWidgets_INCLUDE_DIRS})
 	link_directories (${wxWidgets_LIBRARY_DIRS})
-	#copy_files(${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/wxWidgets ${EXECUTABLE_OUTPUT_PATH})
 else(WIN32)
 	# find wxwidgets
 	SET(wxWidgets_USE_UNICODE ON)

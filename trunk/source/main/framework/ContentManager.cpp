@@ -62,7 +62,7 @@ void ContentManager::loadMainResource(String name, String group)
 #endif
 
 	String zipFilename = SSETTING("Resources Path")+name+".zip";
-	if(fileExists(zipFilename))
+	if(fileExists(zipFilename.c_str()))
 	{
 		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group);
 	} else

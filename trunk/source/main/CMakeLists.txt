@@ -147,22 +147,26 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 	
 if(WIN32)
   # always copy ogre files
-  copy_files_for_target(${BINNAME} Ogre)
+  copy_lib_files_for_target(${BINNAME} Ogre)
+  # platform binaries
+  copy_files_for_target(${BINNAME} ${ROR_BINTOOL_DIR}/$(ConfigurationName)/*)  
+  # then the optional ones
   if(ROR_USE_MYGUI)
-	copy_files_for_target(${BINNAME} MyGUI)
+	copy_lib_files_for_target(${BINNAME} MyGUI)
   endif(ROR_USE_MYGUI)
   if(ROR_USE_OPENAL)
-	copy_files_for_target(${BINNAME} OpenALSoft)
+	copy_lib_files_for_target(${BINNAME} OpenALSoft)
   endif(ROR_USE_OPENAL)
   if(ROR_USE_CURL)
-	copy_files_for_target(${BINNAME} Curl)
+	copy_lib_files_for_target(${BINNAME} Curl)
   endif(ROR_USE_CURL)
   if(ROR_USE_CAELUM)
-	copy_files_for_target(${BINNAME} Caelum)
+	copy_lib_files_for_target(${BINNAME} Caelum)
   endif(ROR_USE_CAELUM)
   if(ROR_USE_CRASHRPT)
-	#copy_files_for_target(${BINNAME} CrashRpt)
+	#copy_lib_files_for_target(${BINNAME} CrashRpt)
   endif(ROR_USE_CRASHRPT)
+
 endif()
 	
 endmacro(add_ror_project)
