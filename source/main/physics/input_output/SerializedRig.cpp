@@ -3884,8 +3884,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					back   = parse_node_number(c, args[1]);
 					p1     = parse_node_number(c, args[2]);
 					p2     = parse_node_number(c, args[3]);
-					p3     = parse_node_number(c, args[4]);
-					p4     = parse_node_number(c, args[5]);
+					p3     = parse_node_number(c, args[4], &special_node_numbers);
+					p4     = parse_node_number(c, args[5], &special_node_numbers);
 					power  = PARSEREAL(args[6]);
 					strncpy(propfoil, args[7].c_str(),  255);
 				}
@@ -3897,8 +3897,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					back   = parse_node_number(c, args[1]);
 					p1     = parse_node_number(c, args[2]);
 					p2     = parse_node_number(c, args[3]);
-					p3     = parse_node_number(c, args[4]);
-					p4     = parse_node_number(c, args[5]);
+					p3     = parse_node_number(c, args[4], &special_node_numbers);
+					p4     = parse_node_number(c, args[5], &special_node_numbers);
 					couplenode = parse_node_number(c, args[6], &special_node_numbers);
 					power  = PARSEREAL(args[7]);
 					strncpy(propfoil, args[8].c_str(),  255);
@@ -3910,8 +3910,8 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					back   = parse_node_number(c, args[1]);
 					p1     = parse_node_number(c, args[2]);
 					p2     = parse_node_number(c, args[3]);
-					p3     = parse_node_number(c, args[4]);
-					p4     = parse_node_number(c, args[5]);
+					p3     = parse_node_number(c, args[4], &special_node_numbers);
+					p4     = parse_node_number(c, args[5], &special_node_numbers);
 					couplenode = parse_node_number(c, args[6], &special_node_numbers);
 					power  = PARSEREAL(args[7]);
 					pitch  = PARSEREAL(args[8]);
