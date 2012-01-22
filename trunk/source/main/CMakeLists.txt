@@ -148,6 +148,8 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 if(WIN32)
   # always copy ogre files
   copy_lib_files_for_target(${BINNAME} Ogre)
+  # and pthread
+  copy_lib_files_for_target(${BINNAME} PThread)
   # platform binaries
   copy_files_for_target(${BINNAME} ${ROR_BINTOOL_DIR}/$(ConfigurationName)/*)  
   # then the optional ones
