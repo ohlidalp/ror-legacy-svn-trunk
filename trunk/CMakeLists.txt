@@ -40,6 +40,7 @@ endif()
 	  TARGET ${TRGT}
 	  POST_BUILD
 	  COMMAND xcopy /S /Y ${mysrc} ${mydst}
+	  COMMENT "Copying ${mysrc} to ${mydst}"
 	  )
 endmacro(copy_files_for_target)
 
