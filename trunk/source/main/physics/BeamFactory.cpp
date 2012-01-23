@@ -72,7 +72,8 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")    thread_mode = THREAD_HT;
 	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode = THREAD_HT2;
 
-	tdr = new TwoDReplay();
+	if(BSETTING("2DReplay"))
+		tdr = new TwoDReplay();
 }
 
 BeamFactory::~BeamFactory()
@@ -740,6 +741,7 @@ void BeamFactory::calcPhysics(float dt)
 
 	}
 
+	// update 2D replay if activated
 	if(tdr) tdr->update(dt);
 
 	//things always on
