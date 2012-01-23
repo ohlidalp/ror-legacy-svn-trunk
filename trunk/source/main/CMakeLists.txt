@@ -75,7 +75,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
 
   if(ROR_USE_ANGELSCRIPT)
     # CLEAR_FPU_STACK prevents angelscript from breaking our physics engine
-    add_definitions("-DAS_USE_NAMESPACE -DCLEAR_FPU_STACK= ")
+    add_definitions("-DAS_USE_NAMESPACE")
     set(optional_libs ${optional_libs} angelscript_addons)
   endif()
 
