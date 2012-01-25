@@ -24,6 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SceneMouse.h"
 #include "gui_menu.h"
 
+#include "RoRFrameListener.h"
+#include "OverlayWrapper.h"
+
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #include <windows.h>
 #endif
@@ -120,6 +123,12 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 
 	if(!handled)
 	{
+		// update the old airplane / autopilot gui
+		handled = RoRFrameListener::eflsingleton->getOverlayWrapper()->mouseMoved(_arg);
+	}
+
+	if(!handled)
+	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm)
 		{
@@ -168,6 +177,12 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 
 	if(!handled)
 	{
+		// update the old airplane / autopilot gui
+		handled = RoRFrameListener::eflsingleton->getOverlayWrapper()->mousePressed(_arg, _id);
+	}
+
+	if(!handled)
+	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
 		if(sm) return sm->mousePressed(_arg, _id);
 	}
@@ -188,6 +203,12 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 		// hack for console, we want to use the mouse through that control
 		if(w && w->getName().substr(0, 7) == "Console")
 			handled = false;
+	}
+
+	if(!handled)
+	{
+		// update the old airplane / autopilot gui
+		handled = RoRFrameListener::eflsingleton->getOverlayWrapper()->mouseReleased(_arg, _id);
 	}
 
 	if(!handled)
