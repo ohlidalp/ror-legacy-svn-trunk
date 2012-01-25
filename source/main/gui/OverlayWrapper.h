@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePanelOverlayElement.h>
 
 #include <OgreSingleton.h>
+#include <OIS.h>
 
 struct loadedOverlay_t
 {
@@ -59,6 +60,11 @@ public:
 	void resizeOverlay(struct loadedOverlay_t);
 
 	int getDashBoardHeight();
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	float mTimeUntilNextToggle;
 
 //protected:
 	int init();
