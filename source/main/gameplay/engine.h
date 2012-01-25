@@ -131,6 +131,7 @@ public:
 	void updateShifts();
 	void autoShiftUp();
 	void autoShiftDown();
+	void autoShiftSet(int mode);
 	int getAutoShift();
 	void setManualClutch(float val);
 	size_t getNumGears() { return gearsRatio.size() - 2; };

@@ -599,6 +599,12 @@ void BeamEngine::updateShifts()
 	if (autoselect==ONE) curGear=1;
 }
 
+void BeamEngine::autoShiftSet(int mode)
+{
+	autoselect = (autoswitch)mode;
+	updateShifts();
+}
+
 void BeamEngine::autoShiftUp()
 {
 	if (autoselect!=REAR) 

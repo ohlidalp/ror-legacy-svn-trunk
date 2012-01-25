@@ -298,6 +298,7 @@ private:
 	wxCheckBox *autodl;
 	wxCheckBox *posstor;
 	wxCheckBox *extcam;
+	wxCheckBox *arcadeControls;
 	wxCheckBox *mirror;
 	wxCheckBox *envmap;
 	wxCheckBox *sunburn;
@@ -1070,6 +1071,10 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	extcam->SetToolTip(_("If you dislike the pitching external vehicle camera, you can disable it here."));
 	y+=25;
 
+	arcadeControls=new wxCheckBox(gamePanel, -1, _("Arcade Controls"), wxPoint(x_row1, y));
+	arcadeControls->SetToolTip(_("Braking will switch into reverse gear and accelerate."));
+	y+=25;
+
 	dText = new wxStaticText(gamePanel, -1, _("User Token: "), wxPoint(10,y+3));
 	usertoken=new wxTextCtrl(gamePanel, -1, wxString(), wxPoint(x_row1, y), wxSize(200, -1));
 	usertoken->SetToolTip(_("Your rigsofrods.com User Token."));
@@ -1183,7 +1188,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=20;
 
 	addAboutTitle(_("Missing someone?"), x_row1, y);
-	addAboutEntry(_("Missing someone?"), _("if you are missing someone on this list, please drop us a line:\nsupport@rigsofrods.com"), wxT("mailto:support@rigsofrods.com"), x_row1, y);
+	addAboutEntry(_("Missing someone?"), _("If we are missing someone on this list, please drop us a line at:\nsupport@rigsofrods.com"), wxT("mailto:support@rigsofrods.com"), x_row1, y);
 
 	wxSize size = nbook->GetBestVirtualSize();
 	size.x = 400;
@@ -1390,22 +1395,22 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
 
 	dText = new wxStaticText(ffPanel, -1, _("Overall force level:"), wxPoint(20,53));
-	ffOverall=new wxSlider(ffPanel, FFSLIDER, 100, 0, 100, wxPoint(150, 50), wxSize(200, 40));
+	ffOverall=new wxSlider(ffPanel, FFSLIDER, 100, 0, 1000, wxPoint(150, 50), wxSize(200, 40));
 	ffOverall->SetToolTip(_("Adjusts the level of all the forces."));
 	ffOverallText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,53));
 
 	dText = new wxStaticText(ffPanel, -1, _("Steering feedback level:"), wxPoint(20,103));
-	ffHydro=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 100), wxSize(200, 40));
+	ffHydro=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 100), wxSize(200, 40));
 	ffHydro->SetToolTip(_("Adjusts the contribution of forces coming from the wheels and the steering mechanism."));
 	ffHydroText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,103));
 
 	dText = new wxStaticText(ffPanel, -1, _("Self-centering level:"), wxPoint(20,153));
-	ffCenter=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 150), wxSize(200, 40));
+	ffCenter=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 150), wxSize(200, 40));
 	ffCenter->SetToolTip(_("Adjusts the self-centering effect applied to the driving wheel when driving at high speed."));
 	ffCenterText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,153));
 
 	dText = new wxStaticText(ffPanel, -1, _("Inertia feedback level:"), wxPoint(20,203));
-	ffCamera=new wxSlider(ffPanel, FFSLIDER, 100, 0, 400, wxPoint(150, 200), wxSize(200, 40));
+	ffCamera=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 200), wxSize(200, 40));
 	ffCamera->SetToolTip(_("Adjusts the contribution of forces coming shocks and accelerations (this parameter is currently unused)."));
 	ffCamera->Enable(false);
 	ffCameraText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,203));
@@ -2070,6 +2075,7 @@ void MyDialog::SetDefaults()
 	autodl->SetValue(false);
 	posstor->SetValue(false);
 	extcam->SetValue(false);
+	arcadeControls->SetValue(false);
 	mirror->SetValue(true);
 	envmap->SetValue(true);
 	sunburn->SetValue(false);
@@ -2139,6 +2145,7 @@ void MyDialog::getSettingsControls()
 	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
 	settings["GearboxMode"]= gearBoxMode->getSelectedValueAsSTDString();
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
+	settings["ArcadeControls"] = (arcadeControls->GetValue()) ? "Yes" : "No";
 	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["Sunburn"] = "No"; //(sunburn->GetValue()) ? "Yes" : "No";
@@ -2241,6 +2248,7 @@ void MyDialog::updateSettingsControls()
 	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
+	st = settings["ArcadeControls"]; if (st.length()>0) arcadeControls->SetValue(st=="Yes");
 	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
