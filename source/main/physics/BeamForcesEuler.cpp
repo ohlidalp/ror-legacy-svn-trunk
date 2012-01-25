@@ -434,7 +434,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					if (props[propi].animOpt5[animnum]) cstate *= (props[propi].animOpt5[animnum]);
 
 					//rotate prop
-					if (props[propi].animMode[animnum] & ANIM_MODE_ROTA_X || props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y || props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z)
+					if ((props[propi].animMode[animnum] & ANIM_MODE_ROTA_X) || (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Y) || (props[propi].animMode[animnum] & ANIM_MODE_ROTA_Z))
 					{
 						float limiter = 0.0f;
 						if (props[propi].animMode[animnum] & ANIM_MODE_AUTOANIMATE)
@@ -550,7 +550,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					// TODO Unused Varaible
 					//float oz = props[propi].orgoffsetZ;
 
-					if (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y || props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z)
+					if ((props[propi].animMode[animnum] & ANIM_MODE_OFFSET_X) || (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Y) || (props[propi].animMode[animnum] & ANIM_MODE_OFFSET_Z))
 					{
 						float offset = 0.0f;
 						float autooffset = 0.0f;
@@ -960,7 +960,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			if (!disableDrag)
 			{
 				//add viscous drag (turbulent model)
-				if (step&7 && !increased_accuracy)
+				if ((step&7) && !increased_accuracy)
 				{
 					//fasttrack drag
 					nodes[i].Forces+=nodes[i].lastdrag;

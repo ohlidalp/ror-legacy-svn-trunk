@@ -103,7 +103,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		for(int i = 0; i < trucksnum; i++)
 		{
 			if(!trucks[i]) continue;
-			if(trucks[i] && trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED)
+			if(trucks[i] && (trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED))
 			{
 				minnode = -1;
 				// walk all nodes

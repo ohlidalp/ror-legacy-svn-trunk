@@ -1510,7 +1510,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 							pos=add_beam(&nodes[id], id_hook, manager, parent, BEAM_HYDRO, default_break * default_break_scale * 100.0f, default_spring * default_spring_scale, default_damp * default_damp_scale * 0.1f);
 							beams[pos].L                 = HOOK_RANGE_DEFAULT;
-							beams[pos].refL              = beams[pos].refL;
+							beams[pos].refL              = beams[pos].L;
 							beams[pos].Lhydro            = beams[pos].refL;
 							beams[pos].bounded           = ROPE;
 							beams[pos].disabled          = true;
@@ -2081,6 +2081,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							float beam_length = nodes[id1].AbsPosition.distance(nodes[id2].AbsPosition);
 							sbound = sbound / beam_length;
 							lbound = lbound / beam_length;
+							break;
 						}
 						case 'M':
 						{
@@ -5408,7 +5409,11 @@ void SerializedRig::serialize(Ogre::String targetFilename, ScopeLog *scope_log)
 
 		// Print it
 		FILE *fo = fopen(targetFilename.c_str(), "w");
+#ifdef WIN32
 		fwprintf(fo, L"%ls", final_value->Stringify().c_str());
+#else
+		// TODO: FIX
+#endif
 		fclose(fo);
 
 		//LOG("vehicle serialized to json successfully: "+targetFilename);
@@ -6355,7 +6360,9 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 			
 		
 		// no more options
-		default: moreOptions = false;
+		default:
+			moreOptions = false;
+			break;
 		
 		}
 		
