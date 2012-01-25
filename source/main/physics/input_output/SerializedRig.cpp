@@ -2798,6 +2798,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				Real stopDelay=0;
 				char startFunction[256]="";
 				char stopFunction[256]="";
+				float commandCoupling = 1;
 				if(c.mode == BTS_COMMANDS)
 				{
 					char opt='n';
@@ -2837,6 +2838,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(n > 11) stopDelay  = PARSEREAL(args[11]);
 					if(n > 12) strncpy(startFunction, args[12].c_str(), 255);
 					if(n > 13) strncpy(stopFunction,  args[13].c_str(), 255);
+					if(n > 14) commandCoupling = PARSEREAL(args[14]);
 				}
 
 				//verify array limits so we dont overflow
@@ -2942,12 +2944,17 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				beams[pos].commandRatioLong=rateLong;
 				beams[pos].commandShort=shortl;
 				beams[pos].commandLong=longl;
+				beams[pos].commandEngineCoupling=commandCoupling;
 
 				// set the middle of the command, so its not required to recalculate this everytime ...
 				if(beams[pos].commandLong > beams[pos].commandShort)
 					beams[pos].centerLength = (beams[pos].commandLong-beams[pos].commandShort)/2 + beams[pos].commandShort;
 				else
 					beams[pos].centerLength = (beams[pos].commandShort-beams[pos].commandLong)/2 + beams[pos].commandLong;
+
+				// replace placeholders
+				if(String(startFunction) == "/" || String(startFunction) == "-") startFunction[0]=0;
+				if(String(stopFunction) == "/" || String(stopFunction) == "-") stopFunction[0]=0;
 
 				if(cmdInertia && startDelay > 0 && stopDelay > 0)
 				{

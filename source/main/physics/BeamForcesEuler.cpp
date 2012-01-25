@@ -1942,7 +1942,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if(v>0.5)
 							{
 								active++;
-								work+=fabs(beams[bbeam].stress)*dl;
+								work+=fabs(beams[bbeam].stress)*dl*beams[bbeam].commandEngineCoupling;
 							}
 						} else
 						{
@@ -2017,7 +2017,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							{
 								requestpower=true;
 								active++;
-								work+=fabs(beams[bbeam].stress)*dl;
+								work+=fabs(beams[bbeam].stress)*dl*beams[bbeam].commandEngineCoupling;
 							}
 						} else
 						{
