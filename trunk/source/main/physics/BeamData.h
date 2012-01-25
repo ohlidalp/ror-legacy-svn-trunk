@@ -477,6 +477,7 @@ struct beam
 	Ogre::Real commandRatioShort;
 	Ogre::Real commandShort;
 	Ogre::Real commandLong;
+	Ogre::Real commandEngineCoupling;
 	Ogre::Real maxtiestress;
 	Ogre::Real diameter;
 	int detacher_group;	// detacher group number (integer)
