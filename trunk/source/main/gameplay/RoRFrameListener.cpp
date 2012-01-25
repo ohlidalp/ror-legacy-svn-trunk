@@ -2465,13 +2465,48 @@ bool RoRFrameListener::updateEvents(float dt)
 						else
 							curr_truck->hydroSpeedCoupling=true;
 
-						//accelerate
-						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
-						if(curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+						// arcade_brake: brake + drive reverse + accelerate?
+						bool arcadeControls = BSETTING("ArcadeControls");
 
-						//brake
-						float brake = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
-						curr_truck->brake = brake*curr_truck->brakeforce;
+						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
+						float brake  = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
+
+						if(!arcadeControls)
+						{
+							// classic mode, realistic
+							if(curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+							curr_truck->brake = brake*curr_truck->brakeforce;
+						} else
+						{
+							// omg, arcade controls: hey - people wanted it x|
+							if(curr_truck->WheelSpeed >= 0 && curr_truck->engine->getGear() > 0)
+							{
+								// we drive forward, everything is as its used to be: brake is brake and acc. is acc.
+								if(curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+								curr_truck->brake = brake*curr_truck->brakeforce;
+							} else if (curr_truck->WheelSpeed < 0 && curr_truck->engine->getGear() < 0)
+							{
+								// we drive backwards, reverse controls: brake is acc. and acc. is brake.
+								if(curr_truck->engine) curr_truck->engine->autoSetAcc(brake);
+								curr_truck->brake = accval*curr_truck->brakeforce;
+							}
+
+							// when in automatic mode: shift as well
+							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->engine && curr_truck->engine->getAutoMode() == AUTOMATIC)
+							{
+								// switching point, does the user want to drive forward from backward or the other way round? change gears?
+								if(brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)
+								{
+									// we are on the brake, jump to reverse gear
+									curr_truck->engine->autoShiftSet(REAR);
+								} else if(brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
+								{
+									// we are on the gas pedal, jump to first gear when we were in rear gear
+									curr_truck->engine->autoShiftSet(DRIVE);
+								}
+							}
+						}
+
 #ifdef USE_OPENAL
 						if (ssm && curr_truck->brake > curr_truck->brakeforce/6.0)
 							ssm->trigStart(curr_truck, SS_TRIG_BRAKE);
