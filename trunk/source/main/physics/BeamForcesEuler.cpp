@@ -752,7 +752,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			{
 				if (it->beam->L < it->beam->commandShort)
 				{
-					//shortliomit reached -> status LOCKED
+					//shortlimit reached -> status LOCKED
 					it->locked = LOCKED;
 				}
 				else
