@@ -62,14 +62,14 @@ int main(int argc, char**argv)
 
 	char fnout[1024]="";
 	strncpy(fnout, argv[1], 1024);
-	strcat(fnout, ".svg");
+	strcat(fnout, ".js");
 	FILE *fileo = fopen(fnout, "w");
 	if(!fileo)
 	{
 		printf("error opening ouput file: %s\n", fnout);
 		return 1;
 	}
-	fprintf(fileo, "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\"><g>\n");
+	fprintf(fileo, "var data = [\n");
 
 	// first: read and compare header
 
@@ -104,12 +104,20 @@ int main(int argc, char**argv)
 	// done parsing header, now to the data
 
 	// read all data
-	std::map < int, std::vector<r2d_memory_structure_rig_t > > data;
+	int entries = 0;
 	r2d_file_entry_t entry;
 	while(!feof(file))
 	{
 		fread(&entry, 1, sizeof(entry), file);
+		entries++;
 		printf("got entry: rig:%d, time:%gs, frame:%ld, type:%d\n", entry.rignum, (float)entry.time_ms/1000.0f, entry.physframe, entry.type);
+		fprintf(fileo, "\t{ ");
+		fprintf(fileo, "type: %d, ", entry.type);
+		fprintf(fileo, "rignum: %d, ", entry.rignum);
+		fprintf(fileo, "time_ms: %ld, ", entry.time_ms);
+		fprintf(fileo, "physframe: %ld, ", entry.physframe);
+		fprintf(fileo, "\n");
+		
 
 		r2d_memory_structure_rig_t st;
 		st.entry = entry;
@@ -118,50 +126,37 @@ int main(int argc, char**argv)
 		{
 			r2d_file_frame_t frame;
 			fread(&frame, 1, sizeof(frame), file);
-			st.frames.push_back(frame);
+			fprintf(fileo, "\t\tframe: {");
+			fprintf(fileo, "brake: %g, ", frame.brake);
+			fprintf(fileo, "steering: %g, ", frame.steering);
+			fprintf(fileo, "accel: %g, ", frame.accel);
+			fprintf(fileo, "clutch: %g, ", frame.clutch);
+			fprintf(fileo, "gear: %d, ", frame.gear);
+			fprintf(fileo, "gearMode: %d, ", frame.gearMode);
+			fprintf(fileo, "pbrake: %d, \n", frame.pbrake);
+			fprintf(fileo, "\t\t\twheels: { \n");
 
 			r2d_file_wheel_frame_t wf;
 			for(int w=0; w < wheel_count[entry.rignum]; w++)
 			{
 				fread(&wf, 1, sizeof(wf), file);
-				st.wframes.push_back(wf);
+				fprintf(fileo, "\t\t\t\t%d: { ", w);
+				fprintf(fileo, "x: %g, ", wf.wheel_pos[0]);
+				fprintf(fileo, "y: %g, ", wf.wheel_pos[1]);
+				fprintf(fileo, "z: %g, ", wf.wheel_pos[2]);
+				fprintf(fileo, "dir: %g, ", wf.wheel_direction);
+				fprintf(fileo, "slip: %g, ", wf.wheel_slip);
+				fprintf(fileo, "speed: %g", wf.wheel_speed);
+				fprintf(fileo, " },\n");
 			}
+			fprintf(fileo, "\t\t\t},\n");
+			fprintf(fileo, "\t\t},\n");
 		}
-		data[entry.rignum].push_back(st);
+		fprintf(fileo, "\t}, \n");
 	}
-
-	// walk all rigs and all wheels
-	for(int t=0; t<header.num_rigs; t++)
-	{
-		std::vector<r2d_file_wheel_frame_t> wframes;
-		for(int wi=0; wi<wheel_count[t]; wi++)
-		{
-			// sort according to wheels
-			wframes.clear();
-
-			// sort: walk all frames and gather wheel frames
-			for(int f=0; f < data[t].size() - 1; f++)
-			{
-				r2d_memory_structure_rig_t &m = data[t][f];
-				wframes.push_back(m.wframes[wi]);
-			}
-
-			// draw
-			fprintf(fileo, "<path style=\"fill:none;stroke:%s;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.5\" id=\"truck_%d_wheel_%d\" d=\"M ", colors[wi], t, wi);
-			for(int j=0; j<wframes.size(); j++)
-			{
-				float x = (wframes[j].wheel_pos[0]-6000)*6 + 200;
-				float y = (wframes[j].wheel_pos[2]-6000)*6 + 200;
-				fprintf(fileo, "%g,%g ", x, y);
-			}
-			fprintf(fileo, "\" />\n");
-
-		}
-	}
-
-
 	fclose(file);
-	fprintf(fileo, "</g></svg>\n");
+	fprintf(fileo, "];\n");
+	fprintf(fileo, "var data_size = %d\n", entries);
 	fclose(fileo);
 	printf("done, saved as file %s\n", fnout);
 	return 0;
