@@ -799,8 +799,11 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	if (!curr_truck) return res;
-	float mouseX = ms.X.abs / (float) win->getWidth();
-	float mouseY = ms.Y.abs / (float) win->getHeight();
+
+	float mouseX = ms.X.abs / (float)ms.width;
+	float mouseY = ms.Y.abs / (float)ms.height;
+
+	// TODO: fix: when the window is scaled, the findElementAt doesn not seem to pick up the correct element :-\
 
 	if (curr_truck->driveable == AIRPLANE && ms.buttonDown(OIS::MB_Left))
 	{
