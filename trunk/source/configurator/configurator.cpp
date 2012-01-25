@@ -1077,7 +1077,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=35;
 
 	// creak sound?
-	creaksound=new wxCheckBox(gamePanel, -1, _("disable creak sound"), wxPoint(x_row1, y));
+	creaksound=new wxCheckBox(gamePanel, -1, _("Disable creak sound"), wxPoint(x_row1, y));
 	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
 
 	// aboutPanel
@@ -1092,13 +1092,13 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Network Protocol version: %s"), wxString(RORNET_VERSION, wxConvUTF8).c_str()), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("revison: %s"), wxT(SVN_REVISION)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Revision: %s"), wxT(SVN_REVISION)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("full revison: %s"), wxT(SVN_ID)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Full revision: %s"), wxT(SVN_ID)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
-	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("build time: %s, %s"), wxT(__DATE__), wxT(__TIME__)), wxPoint(x_row1 + 15, y));
+	dText = new wxStaticText(aboutPanel, -1, wxString::Format(_("Build time: %s, %s"), wxT(__DATE__), wxT(__TIME__)), wxPoint(x_row1 + 15, y));
 	y += dText->GetSize().GetHeight() + 2;
 
 
@@ -1139,26 +1139,28 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("Aperion"),  wxT("Slidesnodes, Axles, Improved Engine code, Rigidifiers, Networking code"), wxT("http://www.rigsofrods.com/members/18734-Aperion"), x_row1, y);
 	addAboutEntry(wxT("FlyPiper"), wxT("Inertia Code, minor patches"), wxT("http://www.rigsofrods.com/members/19789-flypiper"), x_row1, y);
 	addAboutEntry(wxT("knied"),    wxT("MacOSX Patches"), wxT("http://www.rigsofrods.com/members/32234-knied"), x_row1, y);
-	addAboutEntry(wxT("altren"),   wxT("coded some MyGUI windows"), wxString(), x_row1, y);
-	addAboutEntry(wxT("petern"),   wxT("repair on spot, linux patches"), wxString(), x_row1, y);
-	addAboutEntry(wxT("imrenagy"), wxT("moving chair hardware support, several fixes"), wxString(), x_row1, y);
-	addAboutEntry(wxT("priotr"),   wxT("several linux fixes"), wxString(), x_row1, y);
-	addAboutEntry(wxT("cptf"),     wxT("several linux gcc fixes"), wxString(), x_row1, y);
-	addAboutEntry(wxT("88Toyota"), wxT("clutch force patches"), wxString(), x_row1, y);
-	addAboutEntry(wxT("synthead"), wxT("minor linux fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("altren"),   wxT("Coded some MyGUI windows"), wxString(), x_row1, y);
+	addAboutEntry(wxT("petern"),   wxT("Repair on spot, Linux patches"), wxString(), x_row1, y);
+	addAboutEntry(wxT("imrenagy"), wxT("Moving chair hardware support, several fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("priotr"),   wxT("Several Linux fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("neorej16"), wxT("AngelScript improvements"), wxT("http://www.rigsofrods.com/members/28955-neorej16"), x_row1, y);
+	addAboutEntry(wxT("cptf"),     wxT("Several Linux gcc fixes"), wxString(), x_row1, y);
+	addAboutEntry(wxT("88Toyota"), wxT("Clutch force patches"), wxT("http://www.rigsofrods.com/members/24735-88Toyota"), x_row1, y);
+	addAboutEntry(wxT("synthead"), wxT("Minor Linux fixes"), wxT("http://www.rigsofrods.com/members/24570-synthead"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Core Content Contributors"), x_row1, y);
-	addAboutEntry(wxT("donoteat"), wxT("improved spawner models, terrain work"), wxT("http://www.rigsofrods.com/members/18779"), x_row1, y);
-	addAboutEntry(wxT("kevinmce"), wxT("character"), wxT("http://www.rigsofrods.com/members/18956-kevinmce"), x_row1, y);
+	addAboutEntry(wxT("donoteat"), wxT("Improved spawner models, terrain work"), wxT("http://www.rigsofrods.com/members/18779-donoteat"), x_row1, y);
+	addAboutEntry(wxT("kevinmce"), wxT("old Character"), wxT("http://www.rigsofrods.com/members/18956-kevinmce"), x_row1, y);
+	addAboutEntry(wxT("09Challenger "), wxT("new character animations"), wxT("http://www.rigsofrods.com/members/42202-09Challenger"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Mod Contributors"), x_row1, y);
-	addAboutEntry(wxT("the rigs of rods community"), wxT("provided us with lots of mods to play with"), wxT("http://www.rigsofrods.com/repository/"), x_row1, y);
+	addAboutEntry(wxT("The Rigs of Rods community"), wxT("Provides us with lots of mods to play with"), wxT("http://www.rigsofrods.com/repository/"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Testers"), x_row1, y);
-	addAboutEntry(wxT("invited core team"), wxT("the invited members helped us a lot along the way at various corners"), wxString(), x_row1, y);
+	addAboutEntry(wxT("Invited core team"), wxT("The invited members helped us a lot along the way at various corners"), wxString(), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Used Software"), x_row1, y);
@@ -1170,14 +1172,14 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("MyGUI"),         wxT("GUI System"), wxT("http://www.mygui.info"), x_row1, y);
 	addAboutEntry(wxT("CrashRpt"),      wxT("Crash Reporting system"), wxT("http://code.google.com/p/crashrpt/"), x_row1, y);
 	addAboutEntry(wxT("Hydrax"),        wxT("Advanced Water System"), wxT("http://www.ogre3d.org/addonforums/viewforum.php?f=20"), x_row1, y);
-	addAboutEntry(wxT("mofilereader"),  wxT("used for Internationalization"), wxT("http://code.google.com/p/mofilereader/"), x_row1, y);
-	addAboutEntry(wxT("OIS"),           wxT("used as Input System"), wxT("http://sourceforge.net/projects/wgois/"), x_row1, y);
-	addAboutEntry(wxT("pagedGeometry"), wxT("used for foliage (grass, trees, etc)"), wxT("http://code.google.com/p/ogre-paged/"), x_row1, y);
-	addAboutEntry(wxT("pthreads"),      wxT("used for threading"), wxString(), x_row1, y);
-	addAboutEntry(wxT("curl"),          wxT("used for www-server communication"), wxT("http://curl.haxx.se/"), x_row1, y);
-	addAboutEntry(wxT("SocketW"),       wxT("used as cross-platform socket abstraction"), wxT("http://www.digitalfanatics.org/cal/socketw/index.html"), x_row1, y);
-	addAboutEntry(wxT("boost"),         wxT("used as glue inbetween the components"), wxT("http://www.boost.org"), x_row1, y);
-	addAboutEntry(wxT("wxWidgets"),     wxT("used as cross platform user interface toolkit"), wxT("http://www.wxwidgets.org"), x_row1, y);
+	addAboutEntry(wxT("mofilereader"),  wxT("Used for Internationalization"), wxT("http://code.google.com/p/mofilereader/"), x_row1, y);
+	addAboutEntry(wxT("OIS"),           wxT("Used as Input System"), wxT("http://sourceforge.net/projects/wgois/"), x_row1, y);
+	addAboutEntry(wxT("pagedGeometry"), wxT("Used for foliage (grass, trees, etc)"), wxT("http://code.google.com/p/ogre-paged/"), x_row1, y);
+	addAboutEntry(wxT("pthreads"),      wxT("Used for threading"), wxString(), x_row1, y);
+	addAboutEntry(wxT("curl"),          wxT("Used for www-server communication"), wxT("http://curl.haxx.se/"), x_row1, y);
+	addAboutEntry(wxT("SocketW"),       wxT("Used as cross-platform socket abstraction"), wxT("http://www.digitalfanatics.org/cal/socketw/index.html"), x_row1, y);
+	addAboutEntry(wxT("boost"),         wxT("Used as glue in between the components"), wxT("http://www.boost.org"), x_row1, y);
+	addAboutEntry(wxT("wxWidgets"),     wxT("Used as cross platform user interface toolkit"), wxT("http://www.wxwidgets.org"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Missing someone?"), x_row1, y);
@@ -1196,7 +1198,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	x_row1 = 150;
 	x_row2 = 300;
 
-	dText = new wxStaticText(debugPanel, -1, _("These settings are for debugging RoR in various ways.\nIf you dont know how to use, stay away from these."), wxPoint(10, y));
+	dText = new wxStaticText(debugPanel, -1, _("These settings are for debugging RoR in various ways.\nIf you do not know how to use these features, stay away from them."), wxPoint(10, y));
 	y+=45;
 
 	ingame_console=new wxCheckBox(debugPanel, -1, _("Ingame Console"), wxPoint(10, y));
@@ -1263,7 +1265,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 #if wxCHECK_VERSION(2, 8, 0)
-	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(read more on how to use these options here)"), _("http://www.rigsofrods.com/wiki/pages/Debugging_Trucks"), wxPoint(10, y));
+	wxHyperlinkCtrl *link = new wxHyperlinkCtrl(debugPanel, -1, _("(Read more on how to use these options here)"), _("http://www.rigsofrods.com/wiki/pages/Debugging_Trucks"), wxPoint(10, y));
 #endif // version 2.8
 
 	// graphics panel
