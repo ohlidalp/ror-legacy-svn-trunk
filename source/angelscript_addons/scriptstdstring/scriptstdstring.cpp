@@ -501,8 +501,6 @@ static int StringCmp(const string &a, const string &b)
 template < class ContainerT >
 void tokenize(const std::string& str, ContainerT& tokens, const std::string& delimiters = " ", const bool trimEmpty = false)
 {
-	// TODO: FIX THIS FOR LINUX
-#ifdef WIN32
 	std::string::size_type pos, lastPos = 0;
 	while(true)
 	{
@@ -512,19 +510,18 @@ void tokenize(const std::string& str, ContainerT& tokens, const std::string& del
 			pos = str.length();
 
 			if(pos != lastPos || !trimEmpty)
-				tokens.push_back(ContainerT::value_type(str.data()+lastPos, (ContainerT::value_type::size_type)pos-lastPos ));
+				tokens.push_back(typename ContainerT::value_type(str.data()+lastPos, (typename ContainerT::value_type::size_type)pos-lastPos ));
 
 			break;
 		}
 		else
 		{
 			if(pos != lastPos || !trimEmpty)
-				tokens.push_back(ContainerT::value_type(str.data()+lastPos, (ContainerT::value_type::size_type)pos-lastPos ));
+				tokens.push_back(typename ContainerT::value_type(str.data()+lastPos, (typename ContainerT::value_type::size_type)pos-lastPos ));
 		}
 
 		lastPos = pos + 1;
 	}
-#endif
 };
 
 static int splitString(string delimiters, CScriptArray &stringArray, string &str)
