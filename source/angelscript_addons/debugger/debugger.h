@@ -1,6 +1,9 @@
 #ifndef DEBUGGER_H
 #define DEBUGGER_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <angelscript.h>
 #include <string>
 #include <vector>
