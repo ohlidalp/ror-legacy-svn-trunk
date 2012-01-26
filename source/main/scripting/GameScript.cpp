@@ -577,6 +577,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerName", CURLFORM_COPYCONTENTS, SSETTING("Server name").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_ServerPort", CURLFORM_COPYCONTENTS, SSETTING("Server port").c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "MP_NetworkEnabled", CURLFORM_COPYCONTENTS, SSETTING("Network enable").c_str(), CURLFORM_END);
+	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "APIProtocolVersion", CURLFORM_COPYCONTENTS, "2", CURLFORM_END);
 
 	if(BeamFactory::getSingleton().getCurrentTruck())
 	{
@@ -677,7 +678,16 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 
 #ifdef USE_MYGUI
 	Console *con = Console::getInstancePtrNoCreation();
-	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Online API result: ") + ANSI_TO_UTF(result), "information.png");
+	if(con) 
+	{
+		Ogre::StringVector lines = StringUtil::split(result, "\n");
+		for(Ogre::StringVector::iterator it = lines.begin(); it!=lines.end(); it++)
+		{
+			Ogre::StringVector args = StringUtil::split(result, "|");
+			if(args.size() != 2) continue;
+			con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ANSI_TO_UTF(args[0]), args[1]);
+		}
+	}
 #endif // USE_MYGUI
 #endif //USE_CURL
 	return 0;
