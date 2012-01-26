@@ -1,12 +1,11 @@
-#include <assert.h>
-#include <sstream>
 #include "scriptstdstring.h"
-#include <string.h> // strstr
-#include <algorithm>
-#include <scriptarray/scriptarray.h>
-#include <vector>
-#include <functional>
-#include <locale>
+#include <assert.h> // assert()
+#include <sstream>  // std::stringstream
+#include <string.h> // strstr()
+#include <stdio.h>	// sprintf()
+#include <stdlib.h> // strtod()
+#include <locale.h> // setlocale()
+
 using namespace std;
 
 BEGIN_AS_NAMESPACE
@@ -46,12 +45,6 @@ static void AddAssignStringGeneric(asIScriptGeneric *gen) {
   gen->SetReturnAddress(self);
 }
 
-static void StringEqualGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a == *b);
-}
-
 static void StringEqualsGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   string * b = static_cast<string *>(gen->GetArgAddress(0));
@@ -69,36 +62,6 @@ static void StringCmpGeneric(asIScriptGeneric * gen) {
   *(int*)gen->GetAddressOfReturnLocation() = cmp;
 }
 
-static void StringNotEqualGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a != *b);
-}
-
-static void StringLEqualGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a <= *b);
-}
-
-static void StringGEqualGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a >= *b);
-}
-
-static void StringLessThanGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a < *b);
-}
-
-static void StringGreaterThanGeneric(asIScriptGeneric * gen) {
-  string * a = static_cast<string *>(gen->GetArgAddress(0));
-  string * b = static_cast<string *>(gen->GetArgAddress(1));
-  *(bool*)gen->GetAddressOfReturnLocation() = (*a > *b);
-}
-
 static void StringAddGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   string * b = static_cast<string *>(gen->GetArgAddress(0));
@@ -108,12 +71,12 @@ static void StringAddGeneric(asIScriptGeneric * gen) {
 
 static void StringLengthGeneric(asIScriptGeneric * gen) {
   string * self = static_cast<string *>(gen->GetObject());
-  *static_cast<size_t *>(gen->GetAddressOfReturnLocation()) = self->length();
+  *static_cast<asUINT *>(gen->GetAddressOfReturnLocation()) = (asUINT)self->length();
 }
 
 static void StringResizeGeneric(asIScriptGeneric * gen) {
   string * self = static_cast<string *>(gen->GetObject());
-  self->resize(*static_cast<size_t *>(gen->GetAddressOfArg(0)));
+  self->resize(*static_cast<asUINT *>(gen->GetAddressOfArg(0)));
 }
 
 static void StringCharAtGeneric(asIScriptGeneric * gen) {
@@ -131,7 +94,7 @@ static void StringCharAtGeneric(asIScriptGeneric * gen) {
   }
 }
 
-void AssignInt2StringGeneric(asIScriptGeneric *gen) 
+static void AssignInt2StringGeneric(asIScriptGeneric *gen) 
 {
 	int *a = static_cast<int*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -141,7 +104,7 @@ void AssignInt2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-void AssignUInt2StringGeneric(asIScriptGeneric *gen) 
+static void AssignUInt2StringGeneric(asIScriptGeneric *gen) 
 {
 	unsigned int *a = static_cast<unsigned int*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -151,7 +114,7 @@ void AssignUInt2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-void AssignDouble2StringGeneric(asIScriptGeneric *gen) 
+static void AssignDouble2StringGeneric(asIScriptGeneric *gen) 
 {
 	double *a = static_cast<double*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -161,17 +124,17 @@ void AssignDouble2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-void AssignBool2StringGeneric(asIScriptGeneric *gen) 
+static void AssignBool2StringGeneric(asIScriptGeneric *gen) 
 {
 	bool *a = static_cast<bool*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
 	std::stringstream sstr;
-	sstr << *a ? "true" : "false";
+	sstr << (*a ? "true" : "false");
 	*self = sstr.str();
 	gen->SetReturnAddress(self);
 }
 
-void AddAssignDouble2StringGeneric(asIScriptGeneric * gen) {
+static void AddAssignDouble2StringGeneric(asIScriptGeneric * gen) {
   double * a = static_cast<double *>(gen->GetAddressOfArg(0));
   string * self = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -180,7 +143,7 @@ void AddAssignDouble2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnAddress(self);
 }
 
-void AddAssignInt2StringGeneric(asIScriptGeneric * gen) {
+static void AddAssignInt2StringGeneric(asIScriptGeneric * gen) {
   int * a = static_cast<int *>(gen->GetAddressOfArg(0));
   string * self = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -189,7 +152,7 @@ void AddAssignInt2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnAddress(self);
 }
 
-void AddAssignUInt2StringGeneric(asIScriptGeneric * gen) {
+static void AddAssignUInt2StringGeneric(asIScriptGeneric * gen) {
   unsigned int * a = static_cast<unsigned int *>(gen->GetAddressOfArg(0));
   string * self = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -198,16 +161,16 @@ void AddAssignUInt2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnAddress(self);
 }
 
-void AddAssignBool2StringGeneric(asIScriptGeneric * gen) {
+static void AddAssignBool2StringGeneric(asIScriptGeneric * gen) {
   bool * a = static_cast<bool *>(gen->GetAddressOfArg(0));
   string * self = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
-  sstr << *a ? "true" : "false";
+  sstr << (*a ? "true" : "false");
   *self += sstr.str();
   gen->SetReturnAddress(self);
 }
 
-void AddString2DoubleGeneric(asIScriptGeneric * gen) {
+static void AddString2DoubleGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   double * b = static_cast<double *>(gen->GetAddressOfArg(0));
   std::stringstream sstr;
@@ -216,7 +179,7 @@ void AddString2DoubleGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddString2IntGeneric(asIScriptGeneric * gen) {
+static void AddString2IntGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   int * b = static_cast<int *>(gen->GetAddressOfArg(0));
   std::stringstream sstr;
@@ -225,7 +188,7 @@ void AddString2IntGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddString2UIntGeneric(asIScriptGeneric * gen) {
+static void AddString2UIntGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   unsigned int * b = static_cast<unsigned int *>(gen->GetAddressOfArg(0));
   std::stringstream sstr;
@@ -234,16 +197,16 @@ void AddString2UIntGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddString2BoolGeneric(asIScriptGeneric * gen) {
+static void AddString2BoolGeneric(asIScriptGeneric * gen) {
   string * a = static_cast<string *>(gen->GetObject());
   bool * b = static_cast<bool *>(gen->GetAddressOfArg(0));
   std::stringstream sstr;
-  sstr << *a << *b ? "true" : "false";
+  sstr << *a << (*b ? "true" : "false");
   std::string ret_val = sstr.str();
   gen->SetReturnObject(&ret_val);
 }
 
-void AddDouble2StringGeneric(asIScriptGeneric * gen) {
+static void AddDouble2StringGeneric(asIScriptGeneric * gen) {
   double* a = static_cast<double *>(gen->GetAddressOfArg(0));
   string * b = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -252,7 +215,7 @@ void AddDouble2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddInt2StringGeneric(asIScriptGeneric * gen) {
+static void AddInt2StringGeneric(asIScriptGeneric * gen) {
   int* a = static_cast<int *>(gen->GetAddressOfArg(0));
   string * b = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -261,7 +224,7 @@ void AddInt2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddUInt2StringGeneric(asIScriptGeneric * gen) {
+static void AddUInt2StringGeneric(asIScriptGeneric * gen) {
   unsigned int* a = static_cast<unsigned int *>(gen->GetAddressOfArg(0));
   string * b = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -270,7 +233,7 @@ void AddUInt2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
-void AddBool2StringGeneric(asIScriptGeneric * gen) {
+static void AddBool2StringGeneric(asIScriptGeneric * gen) {
   bool* a = static_cast<bool *>(gen->GetAddressOfArg(0));
   string * b = static_cast<string *>(gen->GetObject());
   std::stringstream sstr;
@@ -279,60 +242,78 @@ void AddBool2StringGeneric(asIScriptGeneric * gen) {
   gen->SetReturnObject(&ret_val);
 }
 
+// This function returns a string containing the substring of the input string
+// determined by the starting index and count of characters.
+//
+// AngelScript signature:
+// string string::substr(uint start = 0, int count = -1) const
+static void StringSubString_Generic(asIScriptGeneric *gen)
+{
+    // Get the arguments
+    string *str   = (string*)gen->GetObject();
+    asUINT  start = *(int*)gen->GetAddressOfArg(0);
+    int     count = *(int*)gen->GetAddressOfArg(1);
 
-void RegisterStdString_Generic(asIScriptEngine *engine) {
-  int r;
+	// Check for out-of-bounds
+	string ret;
+	if( start < str->length() && count != 0 )
+		ret = str->substr(start, count);
 
-  // Register the string type
-  r = engine->RegisterObjectType("string", sizeof(string), asOBJ_VALUE | asOBJ_APP_CLASS_CDA); assert( r >= 0 );
+	// Return the substring
+    new(gen->GetAddressOfReturnLocation()) string(ret);
+}
 
-  // Register the string factory
-  r = engine->RegisterStringFactory("string", asFUNCTION(StringFactoryGeneric), asCALL_GENERIC); assert( r >= 0 );
+void RegisterStdString_Generic(asIScriptEngine *engine) 
+{
+	int r;
 
-  // Register the object operator overloads
-  r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f()",                    asFUNCTION(ConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f(const string &in)",    asFUNCTION(CopyConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectBehaviour("string", asBEHAVE_DESTRUCT,   "void f()",                    asFUNCTION(DestructStringGeneric),  asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAssign(const string &in)", asFUNCTION(AssignStringGeneric),    asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAddAssign(const string &in)", asFUNCTION(AddAssignStringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	// Register the string type
+	r = engine->RegisterObjectType("string", sizeof(string), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert( r >= 0 );
 
-  r = engine->RegisterObjectMethod("string", "bool opEquals(const string &in) const", asFUNCTION(StringEqualsGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "int opCmp(const string &in) const", asFUNCTION(StringCmpGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd(const string &in) const", asFUNCTION(StringAddGeneric), asCALL_GENERIC); assert( r >= 0 );
+	// Register the string factory
+	r = engine->RegisterStringFactory("string", asFUNCTION(StringFactoryGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  // Register the object methods
-  if (sizeof(size_t) == 4) {
-    r = engine->RegisterObjectMethod("string", "uint length() const", asFUNCTION(StringLengthGeneric), asCALL_GENERIC); assert( r >= 0 );
-    r = engine->RegisterObjectMethod("string", "void resize(uint)",   asFUNCTION(StringResizeGeneric), asCALL_GENERIC); assert( r >= 0 );
-  } else {
-    r = engine->RegisterObjectMethod("string", "uint64 length() const", asFUNCTION(StringLengthGeneric), asCALL_GENERIC); assert( r >= 0 );
-    r = engine->RegisterObjectMethod("string", "void resize(uint64)",   asFUNCTION(StringResizeGeneric), asCALL_GENERIC); assert( r >= 0 );
-  }
+	// Register the object operator overloads
+	r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f()",                    asFUNCTION(ConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f(const string &in)",    asFUNCTION(CopyConstructStringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("string", asBEHAVE_DESTRUCT,   "void f()",                    asFUNCTION(DestructStringGeneric),  asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAssign(const string &in)", asFUNCTION(AssignStringGeneric),    asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(const string &in)", asFUNCTION(AddAssignStringGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  // Register the index operator, both as a mutator and as an inspector
-  r = engine->RegisterObjectMethod("string", "uint8 &opIndex(uint)", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "bool opEquals(const string &in) const", asFUNCTION(StringEqualsGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "int opCmp(const string &in) const", asFUNCTION(StringCmpGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(const string &in) const", asFUNCTION(StringAddGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  // Automatic conversion from values
-  r = engine->RegisterObjectMethod("string", "string &opAssign(double)", asFUNCTION(AssignDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAddAssign(double)", asFUNCTION(AddAssignDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd(double) const", asFUNCTION(AddString2DoubleGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd_r(double) const", asFUNCTION(AddDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	// Register the object methods
+	r = engine->RegisterObjectMethod("string", "uint length() const", asFUNCTION(StringLengthGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "void resize(uint)",   asFUNCTION(StringResizeGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  r = engine->RegisterObjectMethod("string", "string &opAssign(int)", asFUNCTION(AssignInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAddAssign(int)", asFUNCTION(AddAssignInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd(int) const", asFUNCTION(AddString2IntGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd_r(int) const", asFUNCTION(AddInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	// Register the index operator, both as a mutator and as an inspector
+	r = engine->RegisterObjectMethod("string", "uint8 &opIndex(uint)", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAtGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  r = engine->RegisterObjectMethod("string", "string &opAssign(uint)", asFUNCTION(AssignUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAddAssign(uint)", asFUNCTION(AddAssignUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd(uint) const", asFUNCTION(AddString2UIntGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd_r(uint) const", asFUNCTION(AddUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	// Automatic conversion from values
+	r = engine->RegisterObjectMethod("string", "string &opAssign(double)", asFUNCTION(AssignDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(double)", asFUNCTION(AddAssignDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(double) const", asFUNCTION(AddString2DoubleGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd_r(double) const", asFUNCTION(AddDouble2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
 
-  r = engine->RegisterObjectMethod("string", "string &opAssign(bool)", asFUNCTION(AssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string &opAddAssign(bool)", asFUNCTION(AddAssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddString2BoolGeneric), asCALL_GENERIC); assert( r >= 0 );
-  r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAssign(int)", asFUNCTION(AssignInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(int)", asFUNCTION(AddAssignInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(int) const", asFUNCTION(AddString2IntGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd_r(int) const", asFUNCTION(AddInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "string &opAssign(uint)", asFUNCTION(AssignUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(uint)", asFUNCTION(AddAssignUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(uint) const", asFUNCTION(AddString2UIntGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd_r(uint) const", asFUNCTION(AddUInt2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "string &opAssign(bool)", asFUNCTION(AssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string &opAddAssign(bool)", asFUNCTION(AddAssignBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddString2BoolGeneric), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBool2StringGeneric), asCALL_GENERIC); assert( r >= 0 );
+
+	r = engine->RegisterObjectMethod("string", "string substr(uint start = 0, int count = -1) const", asFUNCTION(StringSubString_Generic), asCALL_GENERIC); assert( r >= 0 );
 }
 
 static string StringFactory(asUINT length, const char *s)
@@ -434,7 +415,7 @@ static string &AddAssignDoubleToString(double f, string &dest)
 static string &AssignBoolToString(bool b, string &dest)
 {
 	ostringstream stream;
-	stream << b ? "true" : "false";
+	stream << (b ? "true" : "false");
 	dest = stream.str();
 	return dest;
 }
@@ -442,7 +423,7 @@ static string &AssignBoolToString(bool b, string &dest)
 static string &AddAssignBoolToString(bool b, string &dest)
 {
 	ostringstream stream;
-	stream << b ? "true" : "false";
+	stream << (b ? "true" : "false");
 	dest += stream.str();
 	return dest;
 }
@@ -464,14 +445,14 @@ static string AddDoubleString(double f, const string &str)
 static string AddStringBool(const string &str, bool b)
 {
 	ostringstream stream;
-	stream << b ? "true" : "false";
+	stream << (b ? "true" : "false");
 	return str + stream.str();
 }
 
 static string AddBoolString(bool b, const string &str)
 {
 	ostringstream stream;
-	stream << b ? "true" : "false";
+	stream << (b ? "true" : "false");
 	return stream.str() + str;
 }
 
@@ -490,6 +471,9 @@ static char *StringCharAt(unsigned int i, string &str)
 	return &str[i];
 }
 
+
+// AngelScript signature:
+// int string::opCmp(const string &in) const
 static int StringCmp(const string &a, const string &b)
 {
 	int cmp = 0;
@@ -498,138 +482,223 @@ static int StringCmp(const string &a, const string &b)
 	return cmp;
 }
 
-template < class ContainerT >
-void tokenize(const std::string& str, ContainerT& tokens, const std::string& delimiters = " ", const bool trimEmpty = false)
+// This function returns the index of the first position where the substring
+// exists in the input string. If the substring doesn't exist in the input
+// string -1 is returned.
+//
+// AngelScript signature:
+// int string::findFirst(const string &in sub, uint start = 0) const
+static int StringFindFirst(const string &sub, asUINT start, const string &str)
 {
-	std::string::size_type pos, lastPos = 0;
-	while(true)
+	// We don't register the method directly because the argument types change between 32bit and 64bit platforms
+	return (int)str.find(sub, start);
+}
+
+// This function returns the index of the last position where the substring
+// exists in the input string. If the substring doesn't exist in the input
+// string -1 is returned.
+//
+// AngelScript signature:
+// int string::findLast(const string &in sub, int start = -1) const
+static int StringFindLast(const string &sub, int start, const string &str)
+{
+	// We don't register the method directly because the argument types change between 32bit and 64bit platforms
+	return (int)str.rfind(sub, (size_t)start);
+}
+
+// AngelScript signature:
+// uint string::length() const
+static asUINT StringLength(const string &str)
+{
+	// We don't register the method directly because the return type changes between 32bit and 64bit platforms
+	return (asUINT)str.length();
+}
+
+
+// AngelScript signature:
+// void string::resize(uint l) 
+static void StringResize(asUINT l, string &str)
+{
+	// We don't register the method directly because the argument types change between 32bit and 64bit platforms
+	str.resize(l);
+}
+
+// AngelScript signature:
+// string formatInt(int64 val, const string &in options, uint width)
+static string formatInt(asINT64 value, const string &options, asUINT width)
+{
+	bool leftJustify = options.find("l") != -1;
+	bool padWithZero = options.find("0") != -1;
+	bool alwaysSign  = options.find("+") != -1;
+	bool spaceOnSign = options.find(" ") != -1;
+	bool hexSmall    = options.find("h") != -1;
+	bool hexLarge    = options.find("H") != -1;
+
+	string fmt = "%";
+	if( leftJustify ) fmt += "-";
+	if( alwaysSign ) fmt += "+";
+	if( spaceOnSign ) fmt += " ";
+	if( padWithZero ) fmt += "0";
+
+#ifdef __GNUC__
+#ifdef _LP64
+	fmt += "*l";
+#else
+	fmt += "*ll";
+#endif
+#else
+	fmt += "*I64";
+#endif
+
+	if( hexSmall ) fmt += "x";
+	else if( hexLarge ) fmt += "X";
+	else fmt += "d";
+
+	string buf;
+	buf.resize(width+20);
+#if _MSC_VER >= 1400 // MSVC 8.0 / 2005
+	sprintf_s(&buf[0], buf.size(), fmt.c_str(), width, value);
+#else
+	sprintf(&buf[0], fmt.c_str(), width, value);
+#endif
+	buf.resize(strlen(&buf[0]));
+	
+	return buf;
+}
+
+// AngelScript signature:
+// string formatFloat(double val, const string &in options, uint width, uint precision)
+static string formatFloat(double value, const string &options, asUINT width, asUINT precision)
+{
+	bool leftJustify = options.find("l") != -1;
+	bool padWithZero = options.find("0") != -1;
+	bool alwaysSign  = options.find("+") != -1;
+	bool spaceOnSign = options.find(" ") != -1;
+	bool expSmall    = options.find("e") != -1;
+	bool expLarge    = options.find("E") != -1;
+
+	string fmt = "%";
+	if( leftJustify ) fmt += "-";
+	if( alwaysSign ) fmt += "+";
+	if( spaceOnSign ) fmt += " ";
+	if( padWithZero ) fmt += "0";
+
+	fmt += "*.*";
+
+	if( expSmall ) fmt += "e";
+	else if( expLarge ) fmt += "E";
+	else fmt += "f";
+
+	string buf;
+	buf.resize(width+precision+50);
+#if _MSC_VER >= 1400 // MSVC 8.0 / 2005
+	sprintf_s(&buf[0], buf.size(), fmt.c_str(), width, precision, value);
+#else
+	sprintf(&buf[0], fmt.c_str(), width, precision, value);
+#endif
+	buf.resize(strlen(&buf[0]));
+	
+	return buf;
+}
+
+// AngelScript signature:
+// int64 parseInt(const string &in val, uint base = 10, uint &out byteCount = 0)
+static asINT64 parseInt(const string &val, asUINT base, asUINT *byteCount)
+{
+	// Only accept base 10 and 16
+	if( base != 10 && base != 16 )
 	{
-		pos = str.find_first_of(delimiters, lastPos);
-		if(pos == std::string::npos)
-		{
-			pos = str.length();
-
-			if(pos != lastPos || !trimEmpty)
-				tokens.push_back(typename ContainerT::value_type(str.data()+lastPos, (typename ContainerT::value_type::size_type)pos-lastPos ));
-
-			break;
-		}
-		else
-		{
-			if(pos != lastPos || !trimEmpty)
-				tokens.push_back(typename ContainerT::value_type(str.data()+lastPos, (typename ContainerT::value_type::size_type)pos-lastPos ));
-		}
-
-		lastPos = pos + 1;
-	}
-};
-
-static int splitString(string delimiters, CScriptArray &stringArray, string &str)
-{
-	std::vector<string> v;
-	tokenize<std::vector<string> >(str, v, delimiters, true);
-
-	//if( stringArray->GetArrayTypeId() != engine->GetTypeIdByDecl("string[]") )
-	//	return -1;
-
-	for(unsigned int i=0; i<v.size(); i++)
-		stringArray.InsertLast(&v[i]);
-
-	return v.size();
-}
-
-static string joinString(CScriptArray &a, string &d)
-{
-	stringstream ss;
-
-	for(unsigned int i=0; i<a.GetSize(); i++)
-		if(i == 0)
-			ss << *(string*)a.At(i);
-		else
-			ss << d << *(string*)a.At(i);
-
-	return ss.str();
-}
-
-static string toLower(string &d)
-{
-	string data = d;
-	std::transform(data.begin(), data.end(), data.begin(), ::tolower);
-	return data;
-}
-
-static string toUpper(string &d)
-{
-	string data = d;
-	std::transform(data.begin(), data.end(), data.begin(), ::toupper);
-	return data;
-}
-
-// trim from start
-static string ltrim(std::string s)
-{
-	string str = s;
-	// trim leading spaces
-	size_t startpos = str.find_first_not_of(" \t");
-	if( string::npos != startpos )
-	{
-		str = str.substr( startpos );
-	}
-	return str;
-}
-
-// trim from end
-static string rtrim(std::string s)
-{
-	string str = s;
-	// trim trailing spaces
-	size_t endpos = str.find_last_not_of(" \t");
-	if( string::npos != endpos )
-	{
-		str = str.substr( 0, endpos+1 );
-	}
-	return str;
-}
-
-static string trim(string &str)
-{
-	return ltrim(rtrim(str));
-}
-
-static float parseFloat(string &str)
-{
-	std::istringstream i(str);
-	float x;
-	if (!(i >> x))
-		//throw BadConversion("convertToDouble(\"" + s + "\")");
+		if( byteCount ) *byteCount = 0;
 		return 0;
-	return x;
+	}
+
+	const char *end = &val[0];
+
+	// Determine the sign
+	bool sign = false;
+	if( *end == '-' )
+	{
+		sign = true;
+		*end++;
+	}
+	else if( *end == '+' )
+		*end++;
+
+	asINT64 res = 0;
+	if( base == 10 )
+	{
+		while( *end >= '0' && *end <= '9' )
+		{
+			res *= 10;
+			res += *end++ - '0';
+		}
+	}
+	else if( base == 16 )
+	{
+		while( (*end >= '0' && *end <= '9') ||
+		       (*end >= 'a' && *end <= 'f') ||
+		       (*end >= 'A' && *end <= 'F') )
+		{
+			res *= 16;
+			if( *end >= '0' && *end <= '9' )
+				res += *end++ - '0';
+			else if( *end >= 'a' && *end <= 'f' )
+				res += *end++ - 'a' + 10;
+			else if( *end >= 'A' && *end <= 'F' )
+				res += *end++ - 'A' + 10;
+		}
+	}
+
+	if( byteCount )
+		*byteCount = end - val.c_str();
+
+	if( sign )
+		res = -res;
+
+	return res;
 }
 
-static int parseInt(string &str)
+// AngelScript signature:
+// double parseFloat(const string &in val, uint &out byteCount = 0)
+double parseFloat(const string &val, asUINT *byteCount)
 {
-	std::istringstream i(str);
-	int x;
-	if (!(i >> x))
-		//throw BadConversion("convertToDouble(\"" + s + "\")");
-		return 0;
-	return x;
+	char *end;
+
+    // WinCE doesn't have setlocale. Some quick testing on my current platform
+    // still manages to parse the numbers such as "3.14" even if the decimal for the
+    // locale is ",".
+#if !defined(_WIN32_WCE) && !defined(ANDROID)
+	// Set the locale to C so that we are guaranteed to parse the float value correctly
+	char *orig = setlocale(LC_NUMERIC, 0);
+	setlocale(LC_NUMERIC, "C");
+#endif
+
+	double res = strtod(val.c_str(), &end);
+
+#if !defined(_WIN32_WCE) && !defined(ANDROID)
+	// Restore the locale
+	setlocale(LC_NUMERIC, orig);
+#endif
+
+	if( byteCount )
+		*byteCount = end - val.c_str();
+
+	return res;
 }
-
-
 
 void RegisterStdString_Native(asIScriptEngine *engine)
 {
 	int r;
 
 	// Register the string type
-	r = engine->RegisterObjectType("string", sizeof(string), asOBJ_VALUE | asOBJ_APP_CLASS_CDA); assert( r >= 0 );
+	r = engine->RegisterObjectType("string", sizeof(string), asOBJ_VALUE | asOBJ_APP_CLASS_CDAK); assert( r >= 0 );
 
 	// Register the string factory
 	r = engine->RegisterStringFactory("string", asFUNCTION(StringFactory), asCALL_CDECL); assert( r >= 0 );
 
 	// Register the object operator overloads
 	r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f()",                    asFUNCTION(ConstructString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectBehaviour("string", asBEHAVE_CONSTRUCT,  "void f(const string &in)",    asFUNCTION(CopyConstructString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectBehaviour("string", asBEHAVE_DESTRUCT,   "void f()",                    asFUNCTION(DestructString),  asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string &opAssign(const string &in)", asMETHODPR(string, operator =, (const string&), string&), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string &opAddAssign(const string &in)", asMETHODPR(string, operator+=, (const string&), string&), asCALL_THISCALL); assert( r >= 0 );
@@ -638,23 +707,14 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "int opCmp(const string &in) const", asFUNCTION(StringCmp), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd(const string &in) const", asFUNCTIONPR(operator +, (const string &, const string &), string), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 
-	// Register the object methods
-	if( sizeof(size_t) == 4 )
-	{
-		r = engine->RegisterObjectMethod("string", "uint length() const", asMETHOD(string,size), asCALL_THISCALL); assert( r >= 0 );
-		r = engine->RegisterObjectMethod("string", "void resize(uint)", asMETHODPR(string,resize,(size_t),void), asCALL_THISCALL); assert( r >= 0 );
-		// substr, we added this
-		r = engine->RegisterObjectMethod("string", "string substr(uint, uint)", asMETHODPR(string,substr,(size_t, size_t) const, string), asCALL_THISCALL); assert( r >= 0 );
-		r = engine->RegisterObjectMethod("string", "uint   find(const string &in, uint)", asMETHODPR(string,find,(const string &, size_t) const, size_t), asCALL_THISCALL); assert( r >= 0 );
-	}
-	else
-	{
-		r = engine->RegisterObjectMethod("string", "uint64 length() const", asMETHOD(string,size), asCALL_THISCALL); assert( r >= 0 );
-		r = engine->RegisterObjectMethod("string", "void resize(uint64)", asMETHODPR(string,resize,(size_t),void), asCALL_THISCALL); assert( r >= 0 );
-	}
+	// The string length can be accessed through methods or through virtual property
+	r = engine->RegisterObjectMethod("string", "uint length() const", asFUNCTION(StringLength), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "void resize(uint)", asFUNCTION(StringResize), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "uint get_length() const", asFUNCTION(StringLength), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "void set_length(uint)", asFUNCTION(StringResize), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
 	// Register the index operator, both as a mutator and as an inspector
-	// Note that we don't register the operator[] directory, as it doesn't do bounds checking
+	// Note that we don't register the operator[] directly, as it doesn't do bounds checking
 	r = engine->RegisterObjectMethod("string", "uint8 &opIndex(uint)", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "const uint8 &opIndex(uint) const", asFUNCTION(StringCharAt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
@@ -679,17 +739,25 @@ void RegisterStdString_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("string", "string opAdd(bool) const", asFUNCTION(AddStringBool), asCALL_CDECL_OBJFIRST); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("string", "string opAdd_r(bool) const", asFUNCTION(AddBoolString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
-	// our own stuff
-	r = engine->RegisterObjectMethod("string", "int split(string, string[] &out)", asFUNCTION(splitString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string join(string[] &in)", asFUNCTION(joinString), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string toLower()", asFUNCTION(toLower), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string toUpper()", asFUNCTION(toUpper), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string trim()", asFUNCTION(trim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string lTrim()", asFUNCTION(ltrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "string rTrim()", asFUNCTION(rtrim), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	// Utilities
+	r = engine->RegisterObjectMethod("string", "string substr(uint start = 0, int count = -1) const", asFUNCTION(StringSubString_Generic), asCALL_GENERIC); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "int findFirst(const string &in, uint start = 0) const", asFUNCTION(StringFindFirst), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterObjectMethod("string", "int findLast(const string &in, int start = -1) const", asFUNCTION(StringFindLast), asCALL_CDECL_OBJLAST); assert( r >= 0 );
 
-	r = engine->RegisterObjectMethod("string", "float  parseFloat()", asFUNCTION(parseFloat), asCALL_CDECL_OBJLAST); assert( r >= 0 );
-	r = engine->RegisterObjectMethod("string", "int    parseInt()", asFUNCTION(parseInt), asCALL_CDECL_OBJLAST); assert( r >= 0 );
+	r = engine->RegisterGlobalFunction("string formatInt(int64 val, const string &in options, uint width = 0)", asFUNCTION(formatInt), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("string formatFloat(double val, const string &in options, uint width = 0, uint precision = 0)", asFUNCTION(formatFloat), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("int64 parseInt(const string &in, uint base = 10, uint &out byteCount = 0)", asFUNCTION(parseInt), asCALL_CDECL); assert(r >= 0);
+	r = engine->RegisterGlobalFunction("double parseFloat(const string &in, uint &out byteCount = 0)", asFUNCTION(parseFloat), asCALL_CDECL); assert(r >= 0);
+
+	// TODO: Implement the following
+	// findFirstOf
+	// findLastOf
+	// findFirstNotOf
+	// findLastNotOf
+	// replace - replaces a text found in the string
+	// replaceRange - replaces a range of bytes in the string
+	// trim/trimLeft/trimRight
+	// multiply/times/opMul/opMul_r - takes the string and multiplies it n times, e.g. "-".multiply(5) returns "-----"
 }
 
 void RegisterStdString(asIScriptEngine * engine)
