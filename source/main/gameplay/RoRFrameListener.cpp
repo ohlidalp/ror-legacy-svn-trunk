@@ -2478,6 +2478,10 @@ bool RoRFrameListener::updateEvents(float dt)
 							curr_truck->brake = brake*curr_truck->brakeforce;
 						} else
 						{
+							// start engine
+							if(accval > 0 && curr_truck->engine && !curr_truck->engine->running)
+								curr_truck->engine->start();
+
 							// omg, arcade controls: hey - people wanted it x|
 							if(curr_truck->WheelSpeed >= 0 && curr_truck->engine->getGear() > 0)
 							{
