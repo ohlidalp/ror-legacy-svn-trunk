@@ -245,6 +245,7 @@ void ScriptEngine::init()
 	// necessary to register your own string type if you don't want to.
 	AngelScript::RegisterScriptArray(engine, true);
 	AngelScript::RegisterStdString(engine);
+	AngelScript::RegisterStdStringUtils(engine);
 	AngelScript::RegisterScriptMath(engine);
 	AngelScript::RegisterScriptAny(engine);
 	AngelScript::RegisterScriptDictionary(engine);

@@ -104,7 +104,8 @@ protected:
 	
 	// Our properties
     AngelScript::asIScriptEngine *engine;
-    mutable int refCount;
+	static int refCount;
+	bool cgflag;
 };
 
 #endif // LOCALSTORAGE_H__
