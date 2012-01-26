@@ -22,9 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "LocalStorage.h"
 #include "Settings.h"
 
+int LocalStorage::refCount = 0;
+
 /* class that implements the localStorage interface for the scripts */
 LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string fileName_in, const std::string &sectionName_in)
 {
+	refCount++;
+	cgflag=false;
 	this->engine = engine_in;
 	engine->NotifyGarbageCollectorOfNewObject(this, engine->GetTypeIdByDecl("LocalStorage"));
 
@@ -47,6 +51,8 @@ LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string 
 LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in)
 {
 	this->engine = engine_in;
+	refCount--;
+
 	engine->NotifyGarbageCollectorOfNewObject(this, engine->GetTypeIdByDecl("LocalStorage"));	
 	saved = true;
 }
@@ -73,17 +79,17 @@ void LocalStorage::Release() const
 
 int LocalStorage::GetRefCount()
 {
-	return refCount & 0x7FFFFFFF;
+	return refCount;
 }
 
 void LocalStorage::SetGCFlag()
 {
-	refCount |= 0x80000000;
+	cgflag=true;
 }
 
 bool LocalStorage::GetGCFlag()
 {
-	return (refCount & 0x80000000) ? true : false;
+	return cgflag;
 }
 
 void LocalStorage::EnumReferences(AngelScript::asIScriptEngine *engine){}

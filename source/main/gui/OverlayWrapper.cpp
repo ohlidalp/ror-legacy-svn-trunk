@@ -136,6 +136,11 @@ int OverlayWrapper::init()
 		showOgreWebError("Resources not found!", "please ensure that your installation is complete and the resources are installed properly. If this error persists please re-install RoR.", url);
 	}
 	directionArrowDistance = (TextAreaOverlayElement*)loadOverlayElement("tracks/DirectionArrow/Distance");
+
+	// openGL fix
+	directionOverlay->show();
+	directionOverlay->hide();
+
 	mouseOverlay = loadOverlay("tracks/MouseOverlay", false);
 #ifdef HAS_EDITOR
 	truckeditorOverlay = loadOverlay("tracks/TruckEditorOverlay");
@@ -417,6 +422,10 @@ int OverlayWrapper::init()
 	laptimems = (TextAreaOverlayElement*)loadOverlayElement("tracks/LapTimems");
 	lasttime = (TextAreaOverlayElement*)loadOverlayElement("tracks/LastTime");
 	lasttime->setCaption("");
+
+	// openGL fix
+	racing->show();
+	racing->hide();
 	
 	editor_pos = loadOverlayElement("tracks/EditorPosition");
 	editor_angles = loadOverlayElement("tracks/EditorAngles");

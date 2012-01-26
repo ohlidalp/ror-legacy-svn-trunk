@@ -120,6 +120,7 @@ bool CScriptBuilder::IncludeIfNotAlreadyIncluded(const char *filename)
 	return true;
 }
 
+#if 0
 int CScriptBuilder::LoadScriptSection(const char *filename)
 {
 	// Open the script file
@@ -168,6 +169,7 @@ int CScriptBuilder::LoadScriptSection(const char *filename)
 
 	return ProcessScriptSection(code.c_str(), filename);
 }
+#endif //0
 
 int CScriptBuilder::ProcessScriptSection(const char *script, const char *sectionname)
 {
