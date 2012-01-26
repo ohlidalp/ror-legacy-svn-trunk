@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
 #include <shlobj.h>
+#include <direct.h> // for _chdir
 #endif
 
 //#include "language.h"
@@ -32,6 +33,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "sha1.h"
 #include "RoRVersion.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace Ogre;
@@ -357,6 +361,11 @@ bool Settings::setupPaths()
 			exit(1);
 		}
 	}
+
+	// change working directory to executable path
+#ifdef WIN32
+	_chdir(program_path);
+#endif //WIN32
 
 	//setup config files names
 	char plugins_fname[1024];
