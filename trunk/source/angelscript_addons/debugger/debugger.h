@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+#ifdef AS_USE_NAMESPACE
+using namespace AngelScript;
+#endif //AS_USE_NAMESPACE
+
 class CDebugger
 {
 public:
