@@ -198,7 +198,7 @@ void RegisterScriptFile_Native(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("file", "int setPos(int)", asMETHOD(CScriptFile,SetPos), asCALL_THISCALL); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("file", "int movePos(int)", asMETHOD(CScriptFile,MovePos), asCALL_THISCALL); assert( r >= 0 );
 
-	r = engine->RegisterObjectProperty("file", "bool mostSignificantByteFirst", offsetof(CScriptFile, mostSignificantByteFirst)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("file", "bool mostSignificantByteFirst", asOFFSET(CScriptFile, mostSignificantByteFirst)); assert( r >= 0 );
 }
 
 void RegisterScriptFile_Generic(asIScriptEngine *engine)
@@ -231,7 +231,7 @@ void RegisterScriptFile_Generic(asIScriptEngine *engine)
 	r = engine->RegisterObjectMethod("file", "int setPos(int)", asFUNCTION(ScriptFile_SetPos_Generic), asCALL_GENERIC); assert( r >= 0 );
 	r = engine->RegisterObjectMethod("file", "int movePos(int)", asFUNCTION(ScriptFile_MovePos_Generic), asCALL_GENERIC); assert( r >= 0 );
 
-	r = engine->RegisterObjectProperty("file", "bool mostSignificantByteFirst", offsetof(CScriptFile, mostSignificantByteFirst)); assert( r >= 0 );
+	r = engine->RegisterObjectProperty("file", "bool mostSignificantByteFirst", asOFFSET(CScriptFile, mostSignificantByteFirst)); assert( r >= 0 );
 }
 
 void RegisterScriptFile(asIScriptEngine *engine)
@@ -412,7 +412,8 @@ int CScriptFile::ReadLine(std::string &str)
 		buf[255] = 1;
 
 		// Read the line (or first 255 characters, which ever comes first)
-		fgets(buf, 256, file);
+		char *r = fgets(buf, 256, file);
+		if( r == 0 ) break;
 		
 		// Get the position after the read
 		int end = ftell(file);
@@ -434,7 +435,8 @@ asINT64 CScriptFile::ReadInt(asUINT bytes)
 	if( bytes == 0 ) return 0;
 
 	unsigned char buf[8];
-	fread(buf, bytes, 1, file);
+	size_t r = fread(buf, bytes, 1, file);
+	if( r == 0 ) return 0;
 
 	asINT64 val = 0;
 	if( mostSignificantByteFirst )
@@ -468,7 +470,8 @@ asQWORD CScriptFile::ReadUInt(asUINT bytes)
 	if( bytes == 0 ) return 0;
 
 	unsigned char buf[8];
-	fread(buf, bytes, 1, file);
+	size_t r = fread(buf, bytes, 1, file);
+	if( r == 0 ) return 0;
 
 	asQWORD val = 0;
 	if( mostSignificantByteFirst )
@@ -493,20 +496,21 @@ float CScriptFile::ReadFloat()
 		return 0;
 
 	unsigned char buf[4];
-	fread(buf, 4, 1, file);
+	size_t r = fread(buf, 4, 1, file);
+	if( r == 0 ) return 0;
 
 	asUINT val = 0;
 	if( mostSignificantByteFirst )
 	{
 		unsigned int n = 0;
 		for( ; n < 4; n++ )
-			val |= asQWORD(buf[n]) << ((3-n)*8);
+			val |= asUINT(buf[n]) << ((3-n)*8);
 	}
 	else
 	{
 		unsigned int n = 0;
 		for( ; n < 4; n++ )
-			val |= asQWORD(buf[n]) << (n*8);
+			val |= asUINT(buf[n]) << (n*8);
 	}
 
 	return *reinterpret_cast<float*>(&val);
@@ -518,7 +522,8 @@ double CScriptFile::ReadDouble()
 		return 0;
 
 	unsigned char buf[8];
-	fread(buf, 8, 1, file);
+	size_t r = fread(buf, 8, 1, file);
+	if( r == 0 ) return 0;
 
 	asQWORD val = 0;
 	if( mostSignificantByteFirst )
