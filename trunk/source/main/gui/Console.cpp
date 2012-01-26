@@ -96,7 +96,7 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	scrollImgUp->setVisible(false);
 	MyGUI::RotatingSkin *rotatingIcon = scrollImgUp->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
 	rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
-	rotatingIcon->setAngle(Degree(90).valueRadians());
+	//rotatingIcon->setAngle(Degree(90).valueRadians());
 
 	scrollImgDown = mMainWidget->createWidget<MyGUI::ImageBox>("ChatIcon", 0, 0, lineheight, lineheight * 2,  MyGUI::Align::Default, "ConsoleIconScrollDown");
 	scrollImgDown->setProperty("ImageTexture", "arrow_down.png");
@@ -104,7 +104,7 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 	scrollImgDown->setVisible(false);
 	rotatingIcon = scrollImgDown->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
 	rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
-	rotatingIcon->setAngle(Degree(90).valueRadians());
+	//rotatingIcon->setAngle(Degree(90).valueRadians());
 
 
 	// the rest
@@ -745,7 +745,7 @@ void Console::resized()
 		rotatingIcon->setCenter(MyGUI::IntPoint(lineheight*0.5f,lineheight*0.5f));
 		
 		// funny but resource hungry
-		rotatingIcon->setAngle(Degree(90).valueRadians());
+		//rotatingIcon->setAngle(Degree(90).valueRadians());
 		//rotatingIcon->setAngle(Degree(Math::RangeRandom(0, 360)).valueRadians());
 		lines[i] = line;
 	}
