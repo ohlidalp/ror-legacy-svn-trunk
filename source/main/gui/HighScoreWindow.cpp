@@ -41,7 +41,7 @@ void HighScoreWindow::show(Ogre::UTFString &txt)
 	((MyGUI::Window*)mMainWidget)->setVisibleSmooth(true);
 	((MyGUI::Window*)mMainWidget)->setAlpha(0.9);
 
-	int width = 100;
+	int width = 200;
 	int height = MyGUI::Gui::getInstance().getViewSize().height - 120;
 	int left = MyGUI::Gui::getInstance().getViewSize().width - width;
 	int top = 60;
