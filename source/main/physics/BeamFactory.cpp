@@ -24,19 +24,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 #include "network.h"
-#include "utils.h"
-#include "sha1.h"
 #include "pthread.h"
 #include "RoRFrameListener.h"
 #include "collisions.h"
 #include "Settings.h"
 #include "engine.h"
-#include "language.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
 #include "gui_menu.h"
-#endif  // USE_MYGUI
+#endif // USE_MYGUI
 
 using namespace Ogre;
 
@@ -65,15 +62,14 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
 
-	for (int i = 0; i < MAX_TRUCKS; i++)
-		trucks[i] = 0;
+	for (int t=0; t<MAX_TRUCKS; t++)
+		trucks[t] = 0;
 
-	if (SSETTING("Threads")=="1 (Standard CPU)")                        thread_mode = THREAD_MONO;
-	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")    thread_mode = THREAD_HT;
-	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode = THREAD_HT2;
+	if (SSETTING("Threads")=="1 (Single Core CPU)")							thread_mode = THREAD_MONO;
+	if (SSETTING("Threads")=="2 (Dual Core CPU or Hyper-Threading)")		thread_mode = THREAD_HT;
+	if (SSETTING("Threads")=="3 (Multi Core CPU, one thread per truck)")	thread_mode = THREAD_HT2;
 
-	if(BSETTING("2DReplay"))
-		tdr = new TwoDReplay();
+	if (BSETTING("2DReplay"))												tdr = new TwoDReplay();
 }
 
 BeamFactory::~BeamFactory()
@@ -86,7 +82,7 @@ Beam *BeamFactory::createLocal(int slotid)
 	return 0;
 }
 
-int BeamFactory::removeBeam(Beam *b)
+bool BeamFactory::removeBeam(Beam *b)
 {
 	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
@@ -97,13 +93,13 @@ int BeamFactory::removeBeam(Beam *b)
 	{
 		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
-			if(it2->second  == b)
+			if (it2->second == b)
 			{
 				NetworkStreamManager::getSingleton().removeStream(it1->first, it2->first);
 				_deleteTruck(it2->second);
 				it1->second.erase(it2);
 				unlockStreams();
-				return 0;
+				return true;
 			}
 		}
 	}
@@ -111,18 +107,18 @@ int BeamFactory::removeBeam(Beam *b)
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
-#endif //USE_MYGUI
+#endif // USE_MYGUI
 
-	return 1;
+	return false;
 }
 
 Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, Skin *skin, bool freePosition)
 {
 	bool networked=false, networking=false;
-	if(net) networking = true;
+	if (net) networking = true;
 
 	int truck_num = getFreeTruckSlot();
-	if(truck_num == -1)
+	if (truck_num == -1)
 	{
 		LOG("ERROR: could not add beam to main list");
 		return 0;
@@ -156,7 +152,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 	trucks[truck_num] = b;
 
 	// lock slidenodes after spawning the truck?
-	if(b->getSlideNodesLockInstant())
+	if (b->getSlideNodesLockInstant())
 		b->toggleSlideNodeLock();
 
 	lockStreams();
@@ -166,10 +162,10 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
-#endif //USE_MYGUI
+#endif // USE_MYGUI
 
 	// add own username to truck
-	if(net) b->updateNetworkInfo();
+	if (net) b->updateNetworkInfo();
 
 	return b;
 }
@@ -184,16 +180,16 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 #ifdef USE_SOCKTEW
 	// log a message about this
-	if(net)
+	if (net)
 	{
 		client_t *c = net->getClientInfo(reg->sourceid);
-		if(c)
+		if (c)
 		{
 			Ogre::UTFString username = ChatSystem::getColouredName(*c);
 			Ogre::UTFString message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
 #ifdef USE_MYGUI
 			Console *console = Console::getInstancePtrNoCreation();
-			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_VEHILCE_ADD, message, "car_add.png");
+			if (console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_VEHILCE_ADD, message, "car_add.png");
 #endif // USE_MYGUI
 		}
 	}
@@ -201,12 +197,12 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 
 	bool networked=true, networking=false;
-	if(net) networking = true;
+	if (net) networking = true;
 
 	// check if we got this truck installed
 	String filename = String(treg->name);
 	String group = "";
-	if(!CACHE.checkResourceLoaded(filename, group))
+	if (!CACHE.checkResourceLoaded(filename, group))
 	{
 		LOG("wont add remote stream (truck not existing): '"+filename+"'");
 
@@ -222,11 +218,11 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	// fill truckconfig
 	std::vector<Ogre::String> truckconfig;
-	for(int i = 0; i < 10; i++)
+	for(int t=0; t<10; t++)
 	{
-		if(!strnlen(treg->truckconfig[i], 60))
+		if (!strnlen(treg->truckconfig[t], 60))
 			break;
-		truckconfig.push_back(String(treg->truckconfig[i]));
+		truckconfig.push_back(String(treg->truckconfig[t]));
 	}
 
 
@@ -235,7 +231,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	Vector3 pos = Vector3::ZERO;
 
 	int truck_num = getFreeTruckSlot();
-	if(truck_num == -1)
+	if (truck_num == -1)
 	{
 		LOG("ERROR: could not add beam to main list");
 		return 0;
@@ -280,91 +276,72 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
-#endif //USE_MYGUI
+#endif // USE_MYGUI
 
 	return b;
 }
 
-void BeamFactory::localUserAttributesChanged(int newid)
+void BeamFactory::localUserAttributesChanged(int new_id)
 {
 	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
-	if(streamables.find(-1) == streamables.end())
+	if (streamables.find(-1) != streamables.end())
 	{
-		unlockStreams();
-		return;
-	}
-
-	Beam *b = streamables[-1][0];
-	streamables[newid][0] = streamables[-1][0]; // add alias :)
-	//b->setUID(newid);
-	//b->updateNetLabel();
-	unlockStreams();
-}
-
-void BeamFactory::netUserAttributesChanged(int source, int streamid)
-{
-	lockStreams();
-	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
-	std::map < unsigned int, Beam *>::iterator it2;
-
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
-	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			if(it1->first == source)
-			{
-				Beam *b = it2->second;
-				if(b) b->updateNetworkInfo();
-				break;
-			}
-		}
+		Beam *b = streamables[-1][0];
+		streamables[new_id][0] = streamables[-1][0]; // add alias :)
+		//b->setUID(newid);
+		//b->updateNetLabel();
 	}
 	unlockStreams();
 }
 
-Beam *BeamFactory::getBeam(int source, int streamid)
+void BeamFactory::netUserAttributesChanged(int source_id, int stream_id)
 {
 	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
-	std::map < unsigned int, Beam *>::iterator it2;
-
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it_source = streamables.find(source_id);
+	std::map < unsigned int, Beam *>::iterator it_stream;
+	
+	if (it_source != streamables.end())
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			if(it1->first == source)
-			{
-				unlockStreams();
-				return it2->second;
-			}
-		}
+		it_stream = it_source->second.find(stream_id);
+		if (it_stream != it_source->second.end() && it_stream->second)
+			it_stream->second->updateNetworkInfo();
 	}
 	unlockStreams();
-	return 0;
+}
+
+Beam *BeamFactory::getBeam(int source_id, int stream_id)
+{
+	lockStreams();
+	Beam *retVal = 0;
+	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it_source = streamables.find(source_id);
+	std::map < unsigned int, Beam *>::iterator it_stream;
+
+	if (it_source != streamables.end())
+	{
+		it_stream = it_source->second.find(stream_id);
+		if (it_stream != it_source->second.end() && it_stream->second)
+			retVal = it_stream->second;
+	}
+	unlockStreams();
+	return retVal;
 }
 
 bool BeamFactory::syncRemoteStreams()
 {
-	//block until all threads done
-	if (thread_mode==THREAD_HT)
-	{
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
-	}
+	// block until all threads done
+	_waitForSync();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
 	bool changes = StreamableFactory <BeamFactory, Beam>::syncRemoteStreams();
 	
-	if(changes)
+	if (changes)
 		updateGUI();
 
 	return changes;
@@ -379,23 +356,22 @@ void BeamFactory::updateGUI()
 #endif // USE_MYGUI	
 }
 
-//j is the index of a MAYSLEEP truck, returns true if one active was found in the set
+// j is the index of a MAYSLEEP truck, returns true if one active was found in the set
 bool BeamFactory::checkForActive(int j, bool *sleepyList)
 {
-	int i;
 	sleepyList[j]=true;
-	for (i=0; i<free_truck; i++)
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[i]) continue;
-		if ( !sleepyList[i] &&
-			((trucks[j]->minx<trucks[i]->minx && trucks[i]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[i]->maxx && trucks[i]->maxx<trucks[j]->maxx) || (trucks[i]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[i]->maxx)) &&
-			((trucks[j]->miny<trucks[i]->miny && trucks[i]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[i]->maxy && trucks[i]->maxy<trucks[j]->maxy) || (trucks[i]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[i]->maxy)) &&
-			((trucks[j]->minz<trucks[i]->minz && trucks[i]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[i]->maxz && trucks[i]->maxz<trucks[j]->maxz) || (trucks[i]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[i]->maxz))
+		if (!trucks[t]) continue;
+		if ( !sleepyList[t] &&
+			((trucks[j]->minx<trucks[t]->minx && trucks[t]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[t]->maxx && trucks[t]->maxx<trucks[j]->maxx) || (trucks[t]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[t]->maxx)) &&
+			((trucks[j]->miny<trucks[t]->miny && trucks[t]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[t]->maxy && trucks[t]->maxy<trucks[j]->maxy) || (trucks[t]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[t]->maxy)) &&
+			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
 			)
 		{
-			if (trucks[i]->state==MAYSLEEP || (trucks[i]->state==DESACTIVATED && trucks[i]->sleepcount>=5))
+			if (trucks[t]->state == MAYSLEEP || (trucks[t]->state == DESACTIVATED && trucks[t]->sleepcount >= 5))
 			{
-				if (checkForActive(i, sleepyList)) return true;
+				if (checkForActive(t, sleepyList)) return true;
 			}
 			else return true;
 		};
@@ -406,45 +382,44 @@ bool BeamFactory::checkForActive(int j, bool *sleepyList)
 
 void BeamFactory::recursiveActivation(int j)
 {
-	int i;
-	for (i=0; i<free_truck; i++)
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[i]) continue;
-		if ((trucks[i]->state==SLEEPING || trucks[i]->state==MAYSLEEP || trucks[i]->state==GOSLEEP ||(trucks[i]->state==DESACTIVATED && trucks[i]->sleepcount>=5)) &&
-			((trucks[j]->minx<trucks[i]->minx && trucks[i]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[i]->maxx && trucks[i]->maxx<trucks[j]->maxx) || (trucks[i]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[i]->maxx)) &&
-			((trucks[j]->miny<trucks[i]->miny && trucks[i]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[i]->maxy && trucks[i]->maxy<trucks[j]->maxy) || (trucks[i]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[i]->maxy)) &&
-			((trucks[j]->minz<trucks[i]->minz && trucks[i]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[i]->maxz && trucks[i]->maxz<trucks[j]->maxz) || (trucks[i]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[i]->maxz))
+		if (!trucks[t]) continue;
+		if ((trucks[t]->state==SLEEPING || trucks[t]->state==MAYSLEEP || trucks[t]->state==GOSLEEP ||(trucks[t]->state==DESACTIVATED && trucks[t]->sleepcount>=5)) &&
+			((trucks[j]->minx<trucks[t]->minx && trucks[t]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[t]->maxx && trucks[t]->maxx<trucks[j]->maxx) || (trucks[t]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[t]->maxx)) &&
+			((trucks[j]->miny<trucks[t]->miny && trucks[t]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[t]->maxy && trucks[t]->maxy<trucks[j]->maxy) || (trucks[t]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[t]->maxy)) &&
+			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
 			)
 		{
-			trucks[i]->desactivate();//paradoxically, this activates the truck!
-			trucks[i]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
-			recursiveActivation(i);
+			trucks[t]->desactivate(); // paradoxically, this activates the truck!
+			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
+			recursiveActivation(t);
 		};
 	}
 }
 
 void BeamFactory::checkSleepingState()
 {
-	if (current_truck!=-1 && trucks[current_truck])
+	if (current_truck >= 0 && trucks[current_truck])
 	{
 		trucks[current_truck]->disableDrag=false;
 		recursiveActivation(current_truck);
 		//if its grabbed, its moving
 		//if (isnodegrabbed && trucks[truckgrabbed]->state==SLEEPING) trucks[truckgrabbed]->desactivate();
-		//put to sleep
+		// put to sleep
 		for (int t=0; t<free_truck; t++)
 		{
-			if(!trucks[t]) continue;
+			if (!trucks[t]) continue;
 			if (trucks[t]->state==MAYSLEEP)
 			{
 				bool sleepyList[MAX_TRUCKS];
 				for (int i=0; i<MAX_TRUCKS; i++) sleepyList[i]=false;
 				if (!checkForActive(t, sleepyList))
 				{
-					//no active truck in the set, put everybody to sleep
+					// no active truck in the set, put everybody to sleep
 					for (int i=0; i<free_truck; i++)
 					{
-						if(!trucks[i]) continue;
+						if (!trucks[i]) continue;
 						if (sleepyList[i])
 							trucks[i]->state=GOSLEEP;
 					}
@@ -452,32 +427,33 @@ void BeamFactory::checkSleepingState()
 			}
 		}
 
-		//special stuff for rollable gear
+		/* obsolete for now
+		// special stuff for rollable gear
 		int t;
 		bool rollmode=false;
 		for (t=0; t<free_truck; t++)
 		{
-			if(!trucks[t]) continue;
+			if (!trucks[t]) continue;
 			if (trucks[t]->state != SLEEPING)
 				rollmode = rollmode || trucks[t]->wheel_contact_requested;
 			
 			trucks[t]->requires_wheel_contact = rollmode;// && !trucks[t]->wheel_contact_requested;
 		}
-
+		//*/
 	}
 }
 
 int BeamFactory::getFreeTruckSlot()
 {
 	// find a free slot for the truck
-	for (int i=0; i<MAX_TRUCKS; i++)
+	for (int t=0; t<MAX_TRUCKS; t++)
 	{
-		if(trucks[i] == 0 && i >= free_truck) // XXX: TODO: remove this hack
+		if (trucks[t] == 0 && t >= free_truck) // XXX: TODO: remove this hack
 		{
 			// reuse slots
-			if(i >= free_truck)
-				free_truck = i + 1;
-			return i;
+			if (t >= free_truck)
+				free_truck = t + 1;
+			return t;
 		}
 	}
 	return -1;
@@ -486,27 +462,25 @@ int BeamFactory::getFreeTruckSlot()
 
 void BeamFactory::activateAllTrucks()
 {
-	for (int i=0; i<free_truck; i++)
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[i]) continue;
-		if(trucks[i]->state==SLEEPING || trucks[i]->state==MAYSLEEP || trucks[i]->state==GOSLEEP || trucks[i]->state==DESACTIVATED)
+		if (!trucks[t]) continue;
+		if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || trucks[t]->state == DESACTIVATED)
 		{
-			trucks[i]->desactivate();//paradoxically, this activates the truck!
-			trucks[i]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
-			recursiveActivation(i);
-		};
+			trucks[t]->desactivate(); // paradoxically, this activates the truck!
+			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
+			recursiveActivation(t);
+		}
 	}
 }
 
 void BeamFactory::sendAllTrucksSleeping()
 {
-	for (int i=0; i<free_truck; i++)
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[i]) continue;
-		if(trucks[i]->state==ACTIVATED)
-		{
-			trucks[i]->state=GOSLEEP;
-		};
+		if (!trucks[t]) continue;
+		if (trucks[t]->state == ACTIVATED)
+			trucks[t]->state=GOSLEEP;
 	}
 }
 
@@ -516,32 +490,40 @@ void BeamFactory::recalcGravityMasses()
 	// update the mass of all trucks
 	for (int t=0; t < free_truck; t++)
 	{
-		if(!trucks[t]) continue;
+		if (!trucks[t]) continue;
 		trucks[t]->recalc_masses();
 	}
 }
 
-void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box, bool keepPosition)
+int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* box)
 {
-	//find the right truck (the one in the box)
-	int t;
-	int rtruck=-1;
-	for (t=0; t<free_truck; t++)
+	// try to find the desired truck (the one in the box)
+	int id = -1;
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[t]) continue;
+		if (!trucks[t]) continue;
 		if (collisions->isInside(trucks[t]->nodes[0].AbsPosition, inst, box))
 		{
-			//we found one
-			if (rtruck==-1) rtruck=t;
-			else rtruck=-2; //too much trucks!
+			if (id == -1)
+				// first truck found
+				id=t;
+			else
+				// second truck found -> unclear which vehicle was meant
+				return -1;
 		}
 	}
-	if (rtruck>=0)
+	return id;
+}
+
+void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box, bool keepPosition)
+{
+	int rtruck = findTruckInsideBox(collisions, inst, box);
+	if (rtruck >= 0)
 	{
-		//take a position reference
+		// take a position reference
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigOnce(rtruck, SS_TRIG_REPAIR);
-#endif //OPENAL
+		if (ssm) ssm->trigOnce(rtruck, SS_TRIG_REPAIR);
+#endif // USE_OPENAL
 		Vector3 ipos=trucks[rtruck]->nodes[0].AbsPosition;
 		trucks[rtruck]->reset();
 		trucks[rtruck]->resetPosition(ipos.x, ipos.z, false);
@@ -551,64 +533,46 @@ void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, c
 
 void BeamFactory::removeTruck(Collisions *collisions, char* inst, char* box)
 {
-	//find the right truck (the one in the box)
-	int t;
-	int rtruck=-1;
-	for (t=0; t<free_truck; t++)
-	{
-		if(!trucks[t]) continue;
-		if (collisions->isInside(trucks[t]->nodes[0].AbsPosition, inst, box))
-		{
-			//we found one
-			if (rtruck==-1) rtruck=t;
-			else rtruck=-2; //too much trucks!
-		}
-	}
-	if (rtruck>=0)
-	{
-		// remove it
+	int rtruck = findTruckInsideBox(collisions, inst, box);
+	if (rtruck >= 0)
 		removeTruck(rtruck);
-	}
 }
 
 void BeamFactory::removeTruck(int truck)
 {
-	if(truck == -1 || truck > free_truck)
-		// invalid number
+	if (truck < 0 || truck > free_truck)
 		return;
-	if(current_truck == truck)
+
+	if (current_truck == truck)
 		setCurrentTruck(-1);
 
-	if(removeBeam(trucks[truck]))
-	{
+	if (!removeBeam(trucks[truck]))
 		// deletion over beamfactory failed, delete by hand
 		// then delete the class
-		_deleteTruck(trucks[truck], truck);
-	}
+		_deleteTruck(trucks[truck]);
 }
 
-void BeamFactory::_deleteTruck(Beam *b, int num)
+void BeamFactory::_deleteTruck(Beam *b)
 {
-	if(num == -1 && b)
-		num = b->trucknum;
+	if (b == 0)
+		return;
 
-	//block until all threads done
+	// block until all threads done
 	_waitForSync();
 
 	// synced delete
-	trucks[num] = 0;
+	trucks[b->trucknum] = 0;
 	delete b;
 	b = 0;
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
-#endif //USE_MYGUI
-
+#endif // USE_MYGUI
 }
 
 void BeamFactory::_waitForSync()
 {
-	//block until all threads done
+	// block until all threads done
 	if (thread_mode==THREAD_HT)
 	{
 		MUTEX_LOCK(&done_count_mutex);
@@ -618,56 +582,55 @@ void BeamFactory::_waitForSync()
 	}
 }
 
-
 void BeamFactory::removeCurrentTruck()
 {
 	removeTruck(current_truck);
 }
 
-void BeamFactory::setCurrentTruck(int v)
+void BeamFactory::setCurrentTruck(int new_truck)
 {
-	if (trucks[current_truck] && current_truck!=-1 && current_truck<free_truck)
+	if (current_truck >= 0 && current_truck < free_truck && trucks[current_truck])
 		trucks[current_truck]->desactivate();
-	int previous_truck = current_truck;
-	current_truck=v;
 
-	// fire update
-	// TODO: remove this hack
-	if(RoRFrameListener::eflsingleton)
-		RoRFrameListener::eflsingleton->changedCurrentTruck(previous_truck<0?0:trucks[previous_truck], current_truck<0?0:trucks[current_truck]);
+	int previous_truck = current_truck;
+	current_truck = new_truck;
+
+	if (RoRFrameListener::eflsingleton)
+	{
+		if (previous_truck >= 0 && current_truck >= 0)
+			RoRFrameListener::eflsingleton->changedCurrentTruck(trucks[previous_truck], trucks[current_truck]);
+		else if (previous_truck >= 0)
+			RoRFrameListener::eflsingleton->changedCurrentTruck(trucks[previous_truck], 0);
+		else if (current_truck >= 0)
+			RoRFrameListener::eflsingleton->changedCurrentTruck(0, trucks[current_truck]);
+		else
+			RoRFrameListener::eflsingleton->changedCurrentTruck(0, 0);
+	}
 }
 
 bool BeamFactory::enterRescueTruck()
 {
-	//rescue!
-	//if (current_truck!=-1) BeamFactory::getSingleton().setCurrentTruck(-1);
-	int rtruck=-1;
+	// rescue!
 	// search a rescue truck
-	for (int i=0; i<free_truck; i++)
+	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[i]) continue;
-		if (trucks[i]->rescuer)
-			rtruck=i;
+		if (!trucks[t]) continue;
+		if (trucks[t]->rescuer) {
+			// go to person mode first
+			setCurrentTruck(-1);
+			// then to the rescue truck, this fixes overlapping interfaces
+			setCurrentTruck(t);
+			return true;
+		}
 	}
-	if(rtruck == -1)
-	{
-		return false;
-	} else
-	{
-		// go to person mode first
-		setCurrentTruck(-1);
-		// then to the rescue truck, this fixes overlapping interfaces
-		setCurrentTruck(rtruck);
-	}
-	return true;
+	return false;
 }
-
 
 void BeamFactory::updateVisual(float dt)
 {
 	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[t]) continue;
+		if (!trucks[t]) continue;
 		
 		// always update the labels
 		trucks[t]->updateLabels(dt);
@@ -685,7 +648,7 @@ void BeamFactory::updateAI(float dt)
 {
 	for (int t=0; t<free_truck; t++)
 	{
-		if(!trucks[t]) continue;
+		if (!trucks[t]) continue;
 		
 		trucks[t]->updateAI(dt);
 	}
@@ -696,7 +659,7 @@ void BeamFactory::calcPhysics(float dt)
 {
 	physFrame++;
 	int t=0;
-	//this is the big "shaker"
+	// this is the big "shaker"
 	if (current_truck!=-1)
 	{
 		// now handle inter truck coll in different HT modes
@@ -705,7 +668,7 @@ void BeamFactory::calcPhysics(float dt)
 			// wait for all threads to finish
 			for (t=0; t<free_truck; t++)
 			{
-				if(!trucks[t]) continue;
+				if (!trucks[t]) continue;
 				MUTEX_LOCK(&trucks[t]->done_count_mutex);
 				while(trucks[t]->done_count > 0)
 					pthread_cond_wait(&trucks[t]->done_count_cv, &trucks[t]->done_count_mutex);
@@ -715,7 +678,7 @@ void BeamFactory::calcPhysics(float dt)
 			// smooth the stuff
 			for (t=0; t<free_truck; t++)
 			{
-				if(!trucks[t]) continue;
+				if (!trucks[t]) continue;
 				trucks[t]->frameStep(dt);
 			}
 
@@ -727,7 +690,7 @@ void BeamFactory::calcPhysics(float dt)
 			// unlock all threads
 			for (t=0; t<free_truck; t++)
 			{
-				if(!trucks[t]) continue;
+				if (!trucks[t]) continue;
 				trucks[t]->done_count=1;
 				MUTEX_LOCK(&trucks[t]->work_mutex);
 				pthread_cond_broadcast(&trucks[t]->work_cv);
@@ -742,13 +705,13 @@ void BeamFactory::calcPhysics(float dt)
 	}
 
 	// update 2D replay if activated
-	if(tdr) tdr->update(dt);
+	if (tdr) tdr->update(dt);
 
-	//things always on
+	// things always on
 	for (t=0; t<free_truck; t++)
 	{
-		if(!trucks[t]) continue;
-		//networked trucks must be taken care of
+		if (!trucks[t]) continue;
+		// networked trucks must be taken care of
 
 		switch(trucks[t]->state)
 		{
@@ -766,7 +729,7 @@ void BeamFactory::calcPhysics(float dt)
 			{
 				if (t!=current_truck && trucks[t]->engine)
 					trucks[t]->engine->update(dt, 1);
-				if(trucks[t]->networking)
+				if (trucks[t]->networking)
 					trucks[t]->sendStreamData();
 			}
 			break;
@@ -774,41 +737,43 @@ void BeamFactory::calcPhysics(float dt)
 	}
 }
 
+void BeamFactory::removeInstance(Beam *b)
+{
+	// TODO: properly delete trucks
+	// hide the truck
+	if (b != 0)
+		b->deleteNetTruck();
+
+	_deleteTruck(b);
+}
 
 void BeamFactory::removeInstance(stream_del_t *del)
 {
 	// we override this here so we can also delete the truck array content
-	//already locked
-	//lockStreams();
+	// already locked
+	// lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
-	std::map < unsigned int, Beam *>::iterator it2;
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it_stream;
+	std::map < unsigned int, Beam *>::iterator it_beam;
 
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	it_stream = streamables.find(del->sourceid);
+
+	if (it_stream == streamables.end())
+		// no stream for this source id
+		return;
+
+	if (del->streamid == -1)
 	{
-		if(it1->first != del->sourceid) continue;
-
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
-		{
-			if(del->streamid == -1 || del->streamid == (int)it2->first)
-			{
-				// clear the trucks array
-				if(it2->second)
-				{
-					// TODO: properly delete trucks
-					// hide the truck
-					it2->second->deleteNetTruck();
-
-					// hide it in the array
-					trucks[it2->second->trucknum] = 0;
-					
-					// TODO: fix deletion
-					//delete it2->second;
-					it2->second = 0;
-				}
-			}
-		}
-		break;
+		// delete all streams
+		for(it_beam=it_stream->second.begin(); it_beam!=it_stream->second.end(); it_beam++)
+			removeInstance(it_beam->second);
+	} 
+	else
+	{
+		// find the stream machting the streamid
+		it_beam = it_stream->second.find(del->streamid);
+		if (it_beam != it_stream->second.end())
+			removeInstance(it_beam->second);
 	}
-	//unlockStreams();
+	// unlockStreams();
 }

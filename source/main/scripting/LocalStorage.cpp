@@ -66,13 +66,13 @@ LocalStorage::~LocalStorage()
 void LocalStorage::AddRef() const
 {
 	// We need to clear the GC flag
-	refCount = (refCount & 0x7FFFFFFF) + 1;
+	refCount ++;
 }
 
 void LocalStorage::Release() const
 {
 	// We need to clear the GC flag
-	refCount = (refCount & 0x7FFFFFFF) - 1;
+	refCount --;
 	if( refCount == 0 )
 		delete this;
 }
