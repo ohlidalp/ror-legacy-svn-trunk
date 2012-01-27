@@ -680,15 +680,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 #ifdef USE_MYGUI
 	Console *con = Console::getInstancePtrNoCreation();
 	if(con) 
-	{
-		Ogre::StringVector lines = StringUtil::split(result, "\n");
-		for(Ogre::StringVector::iterator it = lines.begin(); it!=lines.end(); it++)
-		{
-			Ogre::StringVector args = StringUtil::split(result, "|");
-			if(args.size() != 2) continue;
-			con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ANSI_TO_UTF(args[0]), args[1]);
-		}
-	}
+		con->putMessage(Console::CONSOLE_MSGTYPE_HIGHSCORE, Console::CONSOLE_SYSTEM_NOTICE, ANSI_TO_UTF(result));
 #endif // USE_MYGUI
 #endif //USE_CURL
 	return 0;
@@ -715,16 +707,31 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
 #endif // USE_MYGUI
 
+	// fix the string objects in the dict
+	// why we need to do this: when we copy the std::map (dict) over, we calso jsut copy the pointers to string in it.
+	// when this continues and forks, AS releases the strings.
+	// so we will allocate new strings that are persistent.
+	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::iterator it;
+	for(it = params->dict->dict.begin(); it != params->dict->dict.end(); it++)
+	{
+		int typeId = it->second.typeId;
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
+		{
+			// its a string, copy it over
+			std::string *str = (std::string *)it->second.valueObj;
+			it->second.valueObj = (void *)new string(*str);
+		}
+	}
+
 	// create the thread
 	LOG("creating thread for online API usage...");
-	// THREADING: BROKEN!!!
-	int rc = useOnlineAPIDirectly(*params);
-	//int rc = pthread_create(&apiThread, NULL, onlineAPIThread, (void *)params);
+	int rc = pthread_create(&apiThread, NULL, onlineAPIThread, (void *)params);
 	if(rc)
 	{
 		LOG("useOnlineAPI/pthread error code: " + TOSTRING(rc));
 		return 1;
 	}
+
 	return 0;
 }
 
