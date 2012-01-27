@@ -121,7 +121,7 @@ protected:
 	pthread_t threads[32];
 
 private:
-	int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* box);
+	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 
 };
 
