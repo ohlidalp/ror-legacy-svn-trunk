@@ -5,9 +5,9 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 # done with cmake check
 
-# WIN32: remove MinSizeRel builds : unsupported
+# WIN32: remove MinSizeRel, Debug builds : unsupported
 if (WIN32) 
-	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;Debug" CACHE STRING "" FORCE)
+	set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release" CACHE STRING "" FORCE)
 endif()
 	
 project(RoR)
