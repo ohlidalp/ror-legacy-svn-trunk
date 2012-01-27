@@ -155,8 +155,8 @@ int OverlayWrapper::init()
 
 
 	machinedashboardOverlay = loadOverlay("tracks/MachineDashboardOverlay");
-	airdashboardOverlay = loadOverlay("tracks/AirDashboardOverlay");
-	airneedlesOverlay = loadOverlay("tracks/AirNeedlesOverlay");
+	airdashboardOverlay = loadOverlay("tracks/AirDashboardOverlay", false);
+	airneedlesOverlay = loadOverlay("tracks/AirNeedlesOverlay", false);
 	boatdashboardOverlay = loadOverlay("tracks/BoatDashboardOverlay");
 	boatneedlesOverlay = loadOverlay("tracks/BoatNeedlesOverlay");
 	dashboardOverlay = loadOverlay("tracks/DashboardOverlay");
