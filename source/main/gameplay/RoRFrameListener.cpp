@@ -2496,7 +2496,8 @@ bool RoRFrameListener::updateEvents(float dt)
 							}
 
 							// when in automatic mode: shift as well
-							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->engine && curr_truck->engine->getAutoMode() == AUTOMATIC)
+							// only when the truck really is not moving anymore
+							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f && curr_truck->engine && curr_truck->engine->getAutoMode() == AUTOMATIC)
 							{
 								// switching point, does the user want to drive forward from backward or the other way round? change gears?
 								if(brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)

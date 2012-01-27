@@ -866,8 +866,6 @@ void SelectorWindow::show(LoaderType type)
 	// reset all keys
 	INPUTENGINE.resetKeys();
 	LoadingWindow::get()->hide();
-	// show mouse cursor
-	//MyGUI::PointerManager::getInstance().setVisible(true);
 	// focus main mMainWidget (for key input)
 	mTruckConfigs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);

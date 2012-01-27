@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 #include "OverlayWrapper.h"
 #include "ChatSystem.h"
+#include "HighScoreWindow.h"
 
 #include "Settings.h"
 #include "RoRFrameListener.h"
@@ -900,6 +901,13 @@ int Console::messageUpdate( float dt )
 	{
 		for (int i = 0; i < results; i++, r++)
 		{
+			if(tmpWaitingMessages[i].type == CONSOLE_MSGTYPE_HIGHSCORE)
+			{
+				// special :)
+				HighScoreWindow::getInstance().show(tmpWaitingMessages[i].txt);
+				continue;
+			}
+
 			// copy over to our storage
 			messages[message_counter] = tmpWaitingMessages[i];
 		
