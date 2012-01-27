@@ -40,11 +40,11 @@ public:
 
 	Beam *createLocal(int slotid);
 	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freePosition=false);
-	int removeBeam(Beam *b);
+	bool removeBeam(Beam *b);
 
 	Beam *createRemoteInstance(stream_reg_t *reg);
 
-	Beam *getBeam(int source, int streamid); // used by character
+	Beam *getBeam(int source_id, int stream_id); // used by character
 
 	int getTruckCount() { return free_truck; };
 	Beam *getTruck(int number) { return trucks[number]; };
@@ -55,7 +55,7 @@ public:
 	void removeTruck(Collisions *collisions, char* inst, char* box);
 	void removeTruck(int truck);
 	void removeCurrentTruck();
-	void setCurrentTruck(int v);
+	void setCurrentTruck(int new_truck);
 	bool enterRescueTruck();
 
 	void activateAllTrucks();
@@ -109,8 +109,9 @@ protected:
 
 	bool syncRemoteStreams();
 	void updateGUI();
+	void removeInstance(Beam *b);
 	void removeInstance(stream_del_t *del);
-	void _deleteTruck(Beam *b, int num=-1);
+	void _deleteTruck(Beam *b);
 
 
 	pthread_mutex_t done_count_mutex;
@@ -119,9 +120,10 @@ protected:
 	pthread_cond_t work_cv;
 	pthread_t threads[32];
 
+private:
+	int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 
 };
 
 
-
-#endif //BEAMFACTORY_H__
+#endif // BEAMFACTORY_H__
