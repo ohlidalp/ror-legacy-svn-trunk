@@ -533,7 +533,8 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
 		{
 			// its a string
-			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, ((std::string *)it->second.valueObj)->c_str(), CURLFORM_END);
+			std::string *str = (std::string *)it->second.valueObj;
+			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, str->c_str(), CURLFORM_END);
 		}
 		else if(typeId == AngelScript::asTYPEID_INT8 \
 			|| typeId == AngelScript::asTYPEID_INT16 \
@@ -716,7 +717,9 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 
 	// create the thread
 	LOG("creating thread for online API usage...");
-	int rc = pthread_create(&apiThread, NULL, onlineAPIThread, (void *)params);
+	// THREADING: BROKEN!!!
+	int rc = useOnlineAPIDirectly(*params);
+	//int rc = pthread_create(&apiThread, NULL, onlineAPIThread, (void *)params);
 	if(rc)
 	{
 		LOG("useOnlineAPI/pthread error code: " + TOSTRING(rc));
