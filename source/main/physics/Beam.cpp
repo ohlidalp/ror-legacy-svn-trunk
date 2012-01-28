@@ -924,9 +924,6 @@ void Beam::desactivate()
 	if (state!=NETWORKED && state!=RECYCLE)
 	{
 		state=DESACTIVATED;
-#ifdef USE_MYGUI
-		dash->setVisible(true);
-#endif // USE_MYGUI
 		sleepcount=0;
 	}
 }
