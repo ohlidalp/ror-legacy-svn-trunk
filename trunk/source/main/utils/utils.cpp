@@ -288,22 +288,35 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String& _source)
 	delete[] tmpBuff;
 	return ret;
 #else
+	// TODO: GET THIS WORKING
 	/*
 	const char* srcPtr = _source.c_str();
-	iconv_t i = iconv_open("UTF-8", "ANSI");
-	if ( i == (iconv_t) -1 ) return wstring();
+	iconv_t icv = iconv_open("ASCII", "UTF-8");
+	if ( icv == (iconv_t) -1 )
+	{
+		return std::wstring(L"ERR1");
+	}
 
-	char * smile = "263a";  // the smile sign unicode
-	size_t inbytes = sizeof (smile);
+	char *inpbuf    = const_cast<char *>(_source.c_str());
+	size_t inbytes  = _source.size();
 	size_t outbytes = inbytes;
-	size_t nread=0;
-	char ** outbuf = (char **)malloc(outbytes+1);
+	size_t nread    = 0;
+	char *outbuf    = (char *)calloc((outbytes*4+1)*sizeof(char), 1);
 
-	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
-	std::wstring ret = tmpBuff;
-	delete[] tmpBuff;
+	size_t res = iconv(icv, &inpbuf, &inbytes, &outbuf, &outbytes); 
+	if(res == (size_t) -1)
+	{
+		//free(outbuf);
+		return std::wstring(L"ERR2");
+	}
+	iconv_close(icv);
+	//free(outbuf);
 	*/
-	return std::wstring();
+
+	// hacky!
+	std::wstring str2(_source.length(), L' '); // Make room for characters
+	std::copy(_source.begin(), _source.end(), str2.begin());
+	return str2;
 #endif // WIN32
 }
 
