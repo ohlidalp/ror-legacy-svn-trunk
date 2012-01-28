@@ -3094,7 +3094,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								if(curr_truck->driveable == AIRPLANE)
 									ow->showDashboardOverlays(true, curr_truck);
 								else
-									ow->showDashboardOverlays(false);
+									ow->showDashboardOverlays(false, curr_truck);
 							}
 							curr_truck->currentcamera=0;
 							curr_truck->changedCamera();
@@ -5461,7 +5461,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		//			position.y=hfinder->getHeightAt(position.x,position.z);
 		if(position != Vector3::ZERO) person->setPosition(position);
 		//person->setVisible(true);
-		if(ow) ow->showDashboardOverlays(false);
+		if(ow) ow->showDashboardOverlays(false, currentTruck);
 		if(ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
 		if(ssm) ssm->trigStop(previousTruck, SS_TRIG_AIR);
@@ -5577,7 +5577,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		if (cameramode==CAMERA_INT)
 		{
 			currentTruck->prepareInside(true);
-			if(ow) ow->showDashboardOverlays(false);
+			if(ow) ow->showDashboardOverlays(false, currentTruck);
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			//if(bigMap) bigMap->setVisibility(false);
 		}
@@ -6467,7 +6467,7 @@ void RoRFrameListener::hideGUI(bool visible)
 
 	if(visible)
 	{
-		if(ow) ow->showDashboardOverlays(false);
+		if(ow) ow->showDashboardOverlays(false, curr_truck);
 		if(ow) ow->showEditorOverlay(false);
 		if(ow) ow->truckhud->show(false);
 		//if(bigMap) bigMap->setVisibility(false);
