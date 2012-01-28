@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "GlowMaterialListener.h"
 #include "MeshObject.h"
 #include "SceneMouse.h"
+#include "DashBoardManager.h"
 
 #include "RigsOfRods.h"
 
@@ -3072,7 +3073,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							camRotX=pushcamRotX;
 							camRotY=pushcamRotY;
 							curr_truck->prepareInside(false);
-							if(ow) ow->showDashboardOverlays(true, curr_truck->driveable);
+							if(ow) ow->showDashboardOverlays(true, curr_truck);
 							curr_truck->currentcamera=-1;
 							//if(bigMap) bigMap->setVisibility(true);
 							curr_truck->changedCamera();
@@ -3091,9 +3092,9 @@ bool RoRFrameListener::updateEvents(float dt)
 							if(ow)
 							{
 								if(curr_truck->driveable == AIRPLANE)
-									ow->showDashboardOverlays(true, curr_truck->driveable);
+									ow->showDashboardOverlays(true, curr_truck);
 								else
-									ow->showDashboardOverlays(false, 0);
+									ow->showDashboardOverlays(false);
 							}
 							curr_truck->currentcamera=0;
 							curr_truck->changedCamera();
@@ -5440,6 +5441,9 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		{
 			previousTruck->prepareInside(false);
 
+			if(previousTruck->dash)
+				previousTruck->dash->setVisible(false);
+
 			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
 			if(previousTruck->cinecameranodepos[0] != -1)
 			{
@@ -5457,7 +5461,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		//			position.y=hfinder->getHeightAt(position.x,position.z);
 		if(position != Vector3::ZERO) person->setPosition(position);
 		//person->setVisible(true);
-		if(ow) ow->showDashboardOverlays(false,0);
+		if(ow) ow->showDashboardOverlays(false);
 		if(ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
 		if(ssm) ssm->trigStop(previousTruck, SS_TRIG_AIR);
@@ -5489,7 +5493,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		//person->setVisible(false);
 		if(ow &&!hidegui)
 		{
-			ow->showDashboardOverlays(true, currentTruck->driveable);
+			ow->showDashboardOverlays(true, currentTruck);
 			ow->showEditorOverlay(currentTruck->editorId>=0);
 		}
 
@@ -5573,7 +5577,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		if (cameramode==CAMERA_INT)
 		{
 			currentTruck->prepareInside(true);
-			if(ow) ow->showDashboardOverlays(false, 0);
+			if(ow) ow->showDashboardOverlays(false);
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			//if(bigMap) bigMap->setVisibility(false);
 		}
@@ -6004,7 +6008,7 @@ void RoRFrameListener::moveCamera(float dt)
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 				curr_truck->prepareInside(false);
-				if(ow) ow->showDashboardOverlays(true, curr_truck->driveable);
+				if(ow) ow->showDashboardOverlays(true, curr_truck);
 			}
 
 				if(mDOF)
@@ -6463,7 +6467,7 @@ void RoRFrameListener::hideGUI(bool visible)
 
 	if(visible)
 	{
-		if(ow) ow->showDashboardOverlays(false,0);
+		if(ow) ow->showDashboardOverlays(false);
 		if(ow) ow->showEditorOverlay(false);
 		if(ow) ow->truckhud->show(false);
 		//if(bigMap) bigMap->setVisibility(false);
@@ -6477,7 +6481,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	{
 		if(curr_truck && cameramode!=CAMERA_INT)
 		{
-			if(ow) ow->showDashboardOverlays(true, curr_truck->driveable);
+			if(ow) ow->showDashboardOverlays(true, curr_truck);
 			//if(bigMap) bigMap->setVisibility(true);
 		}
 #ifdef USE_SOCKETW

@@ -187,8 +187,11 @@ public:
 
 	void update(float &dt);
 
+	bool wasLoaded() { return (free_dashboard > 0); };
+
 	void setVisible(bool visible);
 	bool getVisible() { return visible; };
+	void windowResized();
 
 protected:
 	bool visible;
@@ -208,13 +211,18 @@ public:
 	bool getVisible() { return visible; };
 
 	void update(float &dt);
+
+	void windowResized();
+
 protected:
 	DashBoardManager *manager;
 	Ogre::String filename;
 	MyGUI::VectorWidgetPtr widgets;
+	MyGUI::WidgetPtr mainWidget;
 	bool visible;
+	std::string prefix;
 
-	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXT, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE };
+	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXT, ANIM_TEXT2, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE };
 	enum {DIRECTION_NONE, DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT };
 	enum {CONDITION_NONE, CONDITION_GREATER, CONDITION_LESSER};
 
@@ -224,7 +232,7 @@ protected:
 		int linkID; // DD_*
 		char animationType; // ANIM_*
 
-		float wmin;  // rotation/offeset whatever (widget min/max)
+		float wmin;  // rotation/offset whatever (widget min/max)
 		float wmax;
 		float vmin; // value min/max
 		float vmax;
@@ -248,7 +256,7 @@ protected:
 	} layoutLink_t;
 
 	void loadLayout(Ogre::String filename);
-
+	void loadLayoutRecursive(MyGUI::WidgetPtr ptr);
 	layoutLink_t controls[MAX_CONTROLS];
 	int free_controls;
 };

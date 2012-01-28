@@ -5516,7 +5516,9 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 	// now load any dashboards
 	if(dashBoardLayout.empty())
 	{
-		// TODO: defaults?
+		// load default for a truck
+		if(driveable == TRUCK)
+			dash->loadDashBoard("default_dashboard.layout");
 	} else
 	{
 		dash->loadDashBoard(dashBoardLayout);
@@ -5652,7 +5654,7 @@ void Beam::updateDashBoards(float &dt)
 		else
 			str = String("R");
 
-		dash->setInt(DD_ENGINE_GEAR_STRING, numGears);
+		dash->setChar(DD_ENGINE_GEAR_STRING, str.c_str());
 
 		// autogears
 		int autoGear = engine->getAutoShift();
@@ -5693,7 +5695,7 @@ void Beam::updateDashBoards(float &dt)
 	dash->setFloat(DD_BRAKE, dash_brake);
 	
 	// speedo
-	float speed_kph = WheelSpeed;
+	float speed_kph = WheelSpeed * 3.6f; // m/s to mk/h
 	dash->setFloat(DD_ENGINE_SPEEDO_KPH, speed_kph);
 	float speed_mph = speed_kph * 0.621371192f; // 1 kph = 0.621371192 mph
 	dash->setFloat(DD_ENGINE_SPEEDO_MPH, speed_mph);

@@ -51,7 +51,7 @@ public:
 	~OverlayWrapper();
 
 	// functions
-	void showDashboardOverlays(bool show, int mode);
+	void showDashboardOverlays(bool show, Beam *truck = 0);
 	void showDebugOverlay(int mode);
 	void showPressureOverlay(bool show);
 	void showEditorOverlay(bool show);

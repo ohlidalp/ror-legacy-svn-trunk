@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI_LanguageManager.h>
 
 #include "Console.h"
+#include "BeamFactory.h"
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 #	include <windows.h>
@@ -165,7 +166,10 @@ void GUIManager::windowResized(Ogre::RenderWindow* _rw)
 	int width = (int)_rw->getWidth();
 	int height = (int)_rw->getHeight();
 	setInputViewSize(width, height);
-	
+
+	BeamFactory *bf = BeamFactory::getSingletonPtr();
+	if(bf) bf->windowResized();
+
 	Console *c = Console::getInstancePtrNoCreation();
 	if(c) c->resized();
 }

@@ -33,6 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 #include "gui_mp.h"
 #include "gui_menu.h"
+#include "DashBoardManager.h"
 #endif // USE_MYGUI
 
 using namespace Ogre;
@@ -770,10 +771,21 @@ void BeamFactory::removeInstance(stream_del_t *del)
 	} 
 	else
 	{
-		// find the stream machting the streamid
+		// find the stream matching the streamid
 		it_beam = it_stream->second.find(del->streamid);
 		if (it_beam != it_stream->second.end())
 			removeInstance(it_beam->second);
 	}
 	// unlockStreams();
+}
+
+void BeamFactory::windowResized()
+{
+#ifdef USE_MYGUI
+	for(int t=0; t < free_truck; t++)
+	{
+		if(!trucks[t]) continue;
+		trucks[t]->dash->windowResized();
+	}
+#endif // USE_MYGUI
 }
