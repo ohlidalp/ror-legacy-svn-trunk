@@ -121,7 +121,10 @@ bool ContentManager::init(void)
 	loadMainResource("meshes");
 	loadMainResource("overlays");
 	loadMainResource("particles");
+#ifdef USE_MYGUI
 	loadMainResource("mygui");
+	loadMainResource("dashboards");
+#endif // USE_MYGUI
 	loadMainResource("scripts");
 	loadMainResource("textures");
 	loadMainResource("flags");

@@ -185,10 +185,20 @@ void DashBoardManager::setVisible( bool v )
 	}
 }
 
+void DashBoardManager::windowResized()
+{
+	for(int i=0; i < free_dashboard; i++)
+	{
+		dashboards[i]->windowResized();
+	}
+}
+
 // DASHBOARD class below
 
-DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename) : manager(manager), filename(filename), free_controls(0), visible(false)
+DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename) : manager(manager), filename(filename), free_controls(0), visible(false), mainWidget(0)
 {
+	// use 'this' class pointer to make layout unique
+	prefix = MyGUI::utility::toString(this, "_");
 	memset(&controls, 0, sizeof(controls));
 	loadLayout(filename);
 }
@@ -323,23 +333,58 @@ void DashBoard::update( float &dt )
 
 			controls[i].txt->setCaption(s);
 		}
-		
+		else if(controls[i].animationType == ANIM_TEXT2)
+		{
+			char *val = manager->getChar(controls[i].linkID);
+			controls[i].txt->setCaption(MyGUI::UString(val));
+		}		
 	}
 }
 
-void DashBoard::loadLayout( Ogre::String filename )
+void DashBoard::windowResized()
 {
-	// use 'this' class pointer to make layout unique
-	std::string prefix = MyGUI::utility::toString(this, "_");
-	widgets = MyGUI::LayoutManager::getInstance().loadLayout(filename, prefix, nullptr); // never has a parent
+	MyGUI::IntSize screenSize = MyGUI::RenderManager::getInstance().getViewSize();
+	if(mainWidget) mainWidget->setSize(screenSize);
+}
 
-	for (MyGUI::VectorWidgetPtr::iterator iter = widgets.begin(); iter != widgets.end(); ++iter)
+void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
+{
+	std::string name = w->getName();
+	std::string anim = w->getUserString("anim");
+	std::string debug = w->getUserString("debug");
+
+	// make it unclickable
+	w->setUserString("interactive", "0");
+
+	if(!debug.empty())
 	{
-		MyGUI::Widget *w = (*iter);
-		std::string name = w->getName();
-		std::string anim = w->getUserString("anim");
-		
-		if(anim.empty()) continue; // non-animated control, ignore
+		w->setVisible(false);
+		return;
+	}
+
+	// find the root widget and ignore debug widgets
+	if(name.size() > prefix.size())
+	{
+		std::string prefixLessName = name.substr(prefix.size());
+		if(prefixLessName == "_Main")
+		{
+			mainWidget = w;
+			// resize it
+			windowResized();
+		}
+
+		// ignore debug widgets
+		if(prefixLessName == "DEBUG")
+		{
+			w->setVisible(false);
+			return;
+		}
+	}
+
+	
+	// animations for this control?
+	if(!anim.empty())
+	{
 
 		layoutLink_t ctrl;
 		memset(&ctrl, 0, sizeof(ctrl));
@@ -360,7 +405,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(linkArgs.empty())
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): empty Link");
-				continue;
+				return;
 			}
 			// conditional checks
 			// TODO: improve the logic, this is crap ...
@@ -375,7 +420,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 				} else
 				{
 					LOG("Dashboard ("+filename+"/"+name+"): error in conditional Link: " + linkArgs);
-					continue;
+					return;
 				}
 			} else if(linkArgs.find("<") != linkArgs.npos )
 			{
@@ -388,7 +433,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 				} else
 				{
 					LOG("Dashboard ("+filename+"/"+name+"): error in conditional Link: " + linkArgs);
-					continue;
+					return;
 				}
 			} else
 			{
@@ -402,7 +447,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(linkID < 0)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): unknown Link: " + linkName);
-				continue;
+				return;
 			}
 			ctrl.linkID = linkID;
 		}
@@ -427,7 +472,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 		else if(!direction.empty())
 		{
 			LOG("Dashboard ("+filename+"/"+name+"): unknown direction: " + direction);
-			continue;
+			return;
 
 		}
 		// then specializations
@@ -452,12 +497,12 @@ void DashBoard::loadLayout( Ogre::String filename )
 			catch (...)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): Rotating controls must use the RotatingSkin");
-				continue;
+				return;
 			}
 			if(!ctrl.rotImg)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading rotation control");
-				continue;
+				return;
 			}
 
 			// special: set rotation center now into the middle
@@ -470,7 +515,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(ctrl.direction == DIRECTION_NONE)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): direction empty: scale needs a direction");
-				continue;
+				return;
 			}
 		}		
 		else if(anim == "translate")
@@ -479,7 +524,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(ctrl.direction == DIRECTION_NONE)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): direction empty: translate needs a direction");
-				continue;
+				return;
 			}
 		}
 		else if(anim == "series")
@@ -489,7 +534,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(!ctrl.img)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading series control");
-				continue;
+				return;
 			}
 		}
 		else if(anim == "text")
@@ -502,9 +547,23 @@ void DashBoard::loadLayout( Ogre::String filename )
 			catch (...)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): Lamp controls must use the ImageBox Control");
-				continue;
+				return;
 			}
 			ctrl.animationType = ANIM_TEXT;
+		}
+		else if(anim == "text2")
+		{
+			// try to cast, will throw
+			try
+			{
+				ctrl.txt = (MyGUI::TextBox *)w; // w->getSubWidgetMain()->castType<MyGUI::TextBox>();
+			}
+			catch (...)
+			{
+				LOG("Dashboard ("+filename+"/"+name+"): Lamp controls must use the ImageBox Control");
+				return;
+			}
+			ctrl.animationType = ANIM_TEXT2;
 		}
 		else if(anim == "lamp")
 		{
@@ -527,7 +586,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 			if(!ctrl.img)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading Lamp control");
-				continue;
+				return;
 			}
 		}
 
@@ -537,8 +596,25 @@ void DashBoard::loadLayout( Ogre::String filename )
 		if(free_controls >= MAX_CONTROLS)
 		{
 			LOG("maximum amount of controls reached, discarding the rest: " + TOSTRING(MAX_CONTROLS));
-			break;
+			return;
 		}
+	}
+
+	// walk the children now
+	MyGUI::EnumeratorWidgetPtr e = w->getEnumerator();
+	while (e.next())
+	{
+		loadLayoutRecursive(e.current());
+	}
+}
+
+void DashBoard::loadLayout( Ogre::String filename )
+{
+	widgets = MyGUI::LayoutManager::getInstance().loadLayout(filename, prefix, nullptr); // never has a parent
+
+	for (MyGUI::VectorWidgetPtr::iterator iter = widgets.begin(); iter != widgets.end(); ++iter)
+	{
+		loadLayoutRecursive(*iter);
 	}
 
 }
@@ -546,16 +622,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 void DashBoard::setVisible(bool v)
 {
 	visible = v;
-	for (MyGUI::VectorWidgetPtr::iterator iter = widgets.begin(); iter != widgets.end(); ++iter)
-	{
-		if((*iter)->getUserString("DEBUG") == "1")
-		{
-			(*iter)->setVisible(false);
-			continue;
-		}
-
-		(*iter)->setVisible(v);
-	}
+	if(mainWidget) mainWidget->setVisible(v);
 }
 
 #endif // USE_MYGUI

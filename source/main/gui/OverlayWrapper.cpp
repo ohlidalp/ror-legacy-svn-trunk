@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreFontManager.h"
 #include "RoRVersion.h"
 #include "Console.h"
+#include "DashBoardManager.h"
 
 #include "autopilot.h"
 #include "aeroengine.h"
@@ -496,52 +497,61 @@ void OverlayWrapper::showEditorOverlay(bool show)
 	}
 }
 
-void OverlayWrapper::showDashboardOverlays(bool show, int mode)
+void OverlayWrapper::showDashboardOverlays(bool show, Beam *truck)
 {
-	if (needlesOverlay && dashboardOverlay)
+	if (!needlesOverlay || !dashboardOverlay) return;
+	int mode = -1;
+	if(truck)
+		mode = truck->driveable;
+
+	// check if we use the new style dashboards
+	if(truck && truck->dash && truck->dash->wasLoaded())
 	{
-		if (show)
+		truck->dash->setVisible(show);
+		return;
+	}
+	
+	if (show)
+	{
+		if (mode==TRUCK)
 		{
-			if (mode==TRUCK)
-			{
-				needlesMaskOverlay->show();
-				needlesOverlay->show();
-				dashboardOverlay->show();
-			};
-			if (mode==AIRPLANE)
-			{
-				airneedlesOverlay->show();
-				airdashboardOverlay->show();
-				//mouseOverlay->show();
-			};
-			if (mode==BOAT)
-			{
-				boatneedlesOverlay->show();
-				boatdashboardOverlay->show();
-			};
-			if (mode==BOAT)
-			{
-				boatneedlesOverlay->show();
-				boatdashboardOverlay->show();
-			};
-			if (mode==MACHINE)
-			{
-				machinedashboardOverlay->show();
-			};
-		}
-		else
+			needlesMaskOverlay->show();
+			needlesOverlay->show();
+			dashboardOverlay->show();
+		};
+		if (mode==AIRPLANE)
 		{
-			machinedashboardOverlay->hide();
-			needlesMaskOverlay->hide();
-			needlesOverlay->hide();
-			dashboardOverlay->hide();
-			//for the airplane
-			airneedlesOverlay->hide();
-			airdashboardOverlay->hide();
-			//mouseOverlay->hide();
-			boatneedlesOverlay->hide();
-			boatdashboardOverlay->hide();
-		}
+			airneedlesOverlay->show();
+			airdashboardOverlay->show();
+			//mouseOverlay->show();
+		};
+		if (mode==BOAT)
+		{
+			boatneedlesOverlay->show();
+			boatdashboardOverlay->show();
+		};
+		if (mode==BOAT)
+		{
+			boatneedlesOverlay->show();
+			boatdashboardOverlay->show();
+		};
+		if (mode==MACHINE)
+		{
+			machinedashboardOverlay->show();
+		};
+	}
+	else
+	{
+		machinedashboardOverlay->hide();
+		needlesMaskOverlay->hide();
+		needlesOverlay->hide();
+		dashboardOverlay->hide();
+		//for the airplane
+		airneedlesOverlay->hide();
+		airdashboardOverlay->hide();
+		//mouseOverlay->hide();
+		boatneedlesOverlay->hide();
+		boatdashboardOverlay->hide();
 	}
 }
 
@@ -802,6 +812,7 @@ int OverlayWrapper::getDashBoardHeight()
 
 bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 {
+	if(!airneedlesOverlay->isVisible()) return false;
 	bool res = false;
 	const OIS::MouseState ms = _arg.state;
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();

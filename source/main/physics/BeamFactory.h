@@ -78,6 +78,8 @@ public:
 
 	void _waitForSync();
 
+	void windowResized();
+
 protected:
 	Ogre::SceneManager *manager;
 	Ogre::SceneNode *parent;
@@ -112,7 +114,6 @@ protected:
 	void removeInstance(Beam *b);
 	void removeInstance(stream_del_t *del);
 	void _deleteTruck(Beam *b);
-
 
 	pthread_mutex_t done_count_mutex;
 	pthread_cond_t done_count_cv;

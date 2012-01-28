@@ -119,6 +119,8 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 		// hack for console, we want to use the mouse through that control
 		if(w && w->getName().substr(0, 7) == "Console")
 			handled = false;
+		if(w && w->getUserString("interactive") == "0")
+			handled = false;
 	}
 
 	if(!handled)
@@ -173,6 +175,8 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 		// hack for console, we want to use the mouse through that control
 		if(w && w->getName().substr(0, 7) == "Console")
 			handled = false;
+		if(w && w->getUserString("interactive") == "0")
+			handled = false;
 	}
 
 	if(!handled)
@@ -202,6 +206,8 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
 		// hack for console, we want to use the mouse through that control
 		if(w && w->getName().substr(0, 7) == "Console")
+			handled = false;
+		if(w && w->getUserString("interactive") == "0")
 			handled = false;
 	}
 
