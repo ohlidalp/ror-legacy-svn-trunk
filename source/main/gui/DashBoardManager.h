@@ -183,7 +183,7 @@ public:
 
 	int getLinkIDForName(Ogre::String &str);
 
-	int loadDashBoard(Ogre::String filename);
+	int loadDashBoard(Ogre::String filename, bool textureLayer);
 
 	void update(float &dt);
 
@@ -204,7 +204,7 @@ class DashBoard
 {
 	//friend class DashBoardManager;
 public:
-	DashBoard(DashBoardManager *manager, Ogre::String filename);
+	DashBoard(DashBoardManager *manager, Ogre::String filename, bool textureLayer);
 	~DashBoard();
 
 	void setVisible(bool visible);
@@ -219,7 +219,7 @@ protected:
 	Ogre::String filename;
 	MyGUI::VectorWidgetPtr widgets;
 	MyGUI::WidgetPtr mainWidget;
-	bool visible;
+	bool visible, textureLayer;
 	std::string prefix;
 
 	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXT, ANIM_TEXT2, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE };
@@ -255,7 +255,7 @@ protected:
 		bool lastState;
 	} layoutLink_t;
 
-	void loadLayout(Ogre::String filename);
+	void loadLayout(Ogre::String filename );
 	void loadLayoutRecursive(MyGUI::WidgetPtr ptr);
 	layoutLink_t controls[MAX_CONTROLS];
 	int free_controls;

@@ -225,7 +225,7 @@ SerializedRig::SerializedRig()
 
 	odometerTotal = 0;
 	odometerUser  = 0;
-	dashBoardLayout = String();
+	dashBoardLayouts.clear();
 
 	memset(default_node_options, 0, 49);
 	memset(texname, 0, 1023);
@@ -4189,7 +4189,11 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				else if(!strncmp(keyword, "dashboard", 255) && strnlen(value, 255) > 0)
 				{
-					dashBoardLayout = String(value);
+					dashBoardLayouts.push_back(std::pair<Ogre::String, bool>(String(value), false));
+				}
+				else if(!strncmp(keyword, "texturedashboard", 255) && strnlen(value, 255) > 0)
+				{
+					dashBoardLayouts.push_back(std::pair<Ogre::String, bool>(String(value), true));
 				}
 
 			}

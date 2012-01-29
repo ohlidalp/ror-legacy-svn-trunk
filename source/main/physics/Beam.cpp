@@ -1208,6 +1208,12 @@ void Beam::calcNetwork()
 		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
 
+#ifdef USE_MYGUI
+	updateDashBoards(tratio);
+	if(dash)
+		dash->update(tratio);
+#endif // USE_MYGUI
+
 	BES_GFX_STOP(BES_GFX_calcNetwork);
 }
 
@@ -2044,7 +2050,8 @@ bool Beam::frameStep(Real dt)
 	
 #ifdef USE_MYGUI
 	updateDashBoards(dt);
-	dash->update(dt);
+	if(dash)
+		dash->update(dt);
 #endif // USE_MYGUI
 
 
@@ -3501,7 +3508,8 @@ void Beam::prepareInside(bool inside)
 	{
 		//going outside
 #ifdef USE_MYGUI
-		dash->setVisible(false);
+		if(dash)
+			dash->setVisible(false);
 #endif // USE_MYGUI
 
 		// disable cabin light before going out
@@ -5511,16 +5519,25 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 #ifdef USE_MYGUI
 	// now load any dashboards
-	if(dashBoardLayout.empty())
+	if(dash)
 	{
-		// load default for a truck
-		if(driveable == TRUCK)
-			dash->loadDashBoard("default_dashboard.layout");
-	} else
-	{
-		dash->loadDashBoard(dashBoardLayout);
+		if(dashBoardLayouts.empty())
+		{
+			// load default for a truck
+			if(driveable == TRUCK)
+			{
+				dash->loadDashBoard("default_dashboard.layout", false);
+				// TODO: load texture dashboard by default as well
+				dash->loadDashBoard("default_dashboard.layout", true);
+			}
+		} else
+		{
+			// load all dashs
+			for(int i=0; i < dashBoardLayouts.size(); i++)
+				dash->loadDashBoard(dashBoardLayouts[i].first, dashBoardLayouts[i].second);
+		}
+		dash->setVisible(false);
 	}
-	dash->setVisible(false);
 #endif // USE_MYGUI
 
 	return res;
@@ -5618,6 +5635,7 @@ void Beam::updateAI(float dt)
 void Beam::updateDashBoards(float &dt)
 {
 #ifdef USE_MYGUI
+	if(!dash) return;
 	// some temp vars
 	Vector3 dir;
 

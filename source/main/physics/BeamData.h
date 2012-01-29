@@ -1029,7 +1029,7 @@ struct rig
 	float odometerTotal;
 	float odometerUser;
 
-	Ogre::String dashBoardLayout;
+	std::vector<std::pair<Ogre::String, bool> > dashBoardLayouts;
 	Ogre::String beamHash;
 };
 
