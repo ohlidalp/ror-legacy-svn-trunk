@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRWindowEventUtilities.h"
 #include <MyGUI_OgrePlatform.h>
 #include <MyGUI_LanguageManager.h>
+#include "RTTLayer.h"
 
 #include "Console.h"
 #include "BeamFactory.h"
@@ -93,8 +94,16 @@ void GUIManager::createGui()
 	mPlatform = new MyGUI::OgrePlatform();
 	mPlatform->initialise(mWindow, mSceneManager, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
-	mGUI->initialise(mResourceFileName);
+
+	// empty init
+	mGUI->initialise("");
+
+	// add layer factory
+	MyGUI::FactoryManager::getInstance().registerFactory<MyGUI::RTTLayer>("Layer");
 	
+	// then load the actual config
+	MyGUI::ResourceManager::getInstance().load(mResourceFileName);
+
 	MyGUI::ResourceManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
 
 	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)

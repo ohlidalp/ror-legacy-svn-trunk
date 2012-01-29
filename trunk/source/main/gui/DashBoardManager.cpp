@@ -136,15 +136,15 @@ int DashBoardManager::getLinkIDForName(Ogre::String &str)
 	return -1;
 }
 
-int DashBoardManager::loadDashBoard( Ogre::String filename )
+int DashBoardManager::loadDashBoard( Ogre::String filename, bool textureLayer )
 {
 	if(free_dashboard >= MAX_DASH)
 	{
-		LOG("maximum amount of dashboards ber truck reached, discarding the rest: " + TOSTRING(MAX_DASH));
+		LOG("maximum amount of dashboards per truck reached, discarding the rest: " + TOSTRING(MAX_DASH));
 		return 1;
 	}
 
-	DashBoard *d = new DashBoard(this, filename);
+	DashBoard *d = new DashBoard(this, filename, textureLayer);
 	d->setVisible(true);
 
 	dashboards[free_dashboard] = d;
@@ -195,7 +195,7 @@ void DashBoardManager::windowResized()
 
 // DASHBOARD class below
 
-DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename) : manager(manager), filename(filename), free_controls(0), visible(false), mainWidget(0)
+DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename, bool _textureLayer) : manager(manager), filename(filename), free_controls(0), visible(false), mainWidget(0), textureLayer(_textureLayer)
 {
 	// use 'this' class pointer to make layout unique
 	prefix = MyGUI::utility::toString(this, "_");
@@ -617,6 +617,9 @@ void DashBoard::loadLayout( Ogre::String filename )
 		loadLayoutRecursive(*iter);
 	}
 
+	// if this thing should be rendered to texture, relocate the main window to the RTT layer
+	if(textureLayer && mainWidget)
+		mainWidget->detachFromWidget("RTTLayer1");
 }
 
 void DashBoard::setVisible(bool v)
