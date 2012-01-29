@@ -218,11 +218,11 @@ protected:
 	DashBoardManager *manager;
 	Ogre::String filename;
 	MyGUI::VectorWidgetPtr widgets;
-	MyGUI::WidgetPtr mainWidget;
+	MyGUI::WindowPtr mainWidget;
 	bool visible, textureLayer;
 	std::string prefix;
 
-	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXT, ANIM_TEXT2, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE };
+	enum {ANIM_NONE,      ANIM_ROTATE, ANIM_SCALE, ANIM_TEXTFORMAT, ANIM_TEXTSTRING, ANIM_LAMP, ANIM_SERIES, ANIM_TRANSLATE, ANIM_TEXTCOLOR };
 	enum {DIRECTION_NONE, DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT };
 	enum {CONDITION_NONE, CONDITION_GREATER, CONDITION_LESSER};
 

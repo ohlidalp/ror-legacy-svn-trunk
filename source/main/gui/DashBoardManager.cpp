@@ -195,12 +195,14 @@ void DashBoardManager::windowResized()
 
 // DASHBOARD class below
 
-DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename, bool _textureLayer) : manager(manager), filename(filename), free_controls(0), visible(false), mainWidget(0), textureLayer(_textureLayer)
+DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename, bool _textureLayer) : manager(manager), filename(filename), free_controls(0), visible(false), mainWidget(nullptr), textureLayer(_textureLayer)
 {
 	// use 'this' class pointer to make layout unique
 	prefix = MyGUI::utility::toString(this, "_");
 	memset(&controls, 0, sizeof(controls));
 	loadLayout(filename);
+	// hide first
+	if(mainWidget) mainWidget->setVisible(false);
 }
 
 DashBoard::~DashBoard()
@@ -313,7 +315,7 @@ void DashBoard::update( float &dt )
 			else if(controls[i].direction == DIRECTION_RIGHT)
 				controls[i].widget->setPosition(controls[i].initialPosition.left + translation, controls[i].initialPosition.top);
 		}
-		else if(controls[i].animationType == ANIM_TEXT)
+		else if(controls[i].animationType == ANIM_TEXTFORMAT)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
 
@@ -333,7 +335,7 @@ void DashBoard::update( float &dt )
 
 			controls[i].txt->setCaption(s);
 		}
-		else if(controls[i].animationType == ANIM_TEXT2)
+		else if(controls[i].animationType == ANIM_TEXTSTRING)
 		{
 			char *val = manager->getChar(controls[i].linkID);
 			controls[i].txt->setCaption(MyGUI::UString(val));
@@ -379,7 +381,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 		std::string prefixLessName = name.substr(prefix.size());
 		if(prefixLessName == "_Main")
 		{
-			mainWidget = w;
+			mainWidget = (MyGUI::WindowPtr)w;
 			// resize it
 			windowResized();
 		}
@@ -548,21 +550,22 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 				return;
 			}
 		}
-		else if(anim == "text")
+		else if(anim == "textcolor" || anim == "textcolour")
 		{
+			ctrl.animationType = ANIM_TEXTCOLOR;
+
 			// try to cast, will throw
 			try
 			{
-				ctrl.txt = (MyGUI::TextBox *)w; // w->getSubWidgetMain()->castType<MyGUI::TextBox>();
+				ctrl.txt = (MyGUI::TextBox *)w;
 			}
 			catch (...)
 			{
-				LOG("Dashboard ("+filename+"/"+name+"): Lamp controls must use the ImageBox Control");
+				LOG("Dashboard ("+filename+"/"+name+"): textcolor controls must use the TextBox Control");
 				return;
 			}
-			ctrl.animationType = ANIM_TEXT;
 		}
-		else if(anim == "text2")
+		else if(anim == "textformat")
 		{
 			// try to cast, will throw
 			try
@@ -574,7 +577,21 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 				LOG("Dashboard ("+filename+"/"+name+"): Lamp controls must use the ImageBox Control");
 				return;
 			}
-			ctrl.animationType = ANIM_TEXT2;
+			ctrl.animationType = ANIM_TEXTFORMAT;
+		}
+		else if(anim == "textstring")
+		{
+			// try to cast, will throw
+			try
+			{
+				ctrl.txt = (MyGUI::TextBox *)w; // w->getSubWidgetMain()->castType<MyGUI::TextBox>();
+			}
+			catch (...)
+			{
+				LOG("Dashboard ("+filename+"/"+name+"): Lamp controls must use the ImageBox Control");
+				return;
+			}
+			ctrl.animationType = ANIM_TEXTSTRING;
 		}
 		else if(anim == "lamp")
 		{
@@ -636,7 +653,7 @@ void DashBoard::loadLayout( Ogre::String filename )
 void DashBoard::setVisible(bool v)
 {
 	visible = v;
-	if(mainWidget) mainWidget->setVisible(v);
+	if(mainWidget) mainWidget->setVisibleSmooth(v);
 }
 
 #endif // USE_MYGUI

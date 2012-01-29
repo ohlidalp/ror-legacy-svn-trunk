@@ -5533,7 +5533,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 		} else
 		{
 			// load all dashs
-			for(int i=0; i < dashBoardLayouts.size(); i++)
+			for(unsigned int i=0; i < dashBoardLayouts.size(); i++)
 				dash->loadDashBoard(dashBoardLayouts[i].first, dashBoardLayouts[i].second);
 		}
 		dash->setVisible(false);
