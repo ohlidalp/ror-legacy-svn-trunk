@@ -343,8 +343,19 @@ void DashBoard::update( float &dt )
 
 void DashBoard::windowResized()
 {
-	MyGUI::IntSize screenSize = MyGUI::RenderManager::getInstance().getViewSize();
-	if(mainWidget) mainWidget->setSize(screenSize);
+	if(!mainWidget) return;
+	mainWidget->setPosition(0, 0);
+	if(textureLayer)
+	{
+		// texture layers are independent from the screen size, but rather from the layer texture size
+		TexturePtr tex = TextureManager::getSingleton().getByName("RTTTexture1");
+		if(!tex.isNull())
+			mainWidget->setSize(tex->getWidth(), tex->getHeight());
+	} else
+	{
+		MyGUI::IntSize screenSize = MyGUI::RenderManager::getInstance().getViewSize();
+		mainWidget->setSize(screenSize);
+	}
 }
 
 void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
