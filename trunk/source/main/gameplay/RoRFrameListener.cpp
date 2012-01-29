@@ -5247,6 +5247,26 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	}
 #endif //MYGUI
 
+#if 0
+	// put some trucks in a fancy circle
+	// not functional purpose, just for screenshots
+	{
+		float dg = 0, rad = 10;
+		for(int i=0;i < 200; i++)
+		{
+			dg += (Ogre::Math::PI * 2) / (10+rad);
+			rad += 0.4f;
+			if(dg > 2 * Ogre::Math::PI)
+			{
+				//rad += 10;
+				dg -= 2 * Ogre::Math::PI;
+			}
+			Vector3 pos(cx + cos(dg) * rad, cy, cz + sin(dg) * rad);
+			BeamFactory::getSingleton().createLocal(pos, Quaternion(Radian(-dg), Vector3::UNIT_Y), "semi.truck");
+		}
+		BeamFactory::getSingleton().sendAllTrucksSleeping();
+	}
+#endif // 0
 
 	collisions->finishLoadingTerrain();
 
