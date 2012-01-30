@@ -23,13 +23,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __SoundScriptManager_H__
 
 #include "RoRPrerequisites.h"
-
 #include "Ogre.h"
 #include "Beam.h"
 #include "OgreScriptLoader.h"
 #include "OgreResourceGroupManager.h"
+#include "Sound.h"
 #include "SoundManager.h"
-
 
 #define MAX_SOUNDS_PER_SCRIPT 16
 #define MAX_INSTANCES_PER_GROUP 256
@@ -132,21 +131,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SS_MOD_AOA          28
 #define SS_MAX_MOD			29
 
-
-using namespace Ogre;
-
 class SoundScriptTemplate
 {
 public:
-	SoundScriptTemplate(String name, String groupname, String filename, bool baseTemplate);
+	SoundScriptTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename, bool baseTemplate);
 	bool setParameter(StringVector vec);
 	~SoundScriptTemplate();
 
 //private:
-	int parseModulation(String str);
-	String name;
-	String groupname;
-	String filename;
+	int parseModulation(Ogre::String str);
+	Ogre::String name;
+	Ogre::String groupname;
+	Ogre::String filename;
 	int trigger_source;
 	int pitch_source;
 	float pitch_offset;
@@ -158,24 +154,24 @@ public:
 	float gain_square;
 	bool has_start_sound;
 	float start_sound_pitch;
-	String start_sound_name;
+	Ogre::String start_sound_name;
 	bool has_stop_sound;
 	float stop_sound_pitch;
-	String stop_sound_name;
+	Ogre::String stop_sound_name;
 	bool unpitchable;
 	int free_sound;
 	float sound_pitches[MAX_SOUNDS_PER_SCRIPT];
-	String sound_names[MAX_SOUNDS_PER_SCRIPT];
+	Ogre::String sound_names[MAX_SOUNDS_PER_SCRIPT];
 	bool baseTemplate;
 };
 
 class SoundScriptInstance
 {
 public:
-	SoundScriptInstance(int truck, SoundScriptTemplate* templ, SoundManager* sm, String instancename);
+	SoundScriptInstance(int truck, SoundScriptTemplate* templ, SoundManager* sm, Ogre::String instancename);
 	void setPitch(float value);
 	void setGain(float value);
-	void setPosition(Vector3 pos, Vector3 velocity);
+	void setPosition(Ogre::Vector3 pos, Ogre::Vector3 velocity);
 	void runOnce();
 	void start();
 	void stop();
@@ -205,11 +201,11 @@ public:
 
 	//ScriptLoader interface
     const StringVector& getScriptPatterns(void) const;
-    void parseScript(DataStreamPtr& stream, const String& groupName);
+    void parseScript(DataStreamPtr& stream, const Ogre::String& groupName);
     Real getLoadingOrder(void) const;
 
-	SoundScriptInstance* createInstance(String templatename, int truck, SceneNode *toAttach);
-	void unloadResourceGroup(String groupname);
+	SoundScriptInstance* createInstance(Ogre::String templatename, int truck, SceneNode *toAttach);
+	void unloadResourceGroup(Ogre::String groupname);
 	void clearNonBaseTemplates();
 
 	//values update
@@ -228,7 +224,7 @@ public:
 
 	void soundEnable(bool state);
 
-	void setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity);
+	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
 	void setLoadingBaseSounds(bool v) { loadingBase = v; };
 
 	float maxDistance;
@@ -243,7 +239,7 @@ private:
 
 	void skipToNextCloseBrace(DataStreamPtr& chunk);
 	void skipToNextOpenBrace(DataStreamPtr& chunk);
-	SoundScriptTemplate* createTemplate(String name, String groupname, String filename);
+	SoundScriptTemplate* createTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename);
 	//instances lookup tables
 	int free_trigs[SS_MAX_TRIG];
 	SoundScriptInstance* trigs[SS_MAX_TRIG*MAX_INSTANCES_PER_GROUP];

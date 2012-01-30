@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_OPENAL
 
-#include "Ogre.h"
+#include "Sound.h"
 #include "SoundScriptManager.h"
 #include "Settings.h"
 
@@ -48,7 +48,7 @@ SoundScriptManager::SoundScriptManager()
 	}
 	for (int i=0; i<SS_MAX_TRIG*(MAX_TRUCKS+2); i++) statemap[i]=false;
 	sm=new SoundManager(); //we can give a device name if we want here
-	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->maxSources())+" sources");
+	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->getNumHardwareSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 }
