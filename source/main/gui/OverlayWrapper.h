@@ -31,7 +31,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreOverlay.h>
 #include "OgreTextAreaOverlayElement.h"
-#include "OgreLineStreamOverlayElement.h"
 #include <OgrePanelOverlayElement.h>
 
 #include <OgreSingleton.h>
@@ -144,8 +143,6 @@ public:
 	Ogre::TextAreaOverlayElement* directionArrowDistance;
 	Ogre::TextAreaOverlayElement* alt_value_taoe;
 	Ogre::TextAreaOverlayElement* boat_depth_value_taoe;
-
-	Ogre::LineStreamOverlayElement *fpsLineStream, *netLineStream, *netlagLineStream;
 
 	Ogre::TextureUnitState *adibugstexture;
 	Ogre::TextureUnitState *aditapetexture;

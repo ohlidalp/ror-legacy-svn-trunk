@@ -25,7 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define COMMANDS_VISIBLE 25
 
 #include "Beam.h"
-#include "OgreLineStreamOverlayElement.h"
 
 class TruckHUD
 {
