@@ -37,15 +37,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> GUIManager * Singleton< GUIManager >::ms_Singleton = 0;
+template<> GUIManager * Singleton< GUIManager >::SINGLETON_MEMBER = 0;
 
 GUIManager* GUIManager::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 GUIManager& GUIManager::getSingleton(void)
 {
-	assert( ms_Singleton );  return ( *ms_Singleton );
+	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 GUIManager::GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win) :

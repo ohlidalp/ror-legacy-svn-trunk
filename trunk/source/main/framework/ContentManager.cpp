@@ -44,7 +44,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
-template<> ContentManager* Ogre::Singleton<ContentManager>::ms_Singleton = 0;
+template<> ContentManager* Ogre::Singleton<ContentManager>::SINGLETON_MEMBER = 0;
 
 ContentManager::ContentManager()
 {

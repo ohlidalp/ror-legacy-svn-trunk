@@ -43,8 +43,8 @@ public:
 	// constructor, destructor and singleton
 	StreamableFactory( void ) : locked(false)
 	{
-		MYASSERT( !ms_Singleton );
-		ms_Singleton = static_cast< T* >( this );
+		MYASSERT( !SINGLETON_MEMBER );
+		SINGLETON_MEMBER = static_cast< T* >( this );
 		pthread_mutex_init(&stream_reg_mutex, NULL);
 
 		// add self to factory list
@@ -53,19 +53,19 @@ public:
 
 	~StreamableFactory( void )
 	{
-		MYASSERT( ms_Singleton );
-		ms_Singleton = 0;
+		MYASSERT( SINGLETON_MEMBER );
+		SINGLETON_MEMBER = 0;
 	}
 
 	static T& getSingleton( void )
 	{
-		MYASSERT( ms_Singleton );
-		return ( *ms_Singleton );
+		MYASSERT( SINGLETON_MEMBER );
+		return ( *SINGLETON_MEMBER );
 	}
 
 	static T* getSingletonPtr( void )
 	{
-		return ms_Singleton;
+		return SINGLETON_MEMBER;
 	}
 
 	// useful functions
@@ -328,7 +328,7 @@ public:
 	}
 
 protected:
-	static T* ms_Singleton;
+	static T* SINGLETON_MEMBER;
 	pthread_mutex_t stream_reg_mutex;
 	bool locked;
 

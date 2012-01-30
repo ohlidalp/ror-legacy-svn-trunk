@@ -54,7 +54,6 @@ TextureToolWindow::~TextureToolWindow()
 void TextureToolWindow::show()
 {
 	((MyGUI::Window*)mMainWidget)->setVisibleSmooth(true);
-	//((MyGUI::Window*)mMainWidget)->setAlpha(0.9);
 	fillCombo();
 }
 
@@ -88,28 +87,6 @@ void TextureToolWindow::hide()
 	((MyGUI::Window*)mMainWidget)->setVisibleSmooth(false);
 }
 
-void TextureToolWindow::notifyWindowPressed(MyGUI::Window* _widget, const std::string& _name)
-{
-	MyGUI::WindowPtr window = _widget->castType<MyGUI::Window>();
-	if (_name == "close")
-		hide();
-}
-
-void TextureToolWindow::eventClickSavePNGButton( MyGUI::WidgetPtr _sender )
-{
-	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), true);
-}
-
-void TextureToolWindow::eventClickSaveRAWButton( MyGUI::WidgetPtr _sender )
-{
-	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), false);
-}
-
-void TextureToolWindow::eventSelectTexture( MyGUI::WidgetPtr _sender )
-{
-	updateControls(mCBo->getItemNameAt(mCBo->getItemIndexSelected()));
-}
-
 void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
 {
 	try
@@ -125,17 +102,14 @@ void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
 		if(usePNG) outname += ".png";
 
 		img.save(outname);
-#ifdef USE_MYGUI
+
 		UTFString msg = _L("saved texture as ") + outname;
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, msg, "information.png");
-#endif //USE_MYGUI
 	}
 	catch(Exception &e)
 	{
-#ifdef USE_MYGUI
-		UTFString str = "Exception while saving image:" + e.getFullDescription();
+		UTFString str = "Exception while saving image: " + e.getFullDescription();
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
-#endif //USE_MYGUI
 	}
 }
 
@@ -203,10 +177,8 @@ void TextureToolWindow::updateControls( Ogre::String texName )
 	}
 	catch(Exception &e)
 	{
-#ifdef USE_MYGUI
 		UTFString str = "Exception while opening texture:" + e.getFullDescription();
 		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
-#endif //USE_MYGUI
 	}
 }
 
@@ -219,6 +191,29 @@ void TextureToolWindow::eventClickDynamicButton( MyGUI::WidgetPtr _sender )
 {
 	mChkDynamic->setStateSelected(!mChkDynamic->getStateSelected());
 	fillCombo();
+}
+
+
+void TextureToolWindow::notifyWindowPressed(MyGUI::Window* _widget, const std::string& _name)
+{
+	MyGUI::WindowPtr window = _widget->castType<MyGUI::Window>();
+	if (_name == "close")
+		hide();
+}
+
+void TextureToolWindow::eventClickSavePNGButton( MyGUI::WidgetPtr _sender )
+{
+	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), true);
+}
+
+void TextureToolWindow::eventClickSaveRAWButton( MyGUI::WidgetPtr _sender )
+{
+	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), false);
+}
+
+void TextureToolWindow::eventSelectTexture( MyGUI::WidgetPtr _sender )
+{
+	updateControls(mCBo->getItemNameAt(mCBo->getItemIndexSelected()));
 }
 
 #endif //MYGUI
