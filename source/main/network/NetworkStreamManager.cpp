@@ -42,14 +42,14 @@ NetworkStreamManager::~NetworkStreamManager()
 {
 }
 
-template<> NetworkStreamManager * Singleton< NetworkStreamManager >::ms_Singleton = 0;
+template<> NetworkStreamManager * Singleton< NetworkStreamManager >::SINGLETON_MEMBER = 0;
 NetworkStreamManager* NetworkStreamManager::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 NetworkStreamManager& NetworkStreamManager::getSingleton(void)
 {
-	MYASSERT( ms_Singleton );  return ( *ms_Singleton );
+	MYASSERT( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size)

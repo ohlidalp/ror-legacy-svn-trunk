@@ -38,14 +38,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> GUI_MainMenu * Singleton< GUI_MainMenu >::ms_Singleton = 0;
+template<> GUI_MainMenu * Singleton< GUI_MainMenu >::SINGLETON_MEMBER = 0;
 GUI_MainMenu* GUI_MainMenu::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 GUI_MainMenu& GUI_MainMenu::getSingleton(void)
 {
-	assert( ms_Singleton );  return ( *ms_Singleton );
+	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20), vehicleListNeedsUpdate(false)

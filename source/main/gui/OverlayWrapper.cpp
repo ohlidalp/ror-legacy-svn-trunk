@@ -41,7 +41,7 @@ using namespace std;
 using namespace Ogre;
 
 
-template<> OverlayWrapper* Ogre::Singleton<OverlayWrapper>::ms_Singleton = 0;
+template<> OverlayWrapper* Ogre::Singleton<OverlayWrapper>::SINGLETON_MEMBER = 0;
 
 // OverlayWrapper class
 OverlayWrapper::OverlayWrapper(Ogre::RenderWindow* win) : win(win)

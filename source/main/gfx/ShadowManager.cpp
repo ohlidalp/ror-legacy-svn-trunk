@@ -31,14 +31,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //using namespace Ogre;
 
 //---------------------------------------------------------------------
-template<> ShadowManager * Ogre::Singleton< ShadowManager >::ms_Singleton = 0;
+template<> ShadowManager * Ogre::Singleton< ShadowManager >::SINGLETON_MEMBER = 0;
 ShadowManager* ShadowManager::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 ShadowManager& ShadowManager::getSingleton(void)
 {
-	assert( ms_Singleton );  return ( *ms_Singleton );
+	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 ShadowManager::ShadowManager(Ogre::SceneManager *scene, Ogre::RenderWindow *window, Ogre::Camera *camera) :

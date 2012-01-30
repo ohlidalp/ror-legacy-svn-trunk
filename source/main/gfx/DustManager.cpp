@@ -30,14 +30,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> DustManager * Singleton< DustManager >::ms_Singleton = 0;
+template<> DustManager * Singleton< DustManager >::SINGLETON_MEMBER = 0;
 DustManager* DustManager::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 DustManager& DustManager::getSingleton(void)
 {
-	assert( ms_Singleton );  return ( *ms_Singleton );
+	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)

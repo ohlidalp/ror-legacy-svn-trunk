@@ -33,14 +33,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "PlayerColours.h"
 #include "BeamFactory.h"
 
-template<> GUI_Multiplayer * Singleton< GUI_Multiplayer >::ms_Singleton = 0;
+template<> GUI_Multiplayer * Singleton< GUI_Multiplayer >::SINGLETON_MEMBER = 0;
 GUI_Multiplayer* GUI_Multiplayer::getSingletonPtr(void)
 {
-	return ms_Singleton;
+	return SINGLETON_MEMBER;
 }
 GUI_Multiplayer& GUI_Multiplayer::getSingleton(void)
 {
-	assert( ms_Singleton );  return ( *ms_Singleton );
+	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
 }
 
 GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), msgwin(0), mCamera(cam), clients(0)

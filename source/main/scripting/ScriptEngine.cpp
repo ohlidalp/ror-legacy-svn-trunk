@@ -64,7 +64,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //using namespace std;
 //using namespace AngelScript;
 
-template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::ms_Singleton=0;
+template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::SINGLETON_MEMBER=0;
 
 const char *ScriptEngine::moduleName = "RoRScript";
 

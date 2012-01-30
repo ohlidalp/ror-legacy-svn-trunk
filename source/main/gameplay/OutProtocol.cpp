@@ -64,7 +64,7 @@ PACK (struct OutGaugePack
 	int			ID;				// optional - only if OutGauge ID is specified
 });
 
-template<> OutProtocol * Ogre::Singleton< OutProtocol >::ms_Singleton = 0;
+template<> OutProtocol * Ogre::Singleton< OutProtocol >::SINGLETON_MEMBER = 0;
 
 OutProtocol::OutProtocol(void) : sockfd(-1), delay(0.1), timer(0), mode(0), id(0), working(false), counter(0)
 {

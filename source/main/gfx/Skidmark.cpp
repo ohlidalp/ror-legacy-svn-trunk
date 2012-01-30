@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //using namespace std;
 int Skidmark::instancecounter = 0;
 
-template<> SkidmarkManager *Ogre::Singleton<SkidmarkManager>::ms_Singleton=0;
+template<> SkidmarkManager *Ogre::Singleton<SkidmarkManager>::SINGLETON_MEMBER=0;
 
 SkidmarkManager::SkidmarkManager()
 {

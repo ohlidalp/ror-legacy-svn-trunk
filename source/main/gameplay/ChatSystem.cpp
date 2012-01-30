@@ -41,7 +41,7 @@ using namespace Ogre;
 ///////////////////////////////////
 // ChatSystemFactory
 
-template<> ChatSystemFactory *StreamableFactory < ChatSystemFactory, ChatSystem >::ms_Singleton = 0;
+template<> ChatSystemFactory *StreamableFactory < ChatSystemFactory, ChatSystem >::SINGLETON_MEMBER = 0;
 
 ChatSystemFactory::ChatSystemFactory(Network *net) : net(net)
 {
