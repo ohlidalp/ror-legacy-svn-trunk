@@ -32,6 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Savegame.h"
 #include "network.h"
 #include "utils.h"
+#include "TextureToolWindow.h"
 
 #include "language.h"
 
@@ -146,7 +147,11 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	p->addItem(_L("show Beam strength"), MyGUI::MenuItemType::Normal, "debug-beam-strength");
 	p->addItem(_L("show Beam hydros"), MyGUI::MenuItemType::Normal, "debug-beam-hydros");
 	p->addItem(_L("show Beam commands"), MyGUI::MenuItemType::Normal, "debug-beam-commands");
+	p->addItem("-", MyGUI::MenuItemType::Separator);
+	p->addItem(_L("Texture Tool"), MyGUI::MenuItemType::Normal, "texturetool");
 	pop.push_back(p);
+
+	
 
 	// event callbacks
 	mainmenu->eventMenuCtrlAccept += MyGUI::newDelegate(this, &GUI_MainMenu::onMenuBtn);
@@ -421,7 +426,11 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
 		if(b) b->setDebugOverlayState(11);
+	} else if(miname == _L("Texture Tool"))
+	{
+		TextureToolWindow::getInstance().show();
 	}
+
 
 	//LOG(" menu button pressed: " + _item->getCaption());
 }
