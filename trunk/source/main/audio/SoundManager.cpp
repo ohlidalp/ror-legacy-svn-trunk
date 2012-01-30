@@ -17,36 +17,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef USE_OPENAL
 
-#include "Ogre.h"
+#include "Sound.h"
 #include "SoundManager.h"
 #include "Settings.h"
-//#include "pstdint.h"
-
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #pragma GCC diagnostic ignored "-Wfloat-equal"
-#endif //OGRE_PLATFORM_LINUX
+#endif // OGRE_PLATFORM_LINUX
 
 using namespace Ogre;
 
-SoundManager::SoundManager()
+const float SoundManager::MAX_DISTANCE       = 500.0f;
+const float SoundManager::ROLLOFF_FACTOR     = 1.0f;
+const float SoundManager::REFERENCE_DISTANCE = 7.5f;
+
+SoundManager::SoundManager() :
+	  m_sound_device(NULL)
+	, m_sound_context(NULL)
+	, m_audio_sources_in_use_count(0)
+	, m_audio_buffers_in_use_count(0)
+	, m_hardware_sources_num(0)
+	, m_hardware_sources_in_use_count(0)
 {
-	device=NULL;
-	context=NULL;
-	free_input_source=0;
-	free_buffer=0;
-	num_hardware_sources=0;
-	used_hardware_sources=0;
-	maxDistance=500.0;
-	rolloffFactor=1.0;
-	referenceDistance=7.5;
-	pthread_mutex_init(&audio_mutex, NULL);
-
-	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) hardware_sources_input_map[i]=-1;
-
 	if (SSETTING("3D Sound renderer") == "No sound") return;
 
     char str[256];
@@ -55,561 +51,379 @@ SoundManager::SoundManager()
 
 	LOG("Opening Device: '"+String(str)+"'");
 
-	//we loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
+	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) m_hardware_sources_map[i]=-1;
+
+	// We loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
 	for (int i=0; i<100; i++)
 	{
-		device=alcOpenDevice(str);
-		if (device) break; //all right we got it
+		m_sound_device=alcOpenDevice(str);
+		if (m_sound_device)
+			break;
 		else
 		{
-			ALint error;
-			error=alGetError();
-			if (error!=ALC_INVALID_VALUE)
-			{
-				//this is unexpected error
-				LOG("Could not create OpenAL device, error code: "+TOSTRING(error));
-				return;
-			} //else just loop
+			ALint error=alGetError();
+			if (error != ALC_INVALID_VALUE) {LOG("Could not create OpenAL device, error code: "+TOSTRING(error));return;}
 		}
 	}
-	if (!device) //we looped and we got nothing
+	if (!m_sound_device)
 	{
-		//last ditch attempt with the default sound device, in case the user has a messed-up config file
-		device=alcOpenDevice("");
-		if (!device)
-		{
-			LOG("Could not create OpenAL device after many tries.");
-			return;
-		}
-		else
-			LOG("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
+		// Last ditch attempt with the default sound device, in case the user has a messed-up config file
+		m_sound_device=alcOpenDevice("");
+		if (!m_sound_device) {LOG("Could not create OpenAL device after many tries.");return;}
+		else LOG("Warning: invalid sound device configuration, I will use the default sound source. Run configurator!");
 	}
-	context=alcCreateContext(device, NULL);
-	if (!context)
+	m_sound_context=alcCreateContext(m_sound_device, NULL);
+	if (!m_sound_context)
 	{
 		ALint error;
 		error=alGetError();
 		LOG("Could not create OpenAL context, error code: "+TOSTRING(error));
-		alcCloseDevice(device);
-		device=NULL;
+		alcCloseDevice(m_sound_device);
+		m_sound_device=NULL;
 		return;
 	}
-	alcMakeContextCurrent(context);
-	//generate the AL sources
-	for (num_hardware_sources=0; num_hardware_sources<MAX_HARDWARE_SOURCES; num_hardware_sources++)
+	alcMakeContextCurrent(m_sound_context);
+	// Generate the AL sources
+	for (m_hardware_sources_num=0; m_hardware_sources_num<MAX_HARDWARE_SOURCES; m_hardware_sources_num++)
 	{
 		alGetError();
-		alGenSources(1, &hardware_sources[num_hardware_sources]);
-		if(alGetError()!=AL_NO_ERROR)
+		alGenSources(1, &m_hardware_sources[m_hardware_sources_num]);
+		if (alGetError() != AL_NO_ERROR)
 			break;
-		alSourcef(hardware_sources[num_hardware_sources], AL_REFERENCE_DISTANCE, referenceDistance);
-		alSourcef(hardware_sources[num_hardware_sources], AL_ROLLOFF_FACTOR, rolloffFactor);
-		alSourcef(hardware_sources[num_hardware_sources], AL_MAX_DISTANCE, maxDistance);
+		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_REFERENCE_DISTANCE, REFERENCE_DISTANCE);
+		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_ROLLOFF_FACTOR, ROLLOFF_FACTOR);
+		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_MAX_DISTANCE, MAX_DISTANCE);
 	}
+	alDopplerFactor(1.0);
+	alDopplerVelocity(343.0f);
 }
 
-Sound* SoundManager::createSound(String filename)
+SoundManager::~SoundManager()
 {
-	if (!device) return NULL;
-	MUTEX_LOCK(&audio_mutex);
-	ALuint buffer=0;
-	//first, search if we need to create the buffer
-	for (int i=0; i<free_buffer; i++)
-		if (filename==buffer_filenames[i])
-		{
-			buffer=buffers[i];
-			break;
-		}
-	if (!buffer)
-	{
-		//load the file
-		if (free_buffer==MAX_BUFFERS)
-		{
-			MUTEX_UNLOCK(&audio_mutex);
-			return NULL;
-		}
-		alGenBuffers(1, &buffers[free_buffer]);
-		buffer_filenames[free_buffer]=filename;
-		if (loadWAVFile(filename, buffers[free_buffer]))
-		{
-			//there was an error!
-			alDeleteBuffers(1, &buffers[free_buffer]);
-			buffer_filenames[free_buffer]=String("");
-			MUTEX_UNLOCK(&audio_mutex);
-			return NULL;
-		}
-		buffer=buffers[free_buffer];
-		free_buffer++;
-	}
-	if (free_input_source==MAX_INPUT_SOURCES)
-	{
-		MUTEX_UNLOCK(&audio_mutex);
-		return NULL;
-	}
-	input_sources[free_input_source]=new Sound(free_input_source, buffer, this);
-	free_input_source++;
-	//don't recompute, because sounds do not play automatically
-	//recomputeSource(free_input_source-1);
-	MUTEX_UNLOCK(&audio_mutex);
-	return input_sources[free_input_source-1];
+	// Delete the sources and buffers
+	alDeleteSources(MAX_HARDWARE_SOURCES, m_hardware_sources);
+    alDeleteBuffers(MAX_AUDIO_BUFFERS, m_audio_buffers);
+
+	// Destroy the sound context and device
+    m_sound_context = alcGetCurrentContext();
+    m_sound_device = alcGetContextsDevice(m_sound_context);
+    alcMakeContextCurrent(NULL);
+    alcDestroyContext(m_sound_context);
+    if (m_sound_device)
+        alcCloseDevice(m_sound_device);
+
+	LOG("SoundManager destroyed.");
 }
 
 void SoundManager::setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity)
 {
-	if (!device) return;
-	MUTEX_LOCK(&audio_mutex);
-	cameraPosition=position;
+	if (!m_sound_device) return;
+	camera_position = position;
 	recomputeAllSources();
-	float dir[6];
-	//at
-	dir[0]=direction.x;
-	dir[1]=direction.y;
-	dir[2]=direction.z;
+	
+	float orientation[6];
+	//dir
+	orientation[0] = direction.x;
+	orientation[1] = direction.y;
+	orientation[2] = direction.z;
 	//up
-	dir[3]=up.x;
-	dir[4]=up.y;
-	dir[5]=up.z;
-	alListener3f(AL_POSITION, position.x,position.y, position.z);
-	alListener3f(AL_VELOCITY, velocity.x,velocity.y,velocity.z);
-	alListenerfv(AL_ORIENTATION, dir);
-	MUTEX_UNLOCK(&audio_mutex);
+	orientation[3] = up.x;
+	orientation[4] = up.y;
+	orientation[5] = up.z;
+
+	alListener3f(AL_POSITION, position.x, position.y, position.z);
+	alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+	alListenerfv(AL_ORIENTATION, orientation);
+}
+
+bool compareByAudibility(std::pair<int, float> a, std::pair<int, float> b)
+{		
+	return a.second > b.second;
+}
+
+// Called when the camera moves
+void SoundManager::recomputeAllSources()
+{
+	
+	if (!m_sound_device) return;
+	// Mutex is supposed to be already taken
+	for (int i=0; i<m_audio_sources_in_use_count; i++)
+	{
+		m_audio_sources[i]->computeAudibility(camera_position);
+		m_audio_sources_most_audible[i].first = i;
+		m_audio_sources_most_audible[i].second = m_audio_sources[i]->audibility;
+	}
+	// Sort first 'num_hardware_sources' sources by audibility
+	// See: https://en.wikipedia.org/wiki/Selection_algorithm
+	if ((m_audio_sources_in_use_count-1) > m_hardware_sources_num)
+		std::nth_element(m_audio_sources_most_audible, m_audio_sources_most_audible+m_hardware_sources_num, m_audio_sources_most_audible+m_audio_sources_in_use_count-1, compareByAudibility);
+	// Retire out of range sources first
+	for (int i=0; i<m_audio_sources_in_use_count; i++)
+	{
+		if (m_audio_sources[m_audio_sources_most_audible[i].first]->hardware_index != -1 && (i >= m_hardware_sources_num || m_audio_sources_most_audible[i].second == 0))
+			retire(m_audio_sources_most_audible[i].first);
+	}
+	// Assign new sources
+	for (int i=0; i<std::min(m_audio_sources_in_use_count, m_hardware_sources_num); i++)
+	{
+		if (m_audio_sources[m_audio_sources_most_audible[i].first]->hardware_index == -1 && m_audio_sources_most_audible[i].second > 0)
+		{
+			for (int j=0; j<m_hardware_sources_num; j++)
+			{
+				if (m_hardware_sources_map[j] == -1)
+				{
+					assign(m_audio_sources_most_audible[i].first, j);
+					break;
+				}
+			}
+		}
+	}
+}
+
+void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vector3 *vvec)
+{
+	if (!m_sound_device) return;
+
+	m_audio_sources[source_index]->computeAudibility(camera_position);
+
+	if (m_audio_sources[source_index]->audibility == 0)
+	{
+		if (m_audio_sources[source_index]->hardware_index != -1) // Retire the source if it is currently assigned
+			retire(source_index);
+	}
+	else
+	{
+		// This is a potentially audible m_audio_sources[source_index]
+		if (m_audio_sources[source_index]->hardware_index != -1)
+		{
+			// m_audio_sources[source_index] already playing
+			// Update the AL settings
+			switch (reason)
+			{
+				case Sound::REASON_PLAY: alSourcePlay(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);break;
+				case Sound::REASON_STOP: alSourceStop(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);break;
+				case Sound::REASON_GAIN: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_GAIN, vfl);break;
+				case Sound::REASON_LOOP: alSourcei(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_LOOPING, (vfl>0.5)?AL_TRUE:AL_FALSE);break;
+				case Sound::REASON_PTCH: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_PITCH, vfl);break;
+				case Sound::REASON_POSN: alSource3f(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_POSITION, vvec->x,vvec->y,vvec->z);break;
+				case Sound::REASON_VLCT: alSource3f(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_VELOCITY, vvec->x,vvec->y,vvec->z);break;
+				default: break;
+			}
+		}
+		else
+		{
+			// Try to make it play by the hardware
+			// Check if there is one free m_audio_sources[source_index] in the pool
+			if (m_hardware_sources_in_use_count < m_hardware_sources_num)
+			{
+				for (int i=0; i<m_hardware_sources_num; i++)
+					if (m_hardware_sources_map[i] == -1) {assign(source_index, i);break;}
+			}
+			else
+			{
+				// Now, compute who is the faintest
+				// Note: we know the table m_hardware_sources_map is full!
+				float fv=1.0;
+				int al_faintest=0;
+				for (int i=0; i<m_hardware_sources_num; i++)
+				{
+					if (m_hardware_sources_map[i] >= 0 && m_audio_sources[m_hardware_sources_map[i]]->audibility < fv)
+					{
+						fv=m_audio_sources[m_hardware_sources_map[i]]->audibility;
+						al_faintest=i;
+					}
+					}
+				// Find if the the faintest m_audio_sources[source_index] is louder or not
+				if (fv < m_audio_sources[source_index]->audibility)
+				{
+					// This new m_audio_sources[source_index] is louder than the faintest!
+					retire(m_hardware_sources_map[al_faintest]);
+					assign(source_index, al_faintest);
+				}
+				// Else this m_audio_sources[source_index] is too faint, we don't play it!
+			}
+		}
+	}
+}
+	
+void SoundManager::assign(int source_index, int hardware_index)
+{
+	if (!m_sound_device) return;
+
+	m_audio_sources[source_index]->hardware_index=hardware_index;
+	m_hardware_sources_map[hardware_index]=source_index;
+
+	// The hardware source is supposed to be stopped!
+	alSourcei(m_hardware_sources[hardware_index], AL_BUFFER, m_audio_sources[source_index]->buffer);
+	alSourcef(m_hardware_sources[hardware_index], AL_GAIN, m_audio_sources[source_index]->gain);
+	alSourcei(m_hardware_sources[hardware_index], AL_LOOPING, (m_audio_sources[source_index]->loop)?AL_TRUE:AL_FALSE);
+	alSourcef(m_hardware_sources[hardware_index], AL_PITCH, m_audio_sources[source_index]->pitch);
+	alSource3f(m_hardware_sources[hardware_index], AL_POSITION, m_audio_sources[source_index]->position.x,m_audio_sources[source_index]->position.y,m_audio_sources[source_index]->position.z);
+	alSource3f(m_hardware_sources[hardware_index], AL_VELOCITY, m_audio_sources[source_index]->velocity.x,m_audio_sources[source_index]->velocity.y,m_audio_sources[source_index]->velocity.z);
+	if (m_audio_sources[source_index]->should_play)
+		alSourcePlay(m_hardware_sources[hardware_index]);
+	
+	m_hardware_sources_in_use_count++;
+}
+
+void SoundManager::retire(int source_index)
+{
+	if (!m_sound_device) return;
+
+	if (m_audio_sources[source_index]->hardware_index == -1) return;
+	alSourceStop(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);
+	m_hardware_sources_map[m_audio_sources[source_index]->hardware_index]=-1;
+	m_audio_sources[source_index]->hardware_index=-1;
+	m_hardware_sources_in_use_count--;
 }
 
 void SoundManager::pauseAllSounds()
 {
-	if (!device) return;
-	//no need for mutex
+	if (!m_sound_device) return;
 	alListenerf(AL_GAIN, 0.0);
 }
 
 void SoundManager::resumeAllSounds()
 {
-	if (!device) return;
-	//no need for mutex
+	if (!m_sound_device) return;
 	alListenerf(AL_GAIN, 1.0);
+
 }
 
-int SoundManager::maxSources()
+Sound* SoundManager::createSound(String filename)
 {
-	//no need for mutex
-	return num_hardware_sources;
-}
+	if (!m_sound_device) return NULL;
+	ALuint buffer=0;
 
-void SoundManager::recomputeAllSources()
-{
-	if (!device) return;
-	/*LOG("==========Table dump===================");
-	for (int i=0; i<num_hardware_sources; i++)
-		LOG("   "+TOSTRING(hardware_sources_input_map[i]));
-		*/
-	//mutex is supposed to be already taken
-
-	//todo: use a high performance selection algorithm
-	//http://en.wikipedia.org/wiki/Selection_algorithm
-
-	//this function is called when the camera moves
-	//first, compute all audibility
-	for (int i=0; i<free_input_source; i++) input_sources[i]->computeAudibility(cameraPosition);
-	//next, sort sources by audibility
-	//suboptimal algorithm
-	//this source index table contains the num_hardware_sources most audible sources
-	// it can contain indexes -1 if not enough sources are audible
-	int most_audibles[MAX_HARDWARE_SOURCES];
-	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) most_audibles[i]=-1;
-	for (int i=0; i<num_hardware_sources; i++)
+	// Is the file already loaded?
+	for (int i=0; i<m_audio_buffers_in_use_count; i++)
 	{
-		float maxa=0.0;
-		for (int j=0; j<free_input_source; j++)
+		if (filename == m_audio_buffer_file_name[i])
 		{
-			if (input_sources[j]->audibility>maxa)
-			{
-				int k;
-				//search in the table if it was not already recorded
-				for (k=0; k<i; k++) if (most_audibles[k]==j) break;
-				if (k==i)
-				{
-					//nope, its really a potential hit!
-					most_audibles[i]=j;
-					maxa=input_sources[j]->audibility;
-				}
-			}
+			buffer=m_audio_buffers[i];
+			break;
 		}
 	}
-	//oookay
-	//check if we must retire sources first
-	for (int i=0; i<free_input_source; i++)
+	if (!buffer)
 	{
-		if (input_sources[i]->hardware_index!=-1)
+		// Load the file
+		if (m_audio_buffers_in_use_count >= MAX_AUDIO_BUFFERS)
+			return NULL;
+
+		alGenBuffers(1, &m_audio_buffers[m_audio_buffers_in_use_count]);
+		if (loadWAVFile(filename, m_audio_buffers[m_audio_buffers_in_use_count]))
 		{
-			//search in the list
-			int j;
-			for (j=0; j<num_hardware_sources; j++) if (most_audibles[j]==i) break;
-			if (j==num_hardware_sources)
-			{
-				//it was not found!
-				retire(i);
-			}
+			// There was an error!
+			alDeleteBuffers(1, &m_audio_buffers[m_audio_buffers_in_use_count]);
+			m_audio_buffer_file_name[m_audio_buffers_in_use_count]=String("");
+			return NULL;
 		}
+		buffer=m_audio_buffers[m_audio_buffers_in_use_count];
+		m_audio_buffer_file_name[m_audio_buffers_in_use_count]=filename;
 	}
-	//next, assign new sources
-	for (int i=0; i<num_hardware_sources; i++)
-	{
-		if (most_audibles[i]!=-1)
-		{
-			if (input_sources[most_audibles[i]]->hardware_index==-1)
-			{
-				//its not assigned!
-				//find a freshly retired hardware buffer: there MUST be at least one!
-				int j;
-				for (j=0; j<num_hardware_sources; j++) if (hardware_sources_input_map[j]==-1) break;
-				assign(most_audibles[i], j);
-			}
-		}
-	}
-	//yes, thats it!
+	if (m_audio_buffers_in_use_count >= MAX_AUDIO_SOURCES) return NULL;
+
+	m_audio_sources[m_audio_buffers_in_use_count]=new Sound(buffer, this, m_audio_buffers_in_use_count);
+
+	return m_audio_sources[m_audio_buffers_in_use_count++];
 }
 
-void SoundManager::recomputeSource(int input_index, int reason, float vfl, Vector3 *vvec)
+bool SoundManager::loadWAVFile(String filename, ALuint buffer)
 {
-	if (!device) return;
-	//mutex is supposed to be already taken
-
-	//something has changed in a source
-	input_sources[input_index]->computeAudibility(cameraPosition);
-	if (input_sources[input_index]->audibility==0)
-	{
-		//this is an extinct source, retire if currently playing
-		if (input_sources[input_index]->hardware_index!=-1) retire(input_index);
-	}
-	else
-	{
-		//this is a potentially audible source
-		if (input_sources[input_index]->hardware_index!=-1)
-		{
-			//source already playing
-			//update the AL settings
-			switch (reason)
-			{
-				case REASON_PLAY: alSourcePlay(hardware_sources[input_sources[input_index]->hardware_index]);break;
-				case REASON_STOP: alSourceStop(hardware_sources[input_sources[input_index]->hardware_index]);break;
-				case REASON_GAIN: alSourcef(hardware_sources[input_sources[input_index]->hardware_index], AL_GAIN, vfl);break;
-				case REASON_LOOP: alSourcei(hardware_sources[input_sources[input_index]->hardware_index], AL_LOOPING, (vfl>0.5)?AL_TRUE:AL_FALSE);break;
-				case REASON_PTCH: alSourcef(hardware_sources[input_sources[input_index]->hardware_index], AL_PITCH, vfl);break;
-				case REASON_POSN: alSource3f(hardware_sources[input_sources[input_index]->hardware_index], AL_POSITION, vvec->x,vvec->y,vvec->z);break;
-				case REASON_VLCT: alSource3f(hardware_sources[input_sources[input_index]->hardware_index], AL_VELOCITY, vvec->x,vvec->y,vvec->z);break;
-				default:break;
-			}
-		}
-		else
-		{
-			//try to make it play by the hardware
-			//check if there is one free source in the pool
-			if (used_hardware_sources<num_hardware_sources)
-			{
-				//yes!
-				for (int i=0; i<num_hardware_sources; i++)
-					if (hardware_sources_input_map[i]==-1)
-					{
-						assign(input_index, i);
-						break;
-					}
-			}
-			else
-			{
-				//no, compute who is the faintest
-				//note: we know the table hardware_sources_input_map is full!
-				float fv=1.0;
-				int al_faintest=0;
-				for (int i=0; i<num_hardware_sources; i++)
-					if (input_sources[hardware_sources_input_map[i]]->audibility<fv)
-					{
-						fv=input_sources[hardware_sources_input_map[i]]->audibility;
-						al_faintest=i;
-					}
-				//find if the the faintest source is louder or not
-				if (fv<input_sources[input_index]->audibility)
-				{
-					//this new source is louder than the faintest!
-					retire(hardware_sources_input_map[al_faintest]);
-					assign(input_index, al_faintest);
-				}
-				//else this source is too faint, we don't play it!
-			}
-		}
-	}
-}
-
-void SoundManager::assign(int input_index, int hardware_index)
-{
-	if (!device) return;
-	//mutex is supposed to be taken
-	input_sources[input_index]->hardware_index=hardware_index;
-	hardware_sources_input_map[hardware_index]=input_index;
-	used_hardware_sources++;
-
-	//the hardware index is supposed to be stopped!
-	alSourcei(hardware_sources[hardware_index], AL_BUFFER, input_sources[input_index]->buffer);
-	alSourcef(hardware_sources[hardware_index], AL_GAIN, input_sources[input_index]->gain);
-	alSourcei(hardware_sources[hardware_index], AL_LOOPING, (input_sources[input_index]->loop)?AL_TRUE:AL_FALSE);
-	alSourcef(hardware_sources[hardware_index], AL_PITCH, input_sources[input_index]->pitch);
-	alSource3f(hardware_sources[hardware_index], AL_POSITION, input_sources[input_index]->position.x,input_sources[input_index]->position.y,input_sources[input_index]->position.z);
-	alSource3f(hardware_sources[hardware_index], AL_VELOCITY, input_sources[input_index]->velocity.x,input_sources[input_index]->velocity.y,input_sources[input_index]->velocity.z);
-	if (input_sources[input_index]->should_play)
-	{
-		alSourcePlay(hardware_sources[hardware_index]);
-		//suboptimal, but better than nothing <-does not work
-		//if (!input_sources[input_index]->loop) input_sources[input_index]->should_play=false;
-	}
-}
-
-void SoundManager::retire(int input_index)
-{
-	if (!device) return;
-	//mutex is supposed to be taken
-	int hardware_index=input_sources[input_index]->hardware_index;
-	if (hardware_index==-1) return;
-	alSourceStop(hardware_sources[hardware_index]);
-	hardware_sources_input_map[hardware_index]=-1;
-	input_sources[input_index]->hardware_index=-1;
-	used_hardware_sources--;
-}
-
-int SoundManager::loadWAVFile(String filename, ALuint buffer)
-{
-	if (!device) return -1;
+	if (!m_sound_device) return true;
 	LOG("Loading WAV file "+filename);
-	//creating Stream
+	
+	// Create the Stream
 	ResourceGroupManager *rgm=ResourceGroupManager::getSingletonPtr();
 	String group=rgm->findGroupContainingResource(filename);
 	DataStreamPtr stream=rgm->openResource(filename, group);
-	//load RIFF/WAVE
+
+	// Load RIFF/WAVE
 	char magic[5];
 	magic[4]=0;
 	unsigned int   lbuf; // uint32_t
 	unsigned short sbuf; // uint16_t
 
-	// check magic
-	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("RIFF")) {LOG("Invalid WAV file (no RIFF): "+filename);return -1;}
-	//skip filesize
+	// Check magic
+	if (stream->read(magic, 4) != 4) {LOG("Could not read file "+filename);return true;}
+	if (String(magic) != String("RIFF")) {LOG("Invalid WAV file (no RIFF): "+filename);return true;}
+	// Skip 4 bytes (magic)
 	stream->skip(4);
-	// check file format
-	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("WAVE")) {LOG("Invalid WAV file (no WAVE): "+filename);return -1;}
-	// check 'fmt ' sub chunk (1)
-	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("fmt ")) {LOG("Invalid WAV file (no fmt): "+filename);return -1;}
-	// read (1)'s size
-	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	// Check file format
+	if (stream->read(magic, 4) != 4) {LOG("Could not read file "+filename);return true;}
+	if (String(magic) != String("WAVE")) {LOG("Invalid WAV file (no WAVE): "+filename);return true;}
+	// Check 'fmt ' sub chunk (1)
+	if (stream->read(magic, 4) != 4) {LOG("Could not read file "+filename);return true;}
+	if (String(magic) != String("fmt ")) {LOG("Invalid WAV file (no fmt): "+filename);return true;}
+	// Read (1)'s size
+	if (stream->read(&lbuf, 4) != 4) {LOG("Could not read file "+filename);return true;}
 	unsigned long subChunk1Size=lbuf;
-	if (subChunk1Size<16) {LOG("Invalid WAV file (invalid subChunk1Size): "+filename);return -1;}
-	// check PCM audio format
-	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
+	if (subChunk1Size<16) {LOG("Invalid WAV file (invalid subChunk1Size): "+filename);return true;}
+	// Check PCM audio format
+	if (stream->read(&sbuf, 2) != 2) {LOG("Could not read file "+filename);return true;}
 	unsigned short audioFormat=sbuf;
-	if (audioFormat!=1) {LOG("Invalid WAV file (invalid audioformat "+TOSTRING(audioFormat)+"): "+filename);return -1;}
-	// read number of channels
-	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
+	if (audioFormat != 1) {LOG("Invalid WAV file (invalid audioformat "+TOSTRING(audioFormat)+"): "+filename);return true;}
+	// Read number of channels
+	if (stream->read(&sbuf, 2) != 2) {LOG("Could not read file "+filename);return true;}
 	unsigned short channels=sbuf;
-	// read frequency (sample rate)
-	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	// Read frequency (sample rate)
+	if (stream->read(&lbuf, 4) != 4) {LOG("Could not read file "+filename);return true;}
 	unsigned long freq=lbuf;
-	// skip 6 bytes (Byte rate (4), Block align (2))
+	// Skip 6 bytes (Byte rate (4), Block align (2))
 	stream->skip(6);
-	// read bits per sample
-	if (stream->read(&sbuf, 2)!=2) {LOG("Could not read file "+filename);return -1;}
+	// Read bits per sample
+	if (stream->read(&sbuf, 2) != 2) {LOG("Could not read file "+filename);return true;}
 	unsigned short bps=sbuf;
-	// check 'data' sub chunk (2)
-	if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
-	if (String(magic)!=String("data") && String(magic)!=String("fact")) {LOG("Invalid WAV file (no data/fact): "+filename);return -1;}
-	// fact is an option section we don't need to worry about
-	if(String(magic)==String("fact"))
+	// Check 'data' sub chunk (2)
+	if (stream->read(magic, 4) != 4) {LOG("Could not read file "+filename);return true;}
+	if (String(magic) != String("data") && String(magic) != String("fact")) {LOG("Invalid WAV file (no data/fact): "+filename);return true;}
+	// Fact is an option section we don't need to worry about
+	if (String(magic)==String("fact"))
 	{
 		stream->skip(8);
 		// Now we shoudl hit the data chunk
-		if (stream->read(magic, 4)!=4) {LOG("Could not read file "+filename);return -1;}
-		if (String(magic)!=String("data")) {LOG("Invalid WAV file (no data): "+filename);return -1;}
+		if (stream->read(magic, 4) != 4) {LOG("Could not read file "+filename);return true;}
+		if (String(magic) != String("data")) {LOG("Invalid WAV file (no data): "+filename);return true;}
 	}
 	// The next four bytes are the remaining size of the file
-	if (stream->read(&lbuf, 4)!=4) {LOG("Could not read file "+filename);return -1;}
+	if (stream->read(&lbuf, 4) != 4) {LOG("Could not read file "+filename);return true;}
+	
 	unsigned long dataSize=lbuf;
+	int format=0;
 
-	int format;
-	if (channels==1 && bps==8)
-	{
+	if (channels == 1 && bps == 8)
 		format=AL_FORMAT_MONO8;
-	} else
-	if (channels==1 && bps==16)
-	{
+	else if (channels == 1 && bps == 16)
 		format=AL_FORMAT_MONO16;
-	} else
-	if (channels==2 && bps==8)
-	{
+	else if (channels == 2 && bps == 8)
 		format=AL_FORMAT_STEREO16;
-	} else
-	if (channels==2 && bps==16)
-	{
+	else if (channels == 2 && bps == 16)
 		format=AL_FORMAT_STEREO16;
-	} else
+	else
 	{
 		LOG("Invalid WAV file (wrong channels/bps): "+filename);
-		return -1;
+		return true;
 	}
-	if(channels != 1)
-	{
-		LOG("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
-	}
+
+	if (channels != 1) LOG("Invalid WAV file: the file needs to be mono, and nothing else. Will try to continue anyways ...");
+
 	//okay, creating buffer
 	void* bdata=malloc(dataSize);
-	if (!bdata) {LOG("Memory error reading file "+filename);return -1;}
-	if (stream->read(bdata, dataSize)!=dataSize) {LOG("Could not read file "+filename);return -1;}
+	if (!bdata) {LOG("Memory error reading file "+filename);return true;}
+	if (stream->read(bdata, dataSize) != dataSize) {LOG("Could not read file "+filename);return true;}
 
-//	LOG("alBufferData: format "+TOSTRING(format)+" size "+TOSTRING(dataSize)+" freq "+TOSTRING(freq));
-	alGetError(); //reset errors
+	//LOG("alBufferData: format "+TOSTRING(format)+" size "+TOSTRING(dataSize)+" freq "+TOSTRING(freq));
+	alGetError(); // Reset errors
 	ALint error;
 	alBufferData(buffer, format, bdata, dataSize, freq);
 	error=alGetError();
-	if(error!=AL_NO_ERROR)
-	{
-		LOG("OpenAL error while loading buffer for "+filename+" : "+TOSTRING(error));
-		free(bdata);
-		return -1;
-	}
 
 	free(bdata);
-	//stream will be closed by itself
+	// Stream will be closed by itself
 
-	return 0;
-}
+	if (error != AL_NO_ERROR) {LOG("OpenAL error while loading buffer for "+filename+" : "+TOSTRING(error));return true;}
 
-//-----------------------------------------------------------------------------------
-
-Sound::Sound(int input_index, ALuint buffer, SoundManager *sm)
-{
-	//mutex is supposed to be taken
-	this->sm=sm;
-	this->buffer=buffer;
-	this->input_index=input_index;
-	hardware_index=-1;
-	should_play=false;
-	gain=1.0;
-	pitch=1.0;
-	position=Vector3::ZERO;
-	velocity=Vector3::ZERO;
-	loop=false;
-	enabled=true;
-}
-
-void Sound::computeAudibility(Vector3 from)
-{
-	// disable sound?
-	if(!enabled)
-	{
-		audibility=0;
-		return;
-	}
-
-	//mutex is supposed to be taken
-	//first check if the sound is finished!
-	if (!loop && hardware_index!=-1 && should_play)
-	{
-		int value;
-		alGetSourcei(sm->hardware_sources[hardware_index], AL_SOURCE_STATE, &value);
-		if (value!=AL_PLAYING) should_play=false;
-	}
-	if (!should_play) {audibility=0.0; return;}
-	if (gain==0.0) {audibility=0.0; return;}
-	
-	float distance=(from-position).length();
-	
-	if (distance > sm->maxDistance) {audibility=0.0; return;}
-	if (distance < sm->referenceDistance) {audibility=gain; return;}
-	
-	audibility=gain*(sm->referenceDistance/(sm->referenceDistance+ (sm->rolloffFactor*(distance-sm->referenceDistance))));
-}
-
-bool Sound::isPlaying()
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	if (hardware_index!=-1)
-	{
-		int value;
-		alGetSourcei(sm->hardware_sources[hardware_index], AL_SOURCE_STATE, &value);
-		MUTEX_UNLOCK(&sm->audio_mutex);
-		return (value==AL_PLAYING);
-	}
-	MUTEX_UNLOCK(&sm->audio_mutex);
 	return false;
 }
 
-void Sound::setEnabled(bool e)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	enabled = e;
-	sm->recomputeSource(input_index, REASON_PLAY, 0, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-bool Sound::getEnabled()
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	return enabled;
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::play()
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	should_play=true;
-	sm->recomputeSource(input_index, REASON_PLAY, 0, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::stop()
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	should_play=false;
-	sm->recomputeSource(input_index, REASON_STOP, 0, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::setGain(float gain)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	this->gain=gain;
-	sm->recomputeSource(input_index, REASON_GAIN, gain, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::setLoop(bool loop)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	this->loop=loop;
-	sm->recomputeSource(input_index, REASON_LOOP, (loop)?1.0:0.0, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::setPitch(float pitch)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	this->pitch=pitch;
-	sm->recomputeSource(input_index, REASON_PTCH, pitch, NULL);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::setPosition(Ogre::Vector3 pos)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	this->position=pos;
-	sm->recomputeSource(input_index, REASON_POSN, 0, &pos);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-void Sound::setVelocity(Ogre::Vector3 vel)
-{
-	MUTEX_LOCK(&sm->audio_mutex);
-	this->velocity=vel;
-	sm->recomputeSource(input_index, REASON_VLCT, 0, &vel);
-	MUTEX_UNLOCK(&sm->audio_mutex);
-}
-
-#endif //OPENAL
+#endif // USE_OPENAL

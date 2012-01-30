@@ -17,119 +17,74 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#pragma once
+
 #ifdef USE_OPENAL
-#ifndef __SoundManager_H__
-#define __SoundManager_H__
+#ifndef __SoundManager_H_
+#define __SoundManager_H_
 
 #include "RoRPrerequisites.h"
-
 #include "Ogre.h"
-using namespace Ogre;
-
-#include "AL/al.h"
-#include "AL/alc.h"
-
-#include "pthread.h"
-
-
-//maximum number of really mixed sources
-#define MAX_HARDWARE_SOURCES 32
-//maximum number of potential sound sources
-#define MAX_INPUT_SOURCES 8192
-//maximum number of sound files
-#define MAX_BUFFERS 2048
-
-#define REASON_PLAY 0
-#define REASON_STOP 1
-#define REASON_GAIN 2
-#define REASON_LOOP 3
-#define REASON_PTCH 4
-#define REASON_POSN 5
-#define REASON_VLCT 6
-
-
-class Sound
-{
-public:
-	Sound(int input_index, ALuint buffer, SoundManager* sm);
-	void setPitch(float pitch);
-	void setGain(float gain);
-	void setPosition(Vector3 pos);
-	void setVelocity(Vector3 vel);
-	bool isPlaying();
-	void setLoop(bool loop);
-	void play();
-	void stop();
-	void computeAudibility(Vector3 from);
-	float audibility;
-	//the hardware index, this value is dynamically updated as this input is played or not
-	int hardware_index;
-	ALuint buffer;
-	bool should_play;
-	float gain;
-	float pitch;
-	bool loop;
-	bool enabled;
-	
-	void setEnabled(bool e);
-	bool getEnabled();
-
-	Vector3 position;
-	Vector3 velocity;
-private:
-	SoundManager* sm;
-	//the input index, this value should not change in the lifetime of the object
-	int input_index;
-};
+#include <AL/al.h>
+#include <AL/alc.h>
 
 class SoundManager
 {
+	friend class Sound;
+
 public:
-	SoundManager();
-	int maxSources();
-	void setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity);
+	static SoundManager* mSoundManager;
+ 
+    SoundManager();
+	~SoundManager();
+
+	Sound* createSound(Ogre::String filename);
+
+	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
 	void pauseAllSounds();
 	void resumeAllSounds();
-	Sound* createSound(String filename);
 
-	void recomputeAllSources();
-	void recomputeSource(int input_index, int reason, float vfl, Vector3 *vvec);
-	float maxDistance;
-	float rolloffFactor;
-	float referenceDistance;
-	//AL hardware sources : this buffer contains valid AL handles up to num_hardware_sources
-	ALuint hardware_sources[MAX_HARDWARE_SOURCES];
-	//access mutex
-	pthread_mutex_t audio_mutex;
+	int getNumHardwareSources() { return m_hardware_sources_num; }
+
+	static const float MAX_DISTANCE;
+	static const float ROLLOFF_FACTOR;
+	static const float REFERENCE_DISTANCE;
+	static const unsigned int MAX_HARDWARE_SOURCES = 32;
+	static const unsigned int MAX_AUDIO_SOURCES = 8192;
+	static const unsigned int MAX_AUDIO_BUFFERS = 2048;
+
 private:
-	void assign(int input_index, int hardware_index);
-	void retire(int input_index);
-	int loadWAVFile(String filename, ALuint buffer);
+	void recomputeAllSources();
+	void recomputeSource(int source_index, int reason, float vfl, Ogre::Vector3 *vvec);
+	ALuint getHardwareSource(int hardware_index) { return m_hardware_sources[hardware_index]; };
 
+	void assign(int source_index, int hardware_index);
+	void retire(int source_index);
 
-	//input sources: array of Sound
-	int free_input_source;
-	Sound* input_sources[MAX_INPUT_SOURCES];
+	bool SoundManager::loadWAVFile(Ogre::String filename, ALuint buffer);
 
-	//buffers: array of AL buffers and filenames
-	int free_buffer;
-	ALuint buffers[MAX_BUFFERS];
-	String buffer_filenames[MAX_BUFFERS];
+	// Active audio sources (hardware sources)
+	int		m_hardware_sources_num;						 // Total number of available hardware sources < MAX_HARDWARE_SOURCES
+	int		m_hardware_sources_in_use_count;
+	int		m_hardware_sources_map[MAX_HARDWARE_SOURCES]; // Stores the hardware index for each source. -1 = unmapped
+	ALuint	m_hardware_sources[MAX_HARDWARE_SOURCES];	 // This buffer contains valid AL handles up to m_hardware_sources_num
 
-	//total number of hardware sources available. This number is inferior or equal to MAX_HARDWARE_SOURCES
-	int num_hardware_sources;
-	//number of used hardware sources
-	int used_hardware_sources;
-	//This gives the input index for each hardware index. Value -1 means unmapped hardware source
-	int hardware_sources_input_map[MAX_HARDWARE_SOURCES];
+	// Audio sources
+	int		m_audio_sources_in_use_count;
+	Sound*	m_audio_sources[MAX_AUDIO_SOURCES];
+	// Helper for calculating the most audible sources
+	std::pair<int, float> m_audio_sources_most_audible[MAX_AUDIO_SOURCES];
+	
+	// Audio buffers: Array of AL buffers and filenames
+	int		m_audio_buffers_in_use_count;
+	ALuint	m_audio_buffers[MAX_AUDIO_BUFFERS];
+	Ogre::String	m_audio_buffer_file_name[MAX_AUDIO_BUFFERS];
 
-	Vector3 cameraPosition;
-	ALCdevice *device;
-	ALCcontext *context;
-
+	Ogre::Vector3 camera_position;
+	ALCdevice *m_sound_device;
+	ALCcontext *m_sound_context;
 };
 
-#endif
-
-#endif //OPENAL
-
+#endif // __SoundManager_H_
+#endif // USE_OPENAL
