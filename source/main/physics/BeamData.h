@@ -230,9 +230,8 @@ static const float HOOK_LOCK_TIMER_DEFAULT      = 5.0;
 static const int   NODE_LOCKGROUP_DEFAULT		= -1; // all hooks scan all nodes
 /* Enumerations */
 enum {
-	THREAD_MONO,    //!< mono threading mode
-	THREAD_HT,      //!< dual thread mode
-	THREAD_HT2      //!< multi-core threading mode
+	THREAD_SINGLE,	//!< single threading mode
+	THREAD_MULTI	//!< multi threading mode
 };
 enum {
 	BEAM_NORMAL,

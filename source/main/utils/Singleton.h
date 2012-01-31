@@ -38,7 +38,17 @@ public:
 		if (!_self) _self = new T;
 		return *_self;
 	}
+	static T& getSingleton()
+	{
+		if (!_self) _self = new T;
+		return *_self;
+	}
 	static T* getInstancePtr()
+	{
+		if (!_self) _self = new T;
+		return _self;
+	}
+	static T* getSingletonPtr()
 	{
 		if (!_self) _self = new T;
 		return _self;

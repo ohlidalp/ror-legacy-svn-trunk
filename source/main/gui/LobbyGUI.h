@@ -17,18 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #ifndef LOBBYGUI_H__
 #define LOBBYGUI_H__
 
-#include "RoRPrerequisites.h"
 #include "Singleton.h"
 #include "IRCWrapper.h"
 #include "mygui/BaseLayout.h"
-
-#include <OgreLog.h>
-#include <OgreUTFString.h>
 
 ATTRIBUTE_CLASS_LAYOUT(LobbyGUI, "Lobby.layout");
 class LobbyGUI :
@@ -99,5 +95,4 @@ protected:
 
 #endif // LOBBYGUI_H__
 
-#endif //MYGUI
-
+#endif // USE_MYGUI

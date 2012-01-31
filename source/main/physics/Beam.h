@@ -171,6 +171,8 @@ public:
 	SceneManager *tsm;
 	//! @}
 
+	void _waitForSync();
+
 	//! @{ startup / shutdown
 	void prepareShutdown();
 	//! @}
@@ -194,7 +196,7 @@ public:
 	int label;
 
 	float WheelSpeed;
-	float getWheelSpeed() { return WheelSpeed; };
+	float getWheelSpeed() { return WheelSpeed; }
 	Ogre::Vector3 getGForces();
 
 	int stabcommand;
@@ -205,7 +207,7 @@ public:
 	bool hydroSpeedCoupling;
 	float hydrodirstate;
 	Real hydrodirwheeldisplay;
-	//extra airplane axises
+	//extra airplane axes
 	float hydroaileroncommand;
 	float hydroaileronstate;
 	float hydroruddercommand;
@@ -221,7 +223,7 @@ public:
 	int watercontactold;
 	int canwork;
 	int sleepcount;
-	//can this be drived?
+	//can this be driven?
 	int previousGear;
 	ground_model_t *submesh_ground_model;
 	bool requires_wheel_contact;
@@ -335,7 +337,7 @@ public:
 	int tsteps;
 	float avichatter_timer;
 
-	Ogre::SceneNode *getSceneNode() { return parentNode; };
+	Ogre::SceneNode *getSceneNode() { return parentNode; }
 
 #ifdef USE_MYGUI
 	DashBoardManager *dash;
@@ -362,10 +364,6 @@ protected:
 	blinktype blinkingtype;
 
 	bool deleting;
-
-	
-
-
 	
 	RenderWindow* mWindow;
 	Real hydrolen;
@@ -382,7 +380,6 @@ protected:
 	int slowed;
 	Replay *replay;
 	PositionStorage *posStorage;
-
 
 
 	bool cparticle_mode;
@@ -479,7 +476,6 @@ protected:
 	bool SlideNodesLocked;
 
 
-
 	/**
 	 * calculate and apply Corrective forces
 	 * @param dt delta time in seconds
@@ -499,8 +495,6 @@ protected:
 	 * @return a pair containing the rail, and the distant to the SlideNode
 	 */
 	std::pair<RailGroup*, Ogre::Real> getClosestRailOnTruck( Beam* truck, const SlideNode& node);
-
-
 
 };
 

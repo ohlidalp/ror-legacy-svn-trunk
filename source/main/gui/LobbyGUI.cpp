@@ -17,24 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #include "LobbyGUI.h"
 #include "Scripting.h"
 #include "InputEngine.h"
-#include "OgreLogManager.h"
-
-#include "Settings.h"
-#include "RoRFrameListener.h"
-#include "network.h"
-
-#include <MyGUI.h>
-
-#include "libircclient.h"
-
-#include <boost/algorithm/string/replace.hpp> // for replace_all
-
-// class
 
 LobbyGUI::LobbyGUI() : current_tab(0), rotatingWait(0)
 {
@@ -95,7 +82,7 @@ void LobbyGUI::addTab(Ogre::String name)
 
 	Ogre::String realName = name;
 
-	boost::algorithm::replace_all(name, "#", "##");
+	name = Ogre::StringUtil::replaceAll(name, "#", "##");
 
 	tabctx_t *t = &tabs[name];
 
@@ -280,8 +267,8 @@ void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
 	Ogre::String realchannel = channel;
 
 	// escape #
-	boost::algorithm::replace_all(channel, "#", "##");
-	boost::algorithm::replace_all(txt, "#", "##");
+	channel =Ogre::StringUtil::replaceAll(channel, "#", "##");
+	txt = Ogre::StringUtil::replaceAll(txt, "#", "##");
 
 
 	if(tabs.find(channel) == tabs.end())
@@ -390,7 +377,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	}
 
 	// unescape #
-	boost::algorithm::replace_all(command, "##", "#");
+	command = Ogre::StringUtil::replaceAll(command, "##", "#");
 
 	if(current_tab->name.substr(0, 1) == "#")
 	{
@@ -453,5 +440,4 @@ void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 }
 
 
-
-#endif //USE_MYGUI 
+#endif // USE_MYGUI 

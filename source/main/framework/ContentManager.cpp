@@ -44,7 +44,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
-template<> ContentManager* Ogre::Singleton<ContentManager>::SINGLETON_MEMBER = 0;
+template<> ContentManager* Ogre::Singleton<ContentManager>::ms_Singleton = 0;
 
 ContentManager::ContentManager()
 {
@@ -157,7 +157,7 @@ bool ContentManager::init(void)
 	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
 #ifdef USE_OPENAL
 	LOG("Creating Sound Manager");
-	SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+	SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
 	if(ssm) ssm->setLoadingBaseSounds(true);
 #endif // USE_OPENAL
 	if (SSETTING("3D Sound renderer") != "No sound")

@@ -153,7 +153,7 @@ void CacheSystem::unloadUselessResourceGroups()
 			try
 			{
 #ifdef USE_OPENAL
-				SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+				SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
 				if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 				// we cannot fix this problem below Ogre version 1.7
@@ -1966,7 +1966,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			LOG("UnLoading " + dirname);
 
 #ifdef USE_OPENAL
-			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+			SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
 			if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
@@ -2045,7 +2045,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		{
 			LOG("Unloading " + realzipPath);
 #ifdef USE_OPENAL
-			SoundScriptManager *ssm = SoundScriptManager::getSingleton();
+			SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
 			if(ssm) ssm->clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);

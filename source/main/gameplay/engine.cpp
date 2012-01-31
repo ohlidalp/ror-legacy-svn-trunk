@@ -60,7 +60,7 @@ float iddle
 , trucknum(trucknum)
 
 #ifdef USE_OPENAL
-,	ssm(SoundScriptManager::getSingleton())
+,	ssm(SoundScriptManager::getInstancePtrNoCreation())
 #endif //OPENAL
 , torqueCurve (new TorqueCurve())
 
