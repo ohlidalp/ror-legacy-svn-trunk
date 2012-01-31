@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef AEROENGINE_H__
-#define AEROENGINE_H__
+#ifndef __AEROENGINE_H_
+#define __AEROENGINE_H_
 
 #include "RoRPrerequisites.h"
 
@@ -32,9 +32,9 @@ public:
 	virtual void updateVisuals()=0;
 	virtual void updateForces(float dt, int doUpdate)=0;
 
-	virtual void setThrotle(float val)=0;
+	virtual void setThrottle(float val)=0;
 
-	virtual float getThrotle()=0;
+	virtual float getThrottle()=0;
 
 	virtual void reset()=0;
 
@@ -55,4 +55,4 @@ public:
 	virtual float getRadius()=0;
 };
 
-#endif //AEROENGINE_H__
+#endif // __AEROENGINE_H_

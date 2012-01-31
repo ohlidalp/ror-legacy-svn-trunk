@@ -19,6 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "buoyance.h"
 
+#include "BeamData.h"
+#include "DustManager.h"
+#include "water.h"
+
 Buoyance::Buoyance(Water *water)
 {
 	w=water;

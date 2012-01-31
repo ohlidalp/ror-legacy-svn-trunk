@@ -45,4 +45,5 @@ bool MPlatform_Base::update(float posx, float posy, float posz, float roll, floa
 {
 	return false;
 }
-#endif
+
+#endif // USE_MPLATFORM

@@ -530,10 +530,10 @@ void RoRFrameListener::updateGUI(float dt)
 		int ftp = curr_truck->free_aeroengine;
 
 		//throttles
-		ow->thro1->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[0]->getThrotle())-1.0);
-		if (ftp>1) ow->thro2->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[1]->getThrotle())-1.0);
-		if (ftp>2) ow->thro3->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[2]->getThrotle())-1.0);
-		if (ftp>3) ow->thro4->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[3]->getThrotle())-1.0);
+		ow->thro1->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[0]->getThrottle())-1.0);
+		if (ftp>1) ow->thro2->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[1]->getThrottle())-1.0);
+		if (ftp>2) ow->thro3->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[2]->getThrottle())-1.0);
+		if (ftp>3) ow->thro4->setTop(ow->thrtop+ow->thrheight*(1.0-curr_truck->aeroengines[3]->getThrottle())-1.0);
 
 		//fire
 		if (curr_truck->aeroengines[0]->isFailed()) ow->engfireo1->setMaterialName("tracks/engfire-on"); else ow->engfireo1->setMaterialName("tracks/engfire-off");
@@ -723,9 +723,9 @@ void RoRFrameListener::updateGUI(float dt)
 		//BOAT GUI
 		int fsp = curr_truck->free_screwprop;
 		//throtles
-		ow->bthro1->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[0]->getThrotle()/2.0)-1.0);
+		ow->bthro1->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[0]->getThrottle()/2.0)-1.0);
 		if (fsp>1)
-			ow->bthro2->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[1]->getThrotle()/2.0)-1.0);
+			ow->bthro2->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[1]->getThrottle()/2.0)-1.0);
 
 		//position
 		Vector3 dir=curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition-curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition;
@@ -2872,27 +2872,27 @@ bool RoRFrameListener::updateEvents(float dt)
 					float tmp_throttle = INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE);
 					if(tmp_throttle > 0)
 						for (int i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(tmp_throttle);
+							curr_truck->aeroengines[i]->setThrottle(tmp_throttle);
 
 					if(INPUTENGINE.isEventDefined(EV_AIRPLANE_THROTTLE_AXIS))
 					{
 						float f = INPUTENGINE.getEventValue(EV_AIRPLANE_THROTTLE_AXIS);
 						for (int i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(f);
+							curr_truck->aeroengines[i]->setThrottle(f);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_DOWN, 0.1f))
 					{
 						//throtle down
 						int i;
 						for (i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(curr_truck->aeroengines[i]->getThrotle()-0.05);
+							curr_truck->aeroengines[i]->setThrottle(curr_truck->aeroengines[i]->getThrottle()-0.05);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_UP, 0.1f))
 					{
 						//throtle up
 						int i;
 						for (i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(curr_truck->aeroengines[i]->getThrotle()+0.05);
+							curr_truck->aeroengines[i]->setThrottle(curr_truck->aeroengines[i]->getThrottle()+0.05);
 					}
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_NO, 0.1f))
@@ -2900,19 +2900,19 @@ bool RoRFrameListener::updateEvents(float dt)
 						// no throtle
 						int i;
 						for (i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(0);
+							curr_truck->aeroengines[i]->setThrottle(0);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_FULL, 0.1f))
 					{
 						// full throtle
 						int i;
 						for (i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(1);
+							curr_truck->aeroengines[i]->setThrottle(1);
 					}
 					if (curr_truck->autopilot)
 					{
 						for (i=0; i<curr_truck->free_aeroengine; i++)
-							curr_truck->aeroengines[i]->setThrotle(curr_truck->autopilot->getThrotle(curr_truck->aeroengines[i]->getThrotle(), dt));
+							curr_truck->aeroengines[i]->setThrottle(curr_truck->autopilot->getThrottle(curr_truck->aeroengines[i]->getThrottle(), dt));
 					}
 
 
@@ -2929,21 +2929,21 @@ bool RoRFrameListener::updateEvents(float dt)
 						// use negative values also!
 						f = f * 2 - 1;
 						for (int i=0; i<curr_truck->free_screwprop; i++)
-							curr_truck->screwprops[i]->setThrotle(-f);
+							curr_truck->screwprops[i]->setThrottle(-f);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_DOWN, 0.1f))
 					{
 						//throtle down
 						int i;
 						for (i=0; i<curr_truck->free_screwprop; i++)
-							curr_truck->screwprops[i]->setThrotle(curr_truck->screwprops[i]->getThrotle()-0.05);
+							curr_truck->screwprops[i]->setThrottle(curr_truck->screwprops[i]->getThrottle()-0.05);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_UP, 0.1f))
 					{
 						//throtle up
 						int i;
 						for (i=0; i<curr_truck->free_screwprop; i++)
-							curr_truck->screwprops[i]->setThrotle(curr_truck->screwprops[i]->getThrotle()+0.05);
+							curr_truck->screwprops[i]->setThrottle(curr_truck->screwprops[i]->getThrottle()+0.05);
 					}
 
 

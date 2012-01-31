@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "ForceFeedback.h"
 
+using namespace Ogre;
+
 ForceFeedback::ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Real stress_gain, Real centering_gain, Real camera_gain)
 {
 	this->ffdevice=ffdevice;
@@ -46,7 +48,6 @@ ForceFeedback::ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Re
 	hydroEffect=0;
 
 }
-
 
 void ForceFeedback::setForces(Real roll, Real pitch, Real wspeed, Real dircommand, Real stress)
 {
@@ -94,4 +95,3 @@ ForceFeedback::~ForceFeedback()
 {
 	setEnabled(false);
 }
-

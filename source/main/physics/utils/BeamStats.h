@@ -19,12 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // thomas, 11th of March 2008
 
-#ifndef __BeamStats_H__
-#define __BeamStats_H__
+#ifndef __BeamStats_H_
+#define __BeamStats_H_
 
 #include "RoRPrerequisites.h"
 #include <Ogre.h>
-#include <map>
 
 // BES = Beam Engine Statistics
 
@@ -164,6 +163,4 @@ private:
 
 #endif // FEAT_TIMING
 
-#endif //__BeamStats_H__
-
-
+#endif //__BeamStats_H_

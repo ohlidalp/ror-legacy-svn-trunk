@@ -46,6 +46,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <iconv.h>
 #endif // LINUX
 
+using namespace std;
+
 // the delimiters that decide where a word is finished
 const Ogre::UTFString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
 const char *builtInCommands[] = {"/help", "/log", "/pos", "/goto", "/terrainheight", "/ver", "/save", "/whisper", "/as", NULL};

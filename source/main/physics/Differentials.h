@@ -17,12 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __DIFFERENTIALS_H__
-#define __DIFFERENTIALS_H__
+#ifndef __DIFFERENTIALS_H_
+#define __DIFFERENTIALS_H_
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
-#include <vector>
 
 #define MAX_DIFFS 3
 struct differential_data_t
@@ -96,5 +95,4 @@ private:
     static diff_callback getDiffEquation(DiffType type);
 };
 
-
-#endif // __DIFFERENTIALS_H__
+#endif // __DIFFERENTIALS_H_

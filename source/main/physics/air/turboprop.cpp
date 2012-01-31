@@ -17,9 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "turboprop.h"
-
+#include "Airfoil.h"
 #include "Scripting.h"
+#include "SoundScriptManager.h"
+#include "turboprop.h"
 
 Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, int nb, int np1, int np2, int np3, int np4, int tqn, float power, char* propfoilname, int mnumber, int trucknum, bool disable_smoke, bool ispiston, float fpitch, bool _heathaze)
 {
@@ -387,7 +388,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 	if (propwash<0) propwash=0;
 }
 
-void Turboprop::setThrotle(float val)
+void Turboprop::setThrottle(float val)
 {
 	if (val>1.0) val=1.0;
 	if (val<0.0) val=0.0;
@@ -398,7 +399,7 @@ void Turboprop::setThrotle(float val)
 #endif //OPENAL
 }
 
-float Turboprop::getThrotle()
+float Turboprop::getThrottle()
 {
 	return throtle;
 }

@@ -24,8 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  * Created on April 6, 2009, 2:57 AM
  */
 
-#ifndef __APPROXMATH_H__
-#define	__APPROXMATH_H__
+#ifndef __APPROXMATH_H_
+#define	__APPROXMATH_H_
 
 #include "RoRPrerequisites.h"
 
@@ -158,6 +158,4 @@ inline float fast_length(Ogre::Vector3 v)
 	return fast_sqrt(v.squaredLength());
 }
 
-
-
-#endif	/* _APPROXMATH_H */
+#endif // __APPROXMATH_H_

@@ -668,10 +668,10 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			res = true;
 			char name[256];
 			strcpy(name,element->getName().c_str());
-			if (!strncmp(name, "tracks/thrust1", 14)) curr_truck->aeroengines[0]->setThrotle(1.0f-((mouseY-thrtop-throffset)/thrheight));
-			if (!strncmp(name, "tracks/thrust2", 14) && curr_truck->free_aeroengine>1) curr_truck->aeroengines[1]->setThrotle(1.0f-((mouseY-thrtop-throffset)/thrheight));
-			if (!strncmp(name, "tracks/thrust3", 14) && curr_truck->free_aeroengine>2) curr_truck->aeroengines[2]->setThrotle(1.0f-((mouseY-thrtop-throffset)/thrheight));
-			if (!strncmp(name, "tracks/thrust4", 14) && curr_truck->free_aeroengine>3) curr_truck->aeroengines[3]->setThrotle(1.0f-((mouseY-thrtop-throffset)/thrheight));
+			if (!strncmp(name, "tracks/thrust1", 14)) curr_truck->aeroengines[0]->setThrottle(1.0f-((mouseY-thrtop-throffset)/thrheight));
+			if (!strncmp(name, "tracks/thrust2", 14) && curr_truck->free_aeroengine>1) curr_truck->aeroengines[1]->setThrottle(1.0f-((mouseY-thrtop-throffset)/thrheight));
+			if (!strncmp(name, "tracks/thrust3", 14) && curr_truck->free_aeroengine>2) curr_truck->aeroengines[2]->setThrottle(1.0f-((mouseY-thrtop-throffset)/thrheight));
+			if (!strncmp(name, "tracks/thrust4", 14) && curr_truck->free_aeroengine>3) curr_truck->aeroengines[3]->setThrottle(1.0f-((mouseY-thrtop-throffset)/thrheight));
 		}
 		//also for main dashboard
 		OverlayElement *element2=airdashboardOverlay->findElementAt(mouseX,mouseY);

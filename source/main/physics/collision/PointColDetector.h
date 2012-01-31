@@ -18,17 +18,12 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __PointColDetector_H__
-#define __PointColDetector_H__
+#ifndef __PointColDetector_H_
+#define __PointColDetector_H_
 
 #include "RoRPrerequisites.h"
-
 #include "Ogre.h"
-#include <vector>
-using namespace Ogre;
-using namespace std;
 #include "Beam.h"
-
 
 typedef struct _pointid {
 	int nodeid;
@@ -83,4 +78,4 @@ private:
 	void partintwo(const int start, const int median, const int end, const int axis, float &minex, float &maxex);
 };
 
-#endif
+#endif __PointColDetector_H_

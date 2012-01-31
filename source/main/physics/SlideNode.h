@@ -40,15 +40,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SLIDENODE_H_
-#define SLIDENODE_H_
+#ifndef __SLIDENODE_H_
+#define __SLIDENODE_H_
 
 #include "RoRPrerequisites.h"
-
-#include <limits>
-
 #include "BeamData.h"
-#include "OgreVector3.h"
 
 /** 
  * Find the point on a line defined by pt1 and pt2 that
@@ -551,5 +547,4 @@ private:
     
 };
 
-
-#endif
+#endif // __SLIDENODE_H_

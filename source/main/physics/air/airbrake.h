@@ -17,10 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef AIRBRAKE_H__
-#define AIRBRAKE_H__
+#ifndef __AIRBRAKE_H_
+#define __AIRBRAKE_H_
 
 #include "RoRPrerequisites.h"
+
 #include <OgreMesh.h>
 
 class Airbrake
@@ -31,7 +32,6 @@ private:
 	{
 		Ogre::Vector3 vertex;
 		Ogre::Vector3 normal;
-	//	Vector3 color;
 		Ogre::Vector2 texcoord;
 	} CoVertice_t;
 
@@ -53,4 +53,4 @@ public:
 	void applyForce();
 };
 
-#endif //AIRBRAKE_H__
+#endif // __AIRBRAKE_H_

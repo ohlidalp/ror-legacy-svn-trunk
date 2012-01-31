@@ -17,16 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Turboprop_H__
-#define __Turboprop_H__
+#ifndef __Turboprop_H_
+#define __Turboprop_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include "SoundScriptManager.h"
 
-using namespace Ogre;
-#include "Beam.h"
-#include "Airfoil.h"
 #include "aeroengine.h"
 
 class Turboprop: public AeroEngine
@@ -89,9 +84,9 @@ public:
 	void updateVisuals();
 	void updateForces(float dt, int doUpdate);
 
-	void setThrotle(float val);
+	void setThrottle(float val);
 
-	float getThrotle();
+	float getThrottle();
 
 	void reset();
 
@@ -116,4 +111,4 @@ public:
 	float getRadius() {return radius;};
 };
 
-#endif
+#endif // __Turboprop_H_

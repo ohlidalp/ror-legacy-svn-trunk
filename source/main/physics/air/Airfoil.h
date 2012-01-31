@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef AIRFOIL_H__
-#define AIRFOIL_H__
+#ifndef __AIRFOIL_H_
+#define __AIRFOIL_H_
 
 #include "RoRPrerequisites.h"
 
@@ -36,4 +36,4 @@ public:
 };
 
 
-#endif // endif AIRFOIL_H__
+#endif // __AIRFOIL_H_

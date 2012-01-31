@@ -76,7 +76,7 @@ public:
 	float getAilerons();
 	float getElevator();
 	float getRudder();
-	float getThrotle(float thrtl, float dt);
+	float getThrottle(float thrtl, float dt);
 
 	void gpws_update(float spawnheight);
 

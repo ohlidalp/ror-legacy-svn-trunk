@@ -20,9 +20,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ContentManager.h"
 
-#include <Ogre.h>
-#include <OgreResourceBackgroundQueue.h>
-
 #include "Settings.h"
 #include "ColoredTextAreaOverlayElementFactory.h"
 #include "SoundScriptManager.h"

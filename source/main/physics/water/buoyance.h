@@ -17,29 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Buoyance_H__
-#define __Buoyance_H__
+#ifndef __Buoyance_H_
+#define __Buoyance_H_
 
 #include "RoRPrerequisites.h"
 
-#include "Ogre.h"
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#include <windows.h>
-#endif
-#include <math.h>
-#include <stdio.h>
-#include "water.h"
-//#include "DustPool.h"
-#include "Beam.h"
-
 #include "DustPool.h"
-#include "DustManager.h"
-
-using namespace Ogre;
-
-#define BUOY_NORMAL 0
-#define BUOY_DRAGONLY 1
-#define BUOY_DRAGLESS 2
 
 class Buoyance
 {
@@ -55,18 +38,19 @@ public:
 	~Buoyance();
 
 	//compute tetrahedron volume
-	inline float computeVolume(Vector3 o, Vector3 a, Vector3 b, Vector3 c);
+	inline float computeVolume(Ogre::Vector3 o, Ogre::Vector3 a, Ogre::Vector3 b, Ogre::Vector3 c);
 
 	//compute pressure and drag force on a submerged triangle
-	Vector3 computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
+	Vector3 computePressureForceSub(Ogre::Vector3 a, Ogre::Vector3 b, Ogre::Vector3 c, Ogre::Vector3 vel, int type);
 	
 	//compute pressure and drag forces on a random triangle
-	Vector3 computePressureForce(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type);
+	Vector3 computePressureForce(Ogre::Vector3 a, Ogre::Vector3 b, Ogre::Vector3 c, Ogre::Vector3 vel, int type);
 	
 	void computeNodeForce(node_t *a, node_t *b, node_t *c, int doupdate, int type);
 
 	void setsink(int v);
+
+	enum { BUOY_NORMAL, BUOY_DRAGONLY, BUOY_DRAGLESS };
 };
 
-
-#endif
+#endif // __Buoyance_H_
