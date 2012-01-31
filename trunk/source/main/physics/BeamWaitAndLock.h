@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef FEAT_DEBUG_MUTEX
 # define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
 #else //!FEAT_DEBUG_MUTEX
+// TODO: remove this later on
 # define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
 //# define BEAMLOCK() 
 #endif //FEAT_DEBUG_MUTEX
@@ -52,9 +53,9 @@ public:
 	/**
 	 *	constructor with logging
 	 */
-	BeamWaitAndLock(const char *file, const char *function, int line)
+	BeamWaitAndLock(const char *fileName, const char *functionName, int line)
 	{
-		LOG("Beam data locking in " + String(file) + " / " + String(function) + ":" + TOSTRING(line));
+		LOG("Beam data locking | " + String(functionName) + " | " + String(fileName) + ":" + TOSTRING(line));
 		BeamFactory::getSingleton()._waitForSyncAndLock();
 	}
 
