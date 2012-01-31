@@ -901,7 +901,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	if(!isEmbedded)
 	{
 		new GUI_MainMenu(this);
-		new GUI_Friction();
+		GUI_Friction::getSingleton();
 	}
 
 	if(!BSETTING("REPO_MODE"))

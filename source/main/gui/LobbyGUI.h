@@ -29,10 +29,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 ATTRIBUTE_CLASS_LAYOUT(LobbyGUI, "Lobby.layout");
 class LobbyGUI :
 	public wraps::BaseLayout,
-	public Singleton2<LobbyGUI>,
+	public RoRSingleton<LobbyGUI>,
 	public IRCWrapper
 {
-	friend class Singleton2<LobbyGUI>;
+	friend class RoRSingleton<LobbyGUI>;
 	LobbyGUI();
 	~LobbyGUI();
 public:

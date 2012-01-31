@@ -33,9 +33,9 @@ ATTRIBUTE_CLASS_LAYOUT(SelectorWindow, "SelectorWindow.layout");
 
 class SelectorWindow :
 	public wraps::BaseLayout,
-	public Singleton2<SelectorWindow>
+	public RoRSingleton<SelectorWindow>
 {
-	friend class Singleton2<SelectorWindow>;
+	friend class RoRSingleton<SelectorWindow>;
 	SelectorWindow();
 	~SelectorWindow();
 public:
