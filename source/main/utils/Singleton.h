@@ -33,27 +33,27 @@ protected:
 	virtual ~Singleton2() { _self = 0; }
 	void _free() { delete this; }
 public:
-	static T& getInstance()
+	inline static T& getInstance()
 	{
 		if (!_self) _self = new T;
 		return *_self;
 	}
-	static T& getSingleton()
+	inline static T& getSingleton()
 	{
 		if (!_self) _self = new T;
 		return *_self;
 	}
-	static T* getInstancePtr()
+	inline static T* getInstancePtr()
 	{
 		if (!_self) _self = new T;
 		return _self;
 	}
-	static T* getSingletonPtr()
+	inline static T* getSingletonPtr()
 	{
 		if (!_self) _self = new T;
 		return _self;
 	}
-	static T* getInstancePtrNoCreation()
+	inline static T* getInstancePtrNoCreation()
 	{
 		return _self;
 	}

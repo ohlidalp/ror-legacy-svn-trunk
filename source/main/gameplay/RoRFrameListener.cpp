@@ -78,7 +78,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #include "network.h"
 #include "NetworkStreamManager.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "turboprop.h"
 #include "screwprop.h"
 #include "FlexAirfoil.h"
@@ -575,12 +575,11 @@ void RoRFrameListener::updateGUI(float dt)
 		float absangle=angle;
 		if (absangle<0) absangle=-absangle;
 #ifdef USE_OPENAL
-		if (ssm)
-			ssm->modulate(curr_truck, SS_MOD_AOA, absangle);
-		if (absangle>18.0 && ssm)
-			ssm->trigStart(curr_truck, SS_TRIG_AOA);
-		else if(ssm)
-			ssm->trigStop(curr_truck, SS_TRIG_AOA);
+		SoundScriptManager::getSingleton().modulate(curr_truck, SS_MOD_AOA, absangle);
+		if (absangle > 18.0) // TODO: magicccc
+			SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_AOA);
+		else
+			SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_AOA);
 #endif // OPENAL
 		if (angle>25.0) angle=25.0;
 		if (angle<-25.0) angle=-25.0;
@@ -869,9 +868,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//network
 	netmode=(BSETTING("Network enable"));
 
-#ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
-#endif //OPENAL
 	mRoot=root;
 
 	if(ow)
@@ -1621,11 +1617,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (!strncmp("sound", ptline, 5))
 		{
 #ifdef USE_OPENAL
-			if(ssm)
+			if(SoundScriptManager::getSingleton().working())
 			{
 				char tmp[255]="";
 				sscanf(ptline, "sound %s", tmp);
-				SoundScriptInstance *sound = ssm->createInstance(tmp, SoundScriptManager::TERRAINSOUND, tenode);
+				SoundScriptInstance *sound = SoundScriptManager::getSingleton().createInstance(tmp, SoundScriptManager::TERRAINSOUND, tenode);
 				sound->setPosition(tenode->getPosition(), Vector3::ZERO);
 				sound->start();
 			}
@@ -2514,10 +2510,10 @@ bool RoRFrameListener::updateEvents(float dt)
 						}
 
 #ifdef USE_OPENAL
-						if (ssm && curr_truck->brake > curr_truck->brakeforce/6.0)
-							ssm->trigStart(curr_truck, SS_TRIG_BRAKE);
-						else if (ssm)
-							ssm->trigStop(curr_truck, SS_TRIG_BRAKE);
+						if (curr_truck->brake > curr_truck->brakeforce/6.0)
+							SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_BRAKE);
+						else
+							SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_BRAKE);
 #endif //OPENAL
 
 						//IMI
@@ -2533,14 +2529,14 @@ bool RoRFrameListener::updateEvents(float dt)
 										//starter
 										curr_truck->engine->setstarter(1);
 #ifdef USE_OPENAL
-										if(ssm) ssm->trigStart(curr_truck, SS_TRIG_STARTER);
+										SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_STARTER);
 #endif // OPENAL
 									}
 								else
 									{
 										curr_truck->engine->setstarter(0);
 #ifdef USE_OPENAL
-										if(ssm) ssm->trigStop(curr_truck, SS_TRIG_STARTER);
+										SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_STARTER);
 #endif // OPENAL
 									}
 
@@ -2708,19 +2704,19 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_OPENAL
 					if (curr_truck->ispolice)
 					{
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_HORN) && ssm)
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_HORN))
 						{
-							ssm->trigToggle(curr_truck, SS_TRIG_HORN);
+							SoundScriptManager::getSingleton().trigToggle(curr_truck, SS_TRIG_HORN);
 						}
 					}
 					else
 					{
 						if (INPUTENGINE.getEventBoolValue(EV_TRUCK_HORN) && !curr_truck->replaymode)
 						{
-							if(ssm) ssm->trigStart(curr_truck, SS_TRIG_HORN);
+							SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_HORN);
 						} else
 						{
-							if(ssm) ssm->trigStop(curr_truck, SS_TRIG_HORN);
+							SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_HORN);
 						};
 					}
 #endif // OPENAL
@@ -3020,7 +3016,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_REPAIR_TRUCK))
 				{
 #ifdef USE_OPENAL
-					if(ssm) ssm->trigOnce(curr_truck, SS_TRIG_REPAIR);
+					SoundScriptManager::getSingleton().trigOnce(curr_truck, SS_TRIG_REPAIR);
 #endif //OPENAL
 					curr_truck->reset(true);
 				}
@@ -3108,7 +3104,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					if(ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
-					if(ssm) ssm->trigStart(curr_truck, SS_TRIG_AIR);
+					SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					curr_truck->addPressure(-dt*10.0);
 					pressure_pressed=true;
@@ -3117,14 +3113,14 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					if(ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
-					if(ssm) ssm->trigStart(curr_truck, SS_TRIG_AIR);
+					SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					curr_truck->addPressure(dt*10.0);
 					pressure_pressed=true;
 				} else if (pressure_pressed)
 				{
 #ifdef USE_OPENAL
-					if(ssm) ssm->trigStop(curr_truck, SS_TRIG_AIR);
+					SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					pressure_pressed=false;
 					if(ow) ow->showPressureOverlay(false);
@@ -3643,7 +3639,7 @@ void RoRFrameListener::shutdown_final()
 #endif //SOCKETW
 	loading_state=EXITING;
 #ifdef USE_OPENAL
-	if(ssm) ssm->soundEnable(false);
+	SoundScriptManager::getSingleton().soundEnable(false);
 #endif // OPENAL
 #ifdef USE_OIS_G27
 	//logitech G27 LEDs tachometer
@@ -5484,8 +5480,8 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		if(ow) ow->showDashboardOverlays(false, currentTruck);
 		if(ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigStop(previousTruck, SS_TRIG_AIR);
-		if(ssm) ssm->trigStop(previousTruck, SS_TRIG_PUMP);
+		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_AIR);
+		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_PUMP);
 #endif // OPENAL
 
 		int free_truck = BeamFactory::getSingleton().getTruckCount();
@@ -6078,7 +6074,7 @@ void RoRFrameListener::moveCamera(float dt)
 	cdoppler=cpos;
 	// XXX maybe thats the source of sound destorsion: runtime order???
 #ifdef USE_OPENAL
-	if(ssm) ssm->setCamera(cpos, cdir, cup, cspeed);
+	SoundScriptManager::getSingleton().setCamera(cpos, cdir, cup, cspeed);
 #endif // OPENAL
 	//if (cspeed.length()>50.0) {cspeed.normalise(); cspeed=50.0*cspeed;};
 	//if (audioManager) audioManager->setListenerPosition(cpos.x, cpos.y, cpos.z, cspeed.x, cspeed.y, cspeed.z, cdir.x, cdir.y, cdir.z, cup.x, cup.y, cup.z);

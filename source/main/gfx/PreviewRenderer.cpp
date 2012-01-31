@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "BeamFactory.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "utils.h"
 
 PreviewRenderer::PreviewRenderer()

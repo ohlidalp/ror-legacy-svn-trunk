@@ -29,7 +29,6 @@ Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, 
 	number=mnumber;
 	this->trucknum=trucknum;
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
 	switch (number)
 	{
 	case 0: mod_id=SS_MOD_AEROENGINE1;src_id=SS_TRIG_AEROENGINE1;thr_id=SS_MOD_THROTTLE1;break;
@@ -213,7 +212,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 		airdensity=airpressure*0.0000120896;//1.225 at sea level
 #ifdef USE_OPENAL
 		//sound update
-		if(ssm) ssm->modulate(trucknum, mod_id, rpm);
+		SoundScriptManager::getSingleton().modulate(trucknum, mod_id, rpm);
 #endif //OPENAL
 	}
 
@@ -395,7 +394,7 @@ void Turboprop::setThrotle(float val)
 	throtle=val;
 #ifdef USE_OPENAL
 	//sound update
-	if(ssm) ssm->modulate(trucknum, thr_id, val);
+	SoundScriptManager::getSingleton().modulate(trucknum, thr_id, val);
 #endif //OPENAL
 }
 
@@ -436,13 +435,13 @@ void Turboprop::flipStart()
 		warmup=true;
 		warmupstart=timer;
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigStart(trucknum, src_id);
+		SoundScriptManager::getSingleton().trigStart(trucknum, src_id);
 #endif //OPENAL
 	}
 	else
 	{
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigStop(trucknum, src_id);
+		SoundScriptManager::getSingleton().trigStop(trucknum, src_id);
 #endif //OPENAL
 	}
 	lastflip=timer;

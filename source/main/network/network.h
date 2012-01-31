@@ -30,7 +30,7 @@ using namespace Ogre;
 #include "rornet.h"
 #include "pthread.h"
 #include "Beam.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "SoundScriptManager.h"
 
 
@@ -64,7 +64,6 @@ private:
 	int rconauthed;
 	bool shutdown;
 	user_info_t userdata;
-	SoundScriptManager* ssm;
 	Ogre::UTFString getUserChatName(client_t *c);
 	void calcSpeed();
 	std::map<int, float> lagDataClients;

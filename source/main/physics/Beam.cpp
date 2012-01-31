@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include "Beam.h"
 #include "BeamData.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "SoundScriptManager.h"
 #include "heightfinder.h"
 #include "DustManager.h"
@@ -324,9 +324,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if(_truckconfig && _truckconfig->size())
 		for(std::vector<String>::iterator it = _truckconfig->begin(); it!=_truckconfig->end();it++)
 			truckconfig.push_back(*it);
-#ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
-#endif //OPENAL
 	materialFunctionMapper = new MaterialFunctionMapper();
 	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
 	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
@@ -1100,16 +1097,16 @@ void Beam::calcNetwork()
 
 	MUTEX_UNLOCK(&net_mutex);
 #ifdef USE_OPENAL
-	if (engine && ssm)
+	if (engine)
 	{
-		ssm->modulate(trucknum, SS_MOD_ENGINE, engspeed);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_ENGINE, engspeed);
 	}
-	if(free_aeroengine>0 && ssm)
+	if(free_aeroengine > 0)
 	{
-		ssm->modulate(trucknum, SS_MOD_AEROENGINE1, engspeed);
-		ssm->modulate(trucknum, SS_MOD_AEROENGINE2, engspeed);
-		ssm->modulate(trucknum, SS_MOD_AEROENGINE3, engspeed);
-		ssm->modulate(trucknum, SS_MOD_AEROENGINE4, engspeed);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE1, engspeed);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE2, engspeed);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE3, engspeed);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE4, engspeed);
 	}
 #endif //OPENAL
 
@@ -1161,19 +1158,19 @@ void Beam::calcNetwork()
 	setCustomLightVisible(3, ((flagmask&NETMASK_CLIGHT4)>0));
 
 #ifdef USE_OPENAL
-	if ((flagmask & NETMASK_HORN) && ssm)
-		ssm->trigStart(trucknum, SS_TRIG_HORN);
-	else if(ssm)
-		ssm->trigStop(trucknum, SS_TRIG_HORN);
+	if ((flagmask & NETMASK_HORN))
+		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_HORN);
+	else
+		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_HORN);
 #endif //OPENAL
 	netBrakeLight   = ((flagmask&NETMASK_BRAKES)!=0);
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
 
 #ifdef USE_OPENAL
-	if(netReverseLight && ssm)
-		ssm->trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
-	else if(ssm)
-		ssm->trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
+	if(netReverseLight)
+		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
+	else
+		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
 
 #ifdef USE_MYGUI
@@ -1353,116 +1350,116 @@ int Beam::getWheelNodeCount()
 void Beam::setupDefaultSoundSources()
 {
 #ifdef USE_OPENAL
-	if(!ssm) return;
+	if(!SoundScriptManager::getSingleton().working()) return;
 	//engine
 	if (engine)
 	{
 		if (engine->type=='t')
 		{
-			addSoundSource(ssm->createInstance("tracks/default_diesel", trucknum, NULL), smokeId);
-			addSoundSource(ssm->createInstance("tracks/default_force", trucknum, NULL), smokeId);
-			addSoundSource(ssm->createInstance("tracks/default_brakes", trucknum, NULL), 0);
-			addSoundSource(ssm->createInstance("tracks/default_parkbrakes", trucknum, NULL), 0);
-			addSoundSource(ssm->createInstance("tracks/default_reverse_beep", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_diesel", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_force", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_brakes", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_parkbrakes", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_reverse_beep", trucknum, NULL), 0);
 		}
 		if (engine->type=='c')
-			addSoundSource(ssm->createInstance("tracks/default_car", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_car", trucknum, NULL), smokeId);
 		if (engine->hasturbo)
-			addSoundSource(ssm->createInstance("tracks/default_turbo", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_turbo", trucknum, NULL), smokeId);
 		if (engine->hasair)
-			addSoundSource(ssm->createInstance("tracks/default_air_purge", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_air_purge", trucknum, NULL), 0);
 		//starter
-		addSoundSource(ssm->createInstance("tracks/default_starter", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_starter", trucknum, NULL), 0);
 		// turn signals
-		addSoundSource(ssm->createInstance("tracks/default_turn_signal", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_turn_signal", trucknum, NULL), 0);
 	}
 	if (driveable==TRUCK)
 	{
 		//horn
 		if (ispolice)
-			addSoundSource(ssm->createInstance("tracks/default_police", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_police", trucknum, NULL), 0);
 		else
-			addSoundSource(ssm->createInstance("tracks/default_horn", trucknum, NULL), 0);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_horn", trucknum, NULL), 0);
 		//shift
-		addSoundSource(ssm->createInstance("tracks/default_shift", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_shift", trucknum, NULL), 0);
 	}
 	//pump
 	if (hascommands)
-		addSoundSource(ssm->createInstance("tracks/default_pump", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_pump", trucknum, NULL), 0);
 	//antilock brake
 	if (alb_present)
-		addSoundSource(ssm->createInstance("tracks/default_antilock", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_antilock", trucknum, NULL), 0);
 	//tractioncontrol
 	if (tc_present)
-		addSoundSource(ssm->createInstance("tracks/default_tractioncontrol", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_tractioncontrol", trucknum, NULL), 0);
 	//screetch
 	if ((driveable==TRUCK || driveable==AIRPLANE) && free_wheel)
-		addSoundSource(ssm->createInstance("tracks/default_screetch", trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_screetch", trucknum, NULL), 0);
 	//break & creak
-	addSoundSource(ssm->createInstance("tracks/default_break", trucknum, NULL), 0);
-	addSoundSource(ssm->createInstance("tracks/default_creak", trucknum, NULL), 0);
+	addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_break", trucknum, NULL), 0);
+	addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_creak", trucknum, NULL), 0);
 	//boat engine
 	if (driveable==BOAT)
 	{
 		if (totalmass>50000.0)
-			addSoundSource(ssm->createInstance("tracks/default_marine_large", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_marine_large", trucknum, NULL), smokeId);
 		else
-			addSoundSource(ssm->createInstance("tracks/default_marine_small", trucknum, NULL), smokeId);
+			addSoundSource(SoundScriptManager::getSingleton().createInstance("tracks/default_marine_small", trucknum, NULL), smokeId);
 		//no start/stop engine for boats, so set sound always on!
-		ssm->trigStart(trucknum, SS_TRIG_ENGINE);
-		ssm->modulate(trucknum, SS_MOD_ENGINE, 0.5);
+		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_ENGINE);
+		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_ENGINE, 0.5);
 	}
 	//airplane warnings
 	if (driveable==AIRPLANE)
 	{
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_10"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_20"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_30"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_40"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_50"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_100"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_pullup"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_minimums"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_gpws_apdisconnect"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aoa_warning"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat01"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat02"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat03"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat04"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat05"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat06"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat07"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat08"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat09"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat10"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat11"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat12"), trucknum, NULL), 0);
-		addSoundSource(ssm->createInstance(String("tracks/default_aivionic_chat13"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_10"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_20"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_30"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_40"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_50"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_100"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_pullup"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_minimums"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_gpws_apdisconnect"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aoa_warning"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat01"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat02"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat03"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat04"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat05"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat06"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat07"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat08"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat09"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat10"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat11"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat12"), trucknum, NULL), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_aivionic_chat13"), trucknum, NULL), 0);
 	}
 	//airplane engines
 	for (int i=0; i<free_aeroengine && i<8; i++)
 	{
 		if (aeroengines[i]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOJET)
 		{
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-			addSoundSource(ssm->createInstance(String("tracks/default_turbojet_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turbojet_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turbojet_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+			addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turbojet_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			if (((Turbojet*)(aeroengines[i]))->afterburnable)
-				addSoundSource(ssm->createInstance(String("tracks/default_turbojet_afterburner")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turbojet_afterburner")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 		}
 		else if (aeroengines[i]->getType()==AeroEngine::AEROENGINE_TYPE_TURBOPROP)
 		{
 			if (((Turboprop*)aeroengines[i])->is_piston)
 			{
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_pistonprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_pistonprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_pistonprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_pistonprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			}
 			else
 			{
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
-				addSoundSource(ssm->createInstance(String("tracks/default_turboprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turboprop_start")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turboprop_lopower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/default_turboprop_hipower")+TOSTRING(i+1), trucknum, NULL), aeroengines[i]->getNoderef());
 			}
 		}
 	}
@@ -2279,7 +2276,8 @@ void Beam::sendStreamData()
 		if(antilockbrake)               send_oob->flagmask += NETMASK_ALB_ACTIVE;
 
 #ifdef USE_OPENAL
-		if (ssm && ssm->getTrigState(trucknum, SS_TRIG_HORN)) send_oob->flagmask+=NETMASK_HORN;
+		if (SoundScriptManager::getSingleton().getTrigState(trucknum, SS_TRIG_HORN))
+			send_oob->flagmask += NETMASK_HORN;
 #endif //OPENAL
 	}
 
@@ -3788,12 +3786,12 @@ void Beam::setBlinkType(blinktype blink)
 		right_blink_on = false;
 		warn_blink_on = false;
 	}
-	if(blink == BLINK_NONE && ssm)
+	if(blink == BLINK_NONE)
 	{
-		ssm->trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
-	} else if(ssm)
+		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
+	} else
 	{
-		ssm->trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
+		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
 	}
 
 #endif //OPENAL
@@ -3881,14 +3879,14 @@ void Beam::updateSoundSources()
 {
 	BES_GFX_START(BES_GFX_updateSoundSources);
 #ifdef USE_OPENAL
-	if(!ssm) return;
+	if(!SoundScriptManager::getSingleton().working()) return;
 	for (int i=0; i<free_soundsource; i++)
 	{
 		soundsources[i].ssi->setPosition(nodes[soundsources[i].nodenum].AbsPosition, nodes[soundsources[i].nodenum].Velocity);
 	}
 	//also this, so it is updated always, and for any vehicle
-	ssm->modulate(trucknum, SS_MOD_AIRSPEED, nodes[0].Velocity.length()*1.9438);
-	ssm->modulate(trucknum, SS_MOD_WHEELSPEED, WheelSpeed*3.6);
+	SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AIRSPEED, nodes[0].Velocity.length()*1.9438);
+	SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_WHEELSPEED, WheelSpeed*3.6);
 #endif //OPENAL
 	BES_GFX_STOP(BES_GFX_updateSoundSources);
 }
@@ -3941,7 +3939,7 @@ void Beam::updateVisual(float dt)
 		avichatter_timer -= dt;
 		if (avichatter_timer < 0)
 		{
-			if(ssm) ssm->trigOnce(trucknum, SS_TRIG_AVICHAT01 + Math::RangeRandom(0, 12));
+			SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_AVICHAT01 + Math::RangeRandom(0, 12));
 			avichatter_timer = Math::RangeRandom(11,30);
 		}
 	}
@@ -4817,10 +4815,10 @@ void Beam::parkingbrakeToggle()
 	parkingbrake=!parkingbrake;
 
 #ifdef USE_OPENAL
-	if (parkingbrake && ssm)
-		ssm->trigStart(trucknum, SS_TRIG_PARK);
-	else if (ssm)
-		ssm->trigStop(trucknum, SS_TRIG_PARK);
+	if (parkingbrake)
+		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_PARK);
+	else
+		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_PARK);
 #endif // USE_OPENAL
 
 	//ScriptEvent - Parking Brake toggle
@@ -5260,13 +5258,10 @@ void Beam::changedCamera()
 {
 	// change sound setup
 #ifdef USE_OPENAL
-	if(ssm)
+	for (int i=0; i<free_soundsource; i++)
 	{
-		for (int i=0; i<free_soundsource; i++)
-		{
-			bool enabled = (soundsources[i].type == -2 || soundsources[i].type == currentcamera);
-			soundsources[i].ssi->setEnabled(enabled);
-		}
+		bool enabled = (soundsources[i].type == -2 || soundsources[i].type == currentcamera);
+		soundsources[i].ssi->setEnabled(enabled);
 	}
 #endif //OPENAL
 

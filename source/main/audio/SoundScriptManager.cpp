@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-SoundScriptManager::SoundScriptManager()
+SoundScriptManager::SoundScriptManager() : soundsDisabled(false)
 {
 	// TODO: init variables in constr.
 	instance_counter=0;
@@ -49,15 +49,19 @@ SoundScriptManager::SoundScriptManager()
 	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->getNumHardwareSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
+
+	soundsDisabled = (SSETTING("3D Sound renderer") == "No sound");
 }
 
 void SoundScriptManager::trigOnce(Beam *truck, int trig)
 {
+	if(soundsDisabled) return;
 	if(truck) trigOnce(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigOnce(int truck, int trig)
 {
+	if(soundsDisabled) return;
 	for (int i=0; i<free_trigs[trig]; i++)
 	{
 		SoundScriptInstance* inst=trigs[trig+i*SS_MAX_TRIG];
@@ -67,11 +71,13 @@ void SoundScriptManager::trigOnce(int truck, int trig)
 
 void SoundScriptManager::trigStart(Beam *truck, int trig)
 {
+	if(soundsDisabled) return;
 	if(truck) trigStart(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigStart(int truck, int trig)
 {
+	if(soundsDisabled) return;
 	if (getTrigState(truck, trig)) return;
 	statemap[truck*SS_MAX_TRIG+trig]=true;
 	for (int i=0; i<free_trigs[trig]; i++)
@@ -83,11 +89,13 @@ void SoundScriptManager::trigStart(int truck, int trig)
 
 void SoundScriptManager::trigStop(Beam *truck, int trig)
 {
+	if(soundsDisabled) return;
 	if(truck) trigStop(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigStop(int truck, int trig)
 {
+	if(soundsDisabled) return;
 	if (!getTrigState(truck, trig)) return;
 	statemap[truck*SS_MAX_TRIG+trig]=false;
 	for (int i=0; i<free_trigs[trig]; i++)
@@ -99,33 +107,39 @@ void SoundScriptManager::trigStop(int truck, int trig)
 
 void SoundScriptManager::trigToggle(Beam *truck, int trig)
 {
+	if(soundsDisabled) return;
 	if(truck) trigToggle(truck->trucknum, trig);
 }
 
 void SoundScriptManager::trigToggle(int truck, int trig)
 {
+	if(soundsDisabled) return;
 	if (getTrigState(truck, trig)) trigStop(truck, trig);
 	else trigStart(truck, trig);
 }
 
 bool SoundScriptManager::getTrigState(Beam *truck, int trig)
 {
+	if(soundsDisabled) return false;
 	if(truck) return getTrigState(truck->trucknum, trig);
 	return false;
 }
 
 bool SoundScriptManager::getTrigState(int truck, int trig)
 {
+	if(soundsDisabled) return false;
 	return statemap[truck*SS_MAX_TRIG+trig];
 }
 
 void SoundScriptManager::modulate(Beam *truck, int mod, float value)
 {
+	if(soundsDisabled) return;
 	if(truck) modulate(truck->trucknum, mod, value);
 }
 
 void SoundScriptManager::modulate(int truck, int mod, float value)
 {
+	if(soundsDisabled) return;
 	for (int i=0; i<free_gains[mod]; i++)
 	{
 		SoundScriptInstance* inst=gains[mod+i*SS_MAX_MOD];
@@ -155,6 +169,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value)
 
 void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity)
 {
+	if(soundsDisabled) return;
 	sm->setCamera(position, direction, up, velocity);
 }
 

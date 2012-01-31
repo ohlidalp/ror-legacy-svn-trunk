@@ -70,7 +70,6 @@ protected:
 	float apressure;
 	int automode;
 	int trucknum;
-	SoundScriptManager *ssm;
 	TorqueCurve *torqueCurve;
 
 public:

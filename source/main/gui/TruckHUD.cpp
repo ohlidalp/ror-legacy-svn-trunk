@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TruckHUD.h"
 #include "InputEngine.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "turboprop.h"
 #include "language.h"
 #include "TorqueCurve.h"

@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "language.h"
 #include "errorutils.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "SerializedRig.h"
 #include "utils.h"
 
@@ -153,8 +153,7 @@ void CacheSystem::unloadUselessResourceGroups()
 			try
 			{
 #ifdef USE_OPENAL
-				SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
-				if(ssm) ssm->clearNonBaseTemplates();
+				SoundScriptManager::getSingleton().clearNonBaseTemplates();
 #endif //OPENAL
 				// we cannot fix this problem below Ogre version 1.7
 				//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
@@ -1966,8 +1965,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 			LOG("UnLoading " + dirname);
 
 #ifdef USE_OPENAL
-			SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
-			if(ssm) ssm->clearNonBaseTemplates();
+			SoundScriptManager::getSingleton().clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			ResourceGroupManager::getSingleton().clearResourceGroup(rgname);
@@ -2045,8 +2043,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		{
 			LOG("Unloading " + realzipPath);
 #ifdef USE_OPENAL
-			SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
-			if(ssm) ssm->clearNonBaseTemplates();
+			SoundScriptManager::getSingleton().clearNonBaseTemplates();
 #endif //OPENAL
 			//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(rgname);
 			rgm.removeResourceLocation(realzipPath, rgname);

@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SerializedRig.h"
 
-#include "engine.h"
+#include "BeamEngine.h"
 #include "autopilot.h"
 #include "ScopeLog.h"
 #include "skinmanager.h"
@@ -307,7 +307,6 @@ SerializedRig::SerializedRig()
 	useMaxRPMforGUI=false;
 	minimass=50.0;
 	cparticle_enabled=false;
-	ssm=0;
 	truckconfig.clear();
 	advanced_drag=false;
 	advanced_node_drag=0;
@@ -4504,7 +4503,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(script, args[1].c_str(), 255);
 
 	#ifdef USE_OPENAL
-				if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, -2, &c);
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum, NULL), ref, -2, &c);
 	#endif //OPENAL
 			}
 			else if (c.mode == BTS_SOUNDSOURCES2)
@@ -4518,7 +4517,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(script, args[2].c_str(), 255);
 
 	#ifdef USE_OPENAL
-				if(ssm) addSoundSource(ssm->createInstance(script, trucknum, NULL), ref, type, &c);
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum, NULL), ref, type, &c);
 	#endif //OPENAL
 			}
 			else if (c.mode == BTS_ENVMAP)

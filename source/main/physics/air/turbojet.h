@@ -67,7 +67,6 @@ private:
 	SceneNode *nzsnode;
 	SceneNode *absnode;
 	bool heathaze;
-	SoundScriptManager *ssm;
 	int trucknum;
 	int mod_id;
 	int src_id;

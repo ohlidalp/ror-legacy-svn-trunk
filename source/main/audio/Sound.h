@@ -34,7 +34,7 @@ class Sound
 	friend class SoundManager;
 
 public:
-	Sound(ALuint buffer, SoundManager* sound_mgr, int source_index);
+	Sound(ALuint buffer, SoundManager* soundManager, int sourceIndex);
 
 	void setPitch(float pitch);
 	void setGain(float gain);
@@ -67,9 +67,9 @@ private:
 	Ogre::Vector3 position;
 	Ogre::Vector3 velocity;
 
-	SoundManager* sound_mgr;
+	SoundManager* soundManager;
 	// Must not be changed during the lifetime of this object
-	int source_index;
+	int sourceIndex;
 };
 
 #endif // __Sound_H_

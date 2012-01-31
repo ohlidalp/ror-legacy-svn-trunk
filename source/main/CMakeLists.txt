@@ -118,6 +118,9 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   add_sub_dir(${BINNAME} sqlite)
   add_sub_dir(${BINNAME} framework)
   add_sub_dir(${BINNAME} ${folder})
+  
+  set(${BINNAME}_headers ${${BINNAME}_headers} ${RoR_Main_SOURCE_DIR}/RoRPrerequisites.h ${RoR_Main_SOURCE_DIR}/RoRVersion.h)
+  SOURCE_GROUP("globals" FILES ${RoR_Main_SOURCE_DIR}/RoRPrerequisites.h ${RoR_Main_SOURCE_DIR}/RoRVersion.h)
 
   if(${useWxWidgets})
     # find wxWidgets
