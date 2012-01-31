@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 #include "DashBoardManager.h"
 #endif // USE_MYGUI
+#include "BeamWaitAndLock.h"
 
 using namespace Ogre;
 
@@ -336,7 +337,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 bool BeamFactory::syncRemoteStreams()
 {
 	// block until all threads done
-	BeamWaitAndLock sync();
+	BEAMLOCK();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
@@ -559,7 +560,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 		return;
 
 	// block until all threads done
-	BeamWaitAndLock sync();
+	BEAMLOCK();
 
 	// synced delete
 	trucks[b->trucknum] = 0;

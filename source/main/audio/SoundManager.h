@@ -62,7 +62,7 @@ private:
 	void assign(int source_index, int hardware_index);
 	void retire(int source_index);
 
-	bool SoundManager::loadWAVFile(Ogre::String filename, ALuint buffer);
+	bool loadWAVFile(Ogre::String filename, ALuint buffer);
 
 	// Active audio sources (hardware sources)
 	int		m_hardware_sources_num;						 // Total number of available hardware sources < MAX_HARDWARE_SOURCES

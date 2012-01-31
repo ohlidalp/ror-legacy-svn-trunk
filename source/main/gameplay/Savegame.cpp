@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Savegame.h"
 
 #include "BeamFactory.h"
+#include "BeamWaitAndLock.h"
 #include "RoRVersion.h"
 #include <Ogre.h>
 
@@ -55,7 +56,7 @@ int Savegame::save(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "wb");
 
 	// wait for engine sync
-	BeamWaitAndLock syncBeams();
+	BEAMLOCK();
 
 	// TODO: show error
 	if(!f) 
@@ -223,7 +224,7 @@ int Savegame::load(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "rb");
 
 	// wait for engine sync
-	BeamWaitAndLock syncBeams();
+	BEAMLOCK();
 
 	if(!f)
 	{

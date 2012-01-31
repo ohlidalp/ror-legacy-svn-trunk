@@ -32,6 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "RoRFrameListener.h"
 #include "network.h"
+#include "heightfinder.h"
 
 #include "Beam.h"
 #include "BeamFactory.h"
