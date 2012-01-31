@@ -103,6 +103,15 @@ void AppStateManager::start(AppState* state)
 
 	unsigned long timeSinceLastFrame = 1;
 	unsigned long startTime          = 0;
+	unsigned long maxFPS             = 0;
+	unsigned long minTimePerFrame    = 0;
+
+	// TODO: Init 'maxFPS' through a frame limiter slider in the configurator
+
+	if (maxFPS)
+	{
+		minTimePerFrame = 1000 / maxFPS;
+	}
 
 	while(!m_bShutdown)
 	{
@@ -117,6 +126,12 @@ void AppStateManager::start(AppState* state)
 			sleep(100);
 			continue;
 #endif // WIN32
+		}
+
+		if (maxFPS && timeSinceLastFrame < minTimePerFrame)
+		{
+			// Sleep twice as long as we were too fast.
+			Sleep((minTimePerFrame - timeSinceLastFrame) << 1);
 		}
 
 		update(timeSinceLastFrame);
