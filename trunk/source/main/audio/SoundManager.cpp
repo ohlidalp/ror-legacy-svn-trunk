@@ -42,6 +42,7 @@ SoundManager::SoundManager() :
 	, m_audio_buffers_in_use_count(0)
 	, m_hardware_sources_num(0)
 	, m_hardware_sources_in_use_count(0)
+	, master_volume(1.0f)
 {
 	if (SSETTING("3D Sound renderer") == "No sound") return;
 
@@ -50,6 +51,9 @@ SoundManager::SoundManager() :
 	else sprintf(str, "DirectSound Software on %s", SSETTING("3D Sound renderer").c_str());
 
 	LOG("Opening Device: '"+String(str)+"'");
+
+
+	// TODO: Init the master_volume
 
 	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) m_hardware_sources_map[i]=-1;
 
@@ -186,7 +190,7 @@ void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vect
 
 	m_audio_sources[source_index]->computeAudibility(camera_position);
 
-	if (m_audio_sources[source_index]->audibility == 0)
+	if (m_audio_sources[source_index]->audibility == 0.0)
 	{
 		if (m_audio_sources[source_index]->hardware_index != -1) // Retire the source if it is currently assigned
 			retire(source_index);
@@ -202,7 +206,7 @@ void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vect
 			{
 				case Sound::REASON_PLAY: alSourcePlay(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);break;
 				case Sound::REASON_STOP: alSourceStop(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);break;
-				case Sound::REASON_GAIN: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_GAIN, vfl);break;
+				case Sound::REASON_GAIN: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_GAIN, vfl*master_volume);break;
 				case Sound::REASON_LOOP: alSourcei(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_LOOPING, (vfl>0.5)?AL_TRUE:AL_FALSE);break;
 				case Sound::REASON_PTCH: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_PITCH, vfl);break;
 				case Sound::REASON_POSN: alSource3f(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_POSITION, vvec->x,vvec->y,vvec->z);break;
@@ -255,7 +259,7 @@ void SoundManager::assign(int source_index, int hardware_index)
 
 	// The hardware source is supposed to be stopped!
 	alSourcei(m_hardware_sources[hardware_index], AL_BUFFER, m_audio_sources[source_index]->buffer);
-	alSourcef(m_hardware_sources[hardware_index], AL_GAIN, m_audio_sources[source_index]->gain);
+	alSourcef(m_hardware_sources[hardware_index], AL_GAIN, m_audio_sources[source_index]->gain*master_volume);
 	alSourcei(m_hardware_sources[hardware_index], AL_LOOPING, (m_audio_sources[source_index]->loop)?AL_TRUE:AL_FALSE);
 	alSourcef(m_hardware_sources[hardware_index], AL_PITCH, m_audio_sources[source_index]->pitch);
 	alSource3f(m_hardware_sources[hardware_index], AL_POSITION, m_audio_sources[source_index]->position.x,m_audio_sources[source_index]->position.y,m_audio_sources[source_index]->position.z);
@@ -286,8 +290,14 @@ void SoundManager::pauseAllSounds()
 void SoundManager::resumeAllSounds()
 {
 	if (!m_sound_device) return;
-	alListenerf(AL_GAIN, 1.0);
+	alListenerf(AL_GAIN, master_volume);
+}
 
+void SoundManager::setMasterVolume(float v)
+{
+	if (!m_sound_device) return;
+	master_volume = v;
+	alListenerf(AL_GAIN, master_volume);
 }
 
 Sound* SoundManager::createSound(String filename)
