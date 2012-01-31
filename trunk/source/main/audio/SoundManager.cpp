@@ -52,8 +52,7 @@ SoundManager::SoundManager() :
 
 	LOG("Opening Device: '"+String(str)+"'");
 
-
-	// TODO: Init the master_volume
+	master_volume = FSETTING("Sound Volume") / 100.0f;
 
 	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) m_hardware_sources_map[i]=-1;
 
