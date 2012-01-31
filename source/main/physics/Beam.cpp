@@ -296,7 +296,7 @@ Beam::~Beam()
 }
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
-	deleting(false)
+	deleting(false), dash(nullptr)
 {
 #ifdef USE_MYGUI
 	dash = new DashBoardManager();
