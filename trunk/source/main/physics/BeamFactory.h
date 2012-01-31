@@ -34,6 +34,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
 	friend class Network;
 	friend class RoRFrameListener;
+	friend class BeamWaitAndLock;
 public:
 	BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
 	~BeamFactory();
@@ -76,8 +77,6 @@ public:
 	void recursiveActivation(int j);
 	void checkSleepingState();
 
-	void _waitForSync();
-
 	void windowResized();
 
 protected:
@@ -114,15 +113,16 @@ protected:
 	void removeInstance(Beam *b);
 	void removeInstance(stream_del_t *del);
 	void _deleteTruck(Beam *b);
+	void _waitForSyncAndLock();
+	void _ReleaseLock();
+	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 
 	pthread_mutex_t done_count_mutex;
+	pthread_mutex_t vehicles_mutex;
 	pthread_cond_t done_count_cv;
 	pthread_mutex_t work_mutex;
 	pthread_cond_t work_cv;
 	pthread_t threads[32];
-
-private:
-	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 
 };
 

@@ -61,6 +61,7 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, tdr(0)
 {
 	pthread_mutex_init(&done_count_mutex, NULL);
+	pthread_mutex_init(&vehicles_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
 
 	for (int t=0; t<MAX_TRUCKS; t++)
@@ -335,7 +336,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 bool BeamFactory::syncRemoteStreams()
 {
 	// block until all threads done
-	_waitForSync();
+	BeamWaitAndLock sync();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
@@ -558,7 +559,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 		return;
 
 	// block until all threads done
-	_waitForSync();
+	BeamWaitAndLock sync();
 
 	// synced delete
 	trucks[b->trucknum] = 0;
@@ -571,7 +572,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 #endif // USE_MYGUI
 }
 
-void BeamFactory::_waitForSync()
+void BeamFactory::_waitForSyncAndLock()
 {
 	// block until all threads done
 	if (thread_mode > THREAD_SINGLE)
@@ -581,6 +582,13 @@ void BeamFactory::_waitForSync()
 			pthread_cond_wait(&done_count_cv, &done_count_mutex);
 		MUTEX_UNLOCK(&done_count_mutex);
 	}
+
+	MUTEX_LOCK(&vehicles_mutex);
+}
+
+void BeamFactory::_ReleaseLock()
+{
+	MUTEX_UNLOCK(&vehicles_mutex);
 }
 
 void BeamFactory::removeCurrentTruck()
