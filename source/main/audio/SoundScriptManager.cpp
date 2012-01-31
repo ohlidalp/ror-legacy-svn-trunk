@@ -30,11 +30,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-static SoundScriptManager* singleton=NULL;
-
 SoundScriptManager::SoundScriptManager()
 {
-	singleton=this;
+	// TODO: init variables in constr.
 	instance_counter=0;
 	maxDistance=500.0;
 	loadingBase=false;
@@ -158,13 +156,6 @@ void SoundScriptManager::modulate(int truck, int mod, float value)
 void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity)
 {
 	sm->setCamera(position, direction, up, velocity);
-}
-
-SoundScriptManager *SoundScriptManager::getSingleton()
-{
-	if (SSETTING("3D Sound renderer") == "No sound") return 0;
-	if (!singleton) singleton=new SoundScriptManager();
-	return singleton;
 }
 
 const StringVector& SoundScriptManager::getScriptPatterns(void) const

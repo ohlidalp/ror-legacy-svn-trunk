@@ -29,7 +29,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreResourceGroupManager.h"
 #include "Sound.h"
 #include "SoundManager.h"
+#include "Singleton.h"
 
+// TODO: fix this fugly defines into a proper enum
 #define MAX_SOUNDS_PER_SCRIPT 16
 #define MAX_INSTANCES_PER_GROUP 256
 
@@ -131,38 +133,38 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SS_MOD_AOA          28
 #define SS_MAX_MOD			29
 
-class SoundScriptTemplate
+class SoundScriptTemplate 
 {
 public:
 	SoundScriptTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename, bool baseTemplate);
 	bool setParameter(StringVector vec);
 	~SoundScriptTemplate();
 
-//private:
+//protected:
 	int parseModulation(Ogre::String str);
 	Ogre::String name;
 	Ogre::String groupname;
 	Ogre::String filename;
-	int trigger_source;
-	int pitch_source;
-	float pitch_offset;
-	float pitch_multiplier;
-	float pitch_square;
-	int gain_source;
-	float gain_offset;
-	float gain_multiplier;
-	float gain_square;
-	bool has_start_sound;
-	float start_sound_pitch;
+	int          trigger_source;
+	int          pitch_source;
+	float        pitch_offset;
+	float        pitch_multiplier;
+	float        pitch_square;
+	int          gain_source;
+	float        gain_offset;
+	float        gain_multiplier;
+	float        gain_square;
+	bool         has_start_sound;
+	float        start_sound_pitch;
 	Ogre::String start_sound_name;
-	bool has_stop_sound;
-	float stop_sound_pitch;
+	bool         has_stop_sound;
+	float        stop_sound_pitch;
 	Ogre::String stop_sound_name;
-	bool unpitchable;
-	int free_sound;
-	float sound_pitches[MAX_SOUNDS_PER_SCRIPT];
+	bool         unpitchable;
+	int          free_sound;
+	float        sound_pitches[MAX_SOUNDS_PER_SCRIPT];
 	Ogre::String sound_names[MAX_SOUNDS_PER_SCRIPT];
-	bool baseTemplate;
+	bool         baseTemplate;
 };
 
 class SoundScriptInstance
@@ -179,7 +181,7 @@ public:
 
 	void setEnabled(bool e);
 	SoundScriptTemplate* templ;
-private:
+protected:
 	SoundManager* sm;
 	Sound *startSound;
 	Sound *stopSound;
@@ -191,15 +193,14 @@ private:
 	float pitchgain_cutoff(float sourcepitch, float targetpitch);
 };
 
-class SoundScriptManager: public ScriptLoader
+class SoundScriptManager : public ScriptLoader , public Singleton2<SoundScriptManager>
 {
 public:
 	const static int TERRAINSOUND = MAX_TRUCKS+1;
 
 	SoundScriptManager();
-	static SoundScriptManager *getSingleton();
 
-	//ScriptLoader interface
+	// ScriptLoader interface
     const StringVector& getScriptPatterns(void) const;
     void parseScript(DataStreamPtr& stream, const Ogre::String& groupName);
     Real getLoadingOrder(void) const;
@@ -208,19 +209,19 @@ public:
 	void unloadResourceGroup(Ogre::String groupname);
 	void clearNonBaseTemplates();
 
-	//values update
-	void trigOnce(int truck, int trig);
-	void trigOnce(Beam *b, int trig);
-	void trigStart(int truck, int trig);
-	void trigStart(Beam *b, int trig);
-	void trigStop(int truck, int trig);
-	void trigStop(Beam *b, int trig);
-	void trigToggle(int truck, int trig);
-	void trigToggle(Beam *b, int trig);
+	// values update
+	void trigOnce    (int truck, int trig);
+	void trigOnce    (Beam *b,   int trig);
+	void trigStart   (int truck, int trig);
+	void trigStart   (Beam *b,   int trig);
+	void trigStop    (int truck, int trig);
+	void trigStop    (Beam *b,   int trig);
+	void trigToggle  (int truck, int trig);
+	void trigToggle  (Beam *b,   int trig);
 	bool getTrigState(int truck, int trig);
-	bool getTrigState(Beam *b, int trig);
-	void modulate(int truck, int mod, float value);
-	void modulate(Beam *b, int mod, float value);
+	bool getTrigState(Beam *b,   int trig);
+	void modulate    (int truck, int mod, float value);
+	void modulate    (Beam *b,   int mod, float value);
 
 	void soundEnable(bool state);
 
@@ -230,7 +231,7 @@ public:
 	float maxDistance;
 	float rolloffFactor;
 	float referenceDistance;
-private:
+protected:
     StringVector mScriptPatterns;
 	int instance_counter;
 	bool loadingBase;
@@ -240,21 +241,24 @@ private:
 	void skipToNextCloseBrace(DataStreamPtr& chunk);
 	void skipToNextOpenBrace(DataStreamPtr& chunk);
 	SoundScriptTemplate* createTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename);
+
 	//instances lookup tables
 	int free_trigs[SS_MAX_TRIG];
-	SoundScriptInstance* trigs[SS_MAX_TRIG*MAX_INSTANCES_PER_GROUP];
+	SoundScriptInstance *trigs[SS_MAX_TRIG * MAX_INSTANCES_PER_GROUP];
+
 	int free_pitches[SS_MAX_MOD];
-	SoundScriptInstance* pitches[SS_MAX_MOD*MAX_INSTANCES_PER_GROUP];
+	SoundScriptInstance *pitches[SS_MAX_MOD * MAX_INSTANCES_PER_GROUP];
+	
 	int free_gains[SS_MAX_MOD];
-	SoundScriptInstance* gains[SS_MAX_MOD*MAX_INSTANCES_PER_GROUP];
+	SoundScriptInstance *gains[SS_MAX_MOD * MAX_INSTANCES_PER_GROUP];
+
 	//state map
-	bool statemap[SS_MAX_TRIG*(MAX_TRUCKS+2)];
+	bool statemap[SS_MAX_TRIG * (MAX_TRUCKS + 2)];
 
 	SoundManager* sm;
-
 };
 
-#endif
+#endif // __SoundScriptManager_H__
 
-#endif //OPENAL
+#endif // USE_OPENAL
 
