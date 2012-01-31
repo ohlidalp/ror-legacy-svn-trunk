@@ -52,7 +52,7 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, mfinder(mfinder)
 	, w(_w)
 	, pcam(pcam)
-	, thread_mode(THREAD_MONO)
+	, thread_mode(THREAD_SINGLE)
 	//, trucks(0)
 	, free_truck(0)
 	, current_truck(-1)
@@ -66,11 +66,10 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	for (int t=0; t<MAX_TRUCKS; t++)
 		trucks[t] = 0;
 
-	if (SSETTING("Threads")=="1 (Single Core CPU)")							thread_mode = THREAD_MONO;
-	if (SSETTING("Threads")=="2 (Dual Core CPU or Hyper-Threading)")		thread_mode = THREAD_HT;
-	if (SSETTING("Threads")=="3 (Multi Core CPU, one thread per truck)")	thread_mode = THREAD_HT2;
+	if (SSETTING("Threads")=="1 (Single Core CPU)")	thread_mode = THREAD_SINGLE;
+	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")		thread_mode = THREAD_MULTI;
 
-	if (BSETTING("2DReplay"))												tdr = new TwoDReplay();
+	if (BSETTING("2DReplay"))						tdr = new TwoDReplay();
 }
 
 BeamFactory::~BeamFactory()
@@ -392,7 +391,7 @@ void BeamFactory::recursiveActivation(int j)
 			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
 			)
 		{
-			trucks[t]->desactivate(); // paradoxically, this activates the truck!
+			trucks[t]->desactivate(); // make the truck not leading but active 
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
 			recursiveActivation(t);
 		};
@@ -468,7 +467,7 @@ void BeamFactory::activateAllTrucks()
 		if (!trucks[t]) continue;
 		if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || trucks[t]->state == DESACTIVATED)
 		{
-			trucks[t]->desactivate(); // paradoxically, this activates the truck!
+			trucks[t]->desactivate(); // make the truck not leading but active 
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
 			recursiveActivation(t);
 		}
@@ -563,7 +562,8 @@ void BeamFactory::_deleteTruck(Beam *b)
 
 	// synced delete
 	trucks[b->trucknum] = 0;
-	delete b;
+	// TODO: properly delete trucks
+	//delete b;
 	b = 0;
 
 #ifdef USE_MYGUI
@@ -574,7 +574,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 void BeamFactory::_waitForSync()
 {
 	// block until all threads done
-	if (thread_mode==THREAD_HT)
+	if (thread_mode > THREAD_SINGLE)
 	{
 		MUTEX_LOCK(&done_count_mutex);
 		while (done_count>0)
@@ -659,64 +659,21 @@ void BeamFactory::updateAI(float dt)
 void BeamFactory::calcPhysics(float dt)
 {
 	physFrame++;
-	int t=0;
-	// this is the big "shaker"
-	if (current_truck!=-1)
-	{
-		// now handle inter truck coll in different HT modes
-		if (thread_mode == THREAD_HT2)
-		{
-			// wait for all threads to finish
-			for (t=0; t<free_truck; t++)
-			{
-				if (!trucks[t]) continue;
-				MUTEX_LOCK(&trucks[t]->done_count_mutex);
-				while(trucks[t]->done_count > 0)
-					pthread_cond_wait(&trucks[t]->done_count_cv, &trucks[t]->done_count_mutex);
-				MUTEX_UNLOCK(&trucks[t]->done_count_mutex);
-			}
 
-			// smooth the stuff
-			for (t=0; t<free_truck; t++)
-			{
-				if (!trucks[t]) continue;
-				trucks[t]->frameStep(dt);
-			}
-
-
-			// inter truck coll.
-			float dtperstep=dt/(Real)trucks[current_truck]->tsteps;
-			trucks[current_truck]->truckTruckCollisions(dtperstep);
-
-			// unlock all threads
-			for (t=0; t<free_truck; t++)
-			{
-				if (!trucks[t]) continue;
-				trucks[t]->done_count=1;
-				MUTEX_LOCK(&trucks[t]->work_mutex);
-				pthread_cond_broadcast(&trucks[t]->work_cv);
-				MUTEX_UNLOCK(&trucks[t]->work_mutex);
-			}
-		} else
-		{
-			// classic mode
-			trucks[current_truck]->frameStep(dt);
-		}
-
-	}
+	if (current_truck >= 0 && current_truck < free_truck)
+		trucks[current_truck]->frameStep(dt);
 
 	// update 2D replay if activated
 	if (tdr) tdr->update(dt);
 
 	// things always on
-	for (t=0; t<free_truck; t++)
+	for (int t=0; t<free_truck; t++)
 	{
 		if (!trucks[t]) continue;
-		// networked trucks must be taken care of
 
+		// networked trucks must be taken care of
 		switch(trucks[t]->state)
 		{
-
 			case NETWORKED:
 			{
 				trucks[t]->calcNetwork();
@@ -740,11 +697,9 @@ void BeamFactory::calcPhysics(float dt)
 
 void BeamFactory::removeInstance(Beam *b)
 {
-	// TODO: properly delete trucks
+	if (b == 0) return;
 	// hide the truck
-	if (b != 0)
-		b->deleteNetTruck();
-
+	b->deleteNetTruck();
 	_deleteTruck(b);
 }
 

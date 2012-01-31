@@ -31,7 +31,7 @@ Autopilot::Autopilot(HeightFinder *hfd, Water *w, int trucknum)
 {
 	this->trucknum=trucknum;
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
+	ssm=SoundScriptManager::getInstancePtrNoCreation();
 #endif //OPENAL
 	water=w;
 	hf=hfd;

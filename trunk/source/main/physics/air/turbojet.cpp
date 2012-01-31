@@ -28,7 +28,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	number=tnumber;
 	this->trucknum=trucknum;
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
+	ssm=SoundScriptManager::getInstancePtrNoCreation();
 	switch (number)
 	{
 	case 0: mod_id=SS_MOD_AEROENGINE1;src_id=SS_TRIG_AEROENGINE1;thr_id=SS_MOD_THROTTLE1;ab_id=SS_TRIG_AFTERBURNER1;break;

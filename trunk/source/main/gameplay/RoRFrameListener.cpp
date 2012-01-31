@@ -870,7 +870,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	netmode=(BSETTING("Network enable"));
 
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
+	ssm=SoundScriptManager::getInstancePtrNoCreation();
 #endif //OPENAL
 	mRoot=root;
 
