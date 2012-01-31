@@ -347,7 +347,6 @@ public:
 
 	void reloadCurrentTruck();
 
-	SoundScriptManager* getSSM() { return ssm; };
 private:
 	int net_quality; 
 	bool net_quality_changed; 
@@ -376,7 +375,6 @@ protected:
 	// just to stop toggles flipping too fast
 	Real mTimeUntilNextToggle ;
 	bool pressure_pressed;
-	SoundScriptManager* ssm;
 
 	//camera
 	Vector3 camIdealPosition;

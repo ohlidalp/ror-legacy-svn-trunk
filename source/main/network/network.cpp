@@ -94,9 +94,7 @@ Network::Network(std::string servername, long sport, RoRFrameListener *efl): lag
 	memset(&server_settings, 0, sizeof(server_info_t));
 	memset(&userdata, 0, sizeof(user_info_t));
 	shutdown=false;
-#ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
-#endif //USE_OPENAL
+
 	mySname = servername;
 	mySport = sport;
 	mefl = efl;
