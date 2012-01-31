@@ -168,10 +168,6 @@ namespace Ogre
 	class MovableText;
 };
 
-#ifdef USE_LUA
-class LuaSystem;
-#endif //USE_LUA
-
 #ifdef USE_SOCKETW
 class SWBaseSocket;
 #endif //USE_SOCKETW
