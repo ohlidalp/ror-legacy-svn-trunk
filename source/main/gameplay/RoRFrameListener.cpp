@@ -6289,18 +6289,6 @@ bool RoRFrameListener::frameEnded(const FrameEvent& evt)
 	// TODO: IMPROVE STATS
 	if(ow && mStatsOn) ow->updateStats();
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		/*
-		// this *could* improve the event handling under windows ...
-		MSG msg;
-		if (PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE )>0)
-		{
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
-		}
-		*/
-#endif
-
 	//		moveCamera();
 
 	// workaround to be able to show a single waiting sign before working on the files
