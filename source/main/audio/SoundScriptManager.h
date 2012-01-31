@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -133,7 +133,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SS_MOD_AOA          28
 #define SS_MAX_MOD			29
 
-class SoundScriptTemplate 
+class SoundScriptTemplate
 {
 public:
 	SoundScriptTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename, bool baseTemplate);

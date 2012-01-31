@@ -5,7 +5,7 @@
 
 BEGIN_AS_NAMESPACE
 
-class CScriptHandle 
+class CScriptHandle
 {
 public:
 	// Constructors

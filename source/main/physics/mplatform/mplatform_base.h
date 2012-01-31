@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -69,7 +69,7 @@ class MPlatform_Base
 		MPlatform_Base();
 		virtual ~MPlatform_Base();
 
-		virtual bool connect();		// initialize connection to motion platform 
+		virtual bool connect();		// initialize connection to motion platform
 		virtual bool disconnect();	// clean up connection with motion platform
 
 		// update motion platform. returning false if cannot update, like sending buffer is full

@@ -5,7 +5,7 @@
 
 BEGIN_AS_NAMESPACE
 
-class CScriptAny 
+class CScriptAny
 {
 public:
 	// Constructors

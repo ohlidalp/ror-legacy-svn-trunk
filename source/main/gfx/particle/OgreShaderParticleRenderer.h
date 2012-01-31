@@ -6,8 +6,8 @@
 #include <OgreVector2.h>
 
 namespace Ogre {
-    /** Specialisation of ParticleSystemRenderer to render particles using 
-        a custom shaders. 
+    /** Specialisation of ParticleSystemRenderer to render particles using
+        a custom shaders.
     @remarks
         This renderer has a few more options than the standard particle system,
         which will be passed to it automatically when the particle system itself
@@ -245,9 +245,9 @@ namespace Ogre {
         /// @copydoc FactoryObj::getType
         const String& getType() const;
         /// @copydoc FactoryObj::createInstance
-        ParticleSystemRenderer* createInstance( const String& name );    
+        ParticleSystemRenderer* createInstance( const String& name );
         /// @copydoc FactoryObj::destroyInstance
-        void destroyInstance( ParticleSystemRenderer* inst);    
+        void destroyInstance( ParticleSystemRenderer* inst);
     };
 }
 

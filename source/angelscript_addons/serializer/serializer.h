@@ -59,8 +59,8 @@ public:
 	void *GetUserData();
 	void  SetUserData(void *data);
 
-	// Children, e.g. properties of a script class, or elements 
-	// of an array, or object pointed to by a handle unless it 
+	// Children, e.g. properties of a script class, or elements
+	// of an array, or object pointed to by a handle unless it
 	// is already a variable)
 	std::vector<CSerializedValue*> m_children;
 
@@ -73,17 +73,17 @@ protected:
 	// you first need to save all the objects before you can save references to objects
 	void ReplaceHandles();
 
-	// After the objects has been restored, the handles needs to 
+	// After the objects has been restored, the handles needs to
 	// be updated to point to the right objects
-	void RestoreHandles(); 
+	void RestoreHandles();
 
 	// Recursively get all ptrs of the children
 	void  GetAllPointersOfChildren(std::vector<void*> *ptrs);
 
-	// may be that the two references refer to the same variable. 
-	// But this variable is not available in the global list. 
-	// According to this reference will be restores it. 
-	// And so two links are not created 2 variables, 
+	// may be that the two references refer to the same variable.
+	// But this variable is not available in the global list.
+	// According to this reference will be restores it.
+	// And so two links are not created 2 variables,
 	// it is necessary to cancel the creation of one of them.
 	void CancelDuplicates(CSerializedValue *from);
 
@@ -107,7 +107,7 @@ protected:
 	// The type id of the stored value
 	int m_typeId;
 
-	// For non-primitives the typeId may change if the module is reloaded so 
+	// For non-primitives the typeId may change if the module is reloaded so
 	// it is necessary to store the type name to determine the new type id
 	std::string m_typeName;
 	
@@ -117,8 +117,8 @@ protected:
 	// Is initialized
 	bool m_isInit;
 
-	// 'this' pointer to variable. 
-	// While storing, this points to the actual variable that was stored. 
+	// 'this' pointer to variable.
+	// While storing, this points to the actual variable that was stored.
 	// While restoring, it is just a unique identifier.
 	void *m_ptr;
 
@@ -138,11 +138,11 @@ protected:
 
 
 // This class keeps a list of variables, then restores them after the reboot script.
-// But you have to be careful with the change of signature classes, or 
-// changing the types of objects. You can remove or add variables, functions, 
-// methods. But you can not (yet) to change the variable type. 
+// But you have to be careful with the change of signature classes, or
+// changing the types of objects. You can remove or add variables, functions,
+// methods. But you can not (yet) to change the variable type.
 //
-// You also need to understand that after a reboot you should get a new id 
+// You also need to understand that after a reboot you should get a new id
 // FUNCTIONS, or class to call them from C + + code.
 class CSerializer
 {

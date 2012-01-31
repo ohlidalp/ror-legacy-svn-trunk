@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -27,5 +27,5 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "ScriptEngine.h"
 # define TRIGGER_EVENT(x, y) ScriptEngine::getSingleton().triggerEvent(x, y)
 #else
-# define TRIGGER_EVENT(x, y) 
+# define TRIGGER_EVENT(x, y)
 #endif // USE_ANGELSCRIPT

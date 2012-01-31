@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -32,7 +32,7 @@ public:
 	Ogre::Real calcCmdKeyDelay(Ogre::Real cmdInput,int cmdKey, Ogre::Real dt);
 	int setCmdKeyDelay(int number,Ogre::Real startDelay,Ogre::Real stopDelay,Ogre::String startFunction, Ogre::String stopFunction);
 	void resetCmdKeyDelay(int maxCmdKeys);
-protected: 
+protected:
 	int maxCmdKeys;
 
 	struct cmdKeyInertia_s

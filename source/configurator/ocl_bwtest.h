@@ -1,20 +1,20 @@
 /*
  * Copyright 1993-2010 NVIDIA Corporation.  All rights reserved.
  *
- * NVIDIA Corporation and its licensors retain all intellectual property and 
- * proprietary rights in and to this software and related documentation. 
- * Any use, reproduction, disclosure, or distribution of this software 
+ * NVIDIA Corporation and its licensors retain all intellectual property and
+ * proprietary rights in and to this software and related documentation.
+ * Any use, reproduction, disclosure, or distribution of this software
  * and related documentation without an express license agreement from
  * NVIDIA Corporation is strictly prohibited.
  *
- * Please refer to the applicable NVIDIA end user license agreement (EULA) 
- * associated with this source code for terms and conditions that govern 
+ * Please refer to the applicable NVIDIA end user license agreement (EULA)
+ * associated with this source code for terms and conditions that govern
  * your use of this NVIDIA software.
- * 
+ *
  */
 
 // *********************************************************************
-// 
+//
 // *********************************************************************
 
 // standard utilities and systems includes
@@ -70,10 +70,10 @@ protected:
 	// declaration, forward
 	int runTest(memoryMode memMode = PAGEABLE, accessMode accMode = DIRECT, testMode mode = QUICK_MODE);
 	void createQueue(unsigned int device);
-	void testBandwidth( unsigned int start, unsigned int end, unsigned int increment, 
+	void testBandwidth( unsigned int start, unsigned int end, unsigned int increment,
 						testMode mode, memcpyKind kind, accessMode accMode, memoryMode memMode, int startDevice, int endDevice);
 	void testBandwidthQuick(unsigned int size, memcpyKind kind, accessMode accMode, memoryMode memMode, int startDevice, int endDevice);
-	void testBandwidthRange(unsigned int start, unsigned int end, unsigned int increment, 
+	void testBandwidthRange(unsigned int start, unsigned int end, unsigned int increment,
 							memcpyKind kind, accessMode accMode, memoryMode memMode, int startDevice, int endDevice);
 	void testBandwidthShmoo(memcpyKind kind, accessMode accMode,  memoryMode memMode, int startDevice, int endDevice);
 	double testDeviceToHostTransfer(unsigned int memSize, accessMode accMode, memoryMode memMode);
@@ -94,7 +94,7 @@ OpenCLTestBandwidth::OpenCLTestBandwidth(std::ostream &_stream) : stream(_stream
     // run the main test
     int iRetVal = runTest();
 
-	stream << endl; 
+	stream << endl;
 
 	if(iRetVal == 0)
 		stream << "=== PASSED ===" << endl;
@@ -122,9 +122,9 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
     bool htod = false;
     bool dtoh = false;
     bool dtod = false;
-  
+
     // Get OpenCL platform ID for NVIDIA if available, otherwise default
-    cl_platform_id clSelectedPlatformID = NULL; 
+    cl_platform_id clSelectedPlatformID = NULL;
     cl_int ciErrNum = oclGetPlatformID (&clSelectedPlatformID);
     ownCheckError(ciErrNum, CL_SUCCESS);
 
@@ -140,13 +140,13 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
     {
         stream << "There are no devices supporting OpenCL return code" << ciErrNum << endl;
         return ciErrNum;
-    } 
+    }
 
 	// use all devices
 	startDevice = 0;
 	endDevice = (int)(ciDeviceCount-1);
 
-     
+
     // Get and log the device info
     devices = (cl_device_id*) malloc(sizeof(cl_device_id) * ciDeviceCount);
     ciErrNum = clGetDeviceIDs (clSelectedPlatformID, CL_DEVICE_TYPE_GPU, ciDeviceCount, devices, &ciDeviceCount);
@@ -156,7 +156,7 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
 		clGetDeviceInfo(devices[currentDevice], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
         stream << "Running on " << device_string << endl << endl;
     }
- 
+
 
 	//default:  All tests
 	htod = true;
@@ -166,16 +166,16 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
 
     // Create the OpenCL context
     cxGPUContext = clCreateContext(0, ciDeviceCount, devices, NULL, NULL, NULL);
-    if (cxGPUContext == (cl_context)0) 
+    if (cxGPUContext == (cl_context)0)
     {
         stream << "Failed to create OpenCL context!" << endl;
-        return -11000;    
+        return -11000;
     }
 
     // Run tests
     if(htod)
     {
-        testBandwidth((unsigned int)start, (unsigned int)end, (unsigned int)increment, 
+        testBandwidth((unsigned int)start, (unsigned int)end, (unsigned int)increment,
                       mode, HOST_TO_DEVICE, accMode, memMode, startDevice, endDevice);
     }
 
@@ -197,11 +197,11 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
 
 	stream << endl;
 
-	// Clean up 
+	// Clean up
     if(cqCommandQueue)clReleaseCommandQueue(cqCommandQueue);
     if(cxGPUContext)clReleaseContext(cxGPUContext);
     if(devices)free(devices);
-    
+
     return 0;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -210,19 +210,19 @@ int OpenCLTestBandwidth::runTest(memoryMode memMode, accessMode accMode, testMod
 void OpenCLTestBandwidth::createQueue(unsigned int device)
 {
     // Release if there previous is already one
-    if(cqCommandQueue) 
+    if(cqCommandQueue)
     {
         clReleaseCommandQueue(cqCommandQueue);
     }
-  
+
     cqCommandQueue = clCreateCommandQueue(cxGPUContext, devices[device], CL_QUEUE_PROFILING_ENABLE, NULL);
 }
-  
+
 ///////////////////////////////////////////////////////////////////////////////
 //  Run a bandwidth test
 ///////////////////////////////////////////////////////////////////////////////
-void OpenCLTestBandwidth::testBandwidth(unsigned int start, unsigned int end, unsigned int increment, 
-              testMode mode, memcpyKind kind, accessMode accMode, 
+void OpenCLTestBandwidth::testBandwidth(unsigned int start, unsigned int end, unsigned int increment,
+              testMode mode, memcpyKind kind, accessMode accMode,
               memoryMode memMode, int startDevice, int endDevice)
 {
     switch(mode)
@@ -233,10 +233,10 @@ void OpenCLTestBandwidth::testBandwidth(unsigned int start, unsigned int end, un
     case RANGE_MODE:
         testBandwidthRange(start, end, increment, kind, accMode, memMode, startDevice, endDevice);
         break;
-    case SHMOO_MODE: 
+    case SHMOO_MODE:
         testBandwidthShmoo(kind, accMode, memMode, startDevice, endDevice);
         break;
-    default:  
+    default:
         break;
     }
 
@@ -244,7 +244,7 @@ void OpenCLTestBandwidth::testBandwidth(unsigned int start, unsigned int end, un
 //////////////////////////////////////////////////////////////////////
 //  Run a quick mode bandwidth test
 //////////////////////////////////////////////////////////////////////
-void OpenCLTestBandwidth::testBandwidthQuick(unsigned int size, memcpyKind kind, accessMode accMode, 
+void OpenCLTestBandwidth::testBandwidthQuick(unsigned int size, memcpyKind kind, accessMode accMode,
                    memoryMode memMode, int startDevice, int endDevice)
 {
     testBandwidthRange(size, size, DEFAULT_INCREMENT, kind, accMode, memMode, startDevice, endDevice);
@@ -253,12 +253,12 @@ void OpenCLTestBandwidth::testBandwidthQuick(unsigned int size, memcpyKind kind,
 ///////////////////////////////////////////////////////////////////////
 //  Run a range mode bandwidth test
 //////////////////////////////////////////////////////////////////////
-void OpenCLTestBandwidth::testBandwidthRange(unsigned int start, unsigned int end, unsigned int increment, 
+void OpenCLTestBandwidth::testBandwidthRange(unsigned int start, unsigned int end, unsigned int increment,
                    memcpyKind kind, accessMode accMode, memoryMode memMode, int startDevice, int endDevice)
 {
     //count the number of copies we're going to run
     unsigned int count = 1 + ((end - start) / increment);
-    
+
     unsigned int * memSizes = (unsigned int *)malloc(count * sizeof( unsigned int ));
     double* bandwidths = (double*)malloc(count * sizeof(double));
 
@@ -299,7 +299,7 @@ void OpenCLTestBandwidth::testBandwidthRange(unsigned int start, unsigned int en
 //////////////////////////////////////////////////////////////////////////////
 // Intense shmoo mode - covers a large range of values with varying increments
 //////////////////////////////////////////////////////////////////////////////
-void OpenCLTestBandwidth::testBandwidthShmoo(memcpyKind kind, accessMode accMode, 
+void OpenCLTestBandwidth::testBandwidthShmoo(memcpyKind kind, accessMode accMode,
                    memoryMode memMode, int startDevice, int endDevice)
 {
     //count the number of copies to make
@@ -317,7 +317,7 @@ void OpenCLTestBandwidth::testBandwidthShmoo(memcpyKind kind, accessMode accMode
     // Before calculating the cumulative bandwidth, initialize bandwidths array to NULL
     for (unsigned int i = 0; i < count; i++)
         bandwidths[i] = 0.0;
-   
+
     // Use the device asked by the user
     for (int currentDevice = startDevice; currentDevice <= endDevice; currentDevice++)
     {
@@ -353,7 +353,7 @@ void OpenCLTestBandwidth::testBandwidthShmoo(memcpyKind kind, accessMode accMode
             {
                 memSize += SHMOO_INCREMENT_2MB;
             }
-            else 
+            else
             {
                 memSize += SHMOO_INCREMENT_4MB;
             }
@@ -406,7 +406,7 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
         ownCheckError(ciErrNum, CL_SUCCESS);
 
-        //initialize 
+        //initialize
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
         {
             h_data[i] = (unsigned char)(i & 0xff);
@@ -416,27 +416,27 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
     }
-    else 
+    else
     {
         // standard host alloc
         h_data = (unsigned char *)malloc(memSize);
 
-        //initialize 
+        //initialize
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
         {
             h_data[i] = (unsigned char)(i & 0xff);
         }
     }
 
-    // allocate device memory 
+    // allocate device memory
     cmDevData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, memSize, NULL, &ciErrNum);
     ownCheckError(ciErrNum, CL_SUCCESS);
 
-    // initialize device memory 
+    // initialize device memory
     if(memMode == PINNED)
     {
 	    // Get a mapped pointer
-        h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);	        
+        h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);	
 
         ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
@@ -452,8 +452,8 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
     ciErrNum = clFinish(cqCommandQueue);
     shrDeltaT(0);
     if(accMode == DIRECT)
-    { 
-        // DIRECT:  API access to device buffer 
+    {
+        // DIRECT:  API access to device buffer
         for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
         {
             ciErrNum = clEnqueueReadBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
@@ -461,8 +461,8 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         }
         ciErrNum = clFinish(cqCommandQueue);
         ownCheckError(ciErrNum, CL_SUCCESS);
-    } 
-    else 
+    }
+    else
     {
         // MAPPED: mapped pointers to device buffer for conventional pointer access
         void* dm_idata = clEnqueueMapBuffer(cqCommandQueue, cmDevData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
@@ -474,16 +474,16 @@ double OpenCLTestBandwidth::testDeviceToHostTransfer(unsigned int memSize, acces
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmDevData, dm_idata, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
     }
-    
+
     //get the the elapsed time in seconds
     elapsedTimeInSec = shrDeltaT(0);
-    
+
     //calculate bandwidth in MB/s
     bandwidthInMBs = ((double)memSize * (double)MEMCOPY_ITERATIONS) / (elapsedTimeInSec * (double)(1 << 20));
 
     //clean up memory
     if(cmDevData)clReleaseMemObject(cmDevData);
-    if(cmPinnedData) 
+    if(cmPinnedData)
     {
 	    clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);	
 	    clReleaseMemObject(cmPinnedData);	
@@ -516,7 +516,7 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
         h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
         ownCheckError(ciErrNum, CL_SUCCESS);
 
-        //initialize 
+        //initialize
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
         {
             h_data[i] = (unsigned char)(i & 0xff);
@@ -526,19 +526,19 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
     }
-    else 
+    else
     {
         // standard host alloc
         h_data = (unsigned char *)malloc(memSize);
 
-        //initialize 
+        //initialize
         for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
         {
             h_data[i] = (unsigned char)(i & 0xff);
         }
     }
 
-    // allocate device memory 
+    // allocate device memory
     cmDevData = clCreateBuffer(cxGPUContext, CL_MEM_READ_WRITE, memSize, NULL, &ciErrNum);
     ownCheckError(ciErrNum, CL_SUCCESS);
 
@@ -546,15 +546,15 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
     clFinish(cqCommandQueue);
     shrDeltaT(0);
     if(accMode == DIRECT)
-    { 
-	    if(memMode == PINNED) 
+    {
+	    if(memMode == PINNED)
         {
             // Get a mapped pointer
             h_data = (unsigned char*)clEnqueueMapBuffer(cqCommandQueue, cmPinnedData, CL_TRUE, CL_MAP_WRITE, 0, memSize, 0, NULL, NULL, &ciErrNum);
             ownCheckError(ciErrNum, CL_SUCCESS);
 	    }
 
-        // DIRECT:  API access to device buffer 
+        // DIRECT:  API access to device buffer
         for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
         {
                 ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, cmDevData, CL_FALSE, 0, memSize, h_data, 0, NULL, NULL);
@@ -562,8 +562,8 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
         }
         ciErrNum = clFinish(cqCommandQueue);
         ownCheckError(ciErrNum, CL_SUCCESS);
-    } 
-    else 
+    }
+    else
     {
         // MAPPED: mapped pointers to device buffer and conventional pointer access
         void* dm_idata = clEnqueueMapBuffer(cqCommandQueue, cmDevData, CL_TRUE, CL_MAP_READ, 0, memSize, 0, NULL, NULL, &ciErrNum);
@@ -574,16 +574,16 @@ double OpenCLTestBandwidth::testHostToDeviceTransfer(unsigned int memSize, acces
         ciErrNum = clEnqueueUnmapMemObject(cqCommandQueue, cmDevData, dm_idata, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
     }
-    
+
     //get the the elapsed time in seconds
     elapsedTimeInSec = shrDeltaT(0);
-    
+
     //calculate bandwidth in MB/s
     bandwidthInMBs = ((double)memSize * (double)MEMCOPY_ITERATIONS)/(elapsedTimeInSec * (double)(1 << 20));
 
     //clean up memory
     if(cmDevData)clReleaseMemObject(cmDevData);
-    if(cmPinnedData) 
+    if(cmPinnedData)
     {
 	    clEnqueueUnmapMemObject(cqCommandQueue, cmPinnedData, (void*)h_data, 0, NULL, NULL);
 	    clReleaseMemObject(cmPinnedData);
@@ -602,10 +602,10 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
     double bandwidthInMBs = 0.0;
     unsigned char* h_idata = NULL;
     cl_int ciErrNum = CL_SUCCESS;
-    
+
     //allocate host memory
     h_idata = (unsigned char *)malloc( memSize );
-        
+
     //initialize the memory
     for(unsigned int i = 0; i < memSize/sizeof(unsigned char); i++)
     {
@@ -615,7 +615,7 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
     // allocate device input and output memory and initialize the device input memory
     cl_mem d_idata = clCreateBuffer(cxGPUContext, CL_MEM_READ_ONLY, memSize, NULL, &ciErrNum);
     ownCheckError(ciErrNum, CL_SUCCESS);
-    cl_mem d_odata = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY, memSize, NULL, &ciErrNum);         
+    cl_mem d_odata = clCreateBuffer(cxGPUContext, CL_MEM_WRITE_ONLY, memSize, NULL, &ciErrNum);
     ownCheckError(ciErrNum, CL_SUCCESS);
     ciErrNum = clEnqueueWriteBuffer(cqCommandQueue, d_idata, CL_TRUE, 0, memSize, h_idata, 0, NULL, NULL);
     ownCheckError(ciErrNum, CL_SUCCESS);
@@ -625,18 +625,18 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
     shrDeltaT(0);
     for(unsigned int i = 0; i < MEMCOPY_ITERATIONS; i++)
     {
-        ciErrNum = clEnqueueCopyBuffer(cqCommandQueue, d_idata, d_odata, 0, 0, memSize, 0, NULL, NULL);                
+        ciErrNum = clEnqueueCopyBuffer(cqCommandQueue, d_idata, d_odata, 0, 0, memSize, 0, NULL, NULL);
         ownCheckError(ciErrNum, CL_SUCCESS);
-    }    
+    }
 
     // Sync with GPU
     clFinish(cqCommandQueue);
-    
+
     //get the the elapsed time in seconds
     elapsedTimeInSec = shrDeltaT(0);
-    
-    // Calculate bandwidth in MB/s 
-    //      This is for kernels that read and write GMEM simultaneously 
+
+    // Calculate bandwidth in MB/s
+    //      This is for kernels that read and write GMEM simultaneously
     //      Obtained Throughput for unidirectional block copies will be 1/2 of this #
     bandwidthInMBs = 2.0 * ((double)memSize * (double)MEMCOPY_ITERATIONS)/(elapsedTimeInSec * (double)(1 << 20));
 
@@ -653,12 +653,12 @@ double OpenCLTestBandwidth::testDeviceToDeviceTransfer(unsigned int memSize)
 ////////////////////////////////////////////////////////
 void OpenCLTestBandwidth::printResultsReadable(unsigned int *memSizes, double* bandwidths, unsigned int count, memcpyKind kind, accessMode accMode, memoryMode memMode, int iNumDevs)
 {
-    // log config information 
+    // log config information
     if (kind == DEVICE_TO_DEVICE)
     {
         stream << "== Device to Device Bandwidth, Device(s) " << iNumDevs << " ==" << endl;
     }
-    else 
+    else
     {
         if (kind == DEVICE_TO_HOST)
         {
@@ -687,7 +687,7 @@ void OpenCLTestBandwidth::printResultsReadable(unsigned int *memSizes, double* b
     }
 
 	//stream << "> Transfer Size (Bytes) : Bandwidth(MB/s)" << endl;
-    unsigned int i; 
+    unsigned int i;
     for(i = 0; i < count; i++)
     {
 		//stream <<  "> " << memSizes[i] << " : " << bandwidths[i] << endl;

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -40,7 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  structure (due to cache reasons). You can easily destroy RoR's performance if you put
  something in the wrong place. Unless you know what you are doing (do you come armed
  with a cache usage tracker?), add what you wish to the bottom of the structure.
- 
+
  the order of the structs in here is important as well.
 */
 
@@ -87,8 +87,8 @@ static const int   TRUCKFILEFORMATVERSION     = 3;               //!< truck file
 // warning, we iterate through this, no jumps in the numbers allowed!
 enum TRUCK_SECTIONS {
 	BTS_NONE=0, // beam truck section nodes
-	BTS_NODES, 
-	BTS_NODES2, 
+	BTS_NODES,
+	BTS_NODES2,
 	BTS_BEAMS,
 	BTS_FIXES,
 	BTS_SHOCKS,
@@ -248,7 +248,7 @@ enum {
 
 enum {
 	ACTIVATED,      //!< leading truck
-	DESACTIVATED,   //!< not leading but active 
+	DESACTIVATED,   //!< not leading but active
 	MAYSLEEP,       //!< active but wanting to sleep
 	GOSLEEP,        //!< active but ordered to sleep ASAP (synchronously)
 	SLEEPING,       //!< not active, sleeping
@@ -279,17 +279,17 @@ enum {
 	NOSHOCK,        //!< not a shock
 	SHOCK1,         //!< shock1
 	SHOCK2,         //!< shock2
-	SUPPORTBEAM,    //!< 
-	ROPE            //!< 
+	SUPPORTBEAM,    //!<
+	ROPE            //!<
 };
 enum blinktype {
-	BLINK_NONE,     //!< 
-	BLINK_LEFT,     //!< 
-	BLINK_RIGHT,    //!< 
-	BLINK_WARN      //!< 
+	BLINK_NONE,     //!<
+	BLINK_LEFT,     //!<
+	BLINK_RIGHT,    //!<
+	BLINK_WARN      //!<
 };
 
-enum { 
+enum {
 	HYDRO_FLAG_SPEED        = BITMASK(1),
 	HYDRO_FLAG_DIR          = BITMASK(2),
 	HYDRO_FLAG_AILERON      = BITMASK(3),
@@ -300,7 +300,7 @@ enum {
 	HYDRO_FLAG_REV_ELEVATOR = BITMASK(8),
 };
 
-enum { 
+enum {
 	ANIM_FLAG_AIRSPEED      = BITMASK(1),
 	ANIM_FLAG_VVI           = BITMASK(2),
 	ANIM_FLAG_ALTIMETER     = BITMASK(3),
@@ -335,7 +335,7 @@ enum {
 	ANIM_FLAG_ELEVATORS     = BITMASK(32),
 };
 
-enum { 
+enum {
 	ANIM_MODE_ROTA_X        = BITMASK(1),
 	ANIM_MODE_ROTA_Y        = BITMASK(2),
 	ANIM_MODE_ROTA_Z        = BITMASK(3),
@@ -347,7 +347,7 @@ enum {
 	ANIM_MODE_BOUNCE        = BITMASK(9),
 };
 
-enum { 
+enum {
 	SHOCK_FLAG_NORMAL			= BITMASK(1),
 	SHOCK_FLAG_INVISIBLE		= BITMASK(2),
 	SHOCK_FLAG_LACTIVE			= BITMASK(3),
@@ -363,7 +363,7 @@ enum {
 	SHOCK_FLAG_TRG_HOOK_LOCK   	= BITMASK(13),
 };
 
-enum { 
+enum {
 	DEFAULT_DETACHER_GROUP  = 0, // default for detaching beam group
 };
 

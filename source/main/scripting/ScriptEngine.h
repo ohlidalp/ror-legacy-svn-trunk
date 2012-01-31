@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -98,31 +98,31 @@ public:
 	 */
 	void queueStringForExecution(const Ogre::String command);
 	
-	/** 
+	/**
 	 * Adds a global function to the script
 	 * @param arg A declaration for the function.
 	*/
 	int addFunction(const Ogre::String& arg);
 	
-	/** 
+	/**
 	 * Checks if a global function exists
 	 * @param arg A declaration for the function.
 	*/
 	int functionExists(const Ogre::String& arg);
 	
-	/** 
+	/**
 	 * Deletes a global function from the script
 	 * @param arg A declaration for the function.
 	*/
 	int deleteFunction(const Ogre::String& arg);
 	
-	/** 
+	/**
 	 * Adds a global variable to the script
 	 * @param arg A declaration for the variable.
 	*/
 	int addVariable(const Ogre::String& arg);
 	
-	/** 
+	/**
 	 * Deletes a global variable from the script
 	 * @param arg A declaration for the variable.
 	*/

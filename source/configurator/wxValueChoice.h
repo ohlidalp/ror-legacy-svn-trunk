@@ -37,7 +37,7 @@ protected:
 	// some shortcuts
 	typedef std::pair<wxString, wxString> strPair;  // value, caption
 	typedef std::map <unsigned long, strPair> valMap; // id, [value/caption]
-	typedef std::map <unsigned int, unsigned long> ctrlValMap; // control id -> map id, 
+	typedef std::map <unsigned int, unsigned long> ctrlValMap; // control id -> map id,
 	
 	valMap id_value_map;
 	ctrlValMap id_id_map;

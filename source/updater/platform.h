@@ -62,7 +62,7 @@ Torus Knot Software Ltd.
 #elif defined( __BORLANDC__ )
 #   define OGRE_COMPILER OGRE_COMPILER_BORL
 #   define OGRE_COMP_VER __BCPLUSPLUS__
-#   define __FUNCTION__ __FUNC__ 
+#   define __FUNCTION__ __FUNC__
 #else
 #   pragma error "No known compiler. Abort! Abort!"
 
