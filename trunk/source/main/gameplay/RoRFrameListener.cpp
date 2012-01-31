@@ -809,7 +809,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new SceneMouse(scm, this);
 	new GUIManager(root, scm, win);
 	// create console, must be done early
-	Console::getInstance();
+	Console::getSingleton();
 #endif //USE_MYGUI
 
 
@@ -895,8 +895,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	INPUTENGINE.setupDefault(win, inputhwnd);
 
 #ifdef USE_MYGUI
-	LoadingWindow::getInstance();
-	SelectorWindow::getInstance();
+	LoadingWindow::getSingleton();
+	SelectorWindow::getSingleton();
 	// create main menu :D
 	if(!isEmbedded)
 	{
@@ -1114,10 +1114,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//LOG("huette debug 1");
 
 	// initiate player colours
-	new PlayerColours();
+	PlayerColours::getSingleton();
 
 	// you always need that, even if you are not using the network
-	new NetworkStreamManager();
+	NetworkStreamManager::getSingleton();
 
 	// new factory for characters, net is INVALID, will be set later
 	new CharacterFactory(cam, 0, collisions, hfinder, w, bigMap, mSceneMgr);
@@ -1145,7 +1145,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		LOG("trying to join server '" + String(sname) + "' on port " + TOSTRING(sport) + "'...");
 
 #ifdef USE_MYGUI
-		LoadingWindow::get()->setAutotrack(_L("Trying to connect to server ..."));
+		LoadingWindow::getSingleton().setAutotrack(_L("Trying to connect to server ..."));
 #endif // USE_MYGUI
 		// important note: all new network code is written in order to allow also the old network protocol to further exist.
 		// at some point you need to decide with what type of server you communicate below and choose the correct class
@@ -1154,7 +1154,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 		bool connres = net->connect();
 #ifdef USE_MYGUI
-		LoadingWindow::get()->hide();
+		LoadingWindow::getSingleton().hide();
 
 #ifdef USE_SOCKETW
 		new GUI_Multiplayer(net, cam);
@@ -1284,16 +1284,16 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			{
 #ifdef USE_MYGUI
 				// show truck selector
-				SelectorWindow::get()->setEnableCancel(false);
+				SelectorWindow::getSingleton().setEnableCancel(false);
 				if(w)
 				{
 					hideMap();
-					SelectorWindow::get()->show(SelectorWindow::LT_NetworkWithBoat);
+					SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
 				}
 				else
 				{
 					hideMap();
-					SelectorWindow::get()->show(SelectorWindow::LT_Network);
+					SelectorWindow::getSingleton().show(SelectorWindow::LT_Network);
 				}
 #endif // MYGUI
 			} else {
@@ -1307,8 +1307,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		// show terrain selector
 		hideMap();
 		//LOG("huette debug 3");
-		SelectorWindow::get()->show(SelectorWindow::LT_Terrain);
-		SelectorWindow::get()->setEnableCancel(false);
+		SelectorWindow::getSingleton().show(SelectorWindow::LT_Terrain);
+		SelectorWindow::getSingleton().setEnableCancel(false);
 #endif // MYGUI
 	}
 
@@ -1318,8 +1318,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 RoRFrameListener::~RoRFrameListener()
 {
 #ifdef USE_MYGUI
-	LoadingWindow::FreeInstance();
-	SelectorWindow::FreeInstance();
+	LoadingWindow::freeSingleton();
+	SelectorWindow::freeSingleton();
 #endif //MYGUI
 
 //	if (joy) delete (joy);
@@ -2054,7 +2054,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		String ssmsg = _L("wrote screenshot:") + TOSTRING(mNumScreenShots);
 		LOG(ssmsg);
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ssmsg, "camera.png", 10000);
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ssmsg, "camera.png", 10000);
 #endif //USE_MYGUI
 	}
 
@@ -2098,9 +2098,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = curr_truck->savePosition(slot); };
 #ifdef USE_MYGUI
 		if(slot != -1 && !res)
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Position saved under slot ") + TOSTRING(slot+1), "infromation.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Position saved under slot ") + TOSTRING(slot+1), "infromation.png");
 		else if(slot != -1 && res)
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Error while saving position saved under slot ") + TOSTRING(slot+1), "error.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Error while saving position saved under slot ") + TOSTRING(slot+1), "error.png");
 #endif //USE_MYGUI
 
 		if(res == -10)
@@ -2117,9 +2117,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = curr_truck->loadPosition(slot); };
 #ifdef USE_MYGUI
 			if(slot != -1 && res==0)
-				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Loaded position from slot ") + TOSTRING(slot+1), "infromation.png");
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Loaded position from slot ") + TOSTRING(slot+1), "infromation.png");
 			else if(slot != -1 && res!=0)
-				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Could not load position from slot ") + TOSTRING(slot+1), "error.png");
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Could not load position from slot ") + TOSTRING(slot+1), "error.png");
 #endif // USE_MYGUI
 		}
 	}
@@ -2132,7 +2132,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 #endif // USE_MYGUI
 		// save the settings
 		if (cameramode == CAMERA_INT)
@@ -2148,7 +2148,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 #endif // USE_MYGUI
 		// save the settings
 		if (cameramode == CAMERA_INT)
@@ -2189,7 +2189,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to fixed free camera mode");
 #ifdef USE_MYGUI
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
 #endif // USE_MYGUI
 		} else if(cameramode == CAMERA_FREE_FIXED)
 		{
@@ -2197,7 +2197,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to free camera mode from fixed mode");
 #ifdef USE_MYGUI
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 #endif // USE_MYGUI
 		}
 	}
@@ -2212,7 +2212,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			cameramode = storedcameramode;
 			LOG("exiting free camera mode");
 #ifdef USE_MYGUI
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000);
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000);
 #endif // USE_MYGUI
 		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
 		{
@@ -2222,7 +2222,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			cameramode = CAMERA_FREE;
 			LOG("entering free camera mode");
 #ifdef USE_MYGUI
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 #endif // USE_MYGUI
 		}
 	}
@@ -2548,19 +2548,19 @@ bool RoRFrameListener::updateEvents(float dt)
 										switch(curr_truck->engine->getAutoMode())
 										{
 											case AUTOMATIC: 
-												Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
+												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
 												break;
 											case SEMIAUTO:
-												Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
+												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
 												break;
 											case MANUAL:
-												Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
+												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
 												break;
 											case MANUAL_STICK:
-												Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
+												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
 												break;
 											case MANUAL_RANGES:
-												Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
+												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
 												break;
 										}
 #endif //USE_MYGUI
@@ -2608,7 +2608,7 @@ bool RoRFrameListener::updateEvents(float dt)
 														curr_truck->engine->setGearRange(0);
 														gear_changed = true;
 #ifdef USE_MYGUI
-														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Low range selected"), "cog.png", 3000);
+														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Low range selected"), "cog.png", 3000);
 #endif //USE_MYGUI
 
 												}
@@ -2617,7 +2617,7 @@ bool RoRFrameListener::updateEvents(float dt)
 														curr_truck->engine->setGearRange(1);
 														gear_changed = true;
 #ifdef USE_MYGUI
-														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Mid range selected"), "cog.png", 3000);
+														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Mid range selected"), "cog.png", 3000);
 #endif //USE_MYGUI
 													}
 												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange!=2 && curr_truck->engine->getNumGearsRanges()>2)
@@ -2625,7 +2625,7 @@ bool RoRFrameListener::updateEvents(float dt)
 														curr_truck->engine->setGearRange(2);
 														gear_changed = true;
 #ifdef USE_MYGUI
-														Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("High range selected"), "cog.png", 3000);
+														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("High range selected"), "cog.png", 3000);
 #endif // USE_MYGUI
 													}
 											}
@@ -2690,13 +2690,13 @@ bool RoRFrameListener::updateEvents(float dt)
 						if(!curr_truck->getAxleLockCount())
 						{
 #ifdef USE_MYGUI
-							Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No differential installed on current vehicle!"), "warning.png", 3000);
+							Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No differential installed on current vehicle!"), "warning.png", 3000);
 #endif // USE_MYGUI
 						} else
 						{
 							curr_truck->toggleAxleLock();
 #ifdef USE_MYGUI
-							Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Differentials switched to: ") + curr_truck->getAxleLockName(), "cog.png", 3000);
+							Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Differentials switched to: ") + curr_truck->getAxleLockName(), "cog.png", 3000);
 #endif // USE_MYGUI
 						}
 					}
@@ -3228,7 +3228,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			{
 				SkyManager::getSingleton().setTimeFactor(time_factor);
 #ifdef USE_MYGUI
-				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Time set to ") + SkyManager::getSingleton().getPrettyTime(), "weather_sun.png", 1000);
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Time set to ") + SkyManager::getSingleton().getPrettyTime(), "weather_sun.png", 1000);
 #endif // USE_MYGUI
 			}
 		}
@@ -3315,7 +3315,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			if(!BeamFactory::getSingleton().enterRescueTruck())
 			{
 #ifdef USE_MYGUI
-				Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
 #endif // USE_MYGUI
 			}
 		}
@@ -3396,7 +3396,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			loading_state=ALL_LOADED;
 #ifdef USE_MYGUI
-			LoadingWindow::get()->hide();
+			LoadingWindow::getSingleton().hide();
 #endif //USE_MYGUI
 		}
 		*/
@@ -3404,12 +3404,12 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 #ifdef USE_MYGUI
-		if (SelectorWindow::get()->isFinishedSelecting())
+		if (SelectorWindow::getSingleton().isFinishedSelecting())
 		{
 			if (loading_state==NONE_LOADED)
 			{
-				Cache_Entry *sel = SelectorWindow::get()->getSelection();
-				Skin *skin = SelectorWindow::get()->getSelectedSkin();
+				Cache_Entry *sel = SelectorWindow::getSingleton().getSelection();
+				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				if(sel)
 				{
 					terrainUID = sel->uniqueid;
@@ -3422,12 +3422,12 @@ bool RoRFrameListener::updateEvents(float dt)
 						if(w)
 						{
 							hideMap();
-							SelectorWindow::get()->show(SelectorWindow::LT_NetworkWithBoat);
+							SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
 						}
 						else
 						{
 							hideMap();
-							SelectorWindow::get()->show(SelectorWindow::LT_Network);
+							SelectorWindow::getSingleton().show(SelectorWindow::LT_Network);
 						}
 					} else
 					{
@@ -3437,9 +3437,9 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 			} else if (loading_state==TERRAIN_LOADED)
 			{
-				Cache_Entry *selt = SelectorWindow::get()->getSelection();
-				Skin *skin = SelectorWindow::get()->getSelectedSkin();
-				std::vector<Ogre::String> config = SelectorWindow::get()->getTruckConfig();
+				Cache_Entry *selt = SelectorWindow::getSingleton().getSelection();
+				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
+				std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
 				if(config.size() == 0) configptr = 0;
 				if(selt)
@@ -3447,14 +3447,14 @@ bool RoRFrameListener::updateEvents(float dt)
 
 			} else if (loading_state==RELOADING)
 			{
-				Cache_Entry *selt = SelectorWindow::get()->getSelection();
-				Skin *skin = SelectorWindow::get()->getSelectedSkin();
+				Cache_Entry *selt = SelectorWindow::getSingleton().getSelection();
+				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				Beam *localTruck = 0;
 				if(selt)
 				{
 					//we load an extra truck
 					String selected = selt->fname;
-					std::vector<Ogre::String> config = SelectorWindow::get()->getTruckConfig();
+					std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
 					if(config.size() == 0) configptr = 0;
 
@@ -3478,7 +3478,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					}
 				}
 
-				SelectorWindow::get()->hide();
+				SelectorWindow::getSingleton().hide();
 				loading_state=ALL_LOADED;
 
 				GUIManager::getSingleton().unfocus();
@@ -3680,7 +3680,7 @@ void RoRFrameListener::initializeCompontents()
 {
 	// load map
 #ifdef USE_MYGUI
-	LoadingWindow::get()->setProgress(0, _L("Loading Terrain"));
+	LoadingWindow::getSingleton().setProgress(0, _L("Loading Terrain"));
 	bool disableMap = (BSETTING("disableOverViewMap"));
 
 	// map must be loaded before the script engine
@@ -3797,7 +3797,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	if(!BSETTING("REPO_MODE"))
 	{
 		// hide loading window
-		LoadingWindow::get()->hide();
+		LoadingWindow::getSingleton().hide();
 		// hide wallpaper
 		MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
 		if(w) w->setVisibleSmooth(false);
@@ -4663,7 +4663,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if(progress-lastprogress > 20)
 		{
 #ifdef USE_MYGUI
-			LoadingWindow::get()->setProgress(progress, _L("Loading Terrain"));
+			LoadingWindow::getSingleton().setProgress(progress, _L("Loading Terrain"));
 #endif //MYGUI
 			lastprogress = progress;
 		}
@@ -5233,7 +5233,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//finishTerrainDecal();
 
 #ifdef USE_MYGUI
-	LoadingWindow::get()->hide();
+	LoadingWindow::getSingleton().hide();
 
 	if(bigMap)
 	{
@@ -6133,7 +6133,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	// exit frame started method when just displaying the GUI
 #ifdef USE_MYGUI
-	if (LoadingWindow::get()->getFrameForced())
+	if (LoadingWindow::getSingleton().getFrameForced())
 		return true;
 #endif //MYGUI
 
@@ -6345,7 +6345,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 				{
 					//boy, thats bad
 #ifdef USE_MYGUI
-					Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Please clear the place first"), "error.png");
+					Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Please clear the place first"), "error.png");
 #endif // USE_MYGUI
 					collisions->clearEventCache();
 					return;
@@ -6359,7 +6359,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	loading_state=RELOADING;
 	hideMap();
 #ifdef USE_MYGUI
-	SelectorWindow::get()->show(SelectorWindow::LoaderType(type));
+	SelectorWindow::getSingleton().show(SelectorWindow::LoaderType(type));
 #endif // MYGUI
 }
 
@@ -6667,7 +6667,7 @@ void RoRFrameListener::reloadCurrentTruck()
 	if(BeamFactory::getSingleton().getTruckCount() + 1 >= MAX_TRUCKS)
 	{
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("unable to load new truck: limit reached. Please restart RoR"), "error.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("unable to load new truck: limit reached. Please restart RoR"), "error.png");
 #endif // USE_MYGUI
 		return;
 	}
@@ -6711,7 +6711,7 @@ void RoRFrameListener::reloadCurrentTruck()
 	// notice the user about the amount of possible reloads
 	String msg = TOSTRING(newBeam->trucknum) + String(" of ") + TOSTRING(MAX_TRUCKS) + String(" possible reloads.");
 #ifdef USE_MYGUI
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, msg, "information.png");
+	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, msg, "information.png");
 #endif //USE_MYGUI
 
 	// dislocate the old truck, so its out of sight

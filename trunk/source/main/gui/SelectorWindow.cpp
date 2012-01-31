@@ -865,7 +865,7 @@ void SelectorWindow::show(LoaderType type)
 	mSelectionDone=false;
 	// reset all keys
 	INPUTENGINE.resetKeys();
-	LoadingWindow::get()->hide();
+	LoadingWindow::getSingleton().hide();
 	// focus main mMainWidget (for key input)
 	mTruckConfigs.clear();
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);

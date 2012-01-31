@@ -19,9 +19,11 @@
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
 
+#include "Singleton.h"
+
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-class OgreFramework : public Ogre::Singleton<OgreFramework>
+class OgreFramework : public RoRSingleton<OgreFramework>
 {
 public:
 	OgreFramework();

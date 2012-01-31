@@ -168,8 +168,8 @@ void Console::startPrivateChat(int target_uid)
 	client_t *c = net->getClientInfo(target_uid);
 	if(!c) return;
 
-	Console::getInstance().setVisible(true);
-	Console::getInstance().select("/whisper " + UTFString(c->user.username) + " ");
+	Console::getSingleton().setVisible(true);
+	Console::getSingleton().select("/whisper " + UTFString(c->user.username) + " ");
 }
 
 void Console::unselect()
@@ -907,7 +907,7 @@ int Console::messageUpdate( float dt )
 			if(tmpWaitingMessages[i].type == CONSOLE_MSGTYPE_HIGHSCORE)
 			{
 				// special :)
-				HighScoreWindow::getInstance().show(tmpWaitingMessages[i].txt);
+				HighScoreWindow::getSingleton().show(tmpWaitingMessages[i].txt);
 				continue;
 			}
 

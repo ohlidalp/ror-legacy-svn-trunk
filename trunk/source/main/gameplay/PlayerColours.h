@@ -25,10 +25,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
-#include <OgreSingleton.h>
+#include "Singleton.h"
 
 
-class PlayerColours : public Ogre::Singleton < PlayerColours >
+class PlayerColours : public RoRSingleton < PlayerColours >
 {
 public:
 	PlayerColours();

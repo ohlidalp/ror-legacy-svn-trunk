@@ -26,18 +26,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include <MyGUI.h>
 #include "gui_inputmanager.h"
+#include "Singleton.h"
 
 
 #define GETMYGUI GUIManager::getSingleton().getGUI()
 
 namespace MyGUI { class OgrePlatform; }
 
-class GUIManager : public GUIInputManager, public Ogre::FrameListener, public Ogre::WindowEventListener, public Ogre::Singleton<GUIManager>
+class GUIManager : 
+	  public RoRSingletonNoCreation<GUIManager>
+	, public GUIInputManager
+	, public Ogre::FrameListener
+	, public Ogre::WindowEventListener
 {
 public:
-	static GUIManager& getSingleton(void);
-	static GUIManager* getSingletonPtr(void);
-
 	GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win);
 	virtual ~GUIManager();
 

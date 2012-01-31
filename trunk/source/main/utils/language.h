@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LANGUAGE_H_
 #define LANGUAGE_H_
 #include "RoRPrerequisites.h"
+#include "Singleton.h"
 
 // three configurations currently supported:
 // #define NOLANG            = no language translations at all, removes any special parsing tags
@@ -41,7 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MOFILEREADER
 // using mofilereader as gettext replacement
 # include "moFileReader.h"
-# define _L(str) LanguageEngine::Instance().lookUp(str).c_str()
+# define _L(str) LanguageEngine::getSingleton().lookUp(str).c_str()
 #else
 // gettext
 
@@ -57,10 +58,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define MOFILENAME "ror"
 
-class LanguageEngine
+class LanguageEngine : public RoRSingleton<LanguageEngine>
 {
+	friend class RoRSingleton<LanguageEngine>;
+
 public:
-    static LanguageEngine & Instance();
     void setup();
 	void postSetup();
 	Ogre::UTFString lookUp(Ogre::String name);

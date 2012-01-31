@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 
-template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::SINGLETON_MEMBER = 0;
+template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::_instance = 0;
 
 CharacterFactory::CharacterFactory(Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : cam(cam), c(c), net(net), h(h), w(w), m(m), scm(scm)
 {

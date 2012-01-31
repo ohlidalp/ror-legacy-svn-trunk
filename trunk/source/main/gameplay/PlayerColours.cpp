@@ -56,8 +56,6 @@ ColourValue cvals[] =
 	ColourValue(0.6,0.6,0.0),
 };
 
-template<> PlayerColours *Singleton < PlayerColours >::SINGLETON_MEMBER = 0;
-
 PlayerColours::PlayerColours()
 {
 	updatePlayerColours();

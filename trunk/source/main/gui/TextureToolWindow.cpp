@@ -104,12 +104,12 @@ void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
 		img.save(outname);
 
 		UTFString msg = _L("saved texture as ") + outname;
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, msg, "information.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, msg, "information.png");
 	}
 	catch(Exception &e)
 	{
 		UTFString str = "Exception while saving image: " + e.getFullDescription();
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
 	}
 }
 
@@ -178,7 +178,7 @@ void TextureToolWindow::updateControls( Ogre::String texName )
 	catch(Exception &e)
 	{
 		UTFString str = "Exception while opening texture:" + e.getFullDescription();
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_MSGTYPE_INFO, str, "error.png");
 	}
 }
 

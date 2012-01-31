@@ -23,21 +23,22 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+#include "Singleton.h"
 #include "Ogre.h"
 #include <map>
 
 // some shortcuts to improve code readability
-#define SETTINGS Settings::Instance()
-#define SSETTING(x) Settings::Instance().getSetting(x) //<! get string setting
-#define UTFSSETTING(x) Settings::Instance().getUTFSetting(x) //<! get UTF string setting
-#define BSETTING(x) Settings::Instance().getBooleanSetting(x) //<! get boolean setting
-#define ISETTING(x) PARSEINT(Settings::Instance().getSetting(x)) //<! get int setting
-#define FSETTING(x) PARSEREAL(Settings::Instance().getSetting(x)) //<! get float setting
+#define SETTINGS       Settings::getSingleton()
+#define SSETTING(x)    Settings::getSingleton().getSetting(x) //<! get string setting
+#define UTFSSETTING(x) Settings::getSingleton().getUTFSetting(x) //<! get UTF string setting
+#define BSETTING(x)    Settings::getSingleton().getBooleanSetting(x) //<! get boolean setting
+#define ISETTING(x)    PARSEINT(Settings::getSingleton().getSetting(x)) //<! get int setting
+#define FSETTING(x)    PARSEREAL(Settings::getSingleton().getSetting(x)) //<! get float setting
 
-class Settings
+class Settings : public RoRSingleton<Settings>
 {
+	friend class RoRSingleton<Settings>;
 public:
-	static Settings & Instance();
 
 	Ogre::String getSetting(Ogre::String key);
 	Ogre::UTFString getUTFSetting(Ogre::UTFString key);

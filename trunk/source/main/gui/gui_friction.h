@@ -26,17 +26,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include <MyGUI.h>
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 
-class GUI_Friction : public Ogre::Singleton< GUI_Friction >
+class GUI_Friction : public RoRSingleton < GUI_Friction >
 {
 public:
 	GUI_Friction();
 	~GUI_Friction();
-	static GUI_Friction& getSingleton(void);
-	static GUI_Friction* getSingletonPtr(void);
 
 	bool getVisible();
 	void setVisible(bool value);

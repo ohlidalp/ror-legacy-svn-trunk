@@ -30,16 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 //---------------------------------------------------------------------
-template<> SkinManager * Singleton< SkinManager >::SINGLETON_MEMBER = 0;
-SkinManager* SkinManager::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-SkinManager& SkinManager::getSingleton(void)
-{
-	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-//---------------------------------------------------------------------
 SkinManager::SkinManager() : ResourceManager()
 {
 	// Loading order

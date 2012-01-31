@@ -22,20 +22,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "OgreResourceManager.h"
 #include "skin.h"
 
-/** Manages Skin resources, parsing .skin files and generally organising them.*/
-class SkinManager : public Ogre::ResourceManager, public Ogre::Singleton< SkinManager >
+/** Manages Skin resources, parsing .skin files and generally organizing them. */
+class SkinManager : public Ogre::ResourceManager, public RoRSingleton< SkinManager >
 {
 public:
 	SkinManager();
 	~SkinManager();
 
 	void parseScript(Ogre::DataStreamPtr& stream, const Ogre::String& groupName);
-	static SkinManager& getSingleton(void);
-	static SkinManager* getSingletonPtr(void);
 
 	int getMaterialAlternatives(Ogre::String materialName, std::vector<Skin *> &skin);
 	int getUsableSkins(Ogre::String guid, std::vector<Skin *> &skins);

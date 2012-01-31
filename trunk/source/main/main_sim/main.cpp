@@ -339,7 +339,7 @@ int main(int argc, char *argv[])
 		}
  
 		// try to shutdown input system upon an error
-		//if(InputEngine::instanceExists()) // this prevents the creating of it, if not existing
+		//if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
 		//	INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();

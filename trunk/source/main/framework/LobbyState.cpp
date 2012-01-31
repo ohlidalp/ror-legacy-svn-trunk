@@ -36,7 +36,7 @@ void LobbyState::enter()
 #ifdef USE_MYGUI
 	new GUIManager(OgreFramework::getSingleton().m_pRoot, m_pSceneMgr, OgreFramework::getSingleton().m_pRenderWnd);
 
-	LobbyGUI::getInstance().setVisible(true);
+	LobbyGUI::getSingleton().setVisible(true);
 
 	resized(OgreFramework::getSingleton().m_pRenderWnd);
 #endif //USE_MYGUI
@@ -68,7 +68,7 @@ void LobbyState::update(double dt)
 	INPUTENGINE.Capture();
 
 #ifdef USE_MYGUI
-	LobbyGUI::getInstance().update(dt);
+	LobbyGUI::getSingleton().update(dt);
 #endif //USE_MYGUI
 }
 

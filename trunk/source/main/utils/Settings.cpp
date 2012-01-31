@@ -40,16 +40,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Ogre;
 
-// singleton pattern
-Settings* Settings::myInstance = 0;
-
-Settings & Settings::Instance ()
-{
-	if (myInstance == 0)
-		myInstance = new Settings;
-	return *myInstance;
-}
-
 Settings::Settings()
 {
 }

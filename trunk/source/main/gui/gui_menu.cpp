@@ -38,16 +38,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> GUI_MainMenu * Singleton< GUI_MainMenu >::SINGLETON_MEMBER = 0;
-GUI_MainMenu* GUI_MainMenu::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-GUI_MainMenu& GUI_MainMenu::getSingleton(void)
-{
-	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-
 GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20), vehicleListNeedsUpdate(false)
 {
 	pthread_mutex_init(&updateLock, NULL);
@@ -308,7 +298,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		// cannot whisper with self...
 		if(user_uid == RoRFrameListener::eflsingleton->getNetwork()->getUID()) return;
 
-		Console::getInstance().startPrivateChat(user_uid);
+		Console::getSingleton().startPrivateChat(user_uid);
 	}
 
 
@@ -322,7 +312,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->reload_pos = mefl->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
 		mefl->freeTruckPosition=true;
 		mefl->loading_state=RELOADING;
-		SelectorWindow::get()->show(SelectorWindow::LT_AllBeam);
+		SelectorWindow::getSingleton().show(SelectorWindow::LT_AllBeam);
 
 	} else if(miname == _L("Save Scenery") || miname == _L("Load Scenery"))
 	{
@@ -428,7 +418,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		if(b) b->setDebugOverlayState(11);
 	} else if(miname == _L("Texture Tool"))
 	{
-		TextureToolWindow::getInstance().show();
+		TextureToolWindow::getSingleton().show();
 	}
 
 

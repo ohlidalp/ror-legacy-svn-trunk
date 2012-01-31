@@ -34,16 +34,6 @@ using namespace Ogre;
 using namespace Caelum;
 
 //---------------------------------------------------------------------
-template<> SkyManager * Singleton< SkyManager >::SINGLETON_MEMBER = 0;
-SkyManager* SkyManager::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-SkyManager& SkyManager::getSingleton(void)
-{
-	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-
 SkyManager::SkyManager() : mCamera(0), mCaelumSystem(0)
 {
 }
