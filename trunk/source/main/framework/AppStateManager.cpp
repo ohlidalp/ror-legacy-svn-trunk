@@ -7,6 +7,8 @@
 
 #include <OgreLogManager.h>
 
+#include "Settings.h"
+
 using namespace Ogre;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -103,10 +105,13 @@ void AppStateManager::start(AppState* state)
 
 	unsigned long timeSinceLastFrame = 1;
 	unsigned long startTime          = 0;
-	unsigned long maxFPS             = 10;
 	unsigned long minTimePerFrame    = 0;
+	unsigned long maxFPS = ISETTING("Max FPS", 0);
 
-	// TODO: Init 'maxFPS' through a frame limiter slider in the configurator
+	
+	// useful or not?
+	Ogre::Root::getSingleton().setFrameSmoothingPeriod(4);
+
 
 	if (maxFPS)
 	{
@@ -115,7 +120,7 @@ void AppStateManager::start(AppState* state)
 
 	while(!m_bShutdown)
 	{
-		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU();
+		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMilliseconds();
 
 		// no more actual rendering?
 		if(m_bNoRendering)
@@ -128,6 +133,8 @@ void AppStateManager::start(AppState* state)
 #endif // WIN32
 		}
 
+		update(timeSinceLastFrame);
+
 		if (maxFPS && timeSinceLastFrame < minTimePerFrame)
 		{
 			// Sleep twice as long as we were too fast.
@@ -138,9 +145,8 @@ void AppStateManager::start(AppState* state)
 #endif // WIN32
 		}
 
-		update(timeSinceLastFrame);
 
-		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMillisecondsCPU() - startTime;
+		timeSinceLastFrame = OgreFramework::getSingletonPtr()->m_pTimer->getMilliseconds() - startTime;
 	}
 	LOG("Main loop quit");
 }
