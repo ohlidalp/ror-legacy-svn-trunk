@@ -45,7 +45,7 @@ void Sound::computeAudibility(Vector3 pos)
 	// Disable sound?
 	if (!enabled)
 	{
-		audibility = 0;
+		audibility = 0.0;
 		return;
 	}
 
@@ -58,7 +58,7 @@ void Sound::computeAudibility(Vector3 pos)
 			should_play = false;
 	}
 	
-	// should it play at all?
+	// Should it play at all?
 	if (!should_play || gain == 0.0)
 	{
 		audibility = 0.0;
