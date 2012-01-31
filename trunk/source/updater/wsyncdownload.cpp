@@ -125,7 +125,7 @@ int WsyncDownload::downloadFile(int jobID, boost::filesystem::path localFile, st
 
 	// http related settings
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION,   1); // follow redirects
-	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect. 
+	curl_easy_setopt(curl, CURLOPT_AUTOREFERER,      1); // set the Referer: field in requests where it follows a Location: redirect.
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS,        20);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT,        "RoRInstaller");
 	curl_easy_setopt(curl, CURLOPT_FILETIME,         1);

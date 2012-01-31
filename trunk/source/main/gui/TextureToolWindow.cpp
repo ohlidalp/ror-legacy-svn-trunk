@@ -95,7 +95,7 @@ void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
 		if(tex.isNull()) return;
 
 		Image img;
-		tex->convertToImage(img);    
+		tex->convertToImage(img);
 
 		// Save to disk!
 		String outname = SSETTING("User Path") + texName;

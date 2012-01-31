@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -129,7 +129,7 @@ void BeamEngine::update(float dt, int doUpdate)
 		//braking (compression)
 		turbotorque-=curTurboRPM/200000.0f;
 		//powering (exhaust) with limiter
-		if (curTurboRPM<200000 && running && curAcc>0.06) 
+		if (curTurboRPM<200000 && running && curAcc>0.06)
 			turbotorque+=1.5*curAcc*(curEngineRPM/maxRPM);
 		else
 			turbotorque+=0.1*(curEngineRPM/maxRPM);
@@ -159,7 +159,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	//restart
 	if (!running && curEngineRPM>stallRPM && starter)
 	{
-		running=1; 
+		running=1;
 #ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_ENGINE);
 #endif //OPENAL
@@ -291,7 +291,7 @@ void BeamEngine::updateAudio(int doUpdate) // updates more, just not sound, misl
 		
 	}
 	// reverse gear beep
-	if (curGear==-1 && running) 
+	if (curGear==-1 && running)
 	{
 #ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
@@ -324,7 +324,7 @@ void BeamEngine::toggleAutoMode()
 
 	// this switches off all automatic symbols when in manual mode
 	if(automode!=AUTOMATIC) autoselect = MANUALMODE;
-	else					autoselect = NEUTRAL; 
+	else					autoselect = NEUTRAL;
 
 	if (automode==MANUAL_RANGES)
 		{
@@ -430,14 +430,14 @@ void BeamEngine::toggleContact()
 //quick start
 void BeamEngine::start()
 {
-	if (automode == AUTOMATIC) 
+	if (automode == AUTOMATIC)
 	{
 		curGear=1;
 		autoselect=DRIVE;
 	}
 	else
 	{
-		if (automode == SEMIAUTO) 
+		if (automode == SEMIAUTO)
 		{
 			curGear=1;
 		}
@@ -602,7 +602,7 @@ void BeamEngine::autoShiftSet(int mode)
 
 void BeamEngine::autoShiftUp()
 {
-	if (autoselect!=REAR) 
+	if (autoselect!=REAR)
 	{
 		autoselect=(autoswitch)(autoselect-1);
 		updateShifts();
@@ -611,7 +611,7 @@ void BeamEngine::autoShiftUp()
 
 void BeamEngine::autoShiftDown()
 {
-	if (autoselect!=ONE) 
+	if (autoselect!=ONE)
 	{
 		autoselect=(autoswitch)(autoselect+1);
 		updateShifts();

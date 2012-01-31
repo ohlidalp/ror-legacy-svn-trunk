@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  @file BeamSlideNode.cpp
  @author Christopher Ritchey
  @date 10/30/2009
- 
+
 This source file is part of Rigs of Rods
 Copyright 2009 Christopher Ritchey
 
@@ -47,7 +47,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SlideNode.h"
 #include <vector>
 
-// ug... BAD PERFORMNCE, BAD!! 
+// ug... BAD PERFORMNCE, BAD!!
 void Beam::toggleSlideNodeLock()
 {
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
@@ -110,7 +110,7 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 		// oh well git'r done... :P
 		for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 		{
-			// check if node is already hooked up to 
+			// check if node is already hooked up to
 			if( node.getNodeID() == itNode->getNodeID() &&
 				node.getRailID() == (*itGroup)->getID() )
 				continue;

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -76,7 +76,7 @@ int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Og
 	for (int i1 = 0; i1<=numSeg.x; i1++)
 		for (int i2 = 0; i2<=numSeg.y; i2++)
 		{
-			Vector3 pos = orig+i1*delta1+i2*delta2 + position; 
+			Vector3 pos = orig+i1*delta1+i2*delta2 + position;
 			pos.y = hfinder->getHeightAt(pos.x, pos.z) + ground_dist;
 			mo->position(pos);
 			aab->merge(pos);
@@ -149,7 +149,7 @@ int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Og
 	//Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, materialname);
 	RTSSgenerateShadersForMaterial(materialname, normalname);
 
-#endif 
+#endif
 	return 0;
 }
 
@@ -183,7 +183,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 			direction = (pos_cur - pos_next);
 		}
 
-        
+
 		for (int w = 0; w<=numSeg.y; w++)
 		{
 			// build vector for the width

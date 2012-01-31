@@ -245,36 +245,36 @@ long wxCheckedListCtrl::InsertItem(wxListItem &info)
 }
 
 bool wxCheckedListCtrl::SetItemState(long item, long state, long stateMask)
-{ 
-	wxListItem li; 
-	li.SetId(item); 
+{
+	wxListItem li;
+	li.SetId(item);
 	li.SetMask(wxLIST_MASK_STATE);
-	li.SetState(state); 
-	li.SetStateMask(stateMask); 
+	li.SetState(state);
+	li.SetStateMask(stateMask);
 
 	// so we are sure to use wxCheckedListCtrl::SetItem
 	// (and not wxListCtrl::SetItem)
-	return SetItem(li); 
+	return SetItem(li);
 }
 
 int wxCheckedListCtrl::GetItemState(long item, long stateMask) const
-{ 
-	wxListItem li; 
-	li.SetId(item); 
+{
+	wxListItem li;
+	li.SetId(item);
 	li.SetMask(wxLIST_MASK_STATE);
-	li.SetStateMask(stateMask); 
+	li.SetStateMask(stateMask);
 	
 	// so we are sure to use wxCheckedListCtrl::GetItem
 	// (and not wxListCtrl::GetItem)
-	if (!GetItem(li)) 
+	if (!GetItem(li))
 		return -1;
 	return li.GetState();
 }
 
 long wxCheckedListCtrl::SetItem(long index, int col, const wxString& label, int WXUNUSED(imageId))
 {
-	wxListItem li; 
-	li.SetId(index); 
+	wxListItem li;
+	li.SetId(index);
 	li.SetColumn(col);	
 	li.SetText(label);
 	li.SetMask(wxLIST_MASK_TEXT);
@@ -294,27 +294,27 @@ long wxCheckedListCtrl::InsertItem( long index, const wxString& label, int WXUNU
 }
 
 void wxCheckedListCtrl::Check(long item, bool checked)
-{ 
+{
 	// NB: the "statemask" is not the "mask" of a list item;
 	//     in the "mask" you use the wxLIST_MASK_XXXX defines;
 	//     in the "statemask" you use the wxLIST_STATE_XXX defines
 	//     to set a specific bit of the wxListInfo::m_state var
-	if (checked) 
+	if (checked)
 		// the 2nd parameter says: activate the STATE bit relative to CHECK feature
-		// the 3rd parameter says: set only *that* bit 
-		SetItemState(item, wxLIST_STATE_CHECKED, wxLIST_STATE_CHECKED); 
+		// the 3rd parameter says: set only *that* bit
+		SetItemState(item, wxLIST_STATE_CHECKED, wxLIST_STATE_CHECKED);
 	else
-		SetItemState(item, 0, wxLIST_STATE_CHECKED); 
+		SetItemState(item, 0, wxLIST_STATE_CHECKED);
 }
 
 void wxCheckedListCtrl::Enable(long item, bool enable)
 { 	
-	if (enable) 
+	if (enable)
 		// the 2nd parameter says: activate the STATE bit relative to ENABLE feature
-		// the 3rd parameter says: set only *that* bit 
+		// the 3rd parameter says: set only *that* bit
 		SetItemState(item, wxLIST_STATE_ENABLED, wxLIST_STATE_ENABLED);
 	else
-		SetItemState(item, 0, wxLIST_STATE_ENABLED); 
+		SetItemState(item, 0, wxLIST_STATE_ENABLED);
 }
 
 void wxCheckedListCtrl::EnableAll(bool enable)
@@ -360,16 +360,16 @@ void wxCheckedListCtrl::OnMouseEvent(wxMouseEvent& event)
 	
 	int flags;
 	long item = HitTest(event.GetPosition(), flags);
-	if (item == wxNOT_FOUND || !IsEnabled(item)) { 
+	if (item == wxNOT_FOUND || !IsEnabled(item)) {
 
 		// skip this item
-		event.Skip(); 
-		return; 
+		event.Skip();
+		return;
 	}
 	
 	// user clicked exactly on the checkbox or on the item row ?
-	bool processcheck = (flags & wxLIST_HITTEST_ONITEMICON) || 
-		((GetWindowStyle() & wxCLC_CHECK_WHEN_SELECTING) && 
+	bool processcheck = (flags & wxLIST_HITTEST_ONITEMICON) ||
+		((GetWindowStyle() & wxCLC_CHECK_WHEN_SELECTING) &&
 		(flags & wxLIST_HITTEST_ONITEM));
 
 	if (processcheck) {
@@ -392,5 +392,5 @@ void wxCheckedListCtrl::OnMouseEvent(wxMouseEvent& event)
 		}
 	}
 
-	event.Skip(); 
+	event.Skip();
 }

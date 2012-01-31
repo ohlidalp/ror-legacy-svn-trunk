@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -88,7 +88,7 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 	personode->setScale(0.02,0.02,0.02);
 	persoanim=ent->getAllAnimationStates();
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(map)
 	{
 		mapEnt = map->createNamedMapEntity(myName, "person");
@@ -102,7 +102,7 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 	if(net)
 		sendStreamSetup();
 
-	if(remote) 
+	if(remote)
 		setVisible(true);
 
 	// setup colour
@@ -118,7 +118,7 @@ Character::~Character()
 	setVisible(false);
 	if(netMT) delete netMT;
 	if(personode) personode->detachAllObjects();
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(map && mapEnt) map->deleteMapEntity(mapEnt);
 #endif //MYGUI
 	// try to unload some materials
@@ -206,7 +206,7 @@ void Character::updateNetLabel()
 void Character::setPosition(Ogre::Vector3 pos)
 {
 	personode->setPosition(pos);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(map)
 		map->getEntityByName(myName)->setPosition(pos);
 #endif //MYGUI
@@ -230,7 +230,7 @@ void Character::setOrientation(Quaternion rot)
 void Character::setVisible(bool visible)
 {
 	personode->setVisible(visible);
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	// CRASH BELOW
 	//if(map)
 	//	map->getEntityByName(myName)->setVisibility(visible);
@@ -528,7 +528,7 @@ void Character::update(float dt, bool inputDisabled)
 
 void Character::updateMapIcon()
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(map)
 	{
 		map->getEntityByName(myName)->setPosition(personode->getPosition());

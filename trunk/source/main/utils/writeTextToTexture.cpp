@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -65,13 +65,13 @@ void WriteToTexture(const String &str, TexturePtr destTexture, Image::Box destRe
 	PixelBox destPb = destBuffer->lock(destRectangle,HardwareBuffer::HBL_NORMAL);
 	
 		// The font texture buffer was created write only...so we cannot read it back :o). One solution is to copy the buffer  instead of locking it. (Maybe there is a way to create a font texture which is not write_only ?)
-        
+
 		// create a buffer
 		size_t nBuffSize = fontBuffer->getSizeInBytes();
-		unsigned char* buffer = (unsigned char*)calloc(nBuffSize, sizeof(unsigned char)); 
-        
+		unsigned char* buffer = (unsigned char*)calloc(nBuffSize, sizeof(unsigned char));
+
 		// create pixel box using the copy of the buffer
-		PixelBox fontPb(fontBuffer->getWidth(), fontBuffer->getHeight(),fontBuffer->getDepth(), fontBuffer->getFormat(), buffer);          
+		PixelBox fontPb(fontBuffer->getWidth(), fontBuffer->getHeight(),fontBuffer->getDepth(), fontBuffer->getFormat(), buffer);
 		fontBuffer->blitToMemory(fontPb);
 
 	unsigned char* fontData = static_cast<unsigned char*>( fontPb.data );
@@ -201,7 +201,7 @@ void WriteToTexture(const String &str, TexturePtr destTexture, Image::Box destRe
 						pix = (pix * invalpha) + (color * alpha);
 						PixelUtil::packColour(pix,destPb.format,&destData[offset]);
 					}
- 
+
 				cursorX += GlyphTexCoords[strindex].getWidth();
 			}//default
 		}//switch

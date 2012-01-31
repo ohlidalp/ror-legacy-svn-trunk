@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -246,13 +246,13 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	vertex_count=0;
 	hasshared=false;
 	numsubmeshbuf=0;
-	if (msh->sharedVertexData) 
+	if (msh->sharedVertexData)
 	{
 		vertex_count+=msh->sharedVertexData->vertexCount;
 		hasshared=true;
 	}
-	for (int i=0; i<msh->getNumSubMeshes(); i++) 
-		if (!msh->getSubMesh(i)->useSharedVertices) 
+	for (int i=0; i<msh->getNumSubMeshes(); i++)
+		if (!msh->getSubMesh(i)->useSharedVertices)
 		{
 			vertex_count+=msh->getSubMesh(i)->vertexData->vertexCount;
 			numsubmeshbuf++;
@@ -266,7 +266,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	{
 		submeshnums=(int*)malloc(sizeof(int)*numsubmeshbuf);
 		subnodecounts=(int*)malloc(sizeof(int)*numsubmeshbuf);
-		//C++ is just dumb! 
+		//C++ is just dumb!
 		//How can they manage to break such a fundamental programming mechanisms?
 		//They invented the un-initializable and un-attribuable objects you can't allocate dynamically!
 		//I'm sure they have a fancy way to do that but they won't pry my precious malloc() from my cold, dead hands! goddamit!
@@ -280,7 +280,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	dstpos=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	srcnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	dstnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
-	if (haveblend) 
+	if (haveblend)
 	{
 		srccolors=(ARGB*)malloc(sizeof(ARGB)*vertex_count);
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
@@ -288,7 +288,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	Vector3* vpt=vertices;
 	Vector3* npt=srcnormals;
 	int cursubmesh=0;
-	if (msh->sharedVertexData) 
+	if (msh->sharedVertexData)
 	{
 		sharedcount=(int)msh->sharedVertexData->vertexCount;
 		//vertices
@@ -309,7 +309,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			sharedcbuf->writeData(0, msh->sharedVertexData->vertexCount*sizeof(ARGB), (void*)srccolors);
 		}
 	}
-	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices) 
+	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices)
 	{
 		submeshnums[cursubmesh]=i;
 		subnodecounts[cursubmesh]=(int)msh->getSubMesh(i)->vertexData->vertexCount;
@@ -649,7 +649,7 @@ Vector3 FlexBody::flexit()
 void FlexBody::reset()
 {
 	if(faulty) return;
-	if (haveblend) 
+	if (haveblend)
 	{
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
 		writeBlend();

@@ -88,7 +88,7 @@ std::string GameScript::getCaelumTime()
 {
 #ifdef USE_CAELUM
 	return SkyManager::getSingleton().getPrettyTime();
-#else 
+#else
 	return "";
 #endif // USE_CAELUM
 }
@@ -679,7 +679,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 
 #ifdef USE_MYGUI
 	Console *con = Console::getInstancePtrNoCreation();
-	if(con) 
+	if(con)
 		con->putMessage(Console::CONSOLE_MSGTYPE_HIGHSCORE, Console::CONSOLE_SYSTEM_NOTICE, ANSI_TO_UTF(result));
 #endif // USE_MYGUI
 #endif //USE_CURL
@@ -745,7 +745,7 @@ void GameScript::boostCurrentTruck(float factor)
 				rpm += 2000.0f * factor;
 				b->engine->setRPM(rpm);
         }
-    
+
 }
 
 int GameScript::addScriptFunction(const std::string &arg)

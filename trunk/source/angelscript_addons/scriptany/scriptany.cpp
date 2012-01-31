@@ -322,7 +322,7 @@ bool CScriptAny::Retrieve(void *ref, int refTypeId) const
 
 		// A handle can be retrieved if the stored type is a handle of same or compatible type
 		// or if the stored type is an object that implements the interface that the handle refer to.
-		if( (value.typeId & asTYPEID_MASK_OBJECT) && 
+		if( (value.typeId & asTYPEID_MASK_OBJECT) &&
 			engine->IsHandleCompatibleWithObject(value.valueObj, value.typeId, refTypeId) )
 		{
 			engine->AddRefScriptObject(value.valueObj, value.typeId);

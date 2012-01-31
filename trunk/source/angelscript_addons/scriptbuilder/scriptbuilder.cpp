@@ -158,7 +158,7 @@ int CScriptBuilder::LoadScriptSection(const char *filename)
 
 	fclose(f);
 
-	if( c == 0 ) 
+	if( c == 0 )
 	{
 		// Write a message to the engine's message callback
 		char buf[256];
@@ -265,7 +265,7 @@ int CScriptBuilder::ProcessScriptSection(const char *script, const char *section
 		if( currentClass == "" && modifiedScript.substr(pos,len) == "class" )
 		{
 			// Get the identifier after "class"
-			do 
+			do
 			{
 				pos += len;
 				t = engine->ParseToken(&modifiedScript[pos], modifiedScript.size() - pos, &len);
@@ -279,7 +279,7 @@ int CScriptBuilder::ProcessScriptSection(const char *script, const char *section
 				engine->ParseToken(&modifiedScript[pos], modifiedScript.size() - pos, &len);
 			
 				// If start of class section encountered stop
-				if( modifiedScript[pos] == '{' ) 
+				if( modifiedScript[pos] == '{' )
 				{
 					pos += len;
 					break;
@@ -317,7 +317,7 @@ int CScriptBuilder::ProcessScriptSection(const char *script, const char *section
 				foundDeclarations.push_back(decl);
 			}
 		}
-		else 
+		else
 #endif
 		// Is this a preprocessor directive?
 		if( modifiedScript[pos] == '#' )
@@ -356,7 +356,7 @@ int CScriptBuilder::ProcessScriptSection(const char *script, const char *section
 			}
 		}
 		// Don't search for metadata/includes within statement blocks or between tokens in statements
-		else 
+		else
 		{
 			pos = SkipStatement(pos);
 		}
@@ -418,7 +418,7 @@ int CScriptBuilder::Build()
 		return r;
 
 #if AS_PROCESS_METADATA == 1
-	// After the script has been built, the metadata strings should be 
+	// After the script has been built, the metadata strings should be
 	// stored for later lookup by function id, type id, and variable index
 	for( int n = 0; n < (int)foundDeclarations.size(); n++ )
 	{
@@ -564,7 +564,7 @@ int CScriptBuilder::ExcludeCode(int pos)
 	return pos;
 }
 
-// Overwrite all characters except line breaks with blanks 
+// Overwrite all characters except line breaks with blanks
 void CScriptBuilder::OverwriteCode(int start, int len)
 {
 	char *code = &modifiedScript[start];
@@ -691,8 +691,8 @@ int CScriptBuilder::ExtractDeclaration(int pos, string &declaration, int &type)
 					}
 					else if( token == "(" && varLength == 0 )
 					{
-						// This is the first parenthesis we encounter. If the parenthesis isn't followed 
-						// by a statement block, then this is a variable declaration, in which case we 
+						// This is the first parenthesis we encounter. If the parenthesis isn't followed
+						// by a statement block, then this is a variable declaration, in which case we
 						// should only store the type and name of the variable, not the initialization parameters.
 						varLength = (int)declaration.size();
 					}
@@ -770,13 +770,13 @@ static const char *GetCurrentDir(char *buf, size_t size)
     {
         GetModuleFileName(NULL, apppath, MAX_PATH);
 
-        
+
         int appLen = _tcslen(apppath);
 
         // Look for the last backslash in the path, which would be the end
         // of the path itself and the start of the filename.  We only want
         // the path part of the exe's full-path filename
-        // Safety is that we make sure not to walk off the front of the 
+        // Safety is that we make sure not to walk off the front of the
         // array (in case the path is nothing more than a filename)
         while (appLen > 1)
         {

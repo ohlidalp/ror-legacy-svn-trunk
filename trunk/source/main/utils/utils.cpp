@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -219,7 +219,7 @@ Ogre::String stripNonASCII(Ogre::String s)
 	return Ogre::String(filename);
 }
 	
- 
+
 bool compareCaseInsensitive(std::string strFirst, std::string strSecond)
 {
 	// Convert both strings to upper case by transfrom() before compare.
@@ -303,7 +303,7 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String& _source)
 	size_t nread    = 0;
 	char *outbuf    = (char *)calloc((outbytes*4+1)*sizeof(char), 1);
 
-	size_t res = iconv(icv, &inpbuf, &inbytes, &outbuf, &outbytes); 
+	size_t res = iconv(icv, &inpbuf, &inbytes, &outbuf, &outbytes);
 	if(res == (size_t) -1)
 	{
 		//free(outbuf);

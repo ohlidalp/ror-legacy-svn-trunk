@@ -92,7 +92,7 @@ CScriptHandle &CScriptHandle::opAssign(void *ref, int typeId)
 
 	m_ref  = ref;
 
-	// Get the object type 
+	// Get the object type
 	// TODO: This doesn't work when called from the application, as asGetActiveContext will return null
 	asIScriptContext *ctx = asGetActiveContext();
 	asIScriptEngine *engine = ctx->GetEngine();
@@ -129,7 +129,7 @@ bool CScriptHandle::opEquals(void *ref, int typeId) const
 		typeId &= ~asTYPEID_OBJHANDLE;
 	}
 
-	// TODO: If typeId is not the same, we should attempt to do a dynamic cast, 
+	// TODO: If typeId is not the same, we should attempt to do a dynamic cast,
 	//       which may change the pointer for application registered classes
 
 	if( ref == m_ref ) return true;

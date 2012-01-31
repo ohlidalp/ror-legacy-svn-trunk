@@ -56,7 +56,7 @@ BEGIN_AS_NAMESPACE
 #endif
 #endif
 
-// The modf function doesn't seem very intuitive, so I'm writing this 
+// The modf function doesn't seem very intuitive, so I'm writing this
 // function that simply returns the fractional part of the float value
 #if AS_USE_FLOAT
 float fractionf(float v)

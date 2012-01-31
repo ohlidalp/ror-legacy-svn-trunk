@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -81,9 +81,9 @@ void PlayerColours::updateMaterial(int colourNum, String materialName, int textu
 {
     int numColours = sizeof(cvals) / sizeof(ColourValue);
     if(colourNum < 0 || colourNum >= numColours) return;
-    
+
 	ColourValue cval = cvals[colourNum];
-    
+
     MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
     if(mat.isNull()) return;
     if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && textureUnitStateNum < mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates())

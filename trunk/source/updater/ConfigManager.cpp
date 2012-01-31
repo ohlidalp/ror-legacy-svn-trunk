@@ -85,7 +85,7 @@ int ConfigManager::getCurrentVersionInfo()
 #ifdef WIN32
 void wxStringToTCHAR(TCHAR *tCharString, wxString &myString)
 {
-	const wxChar* myStringChars = myString.c_str();  
+	const wxChar* myStringChars = myString.c_str();
 	for (unsigned int i = 0; i < myString.Len(); i++) {
 		tCharString[i] = myStringChars [i];
 	}

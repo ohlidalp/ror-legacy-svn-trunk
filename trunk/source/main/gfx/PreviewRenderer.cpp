@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -152,9 +152,9 @@ void PreviewRenderer::render()
 	cam->setAspectRatio(1.0f);
 
 	// only render our object
-	//sceneMgr->clearSpecialCaseRenderQueues(); 
-	//sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6); 
-	//sceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_INCLUDE); 
+	//sceneMgr->clearSpecialCaseRenderQueues();
+	//sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6);
+	//sceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_INCLUDE);
 
 	//render2dviews(truck, cam, minCameraRadius);
 	render3dpreview(truck, cam, minCameraRadius, camNode);
@@ -292,7 +292,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				renderCamera->moveRelative(Ogre::Vector3(0.0, 0.0, radius));
 
  				char tmp[56];
-				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy 
+				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy
 				String ifn = fn + skelmode + SSETTING("dirsep") + String(tmp);
     			
 				if(fileExists(ifn.c_str()))

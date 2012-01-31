@@ -92,7 +92,7 @@ int CSerializer::Restore(asIScriptModule *mod)
 			v->Restore(mod->GetAddressOfGlobalVar(i), typeId);
 	}
 
-	// The handles that were restored needs to be 
+	// The handles that were restored needs to be
 	// updated to point to their final objects.
 	m_root.RestoreHandles();
 
@@ -106,7 +106,7 @@ CSerializedValue::CSerializedValue()
 	Init();
 }
 
-CSerializedValue::CSerializedValue(CSerializedValue *parent, const std::string &name, void *ref, int typeId) 
+CSerializedValue::CSerializedValue(CSerializedValue *parent, const std::string &name, void *ref, int typeId)
 {
 	Init();
 
@@ -245,7 +245,7 @@ void CSerializedValue::Store(void *ref, int typeId)
 		asIObjectType *type = obj->GetObjectType();
 		SetType(type->GetTypeId());
 
-		// Store children 
+		// Store children
 		for( asUINT i = 0; i < type->GetPropertyCount(); i++ )
 		{	
 			int childId;
@@ -366,10 +366,10 @@ void CSerializedValue::ReplaceHandles()
 		{
 			// Store the object now
 			asIObjectType *type = GetType();
-			CSerializedValue *need_create = new CSerializedValue(this, m_name, m_handlePtr, type->GetTypeId()); 
+			CSerializedValue *need_create = new CSerializedValue(this, m_name, m_handlePtr, type->GetTypeId());
 
-			// Make sure all other handles that point to the same object 
-			// are updated, so we don't end up creating duplicates 
+			// Make sure all other handles that point to the same object
+			// are updated, so we don't end up creating duplicates
 			CancelDuplicates(need_create);
 
 			m_children.push_back(need_create);

@@ -33,7 +33,7 @@ void DynamicRenderable::initialize(RenderOperation::OperationType operationType,
 	createVertexDeclaration();
 }
 
-void DynamicRenderable::prepareHardwareBuffers(size_t vertexCount, 
+void DynamicRenderable::prepareHardwareBuffers(size_t vertexCount,
 	size_t indexCount)
 {
 	// Prepare vertex buffer
@@ -57,7 +57,7 @@ void DynamicRenderable::prepareHardwareBuffers(size_t vertexCount,
 		while (vertexCount < newVertCapacity>>1)
 			newVertCapacity >>= 1;
 	}
-	if (newVertCapacity != mVertexBufferCapacity) 
+	if (newVertCapacity != mVertexBufferCapacity)
 	{
 		mVertexBufferCapacity = newVertCapacity;
 		// Create new vertex buffer
@@ -94,7 +94,7 @@ void DynamicRenderable::prepareHardwareBuffers(size_t vertexCount,
 				newIndexCapacity <<= 1;
 
 		}
-		else if (indexCount < newIndexCapacity>>1) 
+		else if (indexCount < newIndexCapacity>>1)
 		{
 			// Make capacity the previous power of two
 			while (indexCount < newIndexCapacity>>1)

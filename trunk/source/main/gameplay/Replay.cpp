@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils.h"
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 #include "gui_manager.h"
 #endif // MYGUI
 
@@ -52,7 +52,7 @@ Replay::Replay(Beam *b, int _numFrames)
 	writeIndex = 0;
 	firstRun = 1;
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	// windowing
 	int width = 300;
 	int height = 60;
@@ -172,7 +172,7 @@ void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 
 void Replay::updateGUI()
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(outOfMemory)
 	{
 		txt->setCaption(_L("Out of Memory"));
@@ -196,7 +196,7 @@ unsigned long Replay::getLastReadTime()
 
 void Replay::setVisible(bool value)
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	panel->setVisible(value);
 	// we need no mouse yet
 	//MyGUI::PointerManager::getInstance().setVisible(value);
@@ -205,7 +205,7 @@ void Replay::setVisible(bool value)
 
 bool Replay::getVisible()
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	return panel->getVisible();
 #else
 	return false;

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -80,7 +80,7 @@ void install_crashrpt()
 	// Install CrashRpt support
 	CR_INSTALL_INFO info;
 	memset(&info, 0, sizeof(CR_INSTALL_INFO));
-	info.cb = sizeof(CR_INSTALL_INFO);  
+	info.cb = sizeof(CR_INSTALL_INFO);
 	info.pszAppName = "Rigs of Rods";
 	info.pszAppVersion = ROR_VERSION_STRING;
 	info.pszEmailSubject = "Error Report for Rigs of Rods";
@@ -95,10 +95,10 @@ void install_crashrpt()
 	}
 
 	info.pszUrl = tmp;
-	info.pfnCrashCallback = crashCallback; 
+	info.pfnCrashCallback = crashCallback;
 	info.uPriorities[CR_HTTP]  = 3;  // Try HTTP the first
 	info.uPriorities[CR_SMTP]  = 2;  // Try SMTP the second
-	info.uPriorities[CR_SMAPI] = 1; // Try Simple MAPI the last  
+	info.uPriorities[CR_SMAPI] = 1; // Try Simple MAPI the last
 	info.dwFlags = 0; // Install all available exception handlers
 	info.pszPrivacyPolicyURL = "http://wiki.rigsofrods.com/pages/Crash_Report_Privacy_Policy"; // URL for the Privacy Policy link
 
@@ -331,13 +331,13 @@ int main(int argc, char *argv[])
 		app.go();
 	} catch(Ogre::Exception& e)
 	{
- 
+
  		if(BSETTING("REPO_MODE"))
 		{
 			LOG("FATAL ERROR, EXITING: "+e.getFullDescription());
 			std::exit(1);
 		}
- 
+
 		// try to shutdown input system upon an error
 		//if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
 		//	INPUTENGINE.prepareShutdown();

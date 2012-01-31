@@ -21,7 +21,7 @@ static CScriptArray* ScriptArrayFactory2(asIObjectType *ot, asUINT length)
 {
 	CScriptArray *a = new CScriptArray(length, ot);
 
-	// It's possible the constructor raised a script exception, in which case we 
+	// It's possible the constructor raised a script exception, in which case we
 	// need to free the memory and return null instead, else we get a memory leak.
 	asIScriptContext *ctx = asGetActiveContext();
 	if( ctx && ctx->GetState() == asEXECUTION_EXCEPTION )
@@ -37,7 +37,7 @@ static CScriptArray* ScriptArrayFactoryDefVal(asIObjectType *ot, asUINT length, 
 {
 	CScriptArray *a = new CScriptArray(length, defVal, ot);
 
-	// It's possible the constructor raised a script exception, in which case we 
+	// It's possible the constructor raised a script exception, in which case we
 	// need to free the memory and return null instead, else we get a memory leak.
 	asIScriptContext *ctx = asGetActiveContext();
 	if( ctx && ctx->GetState() == asEXECUTION_EXCEPTION )
@@ -55,12 +55,12 @@ static CScriptArray* ScriptArrayFactory(asIObjectType *ot)
 }
 
 // This optional callback is called when the template type is first used by the compiler.
-// It allows the application to validate if the template can be instanciated for the requested 
+// It allows the application to validate if the template can be instanciated for the requested
 // subtype at compile time, instead of at runtime.
 static bool ScriptArrayTemplateCallback(asIObjectType *ot)
 {
-	// Make sure the subtype can be instanciated with a default factory/constructor, 
-	// otherwise we won't be able to instanciate the elements. 
+	// Make sure the subtype can be instanciated with a default factory/constructor,
+	// otherwise we won't be able to instanciate the elements.
 	int typeId = ot->GetSubTypeId();
 	if( typeId == asTYPEID_VOID )
 		return false;
@@ -185,7 +185,7 @@ static void RegisterScriptArray_Native(asIScriptEngine *engine)
 CScriptArray &CScriptArray::operator=(const CScriptArray &other)
 {
 	// Only perform the copy if the array types are the same
-	if( &other != this && 
+	if( &other != this &&
 		other.GetArrayObjectType() == GetArrayObjectType() )
 	{
 		if( buffer )
@@ -377,7 +377,7 @@ void CScriptArray::Resize(int delta, asUINT at)
 // internal
 bool CScriptArray::CheckMaxSize(asUINT numElements)
 {
-	// This code makes sure the size of the buffer that is allocated 
+	// This code makes sure the size of the buffer that is allocated
 	// for the array doesn't overflow and becomes smaller than requested
 
 	asUINT maxSize = 0xFFFFFFFFul - sizeof(SArrayBuffer) + 1;
@@ -703,8 +703,8 @@ int CScriptArray::Find(asUINT index, void *value)
 
 	if( subTypeId > asTYPEID_DOUBLE )
 	{
-		// TODO: Ideally this context would be retrieved from a pool, so we don't have to 
-		//       create a new one everytime. We could keep a context with the array object 
+		// TODO: Ideally this context would be retrieved from a pool, so we don't have to
+		//       create a new one everytime. We could keep a context with the array object
 		//       but that would consume a lot of resources as each context is quite heavy.
 		cmpContext = objType->GetEngine()->CreateContext();
 	}
@@ -842,8 +842,8 @@ void CScriptArray::Sort(asUINT index, asUINT count, bool asc)
 
 	if( subTypeId > asTYPEID_DOUBLE )
 	{
-		// TODO: Ideally this context would be retrieved from a pool, so we don't have to 
-		//       create a new one everytime. We could keep a context with the array object 
+		// TODO: Ideally this context would be retrieved from a pool, so we don't have to
+		//       create a new one everytime. We could keep a context with the array object
 		//       but that would consume a lot of resources as each context is quite heavy.
 		cmpContext = objType->GetEngine()->CreateContext();
 	}

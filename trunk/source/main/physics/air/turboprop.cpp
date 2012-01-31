@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -102,7 +102,7 @@ Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, 
 		sprintf(dename,"%s-smoke", propname);
 		smokeNode=manager->getRootSceneNode()->createChildSceneNode();
 		smokePS=manager->createParticleSystem(dename, "tracks/TurbopropSmoke");
-		if (smokePS) 
+		if (smokePS)
 		{
 			smokePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			smokeNode->attachObject(smokePS);
@@ -156,7 +156,7 @@ void Turboprop::updateVisuals()
 		}
 		if (!failed)
 		{
-			if (ignition) 
+			if (ignition)
 			{
 				emit->setEnabled(true);
 				emit->setColour(ColourValue(0.0,0.0,0.0,0.03+throtle*0.05));
@@ -167,7 +167,7 @@ void Turboprop::updateVisuals()
 					hemit->setTimeToLive((0.03+throtle*0.05)/0.1);
 				}
 			}
-			else 
+			else
 			{
 				emit->setEnabled(false);
 				if(hemit)
@@ -233,7 +233,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 	//evaluate engine power
 	float enginepower=0; //in kilo-Watt
 	float warmupfactor=1.0;
-	if (warmup) 
+	if (warmup)
 	{
 		warmupfactor=(timer-warmupstart)/warmuptime;
 		if (warmupfactor>=1.0) warmup=false;

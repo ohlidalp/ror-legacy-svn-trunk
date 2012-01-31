@@ -471,14 +471,14 @@ void RoRFrameListener::updateGUI(float dt)
 		if (curr_truck->tc_present)
 		{
 			if (curr_truck->tc_mode)
-				if (curr_truck->tractioncontrol) 
+				if (curr_truck->tractioncontrol)
 				{
 							ow->tcontrolo->setMaterialName(String("tracks/tcontrol-act"));
-					} else 
+					} else
 				{
 					ow->tcontrolo->setMaterialName(String("tracks/tcontrol-on"));
 				}
-			else 
+			else
 			{
 				ow->tcontrolo->setMaterialName(String("tracks/tcontrol-off"));
 			}
@@ -486,22 +486,22 @@ void RoRFrameListener::updateGUI(float dt)
 		{
 			ow->tcontrolo->setMaterialName(String("tracks/trans"));
 		}
- 
+
 		if (curr_truck->alb_present)
 		{
 			if (curr_truck->alb_mode)
 				if (curr_truck->antilockbrake)
 				{
 							ow->antilocko->setMaterialName(String("tracks/antilock-act"));
-				} else 
+				} else
 				{
 					ow->antilocko->setMaterialName(String("tracks/antilock-on"));
 				}
-			else 
+			else
 			{
 				ow->antilocko->setMaterialName(String("tracks/antilock-off"));
 			}
-		} else 
+		} else
 		{
 			ow->antilocko->setMaterialName(String("tracks/trans"));
 		}
@@ -2547,7 +2547,7 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 										switch(curr_truck->engine->getAutoMode())
 										{
-											case AUTOMATIC: 
+											case AUTOMATIC:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
 												break;
 											case SEMIAUTO:
@@ -2728,7 +2728,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_ANTILOCK_BRAKE))
 					{
-						if (curr_truck->alb_present && !curr_truck->alb_notoggle) 
+						if (curr_truck->alb_present && !curr_truck->alb_notoggle)
 						{
 							curr_truck->antilockbrakeToggle();
 						}
@@ -4699,7 +4699,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Ogre::ManualObject *mReferenceObject = new Ogre::ManualObject("ReferenceGrid");
 
 			mReferenceObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-   
+
 			Ogre::Real step = 1.0f;
 			unsigned int count = 50;
 			unsigned int halfCount = count / 2;
@@ -4709,12 +4709,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Ogre::ColourValue c;
 			for (unsigned i=0;i < count+1;i++)
 			{
-    
+
 				if (i == halfCount)
 					c = Ogre::ColourValue(1,0,0,1.0f);
 				else
 					c = GridColour;
-    
+
 				mReferenceObject->position(-half,y,-half+(step*i));
 				mReferenceObject->colour(BackgroundColour);
 				mReferenceObject->position(0,y,-half+(step*i));
@@ -4728,7 +4728,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 					c = Ogre::ColourValue(0,0,1,1.0f);
 				else
 					c = GridColour;
-    
+
 				mReferenceObject->position(-half+(step*i),y,-half);
 				mReferenceObject->colour(BackgroundColour);
 				mReferenceObject->position(-half+(step*i),y,0);
@@ -4738,7 +4738,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				mReferenceObject->position(-half+(step*i),y, half);
 				mReferenceObject->colour(BackgroundColour);
 			}
-   
+
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
 			SceneNode *n = mSceneMgr->getRootSceneNode()->createChildSceneNode();

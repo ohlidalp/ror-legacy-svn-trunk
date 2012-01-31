@@ -15,8 +15,8 @@ CScriptDictionary::CScriptDictionary(asIScriptEngine *engine)
     refCount = 1;
 
     // Keep a reference to the engine for as long as we live
-	// We don't increment the reference counter, because the 
-	// engine will hold a pointer to the object. 
+	// We don't increment the reference counter, because the
+	// engine will hold a pointer to the object.
     this->engine = engine;
 
 	// Notify the garbage collector of this object
@@ -72,7 +72,7 @@ void CScriptDictionary::EnumReferences(asIScriptEngine *engine)
 
 void CScriptDictionary::ReleaseAllReferences(asIScriptEngine * /*engine*/)
 {
-	// We're being told to release all references in 
+	// We're being told to release all references in
 	// order to break circular references for dead objects
 	DeleteAll();
 }
@@ -138,16 +138,16 @@ void CScriptDictionary::Set(const string &key, void *value, int typeId)
 // This overloaded method is implemented so that all integer and
 // unsigned integers types will be stored in the dictionary as int64
 // through implicit conversions. This simplifies the management of the
-// numeric types when the script retrieves the stored value using a 
+// numeric types when the script retrieves the stored value using a
 // different type.
 void CScriptDictionary::Set(const string &key, asINT64 &value)
 {
 	Set(key, &value, asTYPEID_INT64);
 }
 
-// This overloaded method is implemented so that all floating point types 
-// will be stored in the dictionary as double through implicit conversions. 
-// This simplifies the management of the numeric types when the script 
+// This overloaded method is implemented so that all floating point types
+// will be stored in the dictionary as double through implicit conversions.
+// This simplifies the management of the numeric types when the script
 // retrieves the stored value using a different type.
 void CScriptDictionary::Set(const string &key, double &value)
 {
@@ -166,7 +166,7 @@ bool CScriptDictionary::Get(const string &key, void *value, int typeId) const
 		{
 			// A handle can be retrieved if the stored type is a handle of same or compatible type
 			// or if the stored type is an object that implements the interface that the handle refer to.
-			if( (it->second.typeId & asTYPEID_MASK_OBJECT) && 
+			if( (it->second.typeId & asTYPEID_MASK_OBJECT) &&
 				engine->IsHandleCompatibleWithObject(it->second.valueObj, it->second.typeId, typeId) )
 			{
 				engine->AddRefScriptObject(it->second.valueObj, it->second.typeId);
@@ -214,7 +214,7 @@ bool CScriptDictionary::Get(const string &key, void *value, int typeId) const
     }
 
     // AngelScript has already initialized the value with a default value,
-    // so we don't have to do anything if we don't find the element, or if 
+    // so we don't have to do anything if we don't find the element, or if
 	// the element is incompatible with the requested type.
 
 	return false;
@@ -441,7 +441,7 @@ void RegisterScriptDictionary_Native(asIScriptEngine *engine)
 
     r = engine->RegisterObjectMethod("dictionary", "void set(const string &in, double&in)", asMETHODPR(CScriptDictionary,Set,(const string&,double&),void), asCALL_THISCALL); assert( r >= 0 );
     r = engine->RegisterObjectMethod("dictionary", "bool get(const string &in, double&out) const", asMETHODPR(CScriptDictionary,Get,(const string&,double&) const,bool), asCALL_THISCALL); assert( r >= 0 );
-    
+
 	r = engine->RegisterObjectMethod("dictionary", "bool exists(const string &in) const", asMETHOD(CScriptDictionary,Exists), asCALL_THISCALL); assert( r >= 0 );
     r = engine->RegisterObjectMethod("dictionary", "void delete(const string &in)", asMETHOD(CScriptDictionary,Delete), asCALL_THISCALL); assert( r >= 0 );
     r = engine->RegisterObjectMethod("dictionary", "void deleteAll()", asMETHOD(CScriptDictionary,DeleteAll), asCALL_THISCALL); assert( r >= 0 );
@@ -467,7 +467,7 @@ void RegisterScriptDictionary_Generic(asIScriptEngine *engine)
 
     r = engine->RegisterObjectMethod("dictionary", "void set(const string &in, ?&in)", asFUNCTION(ScriptDictionarySet_Generic), asCALL_GENERIC); assert( r >= 0 );
     r = engine->RegisterObjectMethod("dictionary", "bool get(const string &in, ?&out) const", asFUNCTION(ScriptDictionaryGet_Generic), asCALL_GENERIC); assert( r >= 0 );
-    
+
     r = engine->RegisterObjectMethod("dictionary", "void set(const string &in, int64&in)", asFUNCTION(ScriptDictionarySetInt_Generic), asCALL_GENERIC); assert( r >= 0 );
     r = engine->RegisterObjectMethod("dictionary", "bool get(const string &in, int64&out) const", asFUNCTION(ScriptDictionaryGetInt_Generic), asCALL_GENERIC); assert( r >= 0 );
 

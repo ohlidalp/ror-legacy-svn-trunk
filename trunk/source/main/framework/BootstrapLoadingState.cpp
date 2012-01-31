@@ -24,9 +24,9 @@ void BootstrapLoadingState::enter()
 		RenderWindow *win = OgreFramework::getSingleton().m_pRenderWnd;
 		mLoadingBar->start(win, 8, 8, 0.75);
 	}
-	m_pSceneMgr->clearSpecialCaseRenderQueues(); 
-	m_pSceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_OVERLAY); 
-	m_pSceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_INCLUDE); 
+	m_pSceneMgr->clearSpecialCaseRenderQueues();
+	m_pSceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_OVERLAY);
+	m_pSceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_INCLUDE);
 }
 
 bool BootstrapLoadingState::pause()
@@ -47,9 +47,9 @@ void BootstrapLoadingState::exit()
 {
     LOG("Leaving DummyState...");
 
-	// Back to full rendering 
-	m_pSceneMgr->clearSpecialCaseRenderQueues(); 
-	m_pSceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_EXCLUDE); 
+	// Back to full rendering
+	m_pSceneMgr->clearSpecialCaseRenderQueues();
+	m_pSceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_EXCLUDE);
 
 	if(mLoadingBar)
 	{

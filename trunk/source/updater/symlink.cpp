@@ -1,35 +1,35 @@
 #include "symlink.h"
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 
-HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc) 
-{ 
-    HRESULT hres; 
-    IShellLink* psl; 
- 
-    // Get a pointer to the IShellLink interface. 
-    hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl); 
-    if (SUCCEEDED(hres)) 
-    { 
-        IPersistFile* ppf; 
- 
-        // Set the path to the shortcut target and add the description. 
+HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc)
+{
+    HRESULT hres;
+    IShellLink* psl;
+
+    // Get a pointer to the IShellLink interface.
+    hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl);
+    if (SUCCEEDED(hres))
+    {
+        IPersistFile* ppf;
+
+        // Set the path to the shortcut target and add the description.
         psl->SetPath(lpszPathObj);
 		psl->SetWorkingDirectory(lpszWorkingDir);
         psl->SetDescription(lpszDesc);
- 
-        // Query IShellLink for the IPersistFile interface for saving the 
-        // shortcut in persistent storage. 
-        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf); 
- 
-        if (SUCCEEDED(hres)) 
+
+        // Query IShellLink for the IPersistFile interface for saving the
+        // shortcut in persistent storage.
+        hres = psl->QueryInterface(IID_IPersistFile, (LPVOID*)&ppf);
+
+        if (SUCCEEDED(hres))
         { 			
-            // Save the link by calling IPersistFile::Save. 
-            hres = ppf->Save(lpszPathLink, TRUE); 
-            ppf->Release(); 
-        } 
-        psl->Release(); 
-    } 
-    return hres; 
+            // Save the link by calling IPersistFile::Save.
+            hres = ppf->Save(lpszPathLink, TRUE);
+            ppf->Release();
+        }
+        psl->Release();
+    }
+    return hres;
 }
 
 // helper function to convert std::string to std::wstring to LPWSTR
@@ -37,7 +37,7 @@ std::wstring s2ws(const std::string& s)
 {
     int len;
     int slength = (int)s.length() + 1;
-    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0); 
+    len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
     wchar_t* buf = new wchar_t[len];
     MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
     std::wstring r(buf);

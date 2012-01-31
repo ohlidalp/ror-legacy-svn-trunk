@@ -81,12 +81,12 @@ void DynamicLines::fillHardwareBuffers()
 
 	prepareHardwareBuffers(size,0);
 
-	if (!size) { 
+	if (!size) {
 	mBox.setExtents(Vector3::ZERO,Vector3::ZERO);
 	mDirty=false;
 	return;
 	}
-  
+
 	Vector3 vaabMin = mPoints[0];
 	Vector3 vaabMax = mPoints[0];
 

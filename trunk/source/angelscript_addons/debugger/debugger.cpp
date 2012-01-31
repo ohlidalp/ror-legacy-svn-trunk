@@ -127,7 +127,7 @@ void CDebugger::LineCallback(asIScriptContext *ctx)
 	{
 		CheckBreakPoint(ctx);
 
-		// Always break, but we call the check break point anyway 
+		// Always break, but we call the check break point anyway
 		// to tell user when break point has been reached
 	}
 
@@ -259,7 +259,7 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 	case 'b':
 		{
 			// Set break point
-			size_t div = cmd.find(':'); 
+			size_t div = cmd.find(':');
 			if( div != string::npos && div > 2 )
 			{
 				string file = cmd.substr(2, div-2);
@@ -349,7 +349,7 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 						   "s - statistics\n");
 				}
 			}
-			else 
+			else
 			{
 				Output("Incorrect format for list, expected:\n"
 				       "l <list option>\n");
@@ -365,7 +365,7 @@ bool CDebugger::InterpretCommand(const string &cmd, asIScriptContext *ctx)
 
 	case 'p':
 		{
-			// Print a value 
+			// Print a value
 			size_t p = cmd.find_first_not_of(" \t", 1);
 			if( p != string::npos )
 			{
