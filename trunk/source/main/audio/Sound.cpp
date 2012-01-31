@@ -18,17 +18,17 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifdef USE_OPENAL
-
 #include "Sound.h"
 #include "SoundManager.h"
 
 using namespace Ogre;
 
-Sound::Sound(ALuint _buffer, SoundManager *_sound_mgr, int _source_index) : 
+#ifdef USE_OPENAL
+
+Sound::Sound(ALuint _buffer, SoundManager *_soundManager, int _sourceIndex) : 
 	  buffer(_buffer)
-	, sound_mgr(_sound_mgr)
-	, source_index(_source_index)
+	, soundManager(_soundManager)
+	, sourceIndex(_sourceIndex)
 	, hardware_index(-1)
 	, gain(1)
 	, pitch(1)
@@ -53,7 +53,7 @@ void Sound::computeAudibility(Vector3 pos)
 	if (!loop && should_play && hardware_index!=-1)
 	{
 		int value;
-		alGetSourcei((ALuint)sound_mgr->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
+		alGetSourcei((ALuint)soundManager->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
 		if (value != AL_PLAYING)
 			should_play = false;
 	}
@@ -67,15 +67,15 @@ void Sound::computeAudibility(Vector3 pos)
 
 	float distance = (pos - position).length();
 	
-	if (distance > sound_mgr->MAX_DISTANCE)
+	if (distance > soundManager->MAX_DISTANCE)
 	{
 		audibility = 0.0;
-	} else if (distance < sound_mgr->REFERENCE_DISTANCE)
+	} else if (distance < soundManager->REFERENCE_DISTANCE)
 	{
 		audibility = gain;
 	} else
 	{
-		audibility = gain * (sound_mgr->REFERENCE_DISTANCE / (sound_mgr->REFERENCE_DISTANCE + (sound_mgr->ROLLOFF_FACTOR * (distance - sound_mgr->REFERENCE_DISTANCE))));
+		audibility = gain * (soundManager->REFERENCE_DISTANCE / (soundManager->REFERENCE_DISTANCE + (soundManager->ROLLOFF_FACTOR * (distance - soundManager->REFERENCE_DISTANCE))));
 	}
 }
 
@@ -84,7 +84,7 @@ bool Sound::isPlaying()
 	if (hardware_index != -1)
 	{
 		int value;
-		alGetSourcei((ALuint)sound_mgr->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
+		alGetSourcei((ALuint)soundManager->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
 		return (value==AL_PLAYING);
 	}
 	return false;
@@ -93,7 +93,7 @@ bool Sound::isPlaying()
 void Sound::setEnabled(bool e)
 {
 	enabled = e;
-	sound_mgr->recomputeSource(source_index, REASON_PLAY, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0, NULL);
 }
 
 bool Sound::getEnabled()
@@ -104,43 +104,43 @@ bool Sound::getEnabled()
 void Sound::play()
 {
 	should_play = true;
-	sound_mgr->recomputeSource(source_index, REASON_PLAY, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0, NULL);
 }
 
 void Sound::stop()
 {
 	should_play = false;
-	sound_mgr->recomputeSource(source_index, REASON_STOP, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_STOP, 0, NULL);
 }
 
 void Sound::setGain(float gain)
 {
 	this->gain = gain;
-	sound_mgr->recomputeSource(source_index, REASON_GAIN, gain, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_GAIN, gain, NULL);
 }
 
 void Sound::setLoop(bool loop)
 {
 	this->loop = loop;
-	sound_mgr->recomputeSource(source_index, REASON_LOOP, (loop)?1.0:0.0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_LOOP, (loop)?1.0:0.0, NULL);
 }
 
 void Sound::setPitch(float pitch)
 {
 	this->pitch = pitch;
-	sound_mgr->recomputeSource(source_index, REASON_PTCH, pitch, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_PTCH, pitch, NULL);
 }
 
 void Sound::setPosition(Ogre::Vector3 pos)
 {
 	this->position = pos;
-	sound_mgr->recomputeSource(source_index, REASON_POSN, 0, &pos);
+	soundManager->recomputeSource(sourceIndex, REASON_POSN, 0, &pos);
 }
 
 void Sound::setVelocity(Ogre::Vector3 vel)
 {
 	this->velocity = vel;
-	sound_mgr->recomputeSource(source_index, REASON_VLCT, 0, &vel);
+	soundManager->recomputeSource(sourceIndex, REASON_VLCT, 0, &vel);
 }
 
 #endif // USE_OPENAL

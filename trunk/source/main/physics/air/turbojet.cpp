@@ -28,7 +28,6 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	number=tnumber;
 	this->trucknum=trucknum;
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
 	switch (number)
 	{
 	case 0: mod_id=SS_MOD_AEROENGINE1;src_id=SS_TRIG_AEROENGINE1;thr_id=SS_MOD_THROTTLE1;ab_id=SS_TRIG_AFTERBURNER1;break;
@@ -197,7 +196,7 @@ void Turbojet::updateForces(float dt, int doUpdate)
 	{
 #ifdef USE_OPENAL
 		//sound update
-		if(ssm) ssm->modulate(trucknum, mod_id, rpm);
+		SoundScriptManager::getSingleton().modulate(trucknum, mod_id, rpm);
 #endif //OPENAL
 	}
 	timer+=dt;
@@ -230,8 +229,10 @@ void Turbojet::updateForces(float dt, int doUpdate)
 		if (afterburner) enginethrust+=(afterburnthrust-maxdrythrust);
 	} else afterburner=false;
 #ifdef USE_OPENAL
-	if (afterburner && ssm) ssm->trigStart(trucknum, ab_id);
-	else if(ssm) ssm->trigStop(trucknum, ab_id);
+	if (afterburner)
+		SoundScriptManager::getSingleton().trigStart(trucknum, ab_id);
+	else
+		SoundScriptManager::getSingleton().trigStop(trucknum, ab_id);
 #endif //OPENAL
 
 	nodes[nodeback].Forces+=(enginethrust*1000.0)*axis;
@@ -245,7 +246,7 @@ void Turbojet::setThrotle(float val)
 	throtle=val;
 #ifdef USE_OPENAL
 	//sound update
-	if(ssm) ssm->modulate(trucknum, thr_id, val);
+	SoundScriptManager::getSingleton().modulate(trucknum, thr_id, val);
 #endif //OPENAL
 }
 
@@ -285,13 +286,13 @@ void Turbojet::flipStart()
 		warmup=true;
 		warmupstart=timer;
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigStart(trucknum, src_id);
+		SoundScriptManager::getSingleton().trigStart(trucknum, src_id);
 #endif //OPENAL
 	}
 	else
 	{
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigStop(trucknum, src_id);
+		SoundScriptManager::getSingleton().trigStop(trucknum, src_id);
 #endif //OPENAL
 	}
 

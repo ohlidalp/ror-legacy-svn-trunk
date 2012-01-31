@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils.h"
 #include "Beam.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "BeamFactory.h"
 
 #include "language.h"

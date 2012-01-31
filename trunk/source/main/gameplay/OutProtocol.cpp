@@ -3,7 +3,7 @@
 #include "Settings.h"
 #include "BeamFactory.h"
 #include "Beam.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "RoRVersion.h"
 
 #ifdef WIN32

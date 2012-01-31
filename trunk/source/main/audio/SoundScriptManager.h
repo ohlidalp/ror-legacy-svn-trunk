@@ -177,10 +177,11 @@ public:
 	void runOnce();
 	void start();
 	void stop();
-	int truck;
+	int truck; // TODO: remove this
 
 	void setEnabled(bool e);
 	SoundScriptTemplate* templ;
+
 protected:
 	SoundManager* sm;
 	Sound *startSound;
@@ -228,6 +229,8 @@ public:
 	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
 	void setLoadingBaseSounds(bool v) { loadingBase = v; };
 
+	inline bool working() { return !soundsDisabled; }
+
 	float maxDistance;
 	float rolloffFactor;
 	float referenceDistance;
@@ -235,6 +238,7 @@ protected:
     StringVector mScriptPatterns;
 	int instance_counter;
 	bool loadingBase;
+	bool soundsDisabled;
 
 	std::map <Ogre::String, SoundScriptTemplate*> templates;
 

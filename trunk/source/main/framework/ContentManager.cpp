@@ -157,9 +157,9 @@ bool ContentManager::init(void)
 	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
 #ifdef USE_OPENAL
 	LOG("Creating Sound Manager");
-	SoundScriptManager *ssm = SoundScriptManager::getInstancePtrNoCreation();
-	if(ssm) ssm->setLoadingBaseSounds(true);
+	SoundScriptManager::getSingleton().setLoadingBaseSounds(true);
 #endif // USE_OPENAL
+
 	if (SSETTING("3D Sound renderer") != "No sound")
 		loadMainResource("sounds");
 
@@ -237,7 +237,7 @@ bool ContentManager::init(void)
 		LOG("catched error while initializing Resource groups: " + e.getFullDescription());
 	}
 #ifdef USE_OPENAL
-	if(ssm) ssm->setLoadingBaseSounds(false);
+	SoundScriptManager::getSingleton().setLoadingBaseSounds(false);
 #endif // USE_OPENAL
 
 	// and the content

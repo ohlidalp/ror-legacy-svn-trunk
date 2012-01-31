@@ -36,7 +36,7 @@
 #include "sha1.h"
 #include "collisions.h"
 #include "RoRVersion.h"
-#include "engine.h"
+#include "BeamEngine.h"
 #include "utils.h"
 #include "network.h"
 
@@ -240,7 +240,7 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 
 void GameScript::repairVehicle(string &instance, string &box, bool keepPosition)
 {
-	BeamFactory::getSingleton().repairTruck(mefl->getSSM(), mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
+	BeamFactory::getSingleton().repairTruck(mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
 }
 
 void GameScript::removeVehicle(string &instance, string &box)

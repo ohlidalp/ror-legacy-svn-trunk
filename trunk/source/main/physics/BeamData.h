@@ -954,7 +954,6 @@ struct rig
 	bool useMaxRPMforGUI;
 	float minimass;
 	bool cparticle_enabled;
-	SoundScriptManager *ssm;
 	std::vector<Ogre::String> truckconfig;
 	bool advanced_drag;
 	float advanced_node_drag;

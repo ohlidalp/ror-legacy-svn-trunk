@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "collisions.h"
 #include "Settings.h"
-#include "engine.h"
+#include "BeamEngine.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -517,14 +517,14 @@ int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* bo
 	return id;
 }
 
-void BeamFactory::repairTruck(SoundScriptManager *ssm, Collisions *collisions, char* inst, char* box, bool keepPosition)
+void BeamFactory::repairTruck(Collisions *collisions, char* inst, char* box, bool keepPosition)
 {
 	int rtruck = findTruckInsideBox(collisions, inst, box);
 	if (rtruck >= 0)
 	{
 		// take a position reference
 #ifdef USE_OPENAL
-		if (ssm) ssm->trigOnce(rtruck, SS_TRIG_REPAIR);
+		SoundScriptManager::getSingleton().trigOnce(rtruck, SS_TRIG_REPAIR);
 #endif // USE_OPENAL
 		Vector3 ipos=trucks[rtruck]->nodes[0].AbsPosition;
 		trucks[rtruck]->reset();

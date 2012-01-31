@@ -51,7 +51,6 @@ private:
 	float last_closest_hdist;
 	
 	int trucknum;
-	SoundScriptManager *ssm;
 
 public:
 	enum {HEADING_NONE, HEADING_FIXED, HEADING_WLV, HEADING_NAV};

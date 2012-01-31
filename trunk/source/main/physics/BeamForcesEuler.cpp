@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Beam.h"
 
-#include "engine.h"
+#include "BeamEngine.h"
 #include "Replay.h"
 #include "FlexAirfoil.h"
 #include "screwprop.h"
@@ -218,8 +218,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
 						/*
-						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
-						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
+						SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_CREAK);
 						*/
 #endif //USE_OPENAL
 
@@ -249,8 +249,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						//Sound effect
 						//Sound volume depends on the energy lost due to deformation (which gets converted to sound (and thermal) energy)
 						/*
-						if(ssm) ssm->modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
-						if(ssm) ssm->trigOnce(trucknum, SS_TRIG_CREAK);
+						SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_CREAK, deform*k*(difftoBeamL+deform*0.5f));
+						SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_CREAK);
 						*/
 #endif  //USE_OPENAL
 
@@ -269,8 +269,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					// Sound effect.
 					// Sound volume depends on spring's stored energy
 #ifdef USE_OPENAL
-					if(ssm) ssm->modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
-					if(ssm) ssm->trigOnce(trucknum, SS_TRIG_BREAK);
+					SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_BREAK, 0.5*k*difftoBeamL*difftoBeamL);
+					SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_BREAK);
 #endif //OPENAL
 					increased_accuracy=1;
 
@@ -886,8 +886,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							{
 								if(dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
 #ifdef USE_OPENAL
-								if(ssm) ssm->modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
-								if(ssm) ssm->trigOnce(trucknum, SS_TRIG_SCREETCH);
+								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
+								SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_SCREETCH);
 #endif // USE_OPENAL
 							}
 
@@ -1475,13 +1475,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		{
 			antilockbrake = false;
 #ifdef USE_OPENAL
-			if(ssm) ssm->trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
+			SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
 		} else
 		{
 			antilockbrake = true;
 #ifdef USE_OPENAL
-			if(ssm) ssm->trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
+			SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_ALB_ACTIVE);
 #endif //USE_OPENAL
 		}
 
@@ -1489,13 +1489,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		{
 			tractioncontrol = false;
 #ifdef USE_OPENAL
-			if(ssm) ssm->trigStop(trucknum, SS_TRIG_TC_ACTIVE);
+			SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
 		} else
 		{
 			tractioncontrol = true;
 #ifdef USE_OPENAL
-			if(ssm) ssm->trigStart(trucknum, SS_TRIG_TC_ACTIVE);
+			SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_TC_ACTIVE);
 #endif //USE_OPENAL
 		}
 	}
@@ -1563,10 +1563,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		else stabcommand=0;
 
 #ifdef USE_OPENAL
-		if (stabcommand && fabs(stabratio)<0.1 && ssm)
-			ssm->trigStart(trucknum, SS_TRIG_AIR);
-		else if (ssm)
-			ssm->trigStop(trucknum, SS_TRIG_AIR);
+		if (stabcommand && fabs(stabratio)<0.1)
+			SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_AIR);
+		else
+			SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_AIR);
 #endif //OPENAL
 	}
 
@@ -2071,13 +2071,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if (doUpdate && state==ACTIVATED)
 		{
 #ifdef USE_OPENAL
-			if (active && ssm)
+			if (active)
 			{
-				ssm->trigStart(trucknum, SS_TRIG_PUMP);
+				SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_PUMP);
 				float pump_rpm=660.0*(1.0-(work/(float)active)/100.0);
-				ssm->modulate(trucknum, SS_MOD_PUMP, pump_rpm);
-			} else if(ssm)
-				ssm->trigStop(trucknum, SS_TRIG_PUMP);
+				SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_PUMP, pump_rpm);
+			} else
+				SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_PUMP);
 #endif //OPENAL
 		}
 		//rotators

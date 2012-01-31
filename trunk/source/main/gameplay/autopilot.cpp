@@ -30,9 +30,6 @@ using namespace Ogre;
 Autopilot::Autopilot(HeightFinder *hfd, Water *w, int trucknum)
 {
 	this->trucknum=trucknum;
-#ifdef USE_OPENAL
-	ssm=SoundScriptManager::getInstancePtrNoCreation();
-#endif //OPENAL
 	water=w;
 	hf=hfd;
 	ref_l=NULL;
@@ -72,7 +69,7 @@ void Autopilot::disconnect()
 	if (mode_gpws)
 	{
 #ifdef USE_OPENAL
-		if(ssm) ssm->trigOnce(trucknum, SS_TRIG_GPWS_APDISCONNECT);
+		SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_APDISCONNECT);
 #endif //OPENAL
 	}
 }
@@ -274,7 +271,7 @@ int Autopilot::adjIAS(int d)
 void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
-	if(!ssm) return;
+	if(!SoundScriptManager::getInstance().working()) return;
 	if (mode_gpws && hf && ref_b)
 	{
 		float groundalt=hf->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
@@ -283,12 +280,12 @@ void Autopilot::gpws_update(float spawnheight)
 		//skip height warning sounds when the plane is slower then ~10 knots
 		if (( ref_c->Velocity.length() * 1.9685f) > 10.0f)
 		{
-			if (height<10 && last_gpws_height>10) ssm->trigOnce(trucknum, SS_TRIG_GPWS_10);
-			if (height<20 && last_gpws_height>20) ssm->trigOnce(trucknum, SS_TRIG_GPWS_20);
-			if (height<30 && last_gpws_height>30) ssm->trigOnce(trucknum, SS_TRIG_GPWS_30);
-			if (height<40 && last_gpws_height>40) ssm->trigOnce(trucknum, SS_TRIG_GPWS_40);
-			if (height<50 && last_gpws_height>50) ssm->trigOnce(trucknum, SS_TRIG_GPWS_50);
-			if (height<100 && last_gpws_height>100) ssm->trigOnce(trucknum, SS_TRIG_GPWS_100);
+			if (height<10 && last_gpws_height>10) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_10);
+			if (height<20 && last_gpws_height>20) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_20);
+			if (height<30 && last_gpws_height>30) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_30);
+			if (height<40 && last_gpws_height>40) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_40);
+			if (height<50 && last_gpws_height>50) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_50);
+			if (height<100 && last_gpws_height>100) SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_100);
 		}
 		last_gpws_height=height;
 
@@ -299,7 +296,7 @@ void Autopilot::gpws_update(float spawnheight)
 		float yVel = ref_c->Velocity.y * 1.9685f;
 		// will trigger the pullup sound when vvi is high (avoid pullup warning when landing normal) and groundcontact will be in less then 10 seconds
 		if (yVel * 10.0f < -height && yVel < -10.0f)
-			ssm->trigOnce(trucknum, SS_TRIG_GPWS_PULLUP);
+			SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_PULLUP);
 	}
 #endif //OPENAL
 }
@@ -365,8 +362,8 @@ void Autopilot::getRadioFix(localizer_t *localizers, int free_localizer, float *
 	*hdev=closest_hangle;
 	*vdev=closest_vangle;
 #ifdef USE_OPENAL
-	if (ssm && mode_heading==HEADING_NAV && mode_gpws && closest_hdist>10.0 && closest_hdist<350.0 && last_closest_hdist>10.0 && last_closest_hdist>350.0)
-		ssm->trigOnce(trucknum, SS_TRIG_GPWS_MINIMUMS);
+	if (mode_heading==HEADING_NAV && mode_gpws && closest_hdist>10.0 && closest_hdist<350.0 && last_closest_hdist>10.0 && last_closest_hdist>350.0)
+		SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_GPWS_MINIMUMS);
 #endif //OPENAL
 	last_closest_hdist=closest_hdist;
 	if (mode_heading==HEADING_NAV && (closest_hdist<20.0 || closest_vdist<20.0)) wantsdisconnect=true;
