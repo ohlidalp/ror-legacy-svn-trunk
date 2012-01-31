@@ -45,7 +45,7 @@ public:
     void restart()
     {
 #ifdef WIN32
-        QueryPerformanceCounter(&start);       
+        QueryPerformanceCounter(&start);
 #else
         gettimeofday(&start, NULL);
 #endif

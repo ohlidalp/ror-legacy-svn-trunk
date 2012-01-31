@@ -29,7 +29,7 @@ class Version
                      );
         }
 
-        // Test if two version numbers are the same. 
+        // Test if two version numbers are the same.
         bool operator<(Version const& rhs) const
         {
             return std::lexicographical_compare(versionInfo.begin(), versionInfo.end(), rhs.versionInfo.begin(), rhs.versionInfo.end());
@@ -39,7 +39,7 @@ class Version
         std::vector<int>    versionInfo;
 };
 
-// Read a single digit from the version. 
+// Read a single digit from the version.
 std::istream& operator>>(std::istream& str, Version::VersionDigit& digit)
 {
     str.get();

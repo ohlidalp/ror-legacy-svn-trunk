@@ -1,18 +1,18 @@
-/* 
+/*
  * Copyright (C) 2004-2009 Georgy Yunaev gyunaev@ulduzsoft.com
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  */
 
-/*! 
+/*!
  * \file libirc_doc.h
  * \author Georgy Yunaev
  * \version 1.0
@@ -29,14 +29,14 @@
  * standards, and most IRC clients. libircclient features include:
  * - Full multi-threading support.
  * - Single threads handles all the IRC processing.
- * - Support for single-threaded applications, and socket-based applications, 
+ * - Support for single-threaded applications, and socket-based applications,
  *   which use select()
  * - Synchronous and asynchronous interfaces.
  * - CTCP support with optional build-in reply code.
  * - Flexible DCC support, including both DCC chat, and DCC file transfer.
  * - Can both initiate and react to initiated DCC.
  * - Can accept or decline DCC sessions asynchronously.
- * - Plain C interface and implementation (possible to use from C++ code, 
+ * - Plain C interface and implementation (possible to use from C++ code,
  *   obviously)
  * - Compatible with RFC 1459 and most IRC clients.
  * - Free, licensed under LGPL license.
@@ -50,16 +50,16 @@
  * # make
  * # make install
  * \endcode
- *  
+ *
  * \section install_secw Compilation under MS Windows
  *
  * To compile libircclient under MS Windows:
  * - open the src/win32/libircclient.dsw file;
- * - select the appropriate library linkage (static or dynamic), and 
+ * - select the appropriate library linkage (static or dynamic), and
  * debug/release version;
  * - do 'Make build'
  *
- * You can also build the example using spammer.dsp project file. Here you 
+ * You can also build the example using spammer.dsp project file. Here you
  * can see how to integrate libircclient into your own project.
  *
  * \section doc Documentation
@@ -67,24 +67,24 @@
  * Documentation is not installed with \a make \a install; you should copy it
  * somewhere by hand.
  * There is html documentation (in \a doc/html) and manual pages (\a doc/man).
- * It is also recommended to check the \a examples directory, there are a 
+ * It is also recommended to check the \a examples directory, there are a
  * few examples, they'll help you.
- * 
+ *
  * \section author Author, copyright, support.
  *
- * If you have any questions, bug reports, suggestions regarding libircclient - 
+ * If you have any questions, bug reports, suggestions regarding libircclient -
  * please send them to gyunaev@ulduzsoft.com.
  *
  * Copyright (C) 2004-2009 Georgy Yunaev gyunaev@ulduzsoft.com
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  *
  */
@@ -142,7 +142,7 @@
 /*!
  * \defgroup contexts  Managing contexts.
  */
- 
+
 /*!
  * \defgroup common    Getting libircclient version.
  */

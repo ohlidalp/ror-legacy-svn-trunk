@@ -22,7 +22,7 @@
 
 #include <angelscript.h>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1200 
+#if defined(_MSC_VER) && _MSC_VER <= 1200
 // disable the annoying warnings on MSVC 6
 #pragma warning (disable:4786)
 #endif
@@ -42,7 +42,7 @@ class CScriptBuilder;
 // then the function should return a negative value to abort the compilation.
 typedef int (*INCLUDECALLBACK_t)(const char *include, const char *from, CScriptBuilder *builder, void *userParam);
 
-// Helper class for loading and pre-processing script files to 
+// Helper class for loading and pre-processing script files to
 // support include directives and metadata declarations
 class CScriptBuilder
 {
@@ -56,7 +56,7 @@ public:
 	int AddSectionFromFile(const char *filename);
 
 	// Load a script section from memory
-	int AddSectionFromMemory(const char *scriptCode, 
+	int AddSectionFromMemory(const char *scriptCode,
 							 const char *sectionName = "");
 
 	// Build the added script sections

@@ -1,18 +1,18 @@
-/* 
+/*
  * Copyright (C) 2004-2009 Georgy Yunaev gyunaev@ulduzsoft.com
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  */
 
-/*! 
+/*!
  * \file libirc_errors.h
  * \author Georgy Yunaev
  * \version 1.0
@@ -35,9 +35,9 @@
 
 
 /*! \brief Invalid argument
- * 
- * An invalid value was given for one of the arguments to a function. 
- * For example, supplying the NULL value for \a channel argument of 
+ *
+ * An invalid value was given for one of the arguments to a function.
+ * For example, supplying the NULL value for \a channel argument of
  * irc_cmd_join() produces LIBIRC_ERR_INVAL error. You should fix the code.
  *
  * \ingroup errorcodes
@@ -46,7 +46,7 @@
 
 
 /*! \brief Could not resolve host.
- * 
+ *
  * The host name supplied for irc_connect() function could not be resolved
  * into valid IP address. Usually means that host name is invalid.
  *
@@ -56,7 +56,7 @@
 
 
 /*! \brief Could not create socket.
- * 
+ *
  * The new socket could not be created or made non-blocking. Usually means
  * that the server is out of resources, or (rarely :) a bug in libircclient.
  *
@@ -66,9 +66,9 @@
 
 
 /*! \brief Could not connect.
- * 
+ *
  * The socket could not connect to the IRC server, or to the destination DCC
- * part. Usually means that either the IRC server is down or its address is 
+ * part. Usually means that either the IRC server is down or its address is
  * invalid. For DCC the reason usually is the firewall on your or destination
  * computer, which refuses DCC transfer.
  *
@@ -79,8 +79,8 @@
 
 
 /*! \brief Connection closed by remote peer.
- * 
- * The IRC connection was closed by the IRC server (which could mean that an 
+ *
+ * The IRC connection was closed by the IRC server (which could mean that an
  * IRC operator just have banned you from the server :)), or the DCC connection
  * was closed by remote peer - for example, the other side just quits his mIrc.
  * Usually it is not an error.
@@ -92,10 +92,10 @@
 
 
 /*! \brief Out of memory
- * 
- * There are two possible reasons for this error. First is that memory could 
+ *
+ * There are two possible reasons for this error. First is that memory could
  * not be allocated for libircclient use, and this error usually is fatal.
- * Second reason is that the command queue (which keeps command ready to be 
+ * Second reason is that the command queue (which keeps command ready to be
  * sent to the IRC server) is full, and could not accept more commands yet.
  * In this case you should just wait, and repeat the command later.
  *
@@ -105,9 +105,9 @@
 
 
 /*! \brief Could not accept new connection
- * 
+ *
  * A DCC chat/send connection from the remote peer could not be accepted.
- * Either the connection was just terminated before it is accepted, or there 
+ * Either the connection was just terminated before it is accepted, or there
  * is a bug in libircclient.
  *
  * \ingroup errorcodes
@@ -116,8 +116,8 @@
 
 
 /*! \brief Could not send this
- * 
- * A \a filename supplied to irc_dcc_sendfile() could not be sent. Either is 
+ *
+ * A \a filename supplied to irc_dcc_sendfile() could not be sent. Either is
  * is not a file (a directory or a socket, for example), or it is not readable. *
  *
  * \sa LIBIRC_ERR_OPENFILE
@@ -127,8 +127,8 @@
 
 
 /*! \brief Could not read DCC file or socket
- * 
- * Either a DCC file could not be read (for example, was truncated during 
+ *
+ * Either a DCC file could not be read (for example, was truncated during
  * sending), or a DCC socket returns a read error, which usually means that
  * the network connection is terminated.
  *
@@ -138,7 +138,7 @@
 
 
 /*! \brief Could not write DCC file or socket
- * 
+ *
  * Either a DCC file could not be written (for example, there is no free space
  * on disk), or a DCC socket returns a write error, which usually means that
  * the network connection is terminated.
@@ -149,7 +149,7 @@
 
 
 /*! \brief Invalid state
- * 
+ *
  * The function is called when it is not allowed to be called. For example,
  * irc_cmd_join() was called before the connection to IRC server succeed, and
  * ::event_connect is called.
@@ -160,8 +160,8 @@
 
 
 /*! \brief Operation timed out
- * 
- * The DCC request is timed out. 
+ *
+ * The DCC request is timed out.
  * There is a timer for each DCC request, which tracks connecting, accepting
  * and non-accepted/declined DCC requests. For every request this timer
  * is currently 60 seconds. If the DCC request was not connected, accepted
@@ -173,7 +173,7 @@
 
 
 /*! \brief Could not open file for DCC send
- * 
+ *
  * The file specified in irc_dcc_sendfile() could not be opened.
  *
  * \ingroup errorcodes
@@ -182,8 +182,8 @@
 
 
 /*! \brief IRC server connection terminated
- * 
- * The connection to the IRC server was terminated - possibly, by network 
+ *
+ * The connection to the IRC server was terminated - possibly, by network
  * error. Try to irc_connect() again.
  *
  * \ingroup errorcodes
@@ -192,7 +192,7 @@
 
 
 /*! \brief IPv6 not supported
- * 
+ *
  * The function which requires IPv6 support was called, but the IPv6 support was not compiled
  * into the application
  *

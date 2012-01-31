@@ -5,7 +5,7 @@
 
 BEGIN_AS_NAMESPACE
 
-// This class implements complex numbers and the common 
+// This class implements complex numbers and the common
 // operations that can be done with it.
 //
 // Ref: http://mathworld.wolfram.com/ComplexNumber.html

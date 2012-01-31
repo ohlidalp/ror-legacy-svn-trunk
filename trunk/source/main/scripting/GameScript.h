@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -215,7 +215,7 @@ public:
 
 	/**
 	 * Rotates the camera anticlockwise around it's local y axis.
-	 * @param angle The yaw-angle 
+	 * @param angle The yaw-angle
 	 */
 	void setCameraYaw(float angle);
 
@@ -237,7 +237,7 @@ public:
 	 */
 	Ogre::Vector3 getCameraDirection();
 	
-	/** 
+	/**
 	 * Points the camera at a location in worldspace.
 	 * @remarks
 	 *      This is a helper method to automatically generate the
@@ -247,35 +247,35 @@ public:
 	*/
 	void cameraLookAt(Ogre::Vector3 &targetPoint);
 	
-	/** 
+	/**
 	 * Adds a global function to the script
 	 * (Wrapper for ScriptEngine::addFunction)
 	 * @param arg A declaration for the function.
 	*/
 	int addScriptFunction(const std::string &arg);
 	
-	/** 
+	/**
 	 * Checks if a global function exists in the script
 	 * (Wrapper for ScriptEngine::functionExists)
 	 * @param arg A declaration for the function.
 	*/
 	int scriptFunctionExists(const std::string &arg);
 	
-	/** 
+	/**
 	 * Deletes a global function from the script
 	 * (Wrapper for ScriptEngine::deleteFunction)
 	 * @param arg A declaration for the function.
 	*/
 	int deleteScriptFunction(const std::string &arg);
 	
-	/** 
+	/**
 	 * Adds a global variable to the script
 	 * (Wrapper for ScriptEngine::addVariable)
 	 * @param arg A declaration for the variable.
 	*/
 	int addScriptVariable(const std::string &arg);
 	
-	/** 
+	/**
 	 * Deletes a global variable from the script
 	 * (Wrapper for ScriptEngine::deleteVariable)
 	 * @param arg A declaration for the variable.

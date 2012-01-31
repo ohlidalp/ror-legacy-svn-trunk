@@ -1,8 +1,8 @@
 #ifndef ASWRAPPEDCALL_H
 #define ASWRAPPEDCALL_H
 
-// Generate the wrappers by calling the macros in global scope. 
-// Then register the wrapper function with the script engine using the asCALL_GENERIC 
+// Generate the wrappers by calling the macros in global scope.
+// Then register the wrapper function with the script engine using the asCALL_GENERIC
 // calling convention. The wrapper can handle both global functions and class methods.
 // The wrapper can also handle OBJLAST & OBJFIRST methods as well.
 // or a asCALL_CDECL_OBJLAST.

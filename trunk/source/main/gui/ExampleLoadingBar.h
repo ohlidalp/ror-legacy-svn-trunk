@@ -14,9 +14,9 @@ same license as the rest of the engine.
 /*
 -----------------------------------------------------------------------------
 Filename:    ExampleLoadingBar.h
-Description: Defines an example loading progress bar which you can use during 
-startup, level changes etc to display loading progress. 
-IMPORTANT: Note that this progress bar relies on you having the OgreCore.zip 
+Description: Defines an example loading progress bar which you can use during
+startup, level changes etc to display loading progress.
+IMPORTANT: Note that this progress bar relies on you having the OgreCore.zip
 package already added to a resource group called 'Bootstrap' - this provides
 the basic resources required for the progress bar and will be loaded automatically.
 */
@@ -33,18 +33,18 @@ the basic resources required for the progress bar and will be loaded automatical
 
 using namespace Ogre;
 
-/** Defines an example loading progress bar which you can use during 
-	startup, level changes etc to display loading progress. 
+/** Defines an example loading progress bar which you can use during
+	startup, level changes etc to display loading progress.
 @remarks
 	Basically you just need to create an instance of this class, call start()
 	before loading and finish() afterwards. You may also need to stop areas of
-	your scene rendering in between since this method will call 
+	your scene rendering in between since this method will call
 	RenderWindow::update() to update the display of the bar - we advise using
 	SceneManager's 'special case render queues' for this, see
 	SceneManager::addSpecialCaseRenderQueue for details.
-@note 
-	This progress bar relies on you having the OgreCore.zip package already 
-	added to a resource group called 'Bootstrap' - this provides the basic 
+@note
+	This progress bar relies on you having the OgreCore.zip package already
+	added to a resource group called 'Bootstrap' - this provides the basic
 	resources required for the progress bar and will be loaded automatically.
 */
 class ExampleLoadingBar : public ResourceGroupListener
@@ -77,16 +77,16 @@ public:
 	}
 
 	/** Show the loading bar and start listening.
-	@param window The window to update 
+	@param window The window to update
 	@param numGroupsInit The number of groups you're going to be initialising
 	@param numGroupsLoad The number of groups you're going to be loading
 	@param initProportion The proportion of the progress which will be taken
 		up by initialisation (ie script parsing etc). Defaults to 0.7 since
 		script parsing can often take the majority of the time.
 	*/
-	virtual void start(RenderWindow* window, 
-		unsigned short numGroupsInit = 1, 
-		unsigned short numGroupsLoad = 1, 
+	virtual void start(RenderWindow* window,
+		unsigned short numGroupsInit = 1,
+		unsigned short numGroupsLoad = 1,
 		Real initProportion = 0.70f)
 	{
 		mWindow = window;
@@ -101,7 +101,7 @@ public:
 		mLoadOverlay = (Overlay*)omgr.getByName("Core/LoadOverlay");
 		if (!mLoadOverlay)
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
 				"Cannot find loading overlay", "ExampleLoadingBar::start");
 		}
 
@@ -139,7 +139,7 @@ public:
 		ResourceGroupManager::getSingleton().addResourceGroupListener(this);
 	}
 
-	/** Hide the loading bar and stop listening. 
+	/** Hide the loading bar and stop listening.
 	*/
 	virtual void finish(void)
 	{

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -414,10 +414,10 @@ typedef struct
 	int suid; //session unique id
 } event_trigger_t;
 
-class InputEngine : 
+class InputEngine :
 	public RoRSingleton<InputEngine>,
-	public OIS::MouseListener, 
-	public OIS::KeyListener, 
+	public OIS::MouseListener,
+	public OIS::KeyListener,
 	public OIS::JoyStickListener
 {
 	friend class RoRSingleton<InputEngine>;

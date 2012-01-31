@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -94,7 +94,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // if you are not sure that this replacement is consistent, better leave it out.
 
 // some tool to define the bitmasks. We use this, as it it far better readable (prevents errors)
-#define BITMASK(x) (1 << (x-1)) 
+#define BITMASK(x) (1 << (x-1))
 // BITMASK(1) = 0x00000001 = 0b00....0001
 // BITMASK(2) = 0x00000002 = 0b00....0010
 

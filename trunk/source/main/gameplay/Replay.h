@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 #include <MyGUI.h>
 #endif //MYGUI
 
@@ -72,7 +72,7 @@ protected:
 	beam_simple_t *beams;
 	unsigned long *times;
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	// windowing
 	MyGUI::WidgetPtr panel;
 	MyGUI::StaticTextPtr txt;

@@ -17,17 +17,17 @@
 #include <objbase.h>
 #include <shlobj.h>
 
-// CreateLink - uses the Shell's IShellLink and IPersistFile interfaces 
-//              to create and store a shortcut to the specified object. 
+// CreateLink - uses the Shell's IShellLink and IPersistFile interfaces
+//              to create and store a shortcut to the specified object.
 //
-// Returns the result of calling the member functions of the interfaces. 
+// Returns the result of calling the member functions of the interfaces.
 //
 // Parameters:
-// lpszPathObj  - address of a buffer containing the path of the object. 
-// lpszPathLink - address of a buffer containing the path where the 
-//                Shell link is to be stored. 
-// lpszDesc     - address of a buffer containing the description of the 
-//                Shell link. 
+// lpszPathObj  - address of a buffer containing the path of the object.
+// lpszPathLink - address of a buffer containing the path where the
+//                Shell link is to be stored.
+// lpszDesc     - address of a buffer containing the description of the
+//                Shell link.
 HRESULT createLink2(LPCWSTR lpszPathObj, LPCWSTR lpszWorkingDir, LPCWSTR lpszPathLink, LPCWSTR lpszDesc);
 
 // small wxwidgets wrapper
@@ -35,4 +35,4 @@ int createLink(std::string target, std::string workingdir, std::string filename,
 
 #endif //MAKELINK_H__
 
-#endif //OGRE_PLATFORM 
+#endif //OGRE_PLATFORM
