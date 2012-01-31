@@ -257,7 +257,7 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 	//mRaySceneQuery->setQueryMask(queryMask);
 
 	debugNode = 0;
-	bool debug = BSETTING("DOFDebug");
+	bool debug = BSETTING("DOFDebug", false);
 	if(debug)
 	{
 		MaterialPtr material = MaterialManager::getSingleton().getByName("DoF_DepthDebug");

@@ -56,13 +56,13 @@ void ContentManager::loadMainResource(String name, String group)
 	dirsep="\\";
 #endif
 
-	String zipFilename = SSETTING("Resources Path")+name+".zip";
+	String zipFilename = SSETTING("Resources Path", "resources\\")+name+".zip";
 	if(fileExists(zipFilename.c_str()))
 	{
 		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group);
 	} else
 	{
-		String dirname = SSETTING("Resources Path")+name;
+		String dirname = SSETTING("Resources Path", "resources\\")+name;
 		LOG("resource zip '"+zipFilename+"' not existing, using directory instead: " + dirname);
 		ResourceGroupManager::getSingleton().addResourceLocation(dirname, "FileSystem", group);
 	}
@@ -94,7 +94,7 @@ bool ContentManager::init(void)
 	// by default, display everything in the depth map
 	Ogre::MovableObject::setDefaultVisibilityFlags(DEPTHMAP_ENABLED);
 
-	CACHE.setLocation(SSETTING("Cache Path"), SSETTING("Config Root"));
+	CACHE.setLocation(SSETTING("Cache Path", ""), SSETTING("Config Root", ""));
 
 	ColoredTextAreaOverlayElementFactory *cef = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(cef);
@@ -155,50 +155,50 @@ bool ContentManager::init(void)
 	SoundScriptManager::getSingleton().setLoadingBaseSounds(true);
 #endif // USE_OPENAL
 
-	if (SSETTING("3D Sound renderer") != "No sound")
+	if (SSETTING("3D Sound renderer", "") != "No sound")
 		loadMainResource("sounds");
 
-	if (SSETTING("Sky effects") == "Caelum (best looking, slower)")
+	if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
 		loadMainResource("caelum");
 
-	if(BSETTING("Hydrax"))
-		loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
+	//if(BSETTING("Hydrax", false))
+	//	loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
 
-	if(SSETTING("Vegetation") != "None (fastest)")
+	if(SSETTING("Vegetation", "None (fastest)") != "None (fastest)")
 		loadMainResource("paged");
 
-	if(BSETTING("HDR"))
+	if(BSETTING("HDR", false))
 		loadMainResource("hdr");
 
-	if(BSETTING("DOF"))
+	if(BSETTING("DOF", false))
 		loadMainResource("dof");
 
-	if(BSETTING("Glow"))
+	if(BSETTING("Glow", false))
 		loadMainResource("glow");
 
-	if(BSETTING("Motion blur"))
+	if(BSETTING("Motion blur", false))
 		loadMainResource("blur");
 
-	if(BSETTING("HeatHaze"))
+	if(BSETTING("HeatHaze", false))
 		loadMainResource("heathaze");
 
-	if (BSETTING("Sunburn"))
+	if (BSETTING("Sunburn", false))
 		loadMainResource("sunburn");
 
-	if (SSETTING("Shadow technique")=="Parallel-split Shadow Maps")
+	if (SSETTING("Shadow technique", "") == "Parallel-split Shadow Maps")
 		loadMainResource("pssm");
 
 	//streams path, to be processed later by the cache system
 	LOG("Loading filesystems");
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"cache", "FileSystem", "cache");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"cache", "FileSystem", "cache");
 	//config, flat
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	//packs, to be processed later by the cache system
 
 	// add scripts folder
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"scripts", "FileSystem", "Scripts");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"scripts", "FileSystem", "Scripts");
 
 	// init skin manager, important to happen before trucks resource loading!
 	LOG("registering Skin Manager");
@@ -211,7 +211,7 @@ bool ContentManager::init(void)
 	// Set default mipmap level (NB some APIs ignore this)
 	if(TextureManager::getSingletonPtr())
 		TextureManager::getSingleton().setDefaultNumMipmaps(5);
-	String tft=SSETTING("Texture Filtering");
+	String tft=SSETTING("Texture Filtering", "Trilinear");
 	TextureFilterOptions tfo=TFO_NONE;
 	if (tft=="Bilinear") tfo=TFO_BILINEAR;
 	if (tft=="Trilinear") tfo=TFO_TRILINEAR;
@@ -223,7 +223,7 @@ bool ContentManager::init(void)
 	LOG("initialiseAllResourceGroups()");
 	try
 	{
-		if (BSETTING("Background Loading"))
+		if (BSETTING("Background Loading", false))
 			ResourceBackgroundQueue::getSingleton().initialiseAllResourceGroups();
 		else
 			ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
@@ -236,11 +236,11 @@ bool ContentManager::init(void)
 #endif // USE_OPENAL
 
 	// and the content
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"packs", "FileSystem", "Packs", true);
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"mods",  "FileSystem", "Packs", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"packs", "FileSystem", "Packs", true);
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"mods",  "FileSystem", "Packs", true);
 
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"vehicles", "FileSystem", "VehicleFolders");
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path")+"terrains", "FileSystem", "TerrainFolders");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"vehicles", "FileSystem", "VehicleFolders");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"terrains", "FileSystem", "TerrainFolders");
 
 	exploreFolders("VehicleFolders");
 	exploreFolders("TerrainFolders");
@@ -249,7 +249,7 @@ bool ContentManager::init(void)
 	LOG("initialiseAllResourceGroups() - Content");
 	try
 	{
-		if (BSETTING("Background Loading"))
+		if (BSETTING("Background Loading", false))
 			ResourceBackgroundQueue::getSingleton().initialiseResourceGroup("Packs");
 		else
 			ResourceGroupManager::getSingleton().initialiseResourceGroup("Packs");
@@ -333,7 +333,7 @@ void ContentManager::exploreFolders(Ogre::String rg)
 	LOG("initialiseResourceGroups: "+rg);
 	try
 	{
-		if (BSETTING("Background Loading"))
+		if (BSETTING("Background Loading", false))
 			ResourceBackgroundQueue::getSingleton().initialiseResourceGroup(rg);
 		else
 			ResourceGroupManager::getSingleton().initialiseResourceGroup(rg);

@@ -68,10 +68,14 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	for (int t=0; t<MAX_TRUCKS; t++)
 		trucks[t] = 0;
 
-	if (SSETTING("Threads")=="1 (Single Core CPU)")	thread_mode = THREAD_SINGLE;
-	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")		thread_mode = THREAD_MULTI;
+	String threadMode = SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)");
+	if (threadMode == "1 (Single Core CPU)")
+		thread_mode = THREAD_SINGLE;
+	if (threadMode == "2 (Hyper-Threading or Dual core CPU)")
+		thread_mode = THREAD_MULTI;
 
-	if (BSETTING("2DReplay"))						tdr = new TwoDReplay();
+	if (BSETTING("2DReplay", false))
+		tdr = new TwoDReplay();
 }
 
 BeamFactory::~BeamFactory()

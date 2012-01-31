@@ -772,8 +772,8 @@ bool MyApp::checkUserPath()
 
 bool MyApp::filesystemBootstrap()
 {
-	UserPath = conv(SSETTING("User Path"));
-	ProgramPath = conv(SSETTING("Program Path"));
+	UserPath = conv(SSETTING("User Path", ""));
+	ProgramPath = conv(SSETTING("Program Path", ""));
 
 
 	checkUserPath();

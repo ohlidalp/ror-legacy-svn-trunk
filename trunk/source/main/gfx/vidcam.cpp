@@ -38,7 +38,7 @@ VideoCamera::VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, ri
 	, debugNode(0)
 	, rwMirror(0)
 {
-	debugMode = SETTINGS.getBooleanSetting("VideoCameraDebug");
+	debugMode = SETTINGS.getBooleanSetting("VideoCameraDebug", false);
 }
 
 void VideoCamera::init()
@@ -47,13 +47,13 @@ void VideoCamera::init()
 
 	mVidCam = mSceneMgr->createCamera(materialName + "_camera");
 
-	bool useExternalMirrorWindow = BSETTING("UseVideocameraWindows");
-	bool fullscreenRW = BSETTING("VideoCameraFullscreen");
+	bool useExternalMirrorWindow = BSETTING("UseVideocameraWindows", false);
+	bool fullscreenRW = BSETTING("VideoCameraFullscreen", false);
 
 	// check if this vidcamera is also affected
 	if(useExternalMirrorWindow && fullscreenRW)
 	{
-		int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter));
+		int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter), 0);
 		if(monitor < 0)
 			useExternalMirrorWindow = false;
 		// < 0 = fallback to texture
@@ -75,37 +75,37 @@ void VideoCamera::init()
 	} else
 	{
 		NameValuePairList misc;
-		if(!SSETTING("VideoCameraFSAA").empty())
-			misc["FSAA"] = SSETTING("VideoCameraFSAA");
+		if(!SSETTING("VideoCameraFSAA", "").empty())
+			misc["FSAA"] = SSETTING("VideoCameraFSAA", "");
 		
-		if(!SSETTING("VideoCameraColourDepth").empty())
-			misc["colourDepth"] = SSETTING("VideoCameraColourDepth");
+		if(!SSETTING("VideoCameraColourDepth", "").empty())
+			misc["colourDepth"] = SSETTING("VideoCameraColourDepth", "");
 		else
 			misc["colourDepth"] = "32";
 		
-		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter)) > 0)
-			misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter));
+		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
+			misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter), "");
 		
-		if(ISETTING("VideoCameraTop_" + TOSTRING(counter)) > 0)
-			misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter));
-		if(!SSETTING("VideoCameraWindowBorder").empty())
-			misc["border"] = SSETTING("VideoCameraWindowBorder"); // fixes for windowed mode
+		if(ISETTING("VideoCameraTop_" + TOSTRING(counter), 0) > 0)
+			misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter), "");
+		if(!SSETTING("VideoCameraWindowBorder", "").empty())
+			misc["border"] = SSETTING("VideoCameraWindowBorder", ""); // fixes for windowed mode
 
 		misc["outerDimensions"] = "true"; // fixes for windowed mode
 
-		bool fullscreen = BSETTING("VideoCameraFullscreen");
+		bool fullscreen = BSETTING("VideoCameraFullscreen", false);
 		if(fullscreen)
 		{
-			int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter));
+			int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter), 0);
 			misc["monitorIndex"] = TOSTRING(monitor);
 		}
 		
 		rwMirror =  Ogre::Root::getSingleton().createRenderWindow(vidCamName, mirrorSize.x, mirrorSize.y, fullscreen, &misc);
-		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter)) > 0)
-			rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter)), ISETTING("VideoCameraTop_" + TOSTRING(counter)));
+		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
+			rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0), ISETTING("VideoCameraTop_" + TOSTRING(counter), 0));
 
-		if(ISETTING("VideoCameraWidth_" + TOSTRING(counter)) > 0)
-			rwMirror->resize(ISETTING("VideoCameraWidth_" + TOSTRING(counter)), ISETTING("VideoCameraHeight_" + TOSTRING(counter)));
+		if(ISETTING("VideoCameraWidth_" + TOSTRING(counter), 0) > 0)
+			rwMirror->resize(ISETTING("VideoCameraWidth_" + TOSTRING(counter), 0), ISETTING("VideoCameraHeight_" + TOSTRING(counter), 0));
 		
 		rwMirror->setAutoUpdated(false);
 		fixRenderWindowIcon(rwMirror);

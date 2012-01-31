@@ -79,7 +79,7 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 		}
 	}
 
-	bool debug = BSETTING("EnvMapDebug");
+	bool debug = BSETTING("EnvMapDebug", false);
 	if(debug)
 	{
 		// create fancy mesh for debugging the envmap

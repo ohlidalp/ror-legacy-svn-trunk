@@ -134,13 +134,13 @@ void MumbleIntegration::update(Ogre::Vector3 cameraPos, Ogre::Vector3 avatarPos)
 	lm->fCameraTop[2] = 0.0f;
 
 	// Identifier which uniquely identifies a certain player in a context (e.g. the ingame Name).
-	convertCharSet(lm->identity, SSETTING("Nickname").c_str());
+	convertCharSet(lm->identity, SSETTING("Nickname", "Anonymous").c_str());
 
 	// Context should be equal for players which should be able to hear each other positional and
 	// differ for those who shouldn't (e.g. it could contain the server+port and team)
 	// TODO: separate teams
 	int teamID = 0;
-	sprintf((char *)lm->context, "%s:%s|%d", SSETTING("Server name").c_str(), SSETTING("Server port").c_str(), teamID);
+	sprintf((char *)lm->context, "%s:%s|%d", SSETTING("Server name", "-").c_str(), SSETTING("Server port", "1337").c_str(), teamID);
 	lm->context_len = (int)strnlen((char *)lm->context, 256);
 }
 

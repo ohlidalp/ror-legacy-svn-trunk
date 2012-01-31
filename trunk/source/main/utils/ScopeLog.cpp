@@ -33,7 +33,7 @@ using namespace Ogre;
 
 ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0), disabled(false), warning(0), error(0), obsoleteWarning(0), info(0)
 {
-	if(!BSETTING("Advanced Logging"))
+	if(!BSETTING("Advanced Logging", false))
 	{
 		disabled=true;
 		return;
@@ -43,7 +43,7 @@ ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), he
 
 	// determine a filename
 	name = stripNonASCII(name);
-	logFileName = SSETTING("Log Path") + SSETTING("dirsep") + "_" + name + ".html";
+	logFileName = SSETTING("Log Path", "") + SSETTING("dirsep", "\\") + "_" + name + ".html";
 	LOG("creating scopelog: " + logFileName);
 	
 	// create a new log file

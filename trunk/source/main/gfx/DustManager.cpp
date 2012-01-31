@@ -33,7 +33,7 @@ using namespace Ogre;
 DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
 {
 	setSingleton(this);
-	mEnabled = BSETTING("Particles");
+	mEnabled = BSETTING("Particles", true);
 
 	
 	if (mEnabled)

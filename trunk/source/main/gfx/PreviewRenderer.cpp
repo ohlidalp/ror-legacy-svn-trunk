@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 PreviewRenderer::PreviewRenderer()
 {
-	fn = SSETTING("OPT_IMGPATH");
+	fn = SSETTING("OPT_IMGPATH", "");
 	if(fn.empty()) return;
 	LOG("previewRenderer initialized");
 }
@@ -293,7 +293,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 
  				char tmp[56];
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy
-				String ifn = fn + skelmode + SSETTING("dirsep") + String(tmp);
+				String ifn = fn + skelmode + SSETTING("dirsep", "\\") + String(tmp);
     			
 				if(fileExists(ifn.c_str()))
 				{

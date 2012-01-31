@@ -66,9 +66,9 @@ PACK (struct OutGaugePack
 
 OutProtocol::OutProtocol(void) : sockfd(-1), delay(0.1), timer(0), mode(0), id(0), working(false), counter(0)
 {
-	delay = PARSEREAL(SSETTING("OutGauge Delay")) * 0.1f;
-	mode  = PARSEINT(SSETTING("OutGauge Mode"));
-	id    = PARSEINT(SSETTING("OutGauge ID"));
+	delay = FSETTING("OutGauge Delay", 10) * 0.1f;
+	mode  = ISETTING("OutGauge Mode", 0);
+	id    = ISETTING("OutGauge ID", 0);
 
 	if(mode > 0)
 		startup();
@@ -89,8 +89,8 @@ void OutProtocol::startup()
 	SWBaseSocket::SWBaseError error;
 
 	// get some settings
-	string ipstr = SSETTING("OutGauge IP");
-	int port = PARSEINT(SSETTING("OutGauge Port"));
+	string ipstr = SSETTING("OutGauge IP", "192.168.1.100");
+	int port     = ISETTING("OutGauge Port", 1337);
 	
 	// startup winsock
 	WSADATA wsd;

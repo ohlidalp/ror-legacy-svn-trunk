@@ -97,7 +97,7 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) :
 	callbacks["eventCallback"] = std::vector<int>();
 
 	// create our own log
-	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path")+"/Angelscript.log", false);
+	scriptLog = LogManager::getSingleton().createLog(SSETTING("Log Path", "")+"/Angelscript.log", false);
 	
 	scriptLog->logMessage("ScriptEngine initialized");
 
@@ -950,7 +950,7 @@ int ScriptEngine::loadScript(Ogre::String _scriptName)
 		// save the bytecode
 		scriptHash = builder.getHash();
 		{
-			String fn = SSETTING("Cache Path") + "script" + scriptHash + "_" + scriptName + "c";
+			String fn = SSETTING("Cache Path", "") + "script" + scriptHash + "_" + scriptName + "c";
 			SLOG("saving script bytecode to file " + fn);
 			CBytecodeStream bstream(fn);
 			mod->SaveByteCode(&bstream);

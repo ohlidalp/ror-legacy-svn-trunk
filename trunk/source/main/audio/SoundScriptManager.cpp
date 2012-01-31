@@ -50,7 +50,7 @@ SoundScriptManager::SoundScriptManager() : soundsDisabled(false)
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 
-	soundsDisabled = (SSETTING("3D Sound renderer") == "No sound");
+	soundsDisabled = (SSETTING("3D Sound renderer", "Default") == "No sound");
 }
 
 void SoundScriptManager::trigOnce(Beam *truck, int trig)
@@ -414,7 +414,7 @@ bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
 		if (vec[1]==String("air_purge")) {trigger_source=SS_TRIG_AIR_PURGE;return true;};
 		if (vec[1]==String("shift")) {trigger_source=SS_TRIG_SHIFT;return true;};
 		if (vec[1]==String("gear_slide")) {trigger_source=SS_TRIG_GEARSLIDE;return true;};
-		if (vec[1]==String("creak") && BSETTING("Creak Sound")) {trigger_source=SS_TRIG_CREAK;return true;};
+		if (vec[1]==String("creak") && BSETTING("Creak Sound", false)) {trigger_source=SS_TRIG_CREAK;return true;};
 		if (vec[1]==String("break")) {trigger_source=SS_TRIG_BREAK;return true;};
 		if (vec[1]==String("screetch")) {trigger_source=SS_TRIG_SCREETCH;return true;};
 		if (vec[1]==String("parking_brake")) {trigger_source=SS_TRIG_PARK;return true;};

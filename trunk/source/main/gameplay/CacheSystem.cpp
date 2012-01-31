@@ -58,7 +58,7 @@ CacheSystem::CacheSystem()
 	known_extensions.push_back("trailer");
 	known_extensions.push_back("load");
 
-	if(BSETTING("streamCacheGenerationOnly"))
+	if(BSETTING("streamCacheGenerationOnly", false))
 	{
 		writeStreamCache();
 		exit(0);
@@ -79,7 +79,7 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 {
 	this->smgr = smgr;
 
-	if(BSETTING("NOCACHE"))
+	if(BSETTING("NOCACHE", false))
 	{
 		LOG("Cache disabled via command line switch");
 		return;
@@ -1112,7 +1112,7 @@ void CacheSystem::writeStreamCache()
 	for (FileInfoList::iterator itDir = dirs->begin(); itDir!= dirs->end(); ++itDir)
 	{
 		if (itDir->filename == String(".svn")) continue;
-		String dirName = SSETTING("Streams Path") + (*itDir).filename;
+		String dirName = SSETTING("Streams Path", "") + (*itDir).filename;
 		String cacheFilename = dirName + dirsep + "stream.cache";
 		FILE *f = fopen(cacheFilename.c_str(), "w");
 
@@ -2096,7 +2096,7 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem,i++)
 	{
 		if(!listitem->archive) continue;
-		String dirname = listitem->archive->getName() + SSETTING("dirsep") + listitem->filename;
+		String dirname = listitem->archive->getName() + SSETTING("dirsep", "\\") + listitem->filename;
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
@@ -2173,7 +2173,7 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem, i++)
 	{
 		if(!listitem->archive) continue;
-		String dirname = listitem->archive->getName() + SSETTING("dirsep") + listitem->filename;
+		String dirname = listitem->archive->getName() + SSETTING("dirsep", "\\") + listitem->filename;
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));

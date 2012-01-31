@@ -321,7 +321,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 			LOG("you need to open a map before trying to save or load its scenery.");
 			return;
 		}
-		String fname = SSETTING("Cache Path") + mefl->loadedTerrain + ".rorscene";
+		String fname = SSETTING("Cache Path", "") + mefl->loadedTerrain + ".rorscene";
 
 		Savegame s;
 		if(miname == _L("Save Scenery"))

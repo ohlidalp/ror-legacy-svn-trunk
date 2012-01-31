@@ -209,7 +209,7 @@ bool Network::connect()
 	socket.set_timeout(0, 0);
 
 	//send credentials
-	nickname = SSETTING("Nickname");
+	nickname = SSETTING("Nickname", "Anonymous");
 	String nick = nickname;
 	StringUtil::toLowerCase(nick);
 	if (nick==String("pricorde") || nick==String("thomas") || nick == String("tdev"))
@@ -220,7 +220,7 @@ bool Network::connect()
 
 	char pwbuffer[250];
 	memset(pwbuffer, 0, 250);
-	strncpy(pwbuffer, SSETTING("Server password").c_str(), 250);
+	strncpy(pwbuffer, SSETTING("Server password", "").c_str(), 250);
 
 	char sha1pwresult[250];
 	memset(sha1pwresult, 0, 250);
@@ -232,7 +232,7 @@ bool Network::connect()
 		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
 	}
 
-	String usertokenhash = SSETTING("User Token Hash");
+	String usertokenhash = SSETTING("User Token Hash", "");
 
 	// construct user credentials
 	// beware of the wchar_t converted to UTF8 for networking
@@ -244,9 +244,9 @@ bool Network::connect()
 	strncpy(c.usertoken, usertokenhash.c_str(), 40);
 	strncpy(c.clientversion, ROR_VERSION_STRING, strnlen(ROR_VERSION_STRING, 25));
 	strcpy(c.clientname, "RoR");
-	String lang = SSETTING("Language Short");
+	String lang = SSETTING("Language Short", "en");
 	strncpy(c.language, lang.c_str(), std::min<int>((int)lang.size(), 10));
-	String guid = SSETTING("GUID");
+	String guid = SSETTING("GUID", "");
 	strncpy(c.clientGUID, guid.c_str(), std::min<int>((int)guid.size(), 10));
 	strcpy(c.sessiontype, "normal");
 	if (sendmessage(&socket, MSG2_USER_INFO, 0, sizeof(user_info_t), (char*)&c))
@@ -499,7 +499,7 @@ void Network::receivethreadstart()
 	header_t header;
 
 	char *buffer=(char*)malloc(MAX_MESSAGE_LENGTH);
-	bool autoDl = (BSETTING("AutoDownload"));
+	bool autoDl = (BSETTING("AutoDownload", false));
 	std::deque < stream_reg_t > streamCreationResults;
 	LOG("Receivethread starting");
 	// unlimited timeout, important!

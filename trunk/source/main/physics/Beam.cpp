@@ -484,7 +484,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cabFadeTime=0.3;
 
 	// skidmark stuff
-	useSkidmarks = BSETTING("Skidmarks");
+	useSkidmarks = BSETTING("Skidmarks", false);
 
 	// always init skidmarks with 0
 	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
@@ -503,7 +503,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 
-	heathaze=BSETTING("HeatHaze");
+	heathaze=BSETTING("HeatHaze", false);
 	if(heathaze && disable_smoke)
 		// no heathaze without smoke!
 		heathaze=false;
@@ -512,7 +512,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	enable_wheel2=true; // since 0.38, enabled wheels2 by default // BSETTING("Enhanced wheels");
 	if (networked || networking) enable_wheel2=false;
 
-	cparticle_enabled=BSETTING("Particles");
+	cparticle_enabled=BSETTING("Particles", true);
 	if(strnlen(fname,200) > 0)
 	{
 		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
@@ -530,20 +530,16 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	changedCamera();
 
 	// setup replay mode
-	bool enablereplay = BSETTING("Replay mode");
+	bool enablereplay = BSETTING("Replay mode", false);
 	replay=0;
 	replaylen = 10000;
 	if(enablereplay && state != NETWORKED && !networking)
 	{
-		String rpl = SSETTING("Replay length");
-		if(!rpl.empty())
-			replaylen = StringConverter::parseInt(rpl);
+		replaylen = ISETTING("Replay length", 10000);
 		replay = new Replay(this, replaylen);
 
-		rpl = SSETTING("Replay Steps per second");
-		int steps = 240;
-		if(!rpl.empty())
-			steps = StringConverter::parseInt(rpl);
+		int steps = ISETTING("Replay Steps per second", 240);
+
 		if(steps <= 0)
 			replayPrecision = 0.0f;
 		else
@@ -552,7 +548,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	// add storage
 	posStorage=0;
-	bool enablePosStor = BSETTING("Position Storage");
+	bool enablePosStor = BSETTING("Position Storage", false);
 	if(enablePosStor)
 	{
 		posStorage = new PositionStorage(free_node, 10);
@@ -587,8 +583,11 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	addPressure(0.0);
 	// thread start
 	// get parameters
-	if (SSETTING("Threads")=="1 (Single Core CPU)")	thread_mode=THREAD_SINGLE;
-	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")		thread_mode=THREAD_MULTI;
+	String threadMode = SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)");
+	if (threadMode == "1 (Single Core CPU)")
+		thread_mode = THREAD_SINGLE;
+	if (threadMode == "2 (Hyper-Threading or Dual core CPU)")
+		thread_mode = THREAD_MULTI;
 
 	checkBeamMaterial();
 
@@ -1187,7 +1186,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 {
 	BES_GFX_START(BES_GFX_calc_masses2);
 
-	bool debugMass=BSETTING("Debug Truck Mass");
+	bool debugMass=BSETTING("Debug Truck Mass", false);
 
 
 	int i;
@@ -5173,7 +5172,7 @@ void Beam::deleteNetTruck()
 void *threadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if(BSETTING("NoCrashRpt", true))
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;

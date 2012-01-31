@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
 	} catch(Ogre::Exception& e)
 	{
 
- 		if(BSETTING("REPO_MODE"))
+ 		if(BSETTING("REPO_MODE", false))
 		{
 			LOG("FATAL ERROR, EXITING: "+e.getFullDescription());
 			std::exit(1);

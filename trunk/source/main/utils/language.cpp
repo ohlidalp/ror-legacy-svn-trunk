@@ -74,12 +74,12 @@ void LanguageEngine::setup()
 	// also it must happen after loading all basic resources!
 	reader = new moFileLib::moFileReader();
 
-	String language = SSETTING("Language");
-	String language_short = SSETTING("Language Short").substr(0, 2); // only first two characters are important
+	String language = SSETTING("Language", "English");
+	String language_short = SSETTING("Language Short", "en").substr(0, 2); // only first two characters are important
 
 	// Load a .mo-File.
 	LOG("*** Loading Language ***");
-	String langfile = SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES/ror.mo");
+	String langfile = SSETTING("Program Path", "") + String("languages/") + language_short + String("/LC_MESSAGES/ror.mo");
 	if (reader->ReadFile(langfile.c_str()) != moFileLib::moFileReader::EC_SUCCESS )
 	{
 		LOG("* error loading language file " + langfile);
@@ -88,7 +88,7 @@ void LanguageEngine::setup()
 	working=true;
 
 	// add resource path
-	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path") + String("languages/") + language_short + String("/LC_MESSAGES"), "FileSystem", "LanguageFolder");
+	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("Program Path", "") + String("languages/") + language_short + String("/LC_MESSAGES"), "FileSystem", "LanguageFolder");
 
 	ResourceGroupManager::getSingleton().initialiseResourceGroup("LanguageFolder");
 

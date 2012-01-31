@@ -57,7 +57,7 @@ void RigsOfRods::go(void)
 	stateManager = new AppStateManager();
 	new ContentManager();
 
-	if(!BSETTING("REPO_MODE"))
+	if(!BSETTING("REPO_MODE", false))
 	{
 		// dummy state to display the progress bar
 		BootstrapLoadingState::create(stateManager,  "BootstrapLoadingState");
@@ -75,9 +75,7 @@ void RigsOfRods::go(void)
 	// GameState = default state, classic
 	// LobbyState = experimental Multiplayer Lobby
 
-	String startState = SSETTING("StartState");
-	if(startState.empty())
-		startState = "GameState";
+	String startState = SSETTING("StartState", "GameState");
 
 	GameState::create(stateManager,  "GameState");
 	LobbyState::create(stateManager, "LobbyState");
