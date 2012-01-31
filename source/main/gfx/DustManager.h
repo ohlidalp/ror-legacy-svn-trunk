@@ -24,19 +24,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define GUI_DUSTMANAGER_H__
 
 #include "RoRPrerequisites.h"
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "OgrePrerequisites.h"
-#include "RoRPrerequisites.h"
+
+#include "Singleton.h"
 
 
 
-class DustManager : public Ogre::Singleton< DustManager >
+class DustManager : public RoRSingletonNoCreation < DustManager >
 {
 public:
 	DustManager(Ogre::SceneManager *mSceneMgr);
 	~DustManager();
-	static DustManager& getSingleton(void);
-	static DustManager* getSingletonPtr(void);
 
 	DustPool *getGroundModelDustPool(ground_model_t *g);
 	

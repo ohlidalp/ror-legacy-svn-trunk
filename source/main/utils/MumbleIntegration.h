@@ -24,11 +24,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define MUMBLEINTEGRATION
 
 #include "RoRPrerequisites.h"
-#include <OgreSingleton.h>
+#include "Singleton.h"
 
 #include <windows.h>
 
-class MumbleIntegration : public Ogre::Singleton<MumbleIntegration>
+class MumbleIntegration : public RoRSingleton<MumbleIntegration>
 {
 public:
 	MumbleIntegration();

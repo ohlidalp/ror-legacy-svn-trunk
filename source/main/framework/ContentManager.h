@@ -22,11 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CONTENTMANAGER_H_
 
 #include "RoRPrerequisites.h"
-#include <OgreSingleton.h>
+#include "Singleton.h"
 
 #include <OgreResourceGroupManager.h>
 
-class ContentManager : public Ogre::Singleton<ContentManager>, public Ogre::ResourceLoadingListener
+class ContentManager : public RoRSingleton<ContentManager>, public Ogre::ResourceLoadingListener
 {
 public:
 	ContentManager();

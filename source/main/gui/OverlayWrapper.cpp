@@ -40,12 +40,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Ogre;
 
-
-template<> OverlayWrapper* Ogre::Singleton<OverlayWrapper>::SINGLETON_MEMBER = 0;
-
 // OverlayWrapper class
 OverlayWrapper::OverlayWrapper(Ogre::RenderWindow* win) : win(win)
 {
+	setSingleton(this);
 	init();
 	mTimeUntilNextToggle=0;
 }

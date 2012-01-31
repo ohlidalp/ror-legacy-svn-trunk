@@ -29,10 +29,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> SceneMouse *Singleton < SceneMouse >::SINGLETON_MEMBER = 0;
-
-SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : scm(scm), rfl(rfl)
+SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) : 
+	  scm(scm)
+	, rfl(rfl)
 {
+	setSingleton(this);
 	mouseGrabForce = 30000.0f;
 	grab_truck     = NULL;
 	

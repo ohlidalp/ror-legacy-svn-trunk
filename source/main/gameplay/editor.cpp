@@ -38,7 +38,7 @@ Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 	{
 		LOG("Can not open editr.cfg file: "+editorcfg);
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Can not find editor.cfg"), "error.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Can not find editor.cfg"), "error.png");
 #endif //USE_MYGUI
 		return;
 	};

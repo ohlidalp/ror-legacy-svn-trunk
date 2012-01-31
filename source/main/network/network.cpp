@@ -641,7 +641,7 @@ void Network::receivethreadstart()
 
 				// now join the chat and so forth
 #ifdef USE_MYGUI
-				Console::getInstance().setNetwork(this);
+				Console::getSingleton().setNetwork(this);
 #endif // USE_MYGUI
 
 			} else

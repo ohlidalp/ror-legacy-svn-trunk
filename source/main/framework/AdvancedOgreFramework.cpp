@@ -13,9 +13,6 @@
 
 using namespace Ogre;
 
-//|||||||||||||||||||||||||||||||||||||||||||||||
-
-template<> OgreFramework* Ogre::Singleton<OgreFramework>::SINGLETON_MEMBER = 0;
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 

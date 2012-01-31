@@ -26,20 +26,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include <MyGUI.h>
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "OgrePrerequisites.h"
 
 #include "BeamData.h"
 
 #include <pthread.h>
 
-class GUI_MainMenu : public Ogre::Singleton< GUI_MainMenu >
+class GUI_MainMenu : public RoRSingletonNoCreation< GUI_MainMenu >
 {
 public:
 	GUI_MainMenu(RoRFrameListener *efl);
 	~GUI_MainMenu();
-	static GUI_MainMenu& getSingleton(void);
-	static GUI_MainMenu* getSingletonPtr(void);
 
 	bool getVisible();
 	void setVisible(bool value);

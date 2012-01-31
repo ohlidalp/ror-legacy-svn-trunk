@@ -42,15 +42,6 @@ using namespace Ogre;
 #define strnlen(str,len) strlen(str)
 #endif
 
-// singleton pattern
-LanguageEngine* LanguageEngine::myInstance = 0;
-
-LanguageEngine &LanguageEngine::Instance()
-{
-	if (myInstance == 0)
-		myInstance = new LanguageEngine;
-	return *myInstance;
-}
 
 LanguageEngine::LanguageEngine() : working(false), myguiConfigFilename("MyGUI_FontsEnglish.xml")
 {

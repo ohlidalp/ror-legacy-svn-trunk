@@ -51,13 +51,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #error You need at least Ogre version 1.7.1, older versions are not supported
 #endif
 
-// compatibility for Ogre Singleton
-#if OGRE_VERSION_MINOR < 8
-	#define SINGLETON_MEMBER ms_Singleton
-#else
-	#define SINGLETON_MEMBER msSingleton
-#endif
-
 // version information now residing in RoRVersion.h
 
 // some shortcuts for us

@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "pthread.h"
 #ifdef USE_SOCKETW
 #include "SocketW.h"
@@ -36,14 +36,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "StreamableFactoryInterface.h"
 
-class NetworkStreamManager : public Ogre::Singleton< NetworkStreamManager >
+class NetworkStreamManager : public RoRSingleton< NetworkStreamManager >
 {
 	friend class Network;
 public:
 	NetworkStreamManager();
 	~NetworkStreamManager();
-	static NetworkStreamManager& getSingleton(void);
-	static NetworkStreamManager* getSingletonPtr(void);
 	
 	void addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size=0);
 	void addRemoteStream(Streamable *stream, int source=-1, int streamid=-1);

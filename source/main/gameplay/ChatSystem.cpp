@@ -41,7 +41,7 @@ using namespace Ogre;
 ///////////////////////////////////
 // ChatSystemFactory
 
-template<> ChatSystemFactory *StreamableFactory < ChatSystemFactory, ChatSystem >::SINGLETON_MEMBER = 0;
+template<> ChatSystemFactory *StreamableFactory < ChatSystemFactory, ChatSystem >::_instance = 0;
 
 ChatSystemFactory::ChatSystemFactory(Network *net) : net(net)
 {
@@ -132,7 +132,7 @@ ChatSystem::ChatSystem(Network *net, int source, unsigned int streamid, int colo
 
 #ifdef USE_MYGUI
 		String msg = username + commandColour + _L(" joined the game");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_JOIN_GAME, msg, "user_add.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_JOIN_GAME, msg, "user_add.png");
 #endif //USE_MYGUI
 	}
 #endif //SOCKETW
@@ -144,7 +144,7 @@ ChatSystem::~ChatSystem()
 	if(remote)
 	{
 		String msg = username + commandColour + _L(" left the game");
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LEAVE_GAME, msg, "user_delete.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LEAVE_GAME, msg, "user_delete.png");
 	}
 #endif //USE_MYGUI
 }
@@ -175,16 +175,16 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		{
 			// server said something
 			UTFString msg = tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_gray.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_gray.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + normalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
 		} else if(source == (int)net->getUID())
 		{
 			// our message bounced back :D
 			UTFString msg = net->getNickname(true) + normalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
 		}
 	}
 	else if(type == MSG2_UTF_PRIVCHAT)
@@ -194,11 +194,11 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		{
 			// server said something
 			String msg = whisperColour + _L(" [whispered] ") + normalColour +  tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
 		} else if(source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + _L(" [whispered] ") + normalColour + ": " + tryConvertUTF(buffer);
-			Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
 		}
 	}
 #endif //USE_MYGUI
@@ -248,7 +248,7 @@ void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString
 	if(target_uid < 0)
 	{
 #ifdef USE_MYGUI
-		Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
 #endif // USE_MYGUI
 		return;
 	}
@@ -284,7 +284,7 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 	// add local visual
 #ifdef USE_MYGUI
 	UTFString nmsg = net->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
+	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
 #endif // USE_MYGUI
 #endif // USE_SOCKETW
 }

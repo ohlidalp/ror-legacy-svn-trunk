@@ -35,7 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgrePrerequisites.h>
 #include <OgreUTFString.h>
 #include <map>
-
+#include "Singleton.h"
 
 #ifdef USE_OIS_G27
 namespace OIS
@@ -48,7 +48,7 @@ class Win32LogitechLEDs;
 
 //class RoRFrameListener;
 // some shortcut
-#define INPUTENGINE InputEngine::Instance()
+#define INPUTENGINE InputEngine::getSingleton()
 
 // config filename
 #define CONFIGFILENAME "input.map"
@@ -415,12 +415,13 @@ typedef struct
 } event_trigger_t;
 
 class InputEngine : 
+	public RoRSingleton<InputEngine>,
 	public OIS::MouseListener, 
 	public OIS::KeyListener, 
 	public OIS::JoyStickListener
 {
+	friend class RoRSingleton<InputEngine>;
 public:
-	static InputEngine & Instance();
 	void Capture();
 
 	enum {ET_ANY, ET_DIGITAL, ET_ANALOG};
@@ -431,7 +432,6 @@ public:
 	bool isEventAnalog(int eventID);
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);
 	float getEventBounceTime(int eventID);
-	static bool instanceExists() ;
 	// we need to use hwnd here, as we are also using this in the configurator
 	bool setup(Ogre::RenderWindow* rw, Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
 	Ogre::String getKeyForCommand(int eventID);

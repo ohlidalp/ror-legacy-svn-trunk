@@ -26,16 +26,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 #include "CaelumPrerequisites.h"
-#include "OgreSingleton.h"
+#include "Singleton.h"
 
-class SkyManager : public Ogre::Singleton< SkyManager >
+class SkyManager : public RoRSingleton< SkyManager >
 {
 public:
 	SkyManager();
 	~SkyManager();
-
-	static SkyManager& getSingleton(void);
-	static SkyManager* getSingletonPtr(void);
 
 	void init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
 

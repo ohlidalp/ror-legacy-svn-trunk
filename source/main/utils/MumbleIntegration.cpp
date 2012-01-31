@@ -42,8 +42,6 @@ int convertCharSet(wchar_t *wcstring, const char *s)
 #endif //WIN32
 }
 
-template<> MumbleIntegration * Singleton< MumbleIntegration >::SINGLETON_MEMBER = 0;
-
 MumbleIntegration::MumbleIntegration() : lm(NULL)
 {
 	initMumble();

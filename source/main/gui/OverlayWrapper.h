@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "OgrePrerequisites.h"
-#include "OgreSingleton.h"
+#include "Singleton.h"
 
 #include <map>
 
@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTextAreaOverlayElement.h"
 #include <OgrePanelOverlayElement.h>
 
-#include <OgreSingleton.h>
+#include "Singleton.h"
 #include <OIS.h>
 
 struct loadedOverlay_t
@@ -43,7 +43,7 @@ struct loadedOverlay_t
 	Ogre::Overlay *o;
 };
 
-class OverlayWrapper : public Ogre::Singleton<OverlayWrapper>
+class OverlayWrapper : public RoRSingletonNoCreation<OverlayWrapper>
 {
 public:
 	OverlayWrapper(Ogre::RenderWindow* win);

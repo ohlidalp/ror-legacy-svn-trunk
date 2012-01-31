@@ -25,12 +25,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include <OgrePrerequisites.h>
-#include <OgreSingleton.h>
+#include "Singleton.h"
 #include <OIS.h>
 
 
-class SceneMouse : public Ogre::Singleton < SceneMouse >
+class SceneMouse : public RoRSingletonNoCreation < SceneMouse >
 {
+	friend class RoRSingletonNoCreation<SceneMouse>;
 public:
 	SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl);
 	~SceneMouse();

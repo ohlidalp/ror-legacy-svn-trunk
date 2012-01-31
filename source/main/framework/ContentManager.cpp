@@ -41,8 +41,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 using namespace std;
 
-template<> ContentManager* Ogre::Singleton<ContentManager>::SINGLETON_MEMBER = 0;
-
 ContentManager::ContentManager()
 {
 }
@@ -72,7 +70,7 @@ void ContentManager::loadMainResource(String name, String group)
 
 void ContentManager::initBootstrap(void)
 {
-	LanguageEngine::Instance().setup();
+	LanguageEngine::getSingleton().setup();
 
 	LOG("Loading Bootstrap");
 	loadMainResource("OgreCore", "Bootstrap");
@@ -260,7 +258,7 @@ bool ContentManager::init(void)
 		LOG("catched error while initializing Content Resource groups: " + e.getFullDescription());
 	}
 
-	LanguageEngine::Instance().postSetup();
+	LanguageEngine::getSingleton().postSetup();
 
 	return true;
 }

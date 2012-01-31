@@ -64,8 +64,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //using namespace std;
 //using namespace AngelScript;
 
-template<> ScriptEngine *Ogre::Singleton<ScriptEngine>::SINGLETON_MEMBER=0;
-
 const char *ScriptEngine::moduleName = "RoRScript";
 
 
@@ -78,8 +76,21 @@ void logString(const std::string &str)
 
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : mefl(efl), coll(_coll), engine(0), context(0), frameStepFunctionPtr(-1), wheelEventFunctionPtr(-1), eventCallbackFunctionPtr(-1), defaultEventCallbackFunctionPtr(-1), eventMask(0), scriptName(), scriptHash(), scriptLog(0)
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : 
+	  mefl(efl)
+	, coll(_coll)
+	, engine(0)
+	, context(0)
+	, frameStepFunctionPtr(-1)
+	, wheelEventFunctionPtr(-1)
+	, eventCallbackFunctionPtr(-1)
+	, defaultEventCallbackFunctionPtr(-1)
+	, eventMask(0)
+	, scriptName()
+	, scriptHash()
+	, scriptLog(0)
 {
+	setSingleton(this);
 	callbacks["on_terrain_loading"] = std::vector<int>();
 	callbacks["frameStep"] = std::vector<int>();
 	callbacks["wheelEvents"] = std::vector<int>();
@@ -501,7 +512,7 @@ void ScriptEngine::init()
 	// now the global instances
 	GameScript *gamescript = new GameScript(this, mefl);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); MYASSERT(result>=0);
-	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::Instance()); MYASSERT(result>=0);
+	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::getSingleton()); MYASSERT(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); MYASSERT(result>=0);
 
 	SLOG("Type registrations done. If you see no error above everything should be working");

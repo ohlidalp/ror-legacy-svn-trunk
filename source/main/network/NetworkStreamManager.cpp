@@ -42,16 +42,6 @@ NetworkStreamManager::~NetworkStreamManager()
 {
 }
 
-template<> NetworkStreamManager * Singleton< NetworkStreamManager >::SINGLETON_MEMBER = 0;
-NetworkStreamManager* NetworkStreamManager::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-NetworkStreamManager& NetworkStreamManager::getSingleton(void)
-{
-	MYASSERT( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-
 void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t *reg, unsigned int size)
 {
 #ifdef USE_SOCKETW

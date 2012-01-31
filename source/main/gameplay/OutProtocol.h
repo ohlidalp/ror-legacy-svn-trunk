@@ -24,13 +24,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define OUTPROTCOL_H__
 
 #include "RoRPrerequisites.h"
-#include <OgreSingleton.h>
+#include "Singleton.h"
 
 #ifdef USE_SOCKETW
 #include "SocketW.h"
 #endif //USE_SOCKETW
 
-class OutProtocol : public Ogre::Singleton< OutProtocol >
+class OutProtocol : public RoRSingleton< OutProtocol >
 {
 public:
 	OutProtocol(void);

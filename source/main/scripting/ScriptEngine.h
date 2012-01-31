@@ -51,7 +51,7 @@ class GameScript;
 /**
  *  @brief This class represents the angelscript scripting interface. It can load and execute scripts.
  */
-class ScriptEngine : public Ogre::Singleton<ScriptEngine>, public Ogre::LogListener
+class ScriptEngine : public RoRSingletonNoCreation<ScriptEngine>, public Ogre::LogListener
 {
 	friend class GameScript;
 public:

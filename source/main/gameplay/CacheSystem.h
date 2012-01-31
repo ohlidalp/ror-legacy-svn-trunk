@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "sha1.h"
+#include "Singleton.h"
 
 #include <Ogre.h>
 
@@ -35,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // 60*60*24 = one day
 #define CACHE_FILE_FRESHNESS 86400
 
-#define CACHE CacheSystem::Instance()
+#define CACHE CacheSystem::getSingleton()
 
 using namespace Ogre;
 
@@ -185,11 +186,10 @@ public:
 	}
 };
 
-class CacheSystem
+class CacheSystem : public RoRSingleton<CacheSystem>
 {
-public:
-	static CacheSystem &Instance();
-	
+	friend class RoRSingleton<CacheSystem>;
+public:	
 	void startup(SceneManager *smgr, bool forcecheck=false);
 	void loadAllZips();
 	

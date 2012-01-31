@@ -37,17 +37,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> GUIManager * Singleton< GUIManager >::SINGLETON_MEMBER = 0;
-
-GUIManager* GUIManager::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-GUIManager& GUIManager::getSingleton(void)
-{
-	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-
 GUIManager::GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win) :
 	mGUI(nullptr),
 	mPlatform(nullptr),
@@ -57,6 +46,7 @@ GUIManager::GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWi
 	mExit(false),
 	mResourceFileName("MyGUI_Core.xml")
 {
+	setSingleton(this);
 	create();
 }
 
@@ -104,7 +94,7 @@ void GUIManager::createGui()
 	// then load the actual config
 	MyGUI::ResourceManager::getInstance().load(mResourceFileName);
 
-	MyGUI::ResourceManager::getInstance().load(LanguageEngine::Instance().getMyGUIFontConfigFilename());
+	MyGUI::ResourceManager::getInstance().load(LanguageEngine::getSingleton().getMyGUIFontConfigFilename());
 
 	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)
 	MyGUI::InputManager::getInstance().injectMouseMove(mWindow->getWidth()*0.5f, mWindow->getHeight()*0.5f, 0);

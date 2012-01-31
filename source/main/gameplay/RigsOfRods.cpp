@@ -29,9 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-template<> RigsOfRods* Ogre::Singleton<RigsOfRods>::SINGLETON_MEMBER = 0;
-
-
 RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded) : 
 	stateManager(0),
 	hwnd(hwnd),

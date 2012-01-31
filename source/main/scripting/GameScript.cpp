@@ -194,14 +194,14 @@ void GameScript::registerForEvent(int eventValue)
 void GameScript::flashMessage(std::string &txt, float time, float charHeight)
 {
 #ifdef USE_MYGUI
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
+	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
 #endif // USE_MYGUI
 }
 
 void GameScript::message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible)
 {
 #ifdef USE_MYGUI
-	Console::getInstance().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, icon, timeMilliseconds, forceVisible);
+	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, icon, timeMilliseconds, forceVisible);
 #endif // USE_MYGUI
 }
 

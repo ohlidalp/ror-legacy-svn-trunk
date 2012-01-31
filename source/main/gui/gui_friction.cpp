@@ -31,16 +31,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "language.h"
 
-template<> GUI_Friction * Singleton< GUI_Friction >::SINGLETON_MEMBER = 0;
-GUI_Friction* GUI_Friction::getSingletonPtr(void)
-{
-	return SINGLETON_MEMBER;
-}
-GUI_Friction& GUI_Friction::getSingleton(void)
-{
-	assert( SINGLETON_MEMBER );  return ( *SINGLETON_MEMBER );
-}
-
 GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 {
 	int x=0, y=0, by=0;
@@ -363,6 +353,11 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 
 	win->eventWindowButtonPressed += MyGUI::newDelegate(this, &GUI_Friction::notifyWindowButtonPressed);
 	win->setVisible(false);
+}
+
+GUI_Friction::~GUI_Friction()
+{
+
 }
 
 void GUI_Friction::setShaded(bool value)

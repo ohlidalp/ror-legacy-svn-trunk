@@ -27,17 +27,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 #include <MyGUI.h>
-#include "OgreSingleton.h"
+#include "Singleton.h"
 #include "OgrePrerequisites.h"
 #include "Beam.h"
 
-class GUI_Multiplayer : public Ogre::Singleton< GUI_Multiplayer >
+class GUI_Multiplayer : public RoRSingletonNoCreation< GUI_Multiplayer >
 {
 public:
 	GUI_Multiplayer(Network *net, Ogre::Camera *mCamera);
 	~GUI_Multiplayer();
-	static GUI_Multiplayer& getSingleton(void);
-	static GUI_Multiplayer* getSingletonPtr(void);
 
 	int update();
 	void setVisible(bool value);
