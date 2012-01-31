@@ -77,7 +77,7 @@ int free_tb=0;
 Beam::~Beam()
 {
 	// TODO: IMPROVE below: delete/destroy prop entities, etc
-	
+
 	deleting = true;
 
 	// hide all meshes, prevents deleting stuff while drawing
@@ -415,7 +415,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if (networked) state=NETWORKED; //required for proper loading
 	sleepcount=0;
 	currentcamera=-1; // -1 = external
-	
+
 	requires_wheel_contact=false;
 	subisback[0]=0;
 	canwork=1;
@@ -603,7 +603,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	threadbeam[free_tb]=this;
 	free_tb++;
-	
+
 	// start threads
 	if (thread_mode > THREAD_SINGLE)
 	{
@@ -613,7 +613,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	}
 
-	// wait for the thread(s) to be ready	
+	// wait for the thread(s) to be ready
 	BEAMLOCK();
 
 	// all finished? so start network stuff
@@ -639,7 +639,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	{
 		sendStreamSetup();
 	}
-	
+
 	//if(networked)
 	//	showSkeleton(true, true);
 
@@ -918,7 +918,7 @@ void Beam::pushNetwork(char* data, int size)
 {
 	BES_GFX_START(BES_GFX_pushNetwork);
 	if(!oob3) return;
-	
+
 	// check if the size of the data matches to what we expected
 	if ((unsigned int)size == (netbuffersize + sizeof(oob_t)))
 	{
@@ -950,20 +950,20 @@ void Beam::pushNetwork(char* data, int size)
 	}
 	//okay, the big switch
 	MUTEX_LOCK(&net_mutex);
-	
+
 	// and the buffer switching to have linear smoothing
 	oob_t *ot;
 	ot   = oob1;
 	oob1 = oob2;
 	oob2 = oob3;
 	oob3 = ot;
-	
+
 	char *ft;
 	ft    = netb1;
 	netb1 = netb2;
 	netb2 = netb3;
 	netb3 = ft;
-	
+
 	for (int i =0 ; i < free_wheel; i++)
 	{
 		float rp;
@@ -1096,7 +1096,7 @@ void Beam::calcNetwork()
 
 	brake = netbrake;
 
-	if (engine) 
+	if (engine)
 	{
 		int automode = -1;
 		if ((flagmask&NETMASK_ENGINE_MODE_AUTOMATIC)!=0)          automode = AUTOMATIC;
@@ -1104,7 +1104,7 @@ void Beam::calcNetwork()
 		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL)!=0)        automode = MANUAL;
 		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_STICK)!=0)  automode = MANUAL_STICK;
 		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_RANGES)!=0) automode = MANUAL_RANGES;
-		
+
 		bool contact = ((flagmask&NETMASK_ENGINE_CONT) != 0);
 		bool running = ((flagmask&NETMASK_ENGINE_RUN)  != 0);
 
@@ -1125,7 +1125,7 @@ void Beam::calcNetwork()
 	antilockbrake   = flagmask & NETMASK_ALB_ACTIVE;
 	tractioncontrol = flagmask & NETMASK_TC_ACTIVE;
 	parkingbrake    = flagmask & NETMASK_PBRAKE;
-		
+
 
 	blinktype btype = BLINK_NONE;
 	if ((flagmask&NETMASK_BLINK_LEFT)!=0)
@@ -1970,7 +1970,7 @@ bool Beam::frameStep(Real dt)
 
 	// TODO: move this to the correct spot
 	// update all dashboards
-	
+
 #ifdef USE_MYGUI
 	updateDashBoards(dt);
 	if(dash)
@@ -2274,7 +2274,7 @@ void Beam::sendStreamData()
 
 		// copy data into the buffer
 		int i;
-		
+
 		// reference node first
 		Vector3 &refpos = nodes[0].AbsPosition;
 		send_nodes[0]   = refpos.x;
@@ -2291,7 +2291,7 @@ void Beam::sendStreamData()
 			sbuf[(i - 1) * 3 + 0] = (short int)(relpos.x * 300.0f);
 			sbuf[(i - 1) * 3 + 1] = (short int)(relpos.y * 300.0f);
 			sbuf[(i - 1) * 3 + 2] = (short int)(relpos.z * 300.0f);
-			
+
 			ptr += sizeof(short int) * 3; // increase pointer
 		}
 
@@ -2889,7 +2889,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
 					{
 						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
-						{									
+						{
 							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 9)
 							{
 								LOG(" Trigger enabled. Inverted Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
@@ -2932,7 +2932,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 								}
 							}
 						}
-					} 
+					}
 				} else
 				{ // just a trigger, check high/low boundary and set action
 					if (difftoBeamL > beams[i].longbound*beams[i].L) // trigger past longbound
@@ -3004,7 +3004,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 					for (int scount = i + 1; scount <= i + beams[i].shock->trigger_cmdlong; scount++)   // (cylce blockerbeamID + 1) to (blockerbeamID + beams to release)
 					{
 						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
-						{									
+						{
 							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 6)
 							{
 								LOG(" Trigger enabled. Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
@@ -3698,7 +3698,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		}
 		// apply blinking
 		isvisible = isvisible && flares[i].blinkdelay_state;
-		
+
 		if     (flares[i].type == 'l' && blinkingtype == BLINK_LEFT)  left_blink_on  = isvisible;
 		else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT) right_blink_on = isvisible;
 		else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)  warn_blink_on  = isvisible;
@@ -4503,7 +4503,7 @@ void Beam::tieToggle(int group)
 			// only handle ties with correct group
 			if (group != -1 && (it->group != -1 && it->group != group))
 			continue;
-			
+
 			if (!it->tied)
 			{
 				// tie is unlocked and should get locked, search new remote ropable to lock to
@@ -4696,7 +4696,7 @@ void Beam::hookToggle(int group, int mode, int node_number)
 			it->beam->p2truck  = 0;
 			it->beam->L        = (nodes[0].AbsPosition - it->hookNode->AbsPosition).length();
 			it->beam->disabled = true;
-		} 
+		}
 		// do this only for toggle or lock attempts, skip prelocked or locked nodes for performance
 		else if (mode != HOOK_UNLOCK && it->locked == UNLOCKED)
 		{
@@ -4927,7 +4927,7 @@ void Beam::setDebugOverlayState(int mode)
 			s->attachObject(b);
 			float f = 0.005f;
 			s->setScale(f,f,f);
-			
+
 			/*
 			// collision nodes
 			if(nodes[i].collRadius > 0.00001)
@@ -4979,7 +4979,7 @@ void Beam::setDebugOverlayState(int mode)
 		it->node->setVisible(nodesVisible);
 	for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		it->node->setVisible(beamsVisible);
-	
+
 	updateDebugOverlay();
 }
 
@@ -5350,7 +5350,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 		submesh_ground_model = collisions->getGroundModelByString(subMeshGroundModelName);
 		if(!submesh_ground_model) collisions->defaultgm;
 	}
-	
+
 
 
 	// print some truck memory stats
@@ -5444,7 +5444,7 @@ void Beam::updateAI(float dt)
 	n->setPosition(mAgentPosition);
 	n->setOrientation(mAgentOrientation);
 	*/
-	
+
 	Ogre::Vector3 mVectorToTarget       = TargetPosition - mAgentPosition; // A-B = B->A
 	mAgentPosition.normalise();
 	mAgentPosition.y=0;
@@ -5476,7 +5476,7 @@ void Beam::updateAI(float dt)
 
 	// accelerate / brake
 	float maxvelo = 1;
-	
+
 	maxvelo = std::max(0.2f, 1-fabs(mYaw)) * 50;
 
 
@@ -5530,7 +5530,7 @@ void Beam::updateDashBoards(float &dt)
 
 		int numGears = (int)engine->getNumGears();
 		dash->setInt(DD_ENGINE_NUM_GEAR, numGears);
-		
+
 		String str = String();
 
 		// now construct that classic gear string
@@ -5580,7 +5580,7 @@ void Beam::updateDashBoards(float &dt)
 	// brake
 	float dash_brake = brake / brakeforce;
 	dash->setFloat(DD_BRAKE, dash_brake);
-	
+
 	// speedo
 	float speed_kph = WheelSpeed * 3.6f; // m/s to mk/h
 	dash->setFloat(DD_ENGINE_SPEEDO_KPH, speed_kph);
@@ -5605,7 +5605,7 @@ void Beam::updateDashBoards(float &dt)
 		// TOFIX: certainly not working:
 		float roll_corr = - stabratio * 10.0f;
 		dash->setFloat(DD_ROLL_CORR, roll_corr);
-		
+
 		bool corr_active = (stabcommand > 0);
 		dash->setBool(DD_ROLL_CORR_ACTIVE, corr_active);
 	}
@@ -5629,7 +5629,7 @@ void Beam::updateDashBoards(float &dt)
 	// locked lamp
 	bool locked = isLocked();
 	dash->setBool(DD_LOCKED, locked);
-	
+
 	// low pressure lamp
 	bool low_pres = (canwork == 0);
 	dash->setBool(DD_LOW_PRESSURE, locked);
@@ -5705,7 +5705,7 @@ void Beam::updateDashBoards(float &dt)
 				dash->setFloat(DD_WATER_DEPTH, depth);
 			}
 		}
-		
+
 		// waterspeed
 		{
 			Vector3 hdir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
@@ -5730,7 +5730,7 @@ void Beam::updateDashBoards(float &dt)
 			dash->setFloat(DD_AEROENGINE_RPM_0 + i, pcent);
 		}
 	}
-	
+
 	// wings stuff, you dont need an aeroengine
 	if(free_wing)
 	{
@@ -5760,7 +5760,7 @@ void Beam::updateDashBoards(float &dt)
 			float knots = ground_speed_kt * sqrt(airdensity / 1.225f); //KIAS
 			dash->setFloat(DD_AIRSPEED, knots);
 		}
-		
+
 		// altimeter (height above ground)
 		{
 			float alt = nodes[0].AbsPosition.y * 1.1811f; // MAGIC
@@ -5774,7 +5774,7 @@ void Beam::updateDashBoards(float &dt)
 
 	dash->setFloat(DD_ODOMETER_TOTAL, odometerTotal);
 	dash->setFloat(DD_ODOMETER_USER, odometerUser);
-	
+
 
 	// TODO: compass value
 
@@ -5816,7 +5816,7 @@ void Beam::updateDashBoards(float &dt)
 		ow->hsihtexture->setTextureVScroll(-vdev*0.02);
 	}
 
-	// VVI - Vertical Velocity Indicator 
+	// VVI - Vertical Velocity Indicator
 	float vvi=curr_truck->nodes[0].Velocity.y*196.85;
 	if (vvi<1000.0 && vvi>-1000.0) angle=vvi*0.047;
 	if (vvi>1000.0 && vvi<6000.0) angle=47.0+(vvi-1000.0)*0.01175;
