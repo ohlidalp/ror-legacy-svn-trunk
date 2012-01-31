@@ -44,6 +44,7 @@ public:
 	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
 	void pauseAllSounds();
 	void resumeAllSounds();
+	void setMasterVolume(float v);
 
 	int getNumHardwareSources() { return m_hardware_sources_num; }
 
@@ -65,10 +66,10 @@ private:
 	bool loadWAVFile(Ogre::String filename, ALuint buffer);
 
 	// Active audio sources (hardware sources)
-	int		m_hardware_sources_num;						 // Total number of available hardware sources < MAX_HARDWARE_SOURCES
+	int		m_hardware_sources_num;                       // Total number of available hardware sources < MAX_HARDWARE_SOURCES
 	int		m_hardware_sources_in_use_count;
 	int		m_hardware_sources_map[MAX_HARDWARE_SOURCES]; // Stores the hardware index for each source. -1 = unmapped
-	ALuint	m_hardware_sources[MAX_HARDWARE_SOURCES];	 // This buffer contains valid AL handles up to m_hardware_sources_num
+	ALuint	m_hardware_sources[MAX_HARDWARE_SOURCES];     // This buffer contains valid AL handles up to m_hardware_sources_num
 
 	// Audio sources
 	int		m_audio_sources_in_use_count;
@@ -84,6 +85,8 @@ private:
 	Ogre::Vector3 camera_position;
 	ALCdevice *m_sound_device;
 	ALCcontext *m_sound_context;
+
+	float master_volume;
 };
 
 #endif // __SoundManager_H_
