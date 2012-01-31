@@ -427,7 +427,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 {
 	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
-	String n = _sender->getItemNameAt(_index);
+	Ogre::String n = _sender->getItemNameAt(_index);
 	if(!tab) return;
 	if(tabs.find(n) == tabs.end())
 		return;

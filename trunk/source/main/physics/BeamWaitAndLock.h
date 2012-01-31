@@ -23,6 +23,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 
+#include "BeamFactory.h"
+
+// helper macro that logs the locking place
+
+#ifdef FEAT_DEBUG_MUTEX
+# define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
+#else //!FEAT_DEBUG_MUTEX
+# define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
+//# define BEAMLOCK() 
+#endif //FEAT_DEBUG_MUTEX
+
+
 /**
  * @brief helper class that locks the vehicles array during its lifetime
  */
@@ -36,7 +48,16 @@ public:
 	{
 		BeamFactory::getSingleton()._waitForSyncAndLock();
 	}
-	
+
+	/**
+	 *	constructor with logging
+	 */
+	BeamWaitAndLock(const char *file, const char *function, int line)
+	{
+		LOG("Beam data locking in " + String(file) + " / " + String(function) + ":" + TOSTRING(line));
+		BeamFactory::getSingleton()._waitForSyncAndLock();
+	}
+
 	/**
 	 * destructor
 	 */
