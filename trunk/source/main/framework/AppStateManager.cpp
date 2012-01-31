@@ -131,7 +131,11 @@ void AppStateManager::start(AppState* state)
 		if (maxFPS && timeSinceLastFrame < minTimePerFrame)
 		{
 			// Sleep twice as long as we were too fast.
+#ifdef WIN32
 			Sleep((minTimePerFrame - timeSinceLastFrame) << 1);
+#else
+			sleep((minTimePerFrame - timeSinceLastFrame) << 1);
+#endif // WIN32
 		}
 
 		update(timeSinceLastFrame);

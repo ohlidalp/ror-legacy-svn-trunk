@@ -5477,7 +5477,7 @@ void Beam::updateAI(float dt)
 	// accelerate / brake
 	float maxvelo = 1;
 
-	maxvelo = std::max(0.2f, 1-fabs(mYaw)) * 50;
+	maxvelo = std::max<float>(0.2f, 1-fabs(mYaw)) * 50;
 
 
 	if(engine)
