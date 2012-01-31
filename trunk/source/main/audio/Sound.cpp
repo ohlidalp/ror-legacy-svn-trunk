@@ -103,43 +103,43 @@ bool Sound::getEnabled()
 
 void Sound::play()
 {
-	should_play=true;
+	should_play = true;
 	sound_mgr->recomputeSource(source_index, REASON_PLAY, 0, NULL);
 }
 
 void Sound::stop()
 {
-	should_play=false;
+	should_play = false;
 	sound_mgr->recomputeSource(source_index, REASON_STOP, 0, NULL);
 }
 
 void Sound::setGain(float gain)
 {
-	this->gain=gain;
+	this->gain = gain;
 	sound_mgr->recomputeSource(source_index, REASON_GAIN, gain, NULL);
 }
 
 void Sound::setLoop(bool loop)
 {
-	this->loop=loop;
+	this->loop = loop;
 	sound_mgr->recomputeSource(source_index, REASON_LOOP, (loop)?1.0:0.0, NULL);
 }
 
 void Sound::setPitch(float pitch)
 {
-	this->pitch=pitch;
+	this->pitch = pitch;
 	sound_mgr->recomputeSource(source_index, REASON_PTCH, pitch, NULL);
 }
 
 void Sound::setPosition(Ogre::Vector3 pos)
 {
-	this->position=pos;
+	this->position = pos;
 	sound_mgr->recomputeSource(source_index, REASON_POSN, 0, &pos);
 }
 
 void Sound::setVelocity(Ogre::Vector3 vel)
 {
-	this->velocity=vel;
+	this->velocity = vel;
 	sound_mgr->recomputeSource(source_index, REASON_VLCT, 0, &vel);
 }
 
