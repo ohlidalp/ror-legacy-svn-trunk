@@ -38,7 +38,7 @@ bool OgreFramework::configure(void)
 	// Show the configuration dialog and initialise the system
 	// You can skip this and use root.restoreConfig() to load configuration
 	// settings if you were sure there are valid ones saved in ogre.cfg
-	bool useogreconfig = SETTINGS.getBooleanSetting("USE_OGRE_CONFIG");
+	bool useogreconfig = BSETTING("USE_OGRE_CONFIG", false);
 	if(hwnd.empty())
 	{
 		//default mode
@@ -155,7 +155,7 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	// load RoR.cfg directly after setting up paths
 	try
 	{
-		SETTINGS.loadSettings(SSETTING("Config Root")+"RoR.cfg");
+		SETTINGS.loadSettings(SSETTING("Config Root", "")+"RoR.cfg");
 	} catch(Ogre::Exception& e)
 	{
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
@@ -164,9 +164,9 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	}
 
 
-	String logFilename   = SSETTING("Log Path") + name + Ogre::String(".log");
-	String pluginsConfig = SSETTING("plugins.cfg");
-	String ogreConfig    = SSETTING("ogre.cfg");
+	String logFilename   = SSETTING("Log Path", "") + name + Ogre::String(".log");
+	String pluginsConfig = SSETTING("plugins.cfg", "plugins.cfg");
+	String ogreConfig    = SSETTING("ogre.cfg", "ogre.cfg");
     m_pRoot = new Ogre::Root("", ogreConfig, logFilename);
 
 	// load plugins manually

@@ -152,7 +152,7 @@ void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::C
 		LOG("MaterialFunctionMapper: got invalid Entity in replaceSimpleMeshMaterials");
 		return;
 	}
-	if (!BSETTING("SimpleMaterials")) return;
+	if (!BSETTING("SimpleMaterials", false)) return;
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/simple");
 	if(mat.isNull()) return;

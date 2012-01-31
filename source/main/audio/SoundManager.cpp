@@ -44,15 +44,18 @@ SoundManager::SoundManager() :
 	, m_hardware_sources_in_use_count(0)
 	, master_volume(1.0f)
 {
-	if (SSETTING("3D Sound renderer") == "No sound") return;
+	String soundRenderer = SSETTING("3D Sound renderer", "Default");
+	if (soundRenderer == "No sound") return;
 
     char str[256];
-	if (SSETTING("3D Sound renderer") == "Default") str[0]=0;
-	else sprintf(str, "DirectSound Software on %s", SSETTING("3D Sound renderer").c_str());
+	if (soundRenderer == "Default")
+		str[0]=0;
+	else 
+		sprintf(str, "DirectSound Software on %s", soundRenderer.c_str());
 
 	LOG("Opening Device: '"+String(str)+"'");
 
-	master_volume = FSETTING("Sound Volume") / 100.0f;
+	master_volume = FSETTING("Sound Volume", 100) / 100.0f;
 
 	for (int i=0; i<MAX_HARDWARE_SOURCES; i++) m_hardware_sources_map[i]=-1;
 

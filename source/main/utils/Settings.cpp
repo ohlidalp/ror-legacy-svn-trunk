@@ -48,17 +48,45 @@ Settings::~Settings()
 {
 }
 
-Ogre::String Settings::getSetting(Ogre::String key)
+Ogre::String Settings::getSetting(Ogre::String key, Ogre::String default)
 {
-	return settings[key];
+	settings_map_t::iterator it = settings.find(key);
+	if(it == settings.end())
+	{
+		setSetting(key, default);
+		return default;
+	}
+	return it->second;
 }
 
-Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key)
+Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key, Ogre::UTFString default)
 {
-	return settings[key];
+	return getSetting(key, default);
 }
 
-bool Settings::getBooleanSetting(Ogre::String key)
+int Settings::getIntegerSetting( Ogre::String key, int default )
+{
+	settings_map_t::iterator it = settings.find(key);
+	if(it == settings.end())
+	{
+		setSetting(key, TOSTRING(default));
+		return default;
+	}
+	return PARSEINT(it->second);
+}
+
+float Settings::getFloatSetting( Ogre::String key, float default )
+{
+	settings_map_t::iterator it = settings.find(key);
+	if(it == settings.end())
+	{
+		setSetting(key, TOSTRING(default));
+		return default;
+	}
+	return PARSEREAL(it->second);
+}
+
+bool Settings::getBooleanSetting(Ogre::String key, bool default)
 {
 	String value = settings[key];
 	StringUtil::toLowerCase(value);
@@ -95,7 +123,7 @@ void Settings::setUTFSetting(Ogre::UTFString key, Ogre::UTFString value)
 
 void Settings::checkGUID()
 {
-	if(getSetting("GUID").empty())
+	if(getSetting("GUID", "").empty())
 		createGUID();
 }
 
@@ -120,7 +148,7 @@ void Settings::createGUID()
 
 void Settings::saveSettings()
 {
-	saveSettings(getSetting("Config Root")+"RoR.cfg");
+	saveSettings(getSetting("Config Root", "")+"RoR.cfg");
 }
 
 void Settings::saveSettings(Ogre::String configFile)
@@ -163,7 +191,7 @@ void Settings::loadSettings(Ogre::String configFile, bool overwrite)
 
 #ifndef NOOGRE
 	// generate hash of the token
-	String usertoken = SSETTING("User Token");
+	String usertoken = SSETTING("User Token", "");
 	char usertokensha1result[250];
 	memset(usertokensha1result, 0, 250);
 	if(usertoken.size()>0)
@@ -231,7 +259,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 	GetShortPathNameA(program_path, program_path, 512); //this is legal
 	path_descend(program_path);
 
-	if (getSetting("userpath").empty())
+	if (getSetting("userpath", "").empty())
 	{
 		if (SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, user_path)!=S_OK)
 		{
@@ -242,7 +270,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 		sprintf(user_path, "%s\\Rigs of Rods %s\\", user_path, ROR_VERSION_STRING_SHORT); // do not use the full string, as same minor versions should share this directory
 	} else
 	{
-		strcpy(user_path, getSetting("userpath").c_str());
+		strcpy(user_path, getSetting("userpath", "").c_str());
 	}
 
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -457,3 +485,4 @@ void Settings::path_add(char* path, const char* dirname)
 	sprintf(tmp, "%s%s%c", path, dirname, dirsep);
 	strcpy(path, tmp);
 }
+

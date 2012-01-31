@@ -32,7 +32,7 @@ Editor::Editor(SceneManager *scm, RoRFrameListener *efl)
 	pturn=0;
 	ppos=Vector3(0,0,0);
 	FILE *fd;
-	String editorcfg = SSETTING("Config Root")+"editor.cfg";
+	String editorcfg = SSETTING("Config Root", "")+"editor.cfg";
 	fd=fopen(editorcfg.c_str(), "r");
 	if (!fd)
 	{

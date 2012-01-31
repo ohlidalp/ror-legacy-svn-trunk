@@ -232,14 +232,14 @@ SerializedRig::SerializedRig()
 	fadeDist=150.0;
 	collrange=0.02f;
 	masscount=0;
-	disable_smoke = !SETTINGS.getBooleanSetting("Particles");
+	disable_smoke = !SETTINGS.getBooleanSetting("Particles", true);
 	smokeId=0;
 	smokeRef=0;
 	networking = false;
 	editorId=-1;
-	beambreakdebug = SETTINGS.getBooleanSetting("Beam Break Debug");
-	beamdeformdebug = SETTINGS.getBooleanSetting("Beam Deform Debug");
-	triggerdebug = SETTINGS.getBooleanSetting("Trigger Debug");
+	beambreakdebug  = SETTINGS.getBooleanSetting("Beam Break Debug", false);
+	beamdeformdebug = SETTINGS.getBooleanSetting("Beam Deform Debug", false);
+	triggerdebug    = SETTINGS.getBooleanSetting("Trigger Debug", false);
 	rotaInertia=0;
 	hydroInertia=0;
 	cmdInertia=0;
@@ -292,9 +292,9 @@ SerializedRig::SerializedRig()
 	fuseWidth=0;
 	brakeforce=30000.0;
 	hbrakeforce = 2*brakeforce;
-	dynamicMapMode=0;
-	debugVisuals=SETTINGS.getBooleanSetting("DebugBeams");
-	shadowOptimizations = SETTINGS.getBooleanSetting("Shadow optimizations");
+	dynamicMapMode = 0;
+	debugVisuals = SETTINGS.getBooleanSetting("DebugBeams", false);
+	shadowOptimizations = SETTINGS.getBooleanSetting("Shadow optimizations", true);
 
 	proped_wheels=0;
 	braked_wheels=0;
@@ -333,15 +333,16 @@ SerializedRig::SerializedRig()
 
 	// get lights mode
 	flaresMode = 3; // on by default
-	if(SSETTING("Lights") == "None (fastest)")
+	String lightMode = SSETTING("Lights", "Only current vehicle, main lights");
+	if(lightMode == "None (fastest)")
 		flaresMode = 0;
-	else if(SSETTING("Lights") == "No light sources")
+	else if(lightMode == "No light sources")
 		flaresMode = 1;
-	else if(SSETTING("Lights") == "Only current vehicle, main lights")
+	else if(lightMode == "Only current vehicle, main lights")
 		flaresMode = 2;
-	else if(SSETTING("Lights") == "All vehicles, main lights")
+	else if(lightMode == "All vehicles, main lights")
 		flaresMode = 3;
-	else if(SSETTING("Lights") == "All vehicles, all lights")
+	else if(lightMode == "All vehicles, all lights")
 		flaresMode = 4;
 
 }
@@ -367,15 +368,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	String filename = String(fname);
 
 	// add custom include path now, before scopelog, hides the path ...
-	if(!SSETTING("resourceIncludePath").empty())
+	if(!SSETTING("resourceIncludePath", "").empty())
 	{
-		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath"), "FileSystem", "customInclude");
+		ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("resourceIncludePath", ""), "FileSystem", "customInclude");
 	}
 
 	ScopeLog scope_log("beam_"+filename);
 
 	// initialize custom include path
-	if(!SSETTING("resourceIncludePath").empty())
+	if(!SSETTING("resourceIncludePath", "").empty())
 	{
 		ResourceBackgroundQueue::getSingleton().initialiseResourceGroup("customInclude");
 	}
@@ -413,7 +414,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	bool in_section = false; // reminder for us if we are in a section
 
 	// load truck configuration settings
-	bool enable_background_loading = BSETTING("Background Loading");
+	bool enable_background_loading = BSETTING("Background Loading", false);
 	bool enable_advanced_deformation = false;
 	int lockgroup_default = NODE_LOCKGROUP_DEFAULT;
 
@@ -2705,7 +2706,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				engine = new BeamEngine(minrpm, maxrpm, torque, gears, dratio, trucknum);
 
 				// are there any startup shifter settings?
-				Ogre::String gearboxMode = SSETTING("GearboxMode");
+				Ogre::String gearboxMode = SSETTING("GearboxMode", "Automatic shift");
 				if (gearboxMode == "Manual shift - Auto clutch")
 					engine->setAutoMode(SEMIAUTO);
 				else if (gearboxMode == "Fully Manual: sequential shift")
@@ -5294,10 +5295,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 
 	// WARNING: this must come LAST
- 	if(!SSETTING("vehicleOutputFile").empty())
+ 	if(!SSETTING("vehicleOutputFile", "").empty())
 	{
 		// serialize the truck in a special format :)
-		String fn = SSETTING("vehicleOutputFile");
+		String fn = SSETTING("vehicleOutputFile", "");
 		serialize(fn, &scope_log);
 	}
 	
@@ -6605,7 +6606,7 @@ void SerializedRig::parser_warning(parsecontext_t &context, Ogre::String text, i
 		errstr    = "OBSOLETE";
 	
 	String txt;
-	if(BSETTING("REPO_MODE"))
+	if(BSETTING("REPO_MODE", false))
 	{
 		// custom code for the repo only
 		String fn = context.filename;

@@ -56,7 +56,7 @@ bool LoadingWindow::getFrameForced()
 
 void LoadingWindow::setProgress(int _percent, const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
-	if(BSETTING("REPO_MODE")) return;
+	if(BSETTING("REPO_MODE", false)) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 
@@ -68,7 +68,7 @@ void LoadingWindow::setProgress(int _percent, const Ogre::UTFString& _text, bool
 
 void LoadingWindow::setAutotrack(const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
-	if(BSETTING("REPO_MODE")) return;
+	if(BSETTING("REPO_MODE", false)) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 	mBarProgress->setProgressPosition(0);
@@ -79,14 +79,14 @@ void LoadingWindow::setAutotrack(const Ogre::UTFString& _text, bool _updateRende
 
 void LoadingWindow::hide()
 {
-	if(BSETTING("REPO_MODE")) return;
+	if(BSETTING("REPO_MODE", false)) return;
 	GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(false);
 }
 
 void LoadingWindow::renderOneFrame(bool force)
 {
-	if(BSETTING("REPO_MODE")) return;
+	if(BSETTING("REPO_MODE", false)) return;
 	if(t->getMilliseconds() > 200 || force)
 	{
 		mFrameForced=true;

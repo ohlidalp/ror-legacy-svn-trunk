@@ -28,21 +28,23 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 
 // some shortcuts to improve code readability
-#define SETTINGS       Settings::getSingleton()
-#define SSETTING(x)    Settings::getSingleton().getSetting(x) //<! get string setting
-#define UTFSSETTING(x) Settings::getSingleton().getUTFSetting(x) //<! get UTF string setting
-#define BSETTING(x)    Settings::getSingleton().getBooleanSetting(x) //<! get boolean setting
-#define ISETTING(x)    PARSEINT(Settings::getSingleton().getSetting(x)) //<! get int setting
-#define FSETTING(x)    PARSEREAL(Settings::getSingleton().getSetting(x)) //<! get float setting
+#define SETTINGS          Settings::getSingleton()
+#define SSETTING(x, y)    Settings::getSingleton().getSetting(x, y)            //<! get string setting
+#define UTFSSETTING(x, y) Settings::getSingleton().getUTFSetting(x, y)         //<! get UTF string setting
+#define BSETTING(x, y)    Settings::getSingleton().getBooleanSetting(x, y)     //<! get boolean setting
+#define ISETTING(x, y)    Settings::getSingleton().getIntegerSetting(x, y)     //<! get int setting
+#define FSETTING(x, y)    Settings::getSingleton().getFloatSetting(x, y)       //<! get float setting
 
 class Settings : public RoRSingleton<Settings>
 {
 	friend class RoRSingleton<Settings>;
 public:
 
-	Ogre::String getSetting(Ogre::String key);
-	Ogre::UTFString getUTFSetting(Ogre::UTFString key);
-	bool getBooleanSetting(Ogre::String key);
+	Ogre::String getSetting(Ogre::String key, Ogre::String default);
+	int getIntegerSetting(Ogre::String key, int default);
+	float getFloatSetting(Ogre::String key, float default);
+	Ogre::UTFString getUTFSetting(Ogre::UTFString key, Ogre::UTFString default);
+	bool getBooleanSetting(Ogre::String key, bool default);
 	
 	Ogre::String getSettingScriptSafe(const Ogre::String &key);
 	void setSettingScriptSafe(const Ogre::String &key, const Ogre::String &value);

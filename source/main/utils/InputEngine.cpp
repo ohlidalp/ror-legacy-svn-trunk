@@ -1787,8 +1787,8 @@ OIS::MouseState InputEngine::getMouseState()
 	{
 #ifndef NOOGRE
 		// try to find the correct location!
-		mX = StringConverter::parseReal(SSETTING("MouseSensX"));
-		mY = StringConverter::parseReal(SSETTING("MouseSensY"));
+		mX = FSETTING("MouseSensX", 1);
+		mY = FSETTING("MouseSensY", 1);
 		LOG("Mouse X sens: " + TOSTRING((Real)mX));
 		LOG("Mouse Y sens: " + TOSTRING((Real)mY));
 		mode = 1;
@@ -3356,12 +3356,13 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 {
 	// setup input
 	int inputGrabMode=GRAB_ALL;
+	String inputGrabSetting = SSETTING("Input Grab", "All");
 
-	if(SSETTING("Input Grab") == "All")
+	if     (inputGrabSetting == "All")
 		inputGrabMode = GRAB_ALL;
-	else if(SSETTING("Input Grab") == "Dynamically")
+	else if(inputGrabSetting == "Dynamically")
 		inputGrabMode = GRAB_DYNAMICALLY;
-	else if(SSETTING("Input Grab") == "None")
+	else if(inputGrabSetting == "None")
 		inputGrabMode = GRAB_NONE;
 
 	if(!OgreFramework::getSingleton().isEmbedded())

@@ -570,7 +570,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 		} else if(msg == "/save")
 		{
-			saveChat(SSETTING("Log Path") + "chat-log.txt");
+			saveChat(SSETTING("Log Path", "") + "chat-log.txt");
 			return;
 
 		} else if(msg.substr(0, 8) == "/whisper")
@@ -594,7 +594,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		} else if(msg == "/log")
 		{
 			// switch to console logging
-			bool logging = BSETTING("Enable Ingame Console");
+			bool logging = BSETTING("Enable Ingame Console", false);
 			if(!logging)
 			{
 				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L(" logging to console enabled"), "information.png");
@@ -686,7 +686,7 @@ void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel 
 		putMessage(CONSOLE_MSGTYPE_SCRIPT, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "page_white_code.png");
 	} else
 	{
-		if(BSETTING("Enable Ingame Console"))
+		if(BSETTING("Enable Ingame Console", false))
 		{
 			if(lml == LML_NORMAL)
 				putMessage(CONSOLE_MSGTYPE_LOG, CONSOLE_LOGMESSAGE, UTFString("#988310") + (msg), "script_error.png");

@@ -153,7 +153,7 @@ void Collisions::resizeMemory(long newSize)
 
 int Collisions::loadDefaultModels()
 {
-	return loadGroundModelsConfigFile(SSETTING("Config Root")+"ground_models.cfg");
+	return loadGroundModelsConfigFile(SSETTING("Config Root", "config\\")+"ground_models.cfg");
 }
 
 int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
