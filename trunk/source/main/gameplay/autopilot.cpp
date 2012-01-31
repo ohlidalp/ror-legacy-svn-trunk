@@ -187,7 +187,7 @@ float Autopilot::getRudder()
 	return 0;
 }
 
-float Autopilot::getThrotle(float thrtl, float dt)
+float Autopilot::getThrottle(float thrtl, float dt)
 {
 	if(!mode_ias) {return thrtl;};
 

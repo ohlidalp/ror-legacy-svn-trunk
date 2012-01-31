@@ -18,14 +18,13 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CONTENTMANAGER_H__
-#define CONTENTMANAGER_H__
+#ifndef __CONTENTMANAGER_H_
+#define __CONTENTMANAGER_H_
 
 #include "RoRPrerequisites.h"
 #include <OgreSingleton.h>
 
 #include <OgreResourceGroupManager.h>
-//#include "RoR
 
 class ContentManager : public Ogre::Singleton<ContentManager>, public Ogre::ResourceLoadingListener
 {
@@ -55,4 +54,4 @@ protected:
 	//std::map<Ogre::String,int> instanceCountMap;
 };
 
-#endif // CONTENTMANAGER_H__
+#endif // __CONTENTMANAGER_H_

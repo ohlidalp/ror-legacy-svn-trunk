@@ -19,18 +19,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 21th of May 2008 by Thomas
 
-#ifndef __CacheSystem_H__
-#define __CacheSystem_H__
+#ifndef __CacheSystem_H_
+#define __CacheSystem_H_
 
 #include "RoRPrerequisites.h"
 
-#include <Ogre.h>
-#include <vector>
-#include <map>
+#include "BeamData.h"
 #include "sha1.h"
 
-#include "BeamData.h"
-
+#include <Ogre.h>
 
 #define CACHE_FILE "mods.cache"
 #define CACHE_FILE_FORMAT "6"
@@ -331,5 +328,4 @@ protected:
 
 };
 
-
-#endif
+#endif // __CacheSystem_H_

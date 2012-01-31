@@ -220,7 +220,7 @@ void GameScript::setChatFontSize(int size)
 	//NETCHAT.setFontSize(size);
 }
 
-void GameScript::showChooser(string &type, string &instance, string &box)
+void GameScript::showChooser(std::string &type, std::string &instance, std::string &box)
 {
 #ifdef USE_MYGUI
 	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
@@ -238,12 +238,12 @@ void GameScript::showChooser(string &type, string &instance, string &box)
 #endif //USE_MYGUI
 }
 
-void GameScript::repairVehicle(string &instance, string &box, bool keepPosition)
+void GameScript::repairVehicle(std::string &instance, std::string &box, bool keepPosition)
 {
 	BeamFactory::getSingleton().repairTruck(mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
 }
 
-void GameScript::removeVehicle(string &instance, string &box)
+void GameScript::removeVehicle(std::string &instance, std::string &box)
 {
 	BeamFactory::getSingleton().removeTruck(mefl->getCollisions(), const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
@@ -530,9 +530,9 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	for(it = params.dict->dict.begin(); it != params.dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
-		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("std::string"))
 		{
-			// its a string
+			// its a std::string
 			std::string *str = (std::string *)it->second.valueObj;
 			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, str->c_str(), CURLFORM_END);
 		}
@@ -621,7 +621,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	char *curl_err_str[CURL_ERROR_SIZE];
 	memset(curl_err_str, 0, CURL_ERROR_SIZE);
 
-	string url = "http://" + string(REPO_SERVER) + params.apiquery;
+	std::string url = "http://" + std::string(REPO_SERVER) + params.apiquery;
 	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
 
 	/* send all data to this function  */
@@ -660,7 +660,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	if(chunk.memory)
 	{
 		// convert memory into std::string now
-		result = string(chunk.memory);
+		result = std::string(chunk.memory);
 
 		// then free
 		free(chunk.memory);
@@ -672,7 +672,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	if(res != CURLE_OK)
 	{
 		const char *errstr = curl_easy_strerror(res);
-		result = "ERROR: " + string(errstr);
+		result = "ERROR: " + std::string(errstr);
 	}
 
 	LOG("online API result: " + result);
@@ -707,19 +707,19 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
 #endif // USE_MYGUI
 
-	// fix the string objects in the dict
-	// why we need to do this: when we copy the std::map (dict) over, we calso jsut copy the pointers to string in it.
+	// fix the std::string objects in the dict
+	// why we need to do this: when we copy the std::map (dict) over, we calso jsut copy the pointers to std::string in it.
 	// when this continues and forks, AS releases the strings.
 	// so we will allocate new strings that are persistent.
 	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::iterator it;
 	for(it = params->dict->dict.begin(); it != params->dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
-		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("std::string"))
 		{
-			// its a string, copy it over
+			// its a std::string, copy it over
 			std::string *str = (std::string *)it->second.valueObj;
-			it->second.valueObj = (void *)new string(*str);
+			it->second.valueObj = (void *)new std::string(*str);
 		}
 	}
 

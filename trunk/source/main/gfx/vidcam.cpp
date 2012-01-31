@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "vidcam.h"
-#include "ResourceBuffer.h"
-#include <Ogre.h>
 
-#include "utils.h"
+#include "MaterialReplacer.h"
+#include "ResourceBuffer.h"
 #include "Settings.h"
 #include "SkyManager.h"
-#include "MaterialReplacer.h"
+#include "utils.h"
+#include <Ogre.h>
 
 using namespace Ogre;
 

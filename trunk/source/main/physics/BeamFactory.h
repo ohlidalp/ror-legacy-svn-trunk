@@ -20,15 +20,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 24th of August 2009
 
-#ifndef BEAMFACTORY_H__
-#define BEAMFACTORY_H__
+#ifndef __BEAMFACTORY_H_
+#define __BEAMFACTORY_H_
 
 #include "RoRPrerequisites.h"
-#include "StreamableFactory.h"
-#include <map>
-
 #include "Beam.h"
 #include "TwoDReplay.h"
+#include "StreamableFactory.h"
 
 class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
@@ -126,5 +124,4 @@ protected:
 
 };
 
-
-#endif // BEAMFACTORY_H__
+#endif // __BEAMFACTORY_H_

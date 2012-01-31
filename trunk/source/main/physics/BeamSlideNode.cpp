@@ -40,9 +40,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Beam.h"
+#include "RoRPrerequisites.h"
 #include "Ogre.h"
+#include "Beam.h"
 #include "BeamFactory.h"
+#include "SlideNode.h"
 #include <vector>
 
 // ug... BAD PERFORMNCE, BAD!! 

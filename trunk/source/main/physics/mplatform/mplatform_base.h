@@ -29,9 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "Ogre.h"
-#include "rornet.h"
-
+//#include "Ogre.h"
+//#include "rornet.h"
 
 typedef struct			// struct is used for motion platforms
 {

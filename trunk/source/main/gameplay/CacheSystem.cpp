@@ -20,24 +20,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created on 21th of May 2008 by Thomas
 
 #include "CacheSystem.h"
-#include "sha1.h"
-#include "ImprovedConfigFile.h"
-#include "Settings.h"
-#include "language.h"
-#include "errorutils.h"
-#include "BeamEngine.h"
-#include "SerializedRig.h"
-#include "utils.h"
 
-#include "SoundScriptManager.h"
 #include "BeamData.h" // for authorinfo_t
+#include "BeamEngine.h"
+#include "errorutils.h"
+#include "ImprovedConfigFile.h"
+#include "language.h"
 #include "ScopeLog.h"
+#include "SerializedRig.h"
+#include "Settings.h"
+#include "sha1.h"
+#include "SoundScriptManager.h"
+#include "utils.h"
 
 #ifdef USE_MYGUI
 #include "LoadingWindow.h"
-#endif //MYGUI
+#endif // USE_MYGUI
 
-using namespace RoR; //CSHA1
+using namespace RoR; // CSHA1
 
 // singleton pattern
 CacheSystem* CacheSystem::myInstance = 0;

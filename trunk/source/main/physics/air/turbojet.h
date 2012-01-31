@@ -17,19 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Turbojet_H__
-#define __Turbojet_H__
+#ifndef __Turbojet_H_
+#define __Turbojet_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include "SoundScriptManager.h"
-#include "materialFunctionMapper.h"
 
-using namespace Ogre;
-#include "Beam.h"
-#include "Airfoil.h"
 #include "aeroengine.h"
-
 
 class Turbojet: public AeroEngine
 {
@@ -81,9 +74,9 @@ public:
 	void updateVisuals();
 	void updateForces(float dt, int doUpdate);
 
-	void setThrotle(float val);
+	void setThrottle(float val);
 
-	float getThrotle();
+	float getThrottle();
 
 	void reset();
 
@@ -105,4 +98,4 @@ public:
 	float getAfterburner() {return (float)afterburner;};
 };
 
-#endif
+#endif __Turbojet_H_

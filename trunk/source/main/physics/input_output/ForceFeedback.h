@@ -17,28 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __ForceFeedback_H__
-#define __ForceFeedback_H__
+#ifndef __ForceFeedback_H_
+#define __ForceFeedback_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include <math.h>
 #include "OISForceFeedback.h"
 
-using namespace Ogre;
 class ForceFeedback
 {
 private:
 	OIS::ForceFeedback* ffdevice;
 	OIS::Effect* hydroEffect;
-	Real overall_gain;
-	Real stress_gain;
-	Real centering_gain;
-	Real camera_gain;
+	Ogre::Real overall_gain;
+	Ogre::Real stress_gain;
+	Ogre::Real centering_gain;
+	Ogre::Real camera_gain;
 	bool enabled_state;
 public:
 
-	ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Real stress_gain, Real centering_gain, Real camera_gain);
+	ForceFeedback(OIS::ForceFeedback* ffdevice, Ogre::Real overall_gain, Ogre::Real stress_gain, Ogre::Real centering_gain, Ogre::Real camera_gain);
 	~ForceFeedback();
 
 	/*we take here :
@@ -46,10 +43,9 @@ public:
 	  -wheel speed and direction command, for the artificial auto-centering (which is wheel speed dependant)
 	  -hydro beam stress, the ideal data source for FF wheels
 	 */
-	void setForces(Real roll, Real pitch, Real wspeed, Real dircommand, Real stress);
+	void setForces(Ogre::Real roll, Ogre::Real pitch, Ogre::Real wspeed, Ogre::Real dircommand, Ogre::Real stress);
 	void setEnabled(bool b);
 
 };
 
-
-#endif
+#endif // __ForceFeedback_H_

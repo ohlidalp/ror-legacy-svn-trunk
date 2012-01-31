@@ -18,6 +18,9 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "screwprop.h"
+#include "DustManager.h"
+#include "SoundScriptManager.h"
+#include "water.h"
 
 Screwprop::Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, int trucknum)
 {
@@ -32,7 +35,6 @@ Screwprop::Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, 
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 	reset();
 }
-
 
 void Screwprop::updateForces(int update)
 {
@@ -53,7 +55,7 @@ void Screwprop::updateForces(int update)
 	}
 }
 
-void Screwprop::setThrotle(float val)
+void Screwprop::setThrottle(float val)
 {
 	if (val>1.0) val=1.0;
 	if (val<-1.0) val=-1.0;
@@ -63,7 +65,7 @@ void Screwprop::setThrotle(float val)
 	float prpm=(0.5+fabs(val)/2.0)*100.0;
 #ifdef USE_OPENAL
 	SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_ENGINE, prpm);
-#endif //OPENAL
+#endif // USE_OPENAL
 }
 
 void Screwprop::setRudder(float val)
@@ -73,7 +75,7 @@ void Screwprop::setRudder(float val)
 	rudder=val*45.0;
 }
 
-float Screwprop::getThrotle()
+float Screwprop::getThrottle()
 {
 	if (reverse) return -throtle; else return throtle;
 }
@@ -85,8 +87,7 @@ float Screwprop::getRudder()
 
 void Screwprop::reset()
 {
-	setThrotle(0);
-	//throtle=0;
+	setThrottle(0);
 	rudder=0;
 	reverse=false;
 }
@@ -96,4 +97,3 @@ void Screwprop::toggleReverse()
 	throtle=0;
 	reverse=!reverse;
 }
-

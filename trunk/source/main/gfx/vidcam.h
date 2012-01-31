@@ -17,15 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef VIDCAM_H__
-#define VIDCAM_H__
+#ifndef __VIDCAM_H_
+#define __VIDCAM_H_
 
 #include "RoRPrerequisites.h"
 
-#include <OgreMaterial.h>
-
-#include "Beam.h"
 #include "SerializedRig.h"
+#include <OgreMaterial.h>
 
 class VideoCamera
 {
@@ -64,6 +62,4 @@ protected:
 	Ogre::RenderWindow *rwMirror;
 };
 
-
-
-#endif // VIDCAM_H__
+#endif // __VIDCAM_H_

@@ -17,8 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "turbojet.h"
 #include "skin.h"
+#include "SoundScriptManager.h"
+#include "turbojet.h"
+#include "materialFunctionMapper.h"
 #include "MaterialReplacer.h"
 
 Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) : mr(mr)
@@ -239,7 +241,7 @@ void Turbojet::updateForces(float dt, int doUpdate)
 	exhaust_velocity=enginethrust*5.6/area;
 }
 
-void Turbojet::setThrotle(float val)
+void Turbojet::setThrottle(float val)
 {
 	if (val>1.0) val=1.0;
 	if (val<0.0) val=0.0;
@@ -250,7 +252,7 @@ void Turbojet::setThrotle(float val)
 #endif //OPENAL
 }
 
-float Turbojet::getThrotle()
+float Turbojet::getThrottle()
 {
 	return throtle;
 }

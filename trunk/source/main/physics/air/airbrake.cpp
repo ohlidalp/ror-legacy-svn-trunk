@@ -19,10 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "airbrake.h"
 
-#include "ResourceBuffer.h"
 #include "BeamData.h"
+#include "ResourceBuffer.h"
 
 #include <Ogre.h>
+
 using namespace Ogre;
 
 Airbrake::Airbrake(SceneManager *manager, char* basename, int num, node_t *ndref, node_t *ndx, node_t *ndy, node_t *nda, Vector3 pos, float width, float length, float maxang, char* texname, float tx1, float ty1, float tx2, float ty2, float lift_coef)

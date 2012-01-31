@@ -18,55 +18,39 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include <float.h>
+#include "airbrake.h"
+#include "approxmath.h"
+#include "autopilot.h"
 #include "Beam.h"
 #include "BeamData.h"
 #include "BeamEngine.h"
-#include "SoundScriptManager.h"
-#include "heightfinder.h"
+#include "BeamFactory.h"
+#include "BeamStats.h"
+#include "BeamWaitAndLock.h"
+#include "buoyance.h"
+#include "CmdKeyInertia.h"
+#include "DashBoardManager.h"
+#include "Differentials.h"
 #include "DustManager.h"
-#include "water.h"
-#include "DustPool.h"
 #include "errorutils.h"
-#include "Replay.h"
-#include "vidcam.h"
-#include "autopilot.h"
-#include "ScopeLog.h"
-#include "network.h"
-#include "NetworkStreamManager.h"
-#include "skinmanager.h"
+#include "FlexAirfoil.h"
+#include "FlexBody.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
-#include "FlexAirfoil.h"
+#include "heightfinder.h"
 #include "language.h"
-#include "MovableText.h"
-#include "turboprop.h"
-#include "turbojet.h"
-#include "screwprop.h"
-#include "buoyance.h"
-#include "collisions.h"
-#include "airbrake.h"
-#include "FlexBody.h"
-#include "materialFunctionMapper.h"
-#include "TorqueCurve.h"
-#include "Settings.h"
-#include "PositionStorage.h"
-#include "network.h"
-#include "OverlayWrapper.h"
-#include "PointColDetector.h"
-#include "BeamStats.h"
-#include "Skidmark.h"
-#include "CmdKeyInertia.h"
-#include "BeamFactory.h"
-#include "ColoredTextAreaOverlayElement.h"
-#include "Scripting.h"
-#include "PreviewRenderer.h"
-#include "DashBoardManager.h"
-#include "rornet.h"
 #include "MeshObject.h"
-#include "BeamWaitAndLock.h"
+#include "network.h"
+#include "PointColDetector.h"
+#include "PositionStorage.h"
+#include "Replay.h"
+#include "screwprop.h"
+#include "Scripting.h"
+#include "Skidmark.h"
+#include "SlideNode.h"
+#include "turboprop.h"
+#include "water.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -2369,7 +2353,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		int spi;
 		float ctmp = 0.0f;
 		for (spi=0; spi<free_screwprop; spi++)
-			if(screwprops[spi]) ctmp += screwprops[spi]->getThrotle();
+			if(screwprops[spi]) ctmp += screwprops[spi]->getThrottle();
 
 		if (spi > 0) ctmp = ctmp / spi;
 		cstate = ctmp;
@@ -2578,7 +2562,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		}
 		if (flag_state & ANIM_FLAG_THROTTLE)
 		{
-			float throttle=aeroengines[aenum]->getThrotle();
+			float throttle=aeroengines[aenum]->getThrottle();
 			cstate -= throttle;
 			div++;
 		}
@@ -5699,7 +5683,7 @@ void Beam::updateDashBoards(float &dt)
 		// the throttle and rudder
 		for(int i = 0; i < free_screwprop && i < DD_MAX_SCREWPROP; i++)
 		{
-			float throttle = screwprops[i]->getThrotle();
+			float throttle = screwprops[i]->getThrottle();
 			dash->setFloat(DD_SCREW_THROTTLE_0 + i, throttle);
 
 			float steering = screwprops[i]->getRudder();
@@ -5736,7 +5720,7 @@ void Beam::updateDashBoards(float &dt)
 	{
 		for(int i = 0; i < free_aeroengine && i < DD_MAX_AEROENGINE; i++)
 		{
-			float throttle = aeroengines[i]->getThrotle();
+			float throttle = aeroengines[i]->getThrottle();
 			dash->setFloat(DD_AEROENGINE_THROTTLE_0 + i, throttle);
 
 			bool failed = aeroengines[i]->isFailed();

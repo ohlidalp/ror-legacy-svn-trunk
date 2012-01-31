@@ -17,19 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Screwprop_H__
-#define __Screwprop_H__
+#ifndef __Screwprop_H_
+#define __Screwprop_H_
 
 #include "RoRPrerequisites.h"
 
-#include "Ogre.h"
-#include "water.h"
-
-using namespace Ogre;
-#include "Beam.h"
-#include "SoundScriptManager.h"
 #include "DustPool.h"
-#include "DustManager.h"
 
 class Screwprop
 {
@@ -51,12 +44,12 @@ public:
 
 	Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, int trucknum);
 	void updateForces(int update);
-	void setThrotle(float val);
+	void setThrottle(float val);
 	void setRudder(float val);
-	float getThrotle();
+	float getThrottle();
 	float getRudder();
 	void reset();
 	void toggleReverse();
 };
 
-#endif
+#endif // __Screwprop_H_

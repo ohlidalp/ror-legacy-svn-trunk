@@ -192,7 +192,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	x -= 18;
 	
 	// flag
-	Ogre::StringVector parts = StringUtil::split(string(c->language), "_");
+	Ogre::StringVector parts = StringUtil::split(Ogre::String(c->language), "_");
 	if(parts.size() == 2)
 	{
 		String lang = parts[1];
@@ -395,7 +395,7 @@ void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipI
 {
 	if(t.type == MyGUI::ToolTipInfo::Show)
 	{
-		string txt = sender->getUserString("tooltip");
+		Ogre::String txt = sender->getUserString("tooltip");
 		if(!txt.empty())
 		{
 			tooltipText->setCaption(txt);

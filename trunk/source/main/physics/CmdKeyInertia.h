@@ -17,18 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __CmdKeyInertia_H__
-#define __CmdKeyInertia_H__
+#ifndef __CmdKeyInertia_H_
+#define __CmdKeyInertia_H_
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 
-#include <OgreStringVector.h>
-
 class CmdKeyInertia
 {
-	
 public:
 	CmdKeyInertia(int maxCmdKeys);
 	~CmdKeyInertia();
@@ -57,4 +53,5 @@ protected:
 	int loadDefaultInertiaModels();
 
 };
-#endif
+
+#endif __CmdKeyInertia_H_

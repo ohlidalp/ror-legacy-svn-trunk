@@ -20,31 +20,29 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SerializedRig.h"
 
-#include "BeamEngine.h"
-#include "autopilot.h"
-#include "ScopeLog.h"
-#include "skinmanager.h"
-#include "FlexObj.h"
-#include "FlexAirfoil.h"
-#include "turboprop.h"
-#include "screwprop.h"
-#include "buoyance.h"
 #include "airbrake.h"
-#include "TorqueCurve.h"
-#include "Settings.h"
+#include "autopilot.h"
+#include "BeamEngine.h"
+#include "buoyance.h"
 #include "CmdKeyInertia.h"
-#include "MeshObject.h"
-#include "vidcam.h"
-#include "utils.h"
-#include "Settings.h"
+#include "Differentials.h"
+#include "FlexAirfoil.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
-#include "MaterialReplacer.h"
+#include "FlexObj.h"
 #include "JSON.h"
+#include "MeshObject.h"
 #include "RoRVersion.h"
+#include "ScopeLog.h"
+#include "screwprop.h"
+#include "SlideNode.h"
+#include "SoundScriptManager.h"
+#include "TorqueCurve.h"
+#include "turboprop.h"
+#include "utils.h"
+#include "vidcam.h"
 
-
-// TODO not really needed for truck loading, or used very rarely
+// TODO: Not really needed for truck loading, or used very rarely
 #include "collisions.h"
 #include "FlexBody.h"
 
@@ -2764,9 +2762,9 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (type=='c') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=0; free_collcab++;};
 				if (type=='p') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=1; free_collcab++;};
 				if (type=='u') {collcabs[free_collcab]=free_cab; collcabstype[free_collcab]=2; free_collcab++;};
-				if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++;   if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
-				if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGONLY; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
-				if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=BUOY_DRAGLESS; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
+				if (type=='b') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=Buoyance::BUOY_NORMAL; free_buoycab++;   if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
+				if (type=='r') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=Buoyance::BUOY_DRAGONLY; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
+				if (type=='s') {buoycabs[free_buoycab]=free_cab; collcabstype[free_collcab]=0; buoycabtypes[free_buoycab]=Buoyance::BUOY_DRAGLESS; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);};
 				if (type=='D' || type == 'F' || type == 'S')
 				{
 
@@ -2780,7 +2778,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					if(type == 'F') collcabstype[free_collcab]=1;
 					if(type == 'S') collcabstype[free_collcab]=2;
 					free_collcab++;
-					buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=BUOY_NORMAL; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);
+					buoycabs[free_buoycab]=free_cab; buoycabtypes[free_buoycab]=Buoyance::BUOY_NORMAL; free_buoycab++; if (!buoyance && !virtuallyLoaded) buoyance=new Buoyance(water);
 				}
 				free_cab++;
 			}
@@ -5279,7 +5277,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
    // now generate the hash of it
 	{
 		// copy whole truck into a string
-		string code;
+		String code;
 		ds->seek(0); // from start
 		code.resize(ds->size());
 		ds->read(&code[0], ds->size());

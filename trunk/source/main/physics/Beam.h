@@ -17,28 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef BEAM_H__
-#define BEAM_H__
+#ifndef __BEAM_H_
+#define __BEAM_H_
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 
-// includes to be removed or cleaned up
-#include "rornet.h"
-#include "Differentials.h"
-#include "SlideNode.h"
-#include "PointColDetector.h"
-
-// ror includes
-#include "Streamable.h"
-#include "SerializedRig.h"
 #include "BeamData.h"
-
-#include "approxmath.h"
 #include "CacheSystem.h"
+#include "SerializedRig.h"
+#include "Streamable.h"
 
-// system includes
-#include <vector>
 #include <pthread.h>
 
 class Beam : 
@@ -48,8 +37,6 @@ class Beam :
 friend class PreviewRenderer;
 public:
 	Beam() {}; // for wrapper, DO NOT USE!
-
-	// destructor
 	~Beam();
 
 #ifdef USE_ANGELSCRIPT
@@ -637,4 +624,5 @@ inline bool Beam::inRange(float num, float min, float max)
 {
 	return (num <= max && num >= min);
 }
-#endif //BEAM_H__
+
+#endif // __BEAM_H_

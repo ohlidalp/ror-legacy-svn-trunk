@@ -79,4 +79,5 @@ bool MPlatform_FD::update(Ogre::Vector3 pos, Ogre::Quaternion quat, mstat_t stat
 //	if (error) {return false;}
 	return true;
 }
-#endif
+
+#endif // USE_MPLATFORM

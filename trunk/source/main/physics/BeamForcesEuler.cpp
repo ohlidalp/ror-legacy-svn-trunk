@@ -17,18 +17,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "Beam.h"
 
-#include "BeamEngine.h"
-#include "Replay.h"
-#include "FlexAirfoil.h"
-#include "screwprop.h"
-#include "buoyance.h"
-#include "collisions.h"
 #include "airbrake.h"
-#include "BeamStats.h"
-#include "CmdKeyInertia.h"
+#include "approxmath.h"
+#include "Beam.h"
+#include "BeamEngine.h"
 #include "BeamFactory.h"
+#include "BeamStats.h"
+#include "buoyance.h"
+#include "CmdKeyInertia.h"
+#include "collisions.h"
+#include "Differentials.h"
+#include "FlexAirfoil.h"
+#include "Replay.h"
+#include "screwprop.h"
+#include "SoundScriptManager.h"
+#include "water.h"
 
 extern float mrtime;
 
@@ -318,7 +322,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					for (mk=0; mk<free_buoycab; mk++)
 					{
 						int tmpv=buoycabs[mk]*3;
-						if (buoycabtypes[mk]==BUOY_DRAGONLY) continue;
+						if (buoycabtypes[mk]==Buoyance::BUOY_DRAGONLY) continue;
 						if ((beams[i].p1==&nodes[cabs[tmpv]] || beams[i].p1==&nodes[cabs[tmpv+1]] || beams[i].p1==&nodes[cabs[tmpv+2]])
 							&&(beams[i].p2==&nodes[cabs[tmpv]] || beams[i].p2==&nodes[cabs[tmpv+1]] || beams[i].p2==&nodes[cabs[tmpv+2]]))
 							buoyance->setsink(1);
