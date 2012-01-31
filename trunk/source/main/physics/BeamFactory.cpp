@@ -40,7 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 
-template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::SINGLETON_MEMBER = 0;
+template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::_instance = 0;
 
 BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *_w, Camera *pcam) : 
 	  manager(manager)

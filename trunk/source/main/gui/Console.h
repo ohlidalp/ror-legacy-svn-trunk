@@ -44,11 +44,11 @@ typedef struct msg_t {
 } msg_t;
 
 class Console :
-	public Singleton2<Console>,
+	public RoRSingleton<Console>,
 	public Ogre::LogListener,
 	public InterThreadStoreVector<msg_t>
 {
-	friend class Singleton2<Console>;
+	friend class RoRSingleton<Console>;
 	Console();
 	~Console();
 public:

@@ -33,9 +33,9 @@ ATTRIBUTE_CLASS_LAYOUT(HighScoreWindow, "HighScoreWindow.layout");
 
 class HighScoreWindow :
 	public wraps::BaseLayout,
-	public Singleton2<HighScoreWindow>
+	public RoRSingleton<HighScoreWindow>
 {
-	friend class Singleton2<HighScoreWindow>;
+	friend class RoRSingleton<HighScoreWindow>;
 	HighScoreWindow();
 	~HighScoreWindow();
 public:

@@ -194,7 +194,7 @@ protected:
 	float pitchgain_cutoff(float sourcepitch, float targetpitch);
 };
 
-class SoundScriptManager : public ScriptLoader , public Singleton2<SoundScriptManager>
+class SoundScriptManager : public ScriptLoader , public RoRSingleton<SoundScriptManager>
 {
 public:
 	const static int TERRAINSOUND = MAX_TRUCKS+1;

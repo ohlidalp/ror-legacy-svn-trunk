@@ -30,9 +30,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 ATTRIBUTE_CLASS_LAYOUT(LoadingWindow, "LoadingWindow.layout");
 class LoadingWindow :
 	public wraps::BaseLayout,
-	public Singleton2<LoadingWindow>
+	public RoRSingleton<LoadingWindow>
 {
-	friend class Singleton2<LoadingWindow>;
+	friend class RoRSingleton<LoadingWindow>;
 	LoadingWindow();
 	~LoadingWindow();
 public:

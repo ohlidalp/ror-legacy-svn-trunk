@@ -33,9 +33,9 @@ ATTRIBUTE_CLASS_LAYOUT(TextureToolWindow, "TextureTool.layout");
 
 class TextureToolWindow :
 	public wraps::BaseLayout,
-	public Singleton2<TextureToolWindow>
+	public RoRSingleton<TextureToolWindow>
 {
-	friend class Singleton2<TextureToolWindow>;
+	friend class RoRSingleton<TextureToolWindow>;
 	TextureToolWindow();
 	~TextureToolWindow();
 public:

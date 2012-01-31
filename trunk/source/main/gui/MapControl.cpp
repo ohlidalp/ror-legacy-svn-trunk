@@ -114,7 +114,7 @@ bool MapControl::getVisibility()
 
 void MapControl::setVisibility(bool value)
 {
-	if(!value) GUIManager::getSingleton().unfocus();
+	//if(!value) GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(value);
 }
 

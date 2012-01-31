@@ -40,6 +40,7 @@ using namespace Ogre;
 
 GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20), vehicleListNeedsUpdate(false)
 {
+	setSingleton(this);
 	pthread_mutex_init(&updateLock, NULL);
 
 	//MyGUI::WidgetPtr back = createWidget<MyGUI::Widget>("Panel", 0, 0, 912, 652,MyGUI::Align::Default, "Back");
@@ -118,6 +119,7 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	//p->addItem(_L("Camera Control"), MyGUI::MenuItemType::Normal, "cameratool");
 	p->addItem(_L("Friction Settings"), MyGUI::MenuItemType::Normal, "frictiongui");
 	p->addItem(_L("Show Console"), MyGUI::MenuItemType::Normal, "showConsole");
+	p->addItem(_L("Texture Tool"), MyGUI::MenuItemType::Normal, "texturetool");
 	pop.push_back(p);
 
 	// === debug
@@ -137,8 +139,6 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), m
 	p->addItem(_L("show Beam strength"), MyGUI::MenuItemType::Normal, "debug-beam-strength");
 	p->addItem(_L("show Beam hydros"), MyGUI::MenuItemType::Normal, "debug-beam-hydros");
 	p->addItem(_L("show Beam commands"), MyGUI::MenuItemType::Normal, "debug-beam-commands");
-	p->addItem("-", MyGUI::MenuItemType::Separator);
-	p->addItem(_L("Texture Tool"), MyGUI::MenuItemType::Normal, "texturetool");
 	pop.push_back(p);
 
 	
