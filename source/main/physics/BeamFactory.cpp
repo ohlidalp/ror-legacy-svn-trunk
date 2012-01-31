@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -42,7 +42,7 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::_instance = 0;
 
-BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *_w, Camera *pcam) : 
+BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *_w, Camera *pcam) :
 	  manager(manager)
 	, parent(parent)
 	, win(win)
@@ -393,7 +393,7 @@ void BeamFactory::recursiveActivation(int j)
 			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
 			)
 		{
-			trucks[t]->desactivate(); // make the truck not leading but active 
+			trucks[t]->desactivate(); // make the truck not leading but active
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
 			recursiveActivation(t);
 		};
@@ -469,7 +469,7 @@ void BeamFactory::activateAllTrucks()
 		if (!trucks[t]) continue;
 		if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || trucks[t]->state == DESACTIVATED)
 		{
-			trucks[t]->desactivate(); // make the truck not leading but active 
+			trucks[t]->desactivate(); // make the truck not leading but active
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
 			recursiveActivation(t);
 		}
@@ -732,7 +732,7 @@ void BeamFactory::removeInstance(stream_del_t *del)
 		// delete all streams
 		for(it_beam=it_stream->second.begin(); it_beam!=it_stream->second.end(); it_beam++)
 			removeInstance(it_beam->second);
-	} 
+	}
 	else
 	{
 		// find the stream matching the streamid

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
 
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 
 #include "gui_friction.h"
 #include "gui_manager.h"
@@ -73,7 +73,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	cb->setEditStatic(true);
 	// ground models are not loaded here yet, so we will add them once we show the dialog
 	
-	x=10; y+=30; 
+	x=10; y+=30;
 	t = win->createWidget<MyGUI::TextBox>("TextBox", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Solid ground settings"));
 	
@@ -99,7 +99,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_strength
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Strength:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -116,7 +116,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_static_friction
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Static friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -133,7 +133,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_adhension_velo
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Adhesion velocity:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -150,7 +150,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_dynamic_friction
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Dynamic friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -167,7 +167,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_hydrodynamic
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Hydrodynamic friction coef:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -184,7 +184,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_stribeck
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Stribeck velocity:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -201,7 +201,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// solid_alpha
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("alpha:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -218,7 +218,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// combo_fx_type
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("fx_type:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -257,7 +257,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	}
 	p->setSize(370, y-by+25);
 
-	x=10; y+=40; 
+	x=10; y+=40;
 	t = win->createWidget<MyGUI::TextBox>("TextBox", x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Fluid Settings"));
 	
@@ -284,7 +284,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// fluid_flowcon
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Flow consistency:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -301,7 +301,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// fluid_density
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Fluid density:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -318,7 +318,7 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 		b->setCaption("?");
 
 		// fluid_drag_anisotropy
-		lx=0; ly+=20; 
+		lx=0; ly+=20;
 		t = p->createWidget<MyGUI::TextBox>("TextBox", lx, ly, 170, 20,  MyGUI::Align::Default); lx+=175;
 		t->setCaption(_L("Drag anisotropy:"));
 		t->setTextAlign(MyGUI::Align::Right);
@@ -340,13 +340,13 @@ GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
 	}
 	p->setSize(370, y-by+25);
 	
-	x=10; y+=40; 
+	x=10; y+=40;
 	b = win->createWidget<MyGUI::Button>("Button", x, y, 350, 30,  MyGUI::Align::Default, "apply_changes"); x+=25;
 	b->eventMouseButtonClick += MyGUI::newDelegate(this, &GUI_Friction::event_btn_MouseButtonClick);
 	b->setCaption(_L("Apply Changes"));
 
 	/*
-	x=10; y+=20; 
+	x=10; y+=20;
 	t = win->createWidget<MyGUI::TextBox>("TextBox",  x, y, 170, 20,  MyGUI::Align::Default); x+=175;
 	t->setCaption(_L("Ground Debug"));
 	*/

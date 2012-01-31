@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -1247,9 +1247,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_STOP(BES_CORE_Axles);
 	BES_START(BES_CORE_Wheels);
 
-	//drivingaids tc+alb pulse 
+	//drivingaids tc+alb pulse
 	tcalb_timer +=dt;
-	if (tcalb_timer >= 25.0f) 
+	if (tcalb_timer >= 25.0f)
 		tcalb_timer = 0.0f;
 	if (tc_pulse == 1)
 		tc_pulse_state = true;
@@ -1275,7 +1275,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	bool alb_active=false;
 	// fix for airplanes crashing when getAcc() is used
 	float currentAcc = 0.0f;
-	if(driveable == TRUCK && engine) 
+	if(driveable == TRUCK && engine)
 		currentAcc = engine->getAcc();
 
 	for (i=0; i<free_wheel; i++)
@@ -1377,14 +1377,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				// all brakes are released, reset slopebrakefirstlock
 				wheels[i].firstLock = false;
 			}
-			// the truck is still sliding and the brake might not locked the wheel yet ( pbrake at high speed ? ) 
-			// or the accelerator is pressed 
+			// the truck is still sliding and the brake might not locked the wheel yet ( pbrake at high speed ? )
+			// or the accelerator is pressed
 			// or the antilockbrake is still active
 			// -> reset firstlock
 			if (fabs(curspeed) > 0.75f || currentAcc > 0.1f || alb_active)
 				wheels[i].firstLock = false;
 			//reset alb_actibve after firstlock check!
-			if (hbrake != 0.0) 
+			if (hbrake != 0.0)
 				alb_active = false;
 		}
 		//traction control, igonre tc code if wheel is not propulsed or accelerator is pressed

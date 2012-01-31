@@ -1,18 +1,18 @@
 /*
  * File JSONValue.cpp part of the SimpleJSON Library - http://mjpa.in/json
- * 
+ *
  * Copyright (C) 2010 Mike Anchor
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -301,7 +301,7 @@ JSONValue *JSONValue::Parse(const wchar_t **data)
 	}
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type NULL
  *
  * @access public
@@ -311,7 +311,7 @@ JSONValue::JSONValue(/*NULL*/)
 	type = JSONType_Null;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type String
  *
  * @access public
@@ -324,7 +324,7 @@ JSONValue::JSONValue(const wchar_t *m_char_value)
 	string_value = std::wstring(m_char_value);
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type String
  *
  * @access public
@@ -340,7 +340,7 @@ JSONValue::JSONValue(const char *m_char_value)
 	string_value = temp;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type String
  *
  * @access public
@@ -353,7 +353,7 @@ JSONValue::JSONValue(const std::wstring &m_string_value)
 	string_value = m_string_value;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type Bool
  *
  * @access public
@@ -366,7 +366,7 @@ JSONValue::JSONValue(bool m_bool_value)
 	bool_value = m_bool_value;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type Number
  *
  * @access public
@@ -379,7 +379,7 @@ JSONValue::JSONValue(double m_number_value)
 	number_value = m_number_value;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type Array
  *
  * @access public
@@ -392,7 +392,7 @@ JSONValue::JSONValue(const JSONArray &m_array_value)
 	array_value = m_array_value;
 }
 
-/** 
+/**
  * Basic constructor for creating a JSON Value of type Object
  *
  * @access public
@@ -405,7 +405,7 @@ JSONValue::JSONValue(const JSONObject &m_object_value)
 	object_value = m_object_value;
 }
 
-/** 
+/**
  * The destructor for the JSON Value object
  * Handles deleting the objects in the array or the object value
  *
@@ -429,7 +429,7 @@ JSONValue::~JSONValue()
 	}
 }
 
-/** 
+/**
  * Checks if the value is a NULL
  *
  * @access public
@@ -441,7 +441,7 @@ bool JSONValue::IsNull() const
 	return type == JSONType_Null;
 }
 
-/** 
+/**
  * Checks if the value is a String
  *
  * @access public
@@ -453,7 +453,7 @@ bool JSONValue::IsString() const
 	return type == JSONType_String;
 }
 
-/** 
+/**
  * Checks if the value is a Bool
  *
  * @access public
@@ -465,7 +465,7 @@ bool JSONValue::IsBool() const
 	return type == JSONType_Bool;
 }
 
-/** 
+/**
  * Checks if the value is a Number
  *
  * @access public
@@ -477,7 +477,7 @@ bool JSONValue::IsNumber() const
 	return type == JSONType_Number;
 }
 
-/** 
+/**
  * Checks if the value is an Array
  *
  * @access public
@@ -489,7 +489,7 @@ bool JSONValue::IsArray() const
 	return type == JSONType_Array;
 }
 
-/** 
+/**
  * Checks if the value is an Object
  *
  * @access public
@@ -501,7 +501,7 @@ bool JSONValue::IsObject() const
 	return type == JSONType_Object;
 }
 
-/** 
+/**
  * Retrieves the String value of this JSONValue
  * Use IsString() before using this method.
  *
@@ -514,7 +514,7 @@ const std::wstring &JSONValue::AsString() const
 	return string_value;
 }
 
-/** 
+/**
  * Retrieves the Bool value of this JSONValue
  * Use IsBool() before using this method.
  *
@@ -527,7 +527,7 @@ bool JSONValue::AsBool() const
 	return bool_value;
 }
 
-/** 
+/**
  * Retrieves the Number value of this JSONValue
  * Use IsNumber() before using this method.
  *
@@ -540,7 +540,7 @@ double JSONValue::AsNumber() const
 	return number_value;
 }
 
-/** 
+/**
  * Retrieves the Array value of this JSONValue
  * Use IsArray() before using this method.
  *
@@ -553,7 +553,7 @@ const JSONArray &JSONValue::AsArray() const
 	return array_value;
 }
 
-/** 
+/**
  * Retrieves the Object value of this JSONValue
  * Use IsObject() before using this method.
  *
@@ -566,7 +566,7 @@ const JSONObject &JSONValue::AsObject() const
 	return object_value;
 }
 
-/** 
+/**
  * Creates a JSON encoded string for the value with all necessary characters escaped
  *
  * @access public
@@ -642,7 +642,7 @@ std::wstring JSONValue::Stringify() const
 	return ret_string;
 }
 
-/** 
+/**
  * Creates a JSON encoded string with all required fields escaped
  * Works from http://www.ecma-internationl.org/publications/files/ECMA-ST/ECMA-262.pdf
  * Section 15.12.3.

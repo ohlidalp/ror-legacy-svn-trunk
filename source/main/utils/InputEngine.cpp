@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -1923,7 +1923,7 @@ bool InputEngine::keyPressed( const OIS::KeyEvent &arg )
 
 bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUIManager::getSingleton().keyReleased(arg))
 		return true;
 #endif //MYGUI
@@ -1937,7 +1937,7 @@ bool InputEngine::keyReleased( const OIS::KeyEvent &arg )
 /* --- Mouse Events ------------------------------------------ */
 bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUIManager::getSingleton().mouseMoved(arg))
 		return true;
 #endif //MYGUI
@@ -1949,7 +1949,7 @@ bool InputEngine::mouseMoved( const OIS::MouseEvent &arg )
 
 bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUIManager::getSingleton().mousePressed(arg, id))
 		return true;
 #endif //MYGUI
@@ -1961,7 +1961,7 @@ bool InputEngine::mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID i
 
 bool InputEngine::mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id )
 {
-#ifdef USE_MYGUI 
+#ifdef USE_MYGUI
 	if(GUIManager::getSingleton().mouseReleased(arg, id))
 		return true;
 #endif //MYGUI
@@ -3377,9 +3377,9 @@ void InputEngine::setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd)
 
 	#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		size_t windowHnd = 0;
-		std::ostringstream windowHndStr; 
-		win->getCustomAttribute("GLXWINDOW", &windowHnd ); 
-		windowHndStr << windowHnd; 
+		std::ostringstream windowHndStr;
+		win->getCustomAttribute("GLXWINDOW", &windowHnd );
+		windowHndStr << windowHnd;
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(win, windowHndStr.str(), true, true, GRAB_NONE);
 	#else

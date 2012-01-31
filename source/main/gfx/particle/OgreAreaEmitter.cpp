@@ -63,16 +63,16 @@ namespace Ogre {
             ParamDictionary* dict = getParamDictionary();
 
             // Custom params
-            dict->addParameter(ParameterDef("width", 
+            dict->addParameter(ParameterDef("width",
                 "Width of the shape in world coordinates.",
                 PT_REAL),&msWidthCmd);
-            dict->addParameter(ParameterDef("height", 
+            dict->addParameter(ParameterDef("height",
                 "Height of the shape in world coordinates.",
                 PT_REAL),&msHeightCmd);
-            dict->addParameter(ParameterDef("depth", 
+            dict->addParameter(ParameterDef("depth",
                 "Depth of the shape in world coordinates.",
                 PT_REAL),&msDepthCmd);
-            dict->addParameter(ParameterDef("custom_params", 
+            dict->addParameter(ParameterDef("custom_params",
                 "Custom parameter value per particle as Vector4",
                 PT_STRING),&msCustomParamValue);
             return true;
@@ -84,7 +84,7 @@ namespace Ogre {
     //-----------------------------------------------------------------------
     unsigned short AreaEmitter::_getEmissionCount(Real timeElapsed)
     {
-        // Use basic constant emission 
+        // Use basic constant emission
         return genConstantEmissionCount(timeElapsed);
     }
     //-----------------------------------------------------------------------
@@ -95,7 +95,7 @@ namespace Ogre {
         // Update the ranges
         genAreaAxes();
 
-        
+
     }
     //-----------------------------------------------------------------------
     void AreaEmitter::setSize(const Vector3& size)

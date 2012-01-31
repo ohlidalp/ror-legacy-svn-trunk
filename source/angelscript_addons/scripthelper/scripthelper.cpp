@@ -10,9 +10,9 @@ BEGIN_AS_NAMESPACE
 
 int CompareRelation(asIScriptEngine *engine, void *lobj, void *robj, int typeId, int &result)
 {
-    // TODO: If a lot of script objects are going to be compared, e.g. when sorting an array, 
+    // TODO: If a lot of script objects are going to be compared, e.g. when sorting an array,
     //       then the method id and context should be cached between calls.
-    
+
 	int retval = -1;
 	int funcId = 0;
 
@@ -66,7 +66,7 @@ int CompareEquality(asIScriptEngine *engine, void *lobj, void *robj, int typeId,
 {
     // TODO: If a lot of script objects are going to be compared, e.g. when searching for an
 	//       entry in a set, then the method id and context should be cached between calls.
-    
+
 	int retval = -1;
 	int funcId = 0;
 
@@ -173,7 +173,7 @@ int WriteConfigToFile(asIScriptEngine *engine, const char *filename)
 	if( f == 0 )
 		return -1;
 
-	// Make sure the default array type is expanded to the template form 
+	// Make sure the default array type is expanded to the template form
 	bool expandDefArrayToTempl = engine->GetEngineProperty(asEP_EXPAND_DEF_ARRAY_TO_TMPL) ? true : false;
 	engine->SetEngineProperty(asEP_EXPAND_DEF_ARRAY_TO_TMPL, true);
 
@@ -210,7 +210,7 @@ int WriteConfigToFile(asIScriptEngine *engine, const char *filename)
 		}
 		else
 		{
-			// Only the type flags are necessary. The application flags are application 
+			// Only the type flags are necessary. The application flags are application
 			// specific and doesn't matter to the offline compiler. The object size is also
 			// unnecessary for the offline compiler
 			fprintf(f, "objtype \"%s\" %u\n", engine->GetTypeDeclaration(type->GetTypeId()), (unsigned int)(type->GetFlags() & 0xFF));
@@ -293,7 +293,7 @@ int WriteConfigToFile(asIScriptEngine *engine, const char *filename)
 		const char *name;
 		int typeId;
 		bool isConst;
-		engine->GetGlobalPropertyByIndex(n, &name, &typeId, &isConst); 
+		engine->GetGlobalPropertyByIndex(n, &name, &typeId, &isConst);
 		fprintf(f, "prop \"%s%s %s\"\n", isConst ? "const " : "", engine->GetTypeDeclaration(typeId), name);
 	}
 

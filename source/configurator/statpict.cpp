@@ -21,7 +21,7 @@
 
 IMPLEMENT_DYNAMIC_CLASS(wxStaticPicture, wxControl)
 const wxChar * wxStaticPictureNameStr = wxT("staticPicture");
-    
+
 /*
  * wxStaticPicture
  */

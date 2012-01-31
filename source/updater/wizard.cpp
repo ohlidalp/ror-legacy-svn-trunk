@@ -438,8 +438,8 @@ ConfirmationPage::ConfirmationPage(wxWizard *parent) : wxWizardPageSimple(parent
 	wxBoxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 
 	wxCheckedListCtrl *m_item_list = new wxCheckedListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT);
-        
-    // Add first column       
+
+    // Add first column
     wxListItem col0;
     col0.SetId(0);
     col0.SetText( _("Foo") );
@@ -451,39 +451,39 @@ ConfirmationPage::ConfirmationPage(wxWizard *parent) : wxWizardPageSimple(parent
     col1.SetId(1);
     col1.SetText( _("Name") );
     m_item_list->InsertColumn(1, col1);
-        
-    // Add thirs column     
+
+    // Add thirs column
     wxListItem col2;
     col2.SetId(2);
     col2.SetText( _("Comments") );
     m_item_list->InsertColumn(2, col2);
-        
-        
+
+
     const int item_amount = 5; //getItemAmount();
     for (int n=0; n<item_amount; n++)
     {
         //Item* curritem = getItem(n);
-            
+
         wxListItem item;
         item.SetId(n);
         item.SetText( "F00bar" );
-            
+
         m_item_list->InsertItem( item );
-            
+
         // set value in first column
         //if (!curritem->isFoo())
         {
             m_item_list->SetItem(n, 0, wxT("Foo"));
         }
-            
+
         // set value in second column
         m_item_list->SetItem(n, 1, "Voo");
 
         // set value in third column
         m_item_list->SetItem(n, 2, "Doo");
-            
+
     }
-        
+
     mainSizer->Add(m_item_list,1, wxEXPAND | wxALL, 10);
 	SetSizer(mainSizer);
 	mainSizer->Fit(this);
@@ -504,7 +504,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
 	dfont.SetPointSize(dfont.GetPointSize()+3);
 	txtTitle->SetFont(dfont);
 	txtTitle->Wrap(TXTWRAP);
-     
+
 
 	// status text and progress bar
 	statusList = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(20, 160));
@@ -582,7 +582,7 @@ DownloadPage::DownloadPage(wxWizard *parent) : wxWizardPageSimple(parent), wizar
     htmlinfo->SetPage(wxT("."));
     timer = new wxTimer(this, ID_TIMER);
     timer->Start(10000);
-    
+
 	// FINISHED text
 	txtFinish = new wxStaticText(this, wxID_ANY, _T("Finished downloading, please continue by pressing next."));
     wxFont dfont2=txtFinish->GetFont();

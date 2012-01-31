@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -190,9 +190,9 @@ void VideoCamera::update(float dt)
 	normal.normalise();
 
 	// add user set offset
-	Vector3 pos = truck->nodes[camNode].smoothpos + 
-		(offset.x * normal) + 
-		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) + 
+	Vector3 pos = truck->nodes[camNode].smoothpos +
+		(offset.x * normal) +
+		(offset.y * (truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos)) +
 		(offset.z * (truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos));
 
 	//avoid the camera roll
@@ -219,7 +219,7 @@ void VideoCamera::update(float dt)
 			refx.normalise();
 			Vector3 refy = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;
 			refy.normalise();
-			Quaternion rot = Quaternion(-refx, -refy, -normal); 
+			Quaternion rot = Quaternion(-refx, -refy, -normal);
 			mVidCam->setOrientation(rot * rotation); // rotate the camera orientation towards the calculated cam direction plus user rotation
 		} else
 		{
@@ -229,7 +229,7 @@ void VideoCamera::update(float dt)
 			Vector3 refx = truck->nodes[nz].smoothpos - truck->nodes[nref].smoothpos;
 			refx.normalise();
 			// why does this flip ~2-3° around zero orientation and only with trackercam. back to slower crossproduct calc, a bit slower but better .. sigh
-			// Vector3 refy = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;  
+			// Vector3 refy = truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos;
 			Vector3 refy = refx.crossProduct(normal);
 			refy.normalise();
 			Quaternion rot = Quaternion(-refx, -refy, -normal);
@@ -241,7 +241,7 @@ void VideoCamera::update(float dt)
 	{
 		debugNode->setPosition(pos);
 		debugNode->setOrientation(mVidCam->getOrientation());
-	} 
+	}
 
 	// set the new position
 	mVidCam->setPosition(pos);

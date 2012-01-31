@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -609,7 +609,7 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 		irc_cmd_join (session, ctx->channel.c_str(), 0);
 	} else if(eventNum == 251)
 	{
-		// 251 = There are <integer> users and <integer> services on <integer> servers 
+		// 251 = There are <integer> users and <integer> services on <integer> servers
 		if(count != 2) return;
 		ctx->push(constructMessage(MT_VerboseMessage, 0, origin, params[1], params[0]));
 	} else if(eventNum == 372)

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -224,8 +224,8 @@ void MeshObject::loadMesh()
 			mesh->setBackgroundLoaded(true);
 			mesh->addListener(this);
 			ticket = Ogre::ResourceBackgroundQueue::getSingleton().load(
-				Ogre::MeshManager::getSingletonPtr()->getResourceType(), 
-				mesh->getName(), 
+				Ogre::MeshManager::getSingletonPtr()->getResourceType(),
+				mesh->getName(),
 				resourceGroup,
 				false,
 				0,
@@ -264,7 +264,7 @@ void MeshObject::loadMesh()
 
 						}
 					}
-                            
+
 				}
 			}
 		}

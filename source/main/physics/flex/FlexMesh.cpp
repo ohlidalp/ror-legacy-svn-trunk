@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -37,7 +37,7 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	subface->setMaterialName(texface);
 	subband->setMaterialName(texband);
 
-	/// Define the vertices 
+	/// Define the vertices
 	nVertices = 4*nrays+2;
 	if (is_rimmed) nVertices+=2*nrays;
 	vbufCount = (2*3+2)*nVertices;
@@ -73,7 +73,7 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 		}
 	}
 	//color fix to remove
-//		for (i=0; i<(int)nVertices; i++) 
+//		for (i=0; i<(int)nVertices; i++)
 //		{
 //			covertices[i].color=Vector3(0.0, 0.0, 0.0);
 //		};
@@ -149,9 +149,9 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-	/// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+	/// Allocate vertex buffer of the requested number of vertices (vertexCount)
 	/// and bytes per vertex (offset)
-	vbuf = 
+	vbuf =
 		HardwareBufferManager::getSingleton().createVertexBuffer(
 			offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
@@ -159,15 +159,15 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
 	/// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
 	bind->setBinding(0, vbuf);
 
 	//for the face
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
 	HardwareIndexBufferSharedPtr faceibuf = HardwareBufferManager::getSingleton().
 		createIndexBuffer(
-			HardwareIndexBuffer::IT_16BIT, 
-			faceibufCount, 
+			HardwareIndexBuffer::IT_16BIT,
+			faceibufCount,
 			HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	/// Upload the index data to the card
@@ -180,11 +180,11 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	subface->indexData->indexStart = 0;
 
 	//for the band
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
 	HardwareIndexBufferSharedPtr bandibuf = HardwareBufferManager::getSingleton().
 		createIndexBuffer(
-			HardwareIndexBuffer::IT_16BIT, 
-			bandibufCount, 
+			HardwareIndexBuffer::IT_16BIT,
+			bandibufCount,
 			HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	/// Upload the index data to the card
@@ -195,7 +195,7 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	subband->indexData->indexBuffer = bandibuf;
 	subband->indexData->indexCount = bandibufCount;
 	subband->indexData->indexStart = 0;
-        
+
 	/// Set bounding information (for culling)
 	msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
 	//msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
@@ -211,7 +211,7 @@ FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n
 	*/
 
 	msh->load();
-	//msh->touch(); 
+	//msh->touch();
 	//        msh->load();
 
 	//msh->buildEdgeList();
@@ -298,7 +298,7 @@ Vector3 FlexMesh::updateShadowVertices()
 		{
 			coshadownorvertices[2+i].normal=nodes[nodeIDs[0]].smoothpos-nodes[nodeIDs[1]].smoothpos;
 			coshadownorvertices[2+i].normal.normalise();
-		} else 
+		} else
 		{
 			coshadownorvertices[2+i].normal=-coshadownorvertices[2+i-1].normal;
 		}
@@ -313,7 +313,7 @@ Vector3 FlexMesh::updateShadowVertices()
 			{
 				coshadownorvertices[2+4*nbrays+i].normal=nodes[nodeIDs[2+4*nbrays+i]].smoothpos-nodes[nodeIDs[2+4*nbrays+i+1]].smoothpos;
 				coshadownorvertices[2+4*nbrays+i].normal.normalise();
-			} else 
+			} else
 			{
 				coshadownorvertices[2+4*nbrays+i].normal=-coshadownorvertices[2+4*nbrays+i-1].normal;
 			}

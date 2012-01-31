@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  @file SlideNode.cpp
  @author Christopher Ritchey
  @date 10/30/2009
- 
+
 This source file is part of Rigs of Rods
 Copyright 2009 Christopher Ritchey
 
@@ -118,7 +118,7 @@ void RailBuilder::pushBack(beam_t* next)
 	{
 		mStart->curBeam = next;
 	}
-	else 
+	else
 	{
 		mBack->next = new Rail(next, mBack, NULL);
 		mBack = mBack->next;
@@ -137,7 +137,7 @@ void RailBuilder::pushFront(beam_t* prev)
 	{
 		mStart->curBeam = prev;
 	}
-	else 
+	else
 	mFront->prev = new Rail(prev, NULL, mFront);
 	mFront = mFront->prev;	
 }
@@ -183,8 +183,8 @@ SlideNode::SlideNode(node_t* slidingNode, RailGroup* slidingRail):
 	mInitThreshold( 0.0f ),
 	mCurThreshold( 0.0f ),
 	mSpringRate( 9000000 ),
-	mBreakForce( std::numeric_limits<Ogre::Real>::infinity() ), // beam won't break 
-    
+	mBreakForce( std::numeric_limits<Ogre::Real>::infinity() ), // beam won't break
+
 	mAttachRate( 1.0f ),
 	mAttachDist( 0.1f ),
 	mBoolSettings( ATTACH_NONE )
@@ -210,7 +210,7 @@ void SlideNode::UpdateForces(float dt)
 		return;
 	}
 	
-	// the threshold changes when attaching a node to a beam, if it's more than 
+	// the threshold changes when attaching a node to a beam, if it's more than
 	// the initial amount then then we're still attaching.
 	if( mCurThreshold > mInitThreshold )
 	{
@@ -221,7 +221,7 @@ void SlideNode::UpdateForces(float dt)
 	// perpendicular Forces are distributed according to the position along the Beam
 	if( perpForces.length() > mBreakForce ) setFlag( MASK_SLIDE_BROKEN );
 	mSlidingNode->Forces += -perpForces;
-	mSlidingBeam->p1->Forces += perpForces * (1 - mRatio); 
+	mSlidingBeam->p1->Forces += perpForces * (1 - mRatio);
 	mSlidingBeam->p2->Forces += perpForces * mRatio;
 }
 
@@ -236,7 +236,7 @@ Rail* SlideNode::getClosestRailAll(RailGroup* railGroup, const Ogre::Vector3& po
 	Ogre::Real lenToClosest = getLenTo(closestRail, point);
 	Ogre::Real lenToCurrent = std::numeric_limits<Ogre::Real>::infinity();
 	
-	while( curRail && 
+	while( curRail &&
 	// loop detection, if both id's are the same on the start and the current
 	// then it has detected a loop. Hmm however this won't work if we loop
 	// back on the start but don't loop.
@@ -278,7 +278,7 @@ Rail* SlideNode::getClosestRail(const Rail* rail, const Ogre::Vector3& point )
 void SlideNode::UpdatePosition()
 {
 	// only do calcs if we have a beam to slide on
-	if ( !mSlidingBeam || mSlidingBeam->broken ) 
+	if ( !mSlidingBeam || mSlidingBeam->broken )
 	{
 		mIdealPosition = mSlidingNode->AbsPosition;
 		return;
@@ -298,7 +298,7 @@ void SlideNode::UpdatePosition()
 	// normalize b instead of using another variable
 	b.normalise();
 	
-	// Get dot product along the b beam 
+	// Get dot product along the b beam
 	const Ogre::Real aDotBUnit = (mSlidingNode->AbsPosition - mSlidingBeam->p1->AbsPosition).dotProduct( b );
 	
 	// constrain Value between the two end points
@@ -307,8 +307,8 @@ void SlideNode::UpdatePosition()
 	mIdealPosition *= len;
 	mIdealPosition += mSlidingBeam->p1->AbsPosition;
 	
-	// calculate(cache) the ratio between the the two end points, 
+	// calculate(cache) the ratio between the the two end points,
 	// if bLen = 0.0f it means the beam is zero length so pick an end point
-	mRatio = (bLen > 0.0f) ? len/bLen : 0.0f;  
+	mRatio = (bLen > 0.0f) ? len/bLen : 0.0f;
 	
 }

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -54,7 +54,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	//materials
 	sub->setMaterialName(texband);
 
-	/// Define the vertices 
+	/// Define the vertices
 	nVertices = 6*(nrays+1);
 	vbufCount = (2*3+2)*nVertices;
 	vertices=(float*)malloc(vbufCount*sizeof(float));
@@ -120,9 +120,9 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-	/// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+	/// Allocate vertex buffer of the requested number of vertices (vertexCount)
 	/// and bytes per vertex (offset)
-	vbuf = 
+	vbuf =
 	  HardwareBufferManager::getSingleton().createVertexBuffer(
 		  offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
@@ -130,15 +130,15 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
 	/// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
 	bind->setBinding(0, vbuf);
 
 	//for the face
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
 	HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
 	 createIndexBuffer(
-		 HardwareIndexBuffer::IT_16BIT, 
-			ibufCount, 
+		 HardwareIndexBuffer::IT_16BIT,
+			ibufCount,
 			HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	/// Upload the index data to the card
@@ -150,7 +150,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	sub->indexData->indexCount = ibufCount;
 	sub->indexData->indexStart = 0;
 
-    
+
 	/// Set bounding information (for culling)
 	msh->_setBounds(AxisAlignedBox(-1,-1,0,1,1,0), true);
 	//msh->_setBoundingSphereRadius(Math::Sqrt(1*1+1*1));
@@ -166,7 +166,7 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	*/
 
 	msh->load();
-	//msh->touch(); 
+	//msh->touch();
 	//        msh->load();
 
 			//msh->buildEdgeList();

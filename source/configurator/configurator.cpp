@@ -2223,7 +2223,7 @@ void MyDialog::getSettingsControls()
 	{
 		settings["Language"] = std::string("English (U.S.)");
 		settings["Language Short"] = std::string("en_US");
-	} 
+	}
 }
 
 void MyDialog::updateSettingsControls()
@@ -2507,7 +2507,7 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 		// error
 		return;
 	}
-	  
+	
 	strcat(path, "\\RoR.exe");
 	wxLogStatus(wxT("using RoR: ") + wxString(path));
 
@@ -2962,7 +2962,7 @@ void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
 // code borrowed from updater
 void wxStringToTCHAR(TCHAR *tCharString, wxString &myString)
 {
-	const wxChar* myStringChars = myString.c_str();  
+	const wxChar* myStringChars = myString.c_str();
 	for (unsigned int i = 0; i < myString.Len(); i++) {
 		tCharString[i] = myStringChars [i];
 	}

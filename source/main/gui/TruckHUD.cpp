@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -299,12 +299,12 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 				maxNegLatG[truck->driveable] = gees.z;
 
 			tmp = _L("maxG: V %1.2fg %1.2fg // S %1.2fg %1.2fg // L %1.2fg %1.2fg");
-			swprintf(geesstr, 256, tmp.asWStr_c_str(), 
-					maxPosVerG[truck->driveable], 
-					maxNegVerG[truck->driveable], 
-					maxPosSagG[truck->driveable], 
-					maxNegSagG[truck->driveable], 
-					maxPosLatG[truck->driveable], 
+			swprintf(geesstr, 256, tmp.asWStr_c_str(),
+					maxPosVerG[truck->driveable],
+					maxNegVerG[truck->driveable],
+					maxPosSagG[truck->driveable],
+					maxNegSagG[truck->driveable],
+					maxPosLatG[truck->driveable],
 					maxNegLatG[truck->driveable]
 				);
 

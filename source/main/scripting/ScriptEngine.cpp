@@ -76,7 +76,7 @@ void logString(const std::string &str)
 
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) : 
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) :
 	  mefl(efl)
 	, coll(_coll)
 	, engine(0)
@@ -175,7 +175,7 @@ void ScriptEngine::LineCallback(AngelScript::asIScriptContext *ctx, unsigned lon
 
 	// It would also be possible to only suspend the script,
 	// instead of aborting it. That would allow the application
-	// to resume the execution where it left of at a later 
+	// to resume the execution where it left of at a later
 	// time, by simply calling Execute() again.
 }
 
@@ -778,7 +778,7 @@ int ScriptEngine::deleteFunction(const Ogre::String &arg)
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-	if( mod == 0 || mod->GetFunctionCount() == 0 ) 
+	if( mod == 0 || mod->GetFunctionCount() == 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to remove a function ('%s') from script module '%s': No functions have been added (and consequently: the function does not exist).", arg.c_str(), moduleName);
@@ -789,7 +789,7 @@ int ScriptEngine::deleteFunction(const Ogre::String &arg)
 	int id = mod->GetFunctionIdByDecl(arg.c_str());
 	if( id > 0 )
 	{
-		// Warning: The function is not destroyed immediately, only when no more references point to it. 
+		// Warning: The function is not destroyed immediately, only when no more references point to it.
 		mod->RemoveFunction(id);
 
 		// Since functions can be recursive, we'll call the garbage
@@ -845,7 +845,7 @@ int ScriptEngine::deleteVariable(const Ogre::String &arg)
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-	if( mod == 0 || mod->GetGlobalVarCount() == 0 ) 
+	if( mod == 0 || mod->GetGlobalVarCount() == 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to remove a variable ('%s') from script module '%s': No variables have been added (and consequently: the variable does not exist).", arg.c_str(), moduleName);
@@ -899,8 +899,8 @@ int ScriptEngine::loadScript(Ogre::String _scriptName)
 	// Load the entire script file into the buffer
 	int result=0;
 
-	// The builder is a helper class that will load the script file, 
-	// search for #include directives, and load any included files as 
+	// The builder is a helper class that will load the script file,
+	// search for #include directives, and load any included files as
 	// well.
 	OgreScriptBuilder builder;
 
@@ -1009,8 +1009,8 @@ int ScriptEngine::loadScript(Ogre::String _scriptName)
 
 	// Prepare the script context with the function we wish to execute. Prepare()
 	// must be called on the context before each new script function that will be
-	// executed. Note, that if you intend to execute the same function several 
-	// times, it might be a good idea to store the function id returned by 
+	// executed. Note, that if you intend to execute the same function several
+	// times, it might be a good idea to store the function id returned by
 	// GetFunctionIDByDecl(), so that this relatively slow call can be skipped.
 	result = context->Prepare(funcId);
 	if(result < 0)

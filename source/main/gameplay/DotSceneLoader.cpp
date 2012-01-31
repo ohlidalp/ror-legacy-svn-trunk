@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // problems to care about:
 // dotsceneloader.cpp(46): warning C6262: Function uses '65656' bytes of stack: exceeds /analyze:stacksize'16384'. Consider moving some data to heap
 
-DotSceneLoader::DotSceneLoader() : mSceneMgr(0), mTerrainGroup(0) 
+DotSceneLoader::DotSceneLoader() : mSceneMgr(0), mTerrainGroup(0)
 {
     mTerrainGlobalOptions = OGRE_NEW Ogre::TerrainGlobalOptions();
 }
@@ -248,7 +248,7 @@ void DotSceneLoader::processTerrain(rapidxml::xml_node<>* XMLNode)
     int colourMapTextureSize = Ogre::StringConverter::parseInt(XMLNode->first_attribute("colourMapTextureSize")->value());
     int compositeMapDistance = Ogre::StringConverter::parseInt(XMLNode->first_attribute("tuningCompositeMapDistance")->value());
     int maxPixelError = Ogre::StringConverter::parseInt(XMLNode->first_attribute("tuningMaxPixelError")->value());
-    
+
     Ogre::Vector3 lightdir(0, -0.3, 0.75);
     lightdir.normalise();
     Ogre::Light* l = mSceneMgr->createLight("tstLight");
@@ -393,7 +393,7 @@ void DotSceneLoader::processCamera(rapidxml::xml_node<>* XMLNode, Ogre::SceneNod
 
     // Create the camera
     Ogre::Camera *pCamera = mSceneMgr->createCamera(name);
-    
+
     //TODO: make a flag or attribute indicating whether or not the camera should be attached to any parent node.
     //if(pParent)
     //    pParent->attachObject(pCamera);
@@ -404,7 +404,7 @@ void DotSceneLoader::processCamera(rapidxml::xml_node<>* XMLNode, Ogre::SceneNod
 
     // Set the aspect ratio
     //pCamera->setAspectRatio(aspectRatio);
-    
+
     // Set the projection type
     if(projectionType == "perspective")
         pCamera->setProjectionType(Ogre::PT_PERSPECTIVE);
@@ -704,7 +704,7 @@ void DotSceneLoader::processEntity(rapidxml::xml_node<>* XMLNode, Ogre::SceneNod
         pEntity = mSceneMgr->createEntity(name, meshFile);
         pEntity->setCastShadows(castShadows);
         pParent->attachObject(pEntity);
-        
+
         if(!materialFile.empty())
             pEntity->setMaterialName(materialFile);
     }
@@ -718,7 +718,7 @@ void DotSceneLoader::processEntity(rapidxml::xml_node<>* XMLNode, Ogre::SceneNod
     if(pElement)
         processUserDataReference(pElement, pEntity);
 
-    
+
 }
 
 void DotSceneLoader::processParticleSystem(rapidxml::xml_node<>* XMLNode, Ogre::SceneNode *pParent)

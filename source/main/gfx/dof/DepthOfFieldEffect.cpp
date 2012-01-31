@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -229,7 +229,7 @@ void DepthOfFieldEffect::postViewportUpdate(const Ogre::RenderTargetViewportEven
 	queue->setRenderableListener(0);
 }
 
-bool DepthOfFieldEffect::renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID, 
+bool DepthOfFieldEffect::renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
 				Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue)
 {
 	// Replace the technique of all renderables

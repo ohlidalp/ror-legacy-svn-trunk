@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -293,7 +293,7 @@ void LobbyGUI::update(float dt)
 		MyGUI::ISubWidget* waitDisplaySub = waitDisplay->getSubWidgetMain();
 		rotatingWait = waitDisplaySub->castType<MyGUI::RotatingSkin>();
 
-		/* 
+		/*
 		we need to patch mygui for this D:
 		MyGUI::IntSize s = waitDisplay->getImageSize();
 		rotatingWait->setCenter(MyGUI::IntPoint(s.width*0.5f,s.height*0.5f));
@@ -440,4 +440,4 @@ void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 }
 
 
-#endif // USE_MYGUI 
+#endif // USE_MYGUI

@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -96,7 +96,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 		sprintf(paname,"%s-smoke", propname);
 		smokeNode=manager->getRootSceneNode()->createChildSceneNode();
 		smokePS=manager->createParticleSystem(paname, "tracks/TurbopropSmoke");
-		if (smokePS) 
+		if (smokePS)
 		{
 			smokePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 			smokeNode->attachObject(smokePS);
@@ -136,7 +136,7 @@ void Turbojet::updateVisuals()
 		absnode->setScale(flamelength, radius*2.0, radius*2.0);
 		absnode->setPosition(nodes[nodeback].smoothpos+dir*Vector3(-0.2, 0.0, 0.0));
 		absnode->setOrientation(dir);
-	} 
+	}
 	else absnode->setVisible(false);
 	//smoke
 	if (smokeNode)
@@ -155,7 +155,7 @@ void Turbojet::updateVisuals()
 		}
 		if (!failed)
 		{
-			if (ignition) 
+			if (ignition)
 			{
 				emit->setEnabled(true);
 				emit->setColour(ColourValue(0.0,0.0,0.0,0.02+throtle*0.03));
@@ -166,7 +166,7 @@ void Turbojet::updateVisuals()
 					hemit->setTimeToLive((0.02+throtle*0.03)/0.1);
 				}
 			}
-			else 
+			else
 			{
 				emit->setEnabled(false);
 				if(hemit)
@@ -208,7 +208,7 @@ void Turbojet::updateForces(float dt, int doUpdate)
 	if (fabs(reflen-axlen)>0.1) {rpm=0;failed=true;}; //check for broken
 
 	float warmupfactor=1.0;
-	if (warmup) 
+	if (warmup)
 	{
 		warmupfactor=(timer-warmupstart)/warmuptime;
 		if (warmupfactor>=1.0) warmup=false;
@@ -224,7 +224,7 @@ void Turbojet::updateForces(float dt, int doUpdate)
 	rpm+=(double)dt*torque*30.0;
 
 	float enginethrust=0;
-	if (!failed && ignition) 
+	if (!failed && ignition)
 	{
 		enginethrust=maxdrythrust*rpm/100.0;
 		afterburner=(afterburnable && throtle>0.95 && rpm>80);

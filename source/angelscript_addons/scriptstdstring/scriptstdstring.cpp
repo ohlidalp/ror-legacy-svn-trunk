@@ -94,7 +94,7 @@ static void StringCharAtGeneric(asIScriptGeneric * gen) {
   }
 }
 
-static void AssignInt2StringGeneric(asIScriptGeneric *gen) 
+static void AssignInt2StringGeneric(asIScriptGeneric *gen)
 {
 	int *a = static_cast<int*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -104,7 +104,7 @@ static void AssignInt2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-static void AssignUInt2StringGeneric(asIScriptGeneric *gen) 
+static void AssignUInt2StringGeneric(asIScriptGeneric *gen)
 {
 	unsigned int *a = static_cast<unsigned int*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -114,7 +114,7 @@ static void AssignUInt2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-static void AssignDouble2StringGeneric(asIScriptGeneric *gen) 
+static void AssignDouble2StringGeneric(asIScriptGeneric *gen)
 {
 	double *a = static_cast<double*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -124,7 +124,7 @@ static void AssignDouble2StringGeneric(asIScriptGeneric *gen)
 	gen->SetReturnAddress(self);
 }
 
-static void AssignBool2StringGeneric(asIScriptGeneric *gen) 
+static void AssignBool2StringGeneric(asIScriptGeneric *gen)
 {
 	bool *a = static_cast<bool*>(gen->GetAddressOfArg(0));
 	string *self = static_cast<string*>(gen->GetObject());
@@ -263,7 +263,7 @@ static void StringSubString_Generic(asIScriptGeneric *gen)
     new(gen->GetAddressOfReturnLocation()) string(ret);
 }
 
-void RegisterStdString_Generic(asIScriptEngine *engine) 
+void RegisterStdString_Generic(asIScriptEngine *engine)
 {
 	int r;
 
@@ -516,7 +516,7 @@ static asUINT StringLength(const string &str)
 
 
 // AngelScript signature:
-// void string::resize(uint l) 
+// void string::resize(uint l)
 static void StringResize(asUINT l, string &str)
 {
 	// We don't register the method directly because the argument types change between 32bit and 64bit platforms

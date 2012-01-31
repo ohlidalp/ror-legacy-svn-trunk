@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -242,7 +242,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			}
 		}
 	}
-	else 
+	else
 	{
 		first=false;
 		Vector3 pts[8];
@@ -501,7 +501,7 @@ void Road2::textureFit(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfi
 				if (texfit==TEXFIT_ROADS3) {v1=0.423; v2=0.458;};
 				if (texfit==TEXFIT_ROADS4) {v1=0.458; v2=0.493;};
 				if (texfit==TEXFIT_CONCRETEUNDER) {v1=0.496; v2=0.745;};
-				if (i<2) 
+				if (i<2)
 					texc[i]=Vector2(trv.x/10.0,v1);
 				else
 					texc[i]=Vector2(trv.x/10.0,v2);
@@ -611,9 +611,9 @@ void Road2::createMesh()
 	decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
 	offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-	/// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+	/// Allocate vertex buffer of the requested number of vertices (vertexCount)
 	/// and bytes per vertex (offset)
-	HardwareVertexBufferSharedPtr vbuf = 
+	HardwareVertexBufferSharedPtr vbuf =
 		HardwareBufferManager::getSingleton().createVertexBuffer(
 		offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
@@ -621,15 +621,15 @@ void Road2::createMesh()
 	vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
 	/// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+	VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
 	bind->setBinding(0, vbuf);
 
 	//for the face
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
 	HardwareIndexBufferSharedPtr ibuf = HardwareBufferManager::getSingleton().
 		createIndexBuffer(
-		HardwareIndexBuffer::IT_16BIT, 
-		ibufCount, 
+		HardwareIndexBuffer::IT_16BIT,
+		ibufCount,
 		HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	/// Upload the index data to the card

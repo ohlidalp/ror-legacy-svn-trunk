@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -148,7 +148,7 @@ void ColoredTextAreaOverlayElement::updateColours(void)
 	Root::getSingleton().convertColourValue(ColourValue::White, &topColour);
 	Root::getSingleton().convertColourValue(ColourValue::White, &bottomColour);
 
-	HardwareVertexBufferSharedPtr vbuf = 
+	HardwareVertexBufferSharedPtr vbuf =
 		mRenderOp.vertexData->vertexBufferBinding->getBuffer(COLOUR_BINDING);
 
 	//RGBA* pDest = static_cast<RGBA*>(

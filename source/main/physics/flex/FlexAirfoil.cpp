@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 float refairfoilpos[90]={
 		0.00, 0.50, 0.00,
-		1.00, 0.50, 0.00, 
+		1.00, 0.50, 0.00,
 
 		0.00, 0.70, 0.03,
 		1.00, 0.70, 0.03,
@@ -315,9 +315,9 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
     offset += VertexElement::getTypeSize(VET_FLOAT2);
 
-    /// Allocate vertex buffer of the requested number of vertices (vertexCount) 
+    /// Allocate vertex buffer of the requested number of vertices (vertexCount)
     /// and bytes per vertex (offset)
-    vbuf = 
+    vbuf =
       HardwareBufferManager::getSingleton().createVertexBuffer(
           offset, msh->sharedVertexData->vertexCount, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 
@@ -325,15 +325,15 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     vbuf->writeData(0, vbuf->getSizeInBytes(), vertices, true);
 
     /// Set vertex buffer binding so buffer 0 is bound to our vertex buffer
-    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding; 
+    VertexBufferBinding* bind = msh->sharedVertexData->vertexBufferBinding;
     bind->setBinding(0, vbuf);
 
     //for the face
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
     HardwareIndexBufferSharedPtr faceibuf = HardwareBufferManager::getSingleton().
      createIndexBuffer(
-         HardwareIndexBuffer::IT_16BIT, 
-            faceibufCount, 
+         HardwareIndexBuffer::IT_16BIT,
+            faceibufCount,
             HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
     /// Upload the index data to the card
@@ -346,11 +346,11 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     subface->indexData->indexStart = 0;
 
     //for the band
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
     HardwareIndexBufferSharedPtr bandibuf = HardwareBufferManager::getSingleton().
      createIndexBuffer(
-         HardwareIndexBuffer::IT_16BIT, 
-            bandibufCount, 
+         HardwareIndexBuffer::IT_16BIT,
+            bandibufCount,
             HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
     /// Upload the index data to the card
@@ -363,11 +363,11 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     subband->indexData->indexStart = 0;
 
     //for the aileron up
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
     HardwareIndexBufferSharedPtr cupibuf = HardwareBufferManager::getSingleton().
      createIndexBuffer(
-         HardwareIndexBuffer::IT_16BIT, 
-            cupibufCount, 
+         HardwareIndexBuffer::IT_16BIT,
+            cupibufCount,
             HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
     /// Upload the index data to the card
@@ -380,11 +380,11 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     subcup->indexData->indexStart = 0;
 
     //for the aileron down
-	/// Allocate index buffer of the requested number of vertices (ibufCount) 
+	/// Allocate index buffer of the requested number of vertices (ibufCount)
     HardwareIndexBufferSharedPtr cdnibuf = HardwareBufferManager::getSingleton().
      createIndexBuffer(
-         HardwareIndexBuffer::IT_16BIT, 
-            cdnibufCount, 
+         HardwareIndexBuffer::IT_16BIT,
+            cdnibufCount,
             HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
     /// Upload the index data to the card
@@ -395,7 +395,7 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
     subcdn->indexData->indexBuffer = cdnibuf;
     subcdn->indexData->indexCount = cdnibufCount;
     subcdn->indexData->indexStart = 0;
-    
+
     /// Set bounding information (for culling)
     msh->_setBounds(AxisAlignedBox(-20,-20,-20,20,20,20), true);
     //msh->_setBoundingSphereRadius(20.0);
@@ -540,8 +540,8 @@ Vector3 FlexAirfoil::updateVertices()
 	}
 
 	//for the faces
-	for (i=0; i<24; i++) 
-		if (i%2) 
+	for (i=0; i<24; i++)
+		if (i%2)
 			covertices[i+30].normal=facenormal;
 		else
 			covertices[i+30].normal=-facenormal;
@@ -681,8 +681,8 @@ Vector3 FlexAirfoil::updateShadowVertices()
 	}
 
 	//for the faces
-	for (i=0; i<24; i++) 
-		if (i%2) 
+	for (i=0; i<24; i++)
+		if (i%2)
 			coshadownorvertices[i+30].normal=facenormal;
 		else
 			coshadownorvertices[i+30].normal=-facenormal;
@@ -809,7 +809,7 @@ void FlexAirfoil::updateForces()
 
 //if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) LOG("wforce1 is NaN "+TOSTRING(nblu));
 	//induced drag
-	if (useInducedDrag) 
+	if (useInducedDrag)
 	{
 		Vector3 idf=(cx*cx*0.25*airdensity*wspeed*idArea*idArea/(3.14159*idSpan*idSpan))*wind;
 //if (_isnan(idf.length())) LOG("idf is NaN "+TOSTRING(nblu));
@@ -836,7 +836,7 @@ void FlexAirfoil::updateForces()
 	wforce+=(cz*0.5*airdensity*wspeed*chord)*liftv;
 
 
-/*if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z)) 
+/*if (_isnan(wforce.x) || _isnan(wforce.y) || _isnan(wforce.z))
 {
 	if (innan==0) innan=1;
 	LOG("wforce2 is NaN "+TOSTRING(nblu));

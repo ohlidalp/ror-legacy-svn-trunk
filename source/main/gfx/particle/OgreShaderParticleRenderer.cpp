@@ -49,58 +49,58 @@ namespace Ogre {
         if (createParamDictionary("ShaderParticleRenderer"))
         {
             ParamDictionary* dict = getParamDictionary();
-            dict->addParameter(ParameterDef("diffuse_colour", 
+            dict->addParameter(ParameterDef("diffuse_colour",
                 "Adds diffuse colour to vertex format (type = float4)",
                 PT_BOOL),
                 &msVertexFmtColour);
 
-			dict->addParameter(ParameterDef("texture_coord", 
+			dict->addParameter(ParameterDef("texture_coord",
                 "Adds general texture coordinate to vertex format (type = float2)",
                 PT_BOOL),
                 &msVertexFmtTexture);
 
-			dict->addParameter(ParameterDef("particle_size", 
+			dict->addParameter(ParameterDef("particle_size",
                 "Adds particle size to vertex format (type = float2)",
                 PT_BOOL),
                 &msVertexFmtSize);
 
-			dict->addParameter(ParameterDef("particle_rotation", 
+			dict->addParameter(ParameterDef("particle_rotation",
 				"Adds particle rotation (in radians) to vertex format (type = float1)"
 				"note: if particle_rotation_speed present in script, they are packed together as float2",
                 PT_BOOL),
                 &msVertexFmtRotation);
 
-			dict->addParameter(ParameterDef("particle_rotation_speed", 
+			dict->addParameter(ParameterDef("particle_rotation_speed",
 				"Adds particle rotation speed (in radians/s) to vertex format (type = float1)"
 				"note: if particle_rotation present in script, they are packed together as float2",
                 PT_BOOL),
                 &msVertexFmtRotationSpeed);
 
-			dict->addParameter(ParameterDef("particle_direction", 
+			dict->addParameter(ParameterDef("particle_direction",
                 "Adds particle direction to vertex format (type = float3)"
 				"note: it represent particle speed",
                 PT_BOOL),
                 &msVertexFmtDirection);
 
-			dict->addParameter(ParameterDef("time_to_live", 
+			dict->addParameter(ParameterDef("time_to_live",
                 "Adds particle current time to live to vertex format (type = float1)"
 				"note: this parameter can be packed with total_time_to_live, time_frag and time_frag_inv",
                 PT_BOOL),
                 &msVertexFmtTTL);
 
-			dict->addParameter(ParameterDef("total_time_to_live", 
+			dict->addParameter(ParameterDef("total_time_to_live",
                 "Adds particle total time to live to vertex format (type = float1)"
 				"note: this parameter can be packed with time_to_live, time_frag and time_frag_inv",
                 PT_BOOL),
                 &msVertexFmtTotalTTL);
 
-			dict->addParameter(ParameterDef("time_frag", 
+			dict->addParameter(ParameterDef("time_frag",
                 "Adds particle time fragment to vertex format (type = float1), which is ratio between ttl and total ttl"
 				"note: this parameter can be packed with time_to_live, total_time_to_live and time_frag_inv",
                 PT_BOOL),
                 &msVertexFmtTimeFrag);
 
-			dict->addParameter(ParameterDef("time_frag_inv", 
+			dict->addParameter(ParameterDef("time_frag_inv",
                 "Adds particle inverse time fragment to vertex format (type = float1), which is 1.0f - time_frag"
 				"note: this parameter can be packed with time_to_live, total_time_to_live and time_frag",
                 PT_BOOL),

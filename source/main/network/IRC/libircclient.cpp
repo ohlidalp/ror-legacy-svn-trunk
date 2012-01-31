@@ -1,14 +1,14 @@
-/* 
+/*
  * Copyright (C) 2004-2009 Georgy Yunaev gyunaev@ulduzsoft.com
  *
- * This library is free software; you can redistribute it and/or modify it 
- * under the terms of the GNU Lesser General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at your 
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * This library is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
  * License for more details.
  */
 #ifdef USE_SOCKETW
@@ -92,8 +92,8 @@ void irc_destroy_session (irc_session_t * session)
 	libirc_mutex_destroy (&session->mutex_session);
 #endif
 
-	/* 
-	 * delete DCC data 
+	/*
+	 * delete DCC data
 	 * libirc_remove_dcc_session removes the DCC session from the list.
 	 */
 	while ( session->dcc_sessions )
@@ -104,7 +104,7 @@ void irc_destroy_session (irc_session_t * session)
 
 
 int irc_connect (irc_session_t * session,
-			const char * server, 
+			const char * server,
 			unsigned short port,
 			const char * server_password,
 			const char * nick,
@@ -189,7 +189,7 @@ int irc_connect (irc_session_t * session,
 
 
 int irc_connect6 (irc_session_t * session,
-			const char * server, 
+			const char * server,
 			unsigned short port,
 			const char * server_password,
 			const char * nick,
@@ -318,7 +318,7 @@ int irc_connect6 (irc_session_t * session,
 
 int irc_is_connected (irc_session_t * session)
 {
-	return (session->state == LIBIRC_STATE_CONNECTED 
+	return (session->state == LIBIRC_STATE_CONNECTED
 	|| session->state == LIBIRC_STATE_CONNECTING) ? 1 : 0;
 }
 
@@ -365,7 +365,7 @@ int irc_run (irc_session_t * session)
 
 int irc_add_select_descriptors (irc_session_t * session, fd_set *in_set, fd_set *out_set, int * maxfd)
 {
-	if ( session->sock < 0 
+	if ( session->sock < 0
 	|| session->state == LIBIRC_STATE_INIT
 	|| session->state == LIBIRC_STATE_DISCONNECTED )
 	{
@@ -441,7 +441,7 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		// we use buf+1 to skip the leading colon
 		prefix = buf + 1;
 
-		// If LIBIRC_OPTION_STRIPNICKS is set, we should 'clean up' nick 
+		// If LIBIRC_OPTION_STRIPNICKS is set, we should 'clean up' nick
 		// right here
 		if ( session->options & LIBIRC_OPTION_STRIPNICKS )
 		{
@@ -584,11 +584,11 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		else if ( !strcmp (command, "PRIVMSG") )
 		{
 			if ( paramindex > 1 )
-			{ 
+			{
 				unsigned int msglen = strlen (params[1]);
 
-				/* 
-				 * Check for CTCP request (a CTCP message starts from 0x01 
+				/*
+				 * Check for CTCP request (a CTCP message starts from 0x01
 				 * and ends by 0x01
                  */
 				if ( params[1][0] == 0x01 && params[1][msglen-1] == 0x01 )
@@ -637,8 +637,8 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 		{
 			unsigned int msglen = strlen (params[1]);
 
-			/* 
-			 * Check for CTCP request (a CTCP message starts from 0x01 
+			/*
+			 * Check for CTCP request (a CTCP message starts from 0x01
 			 * and ends by 0x01
              */
 			if ( paramindex > 1 && params[1][0] == 0x01 && params[1][msglen-1] == 0x01 )
@@ -676,8 +676,8 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 	 	else
 	 	{
 			/*
-			 * The "unknown" event is triggered upon receipt of any number of 
-			 * unclassifiable miscellaneous messages, which aren't handled by 
+			 * The "unknown" event is triggered upon receipt of any number of
+			 * unclassifiable miscellaneous messages, which aren't handled by
 			 * the library.
 			 */
 
@@ -692,7 +692,7 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 {
 	char buf[256], hname[256];
 
-	if ( session->sock < 0 
+	if ( session->sock < 0
 	|| session->state == LIBIRC_STATE_INIT
 	|| session->state == LIBIRC_STATE_DISCONNECTED )
 	{
@@ -703,10 +703,10 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 	libirc_dcc_process_descriptors (session, in_set, out_set);
 
 	// Handle "connection succeed" / "connection failed"
-	if ( session->state == LIBIRC_STATE_CONNECTING 
+	if ( session->state == LIBIRC_STATE_CONNECTING
 	&& FD_ISSET (session->sock, out_set) )
 	{
-		// Now we have to determine whether the socket is connected 
+		// Now we have to determine whether the socket is connected
 		// or the connect is failed
 		struct sockaddr_storage saddr, laddr;
 		socklen_t slen = sizeof(saddr);
@@ -748,12 +748,12 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 		irc_send_raw (session, buf);
 
 		/*
-		 * RFC 1459 states that "hostname and servername are normally 
-         * ignored by the IRC server when the USER command comes from 
-         * a directly connected client (for security reasons)", therefore 
+		 * RFC 1459 states that "hostname and servername are normally
+         * ignored by the IRC server when the USER command comes from
+         * a directly connected client (for security reasons)", therefore
          * we don't need them.
          */
-		snprintf (buf, sizeof(buf), "USER %s unknown unknown :%s", 
+		snprintf (buf, sizeof(buf), "USER %s unknown unknown :%s",
 				session->username ? session->username : "nobody",
 				session->realname ? session->realname : "noname");
 		irc_send_raw (session, buf);
@@ -803,7 +803,7 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 	{
 		int length;
 
-		// Because outgoing_buf could be changed asynchronously, we should 
+		// Because outgoing_buf could be changed asynchronously, we should
 		// lock any change
 		libirc_mutex_lock (&session->mutex_session);
 		length = socket_send (&session->sock, session->outgoing_buf, session->outgoing_offset);

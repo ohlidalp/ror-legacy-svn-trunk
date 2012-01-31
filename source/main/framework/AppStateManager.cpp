@@ -240,7 +240,7 @@ void AppStateManager::tryShutdown()
 {
 	// important: we need trylock here, otherwise it could happen
 	// that we run into a deadlock, when an exception is raised while the lock is hold.
-	// 
+	//
 	pthread_mutex_trylock(&lock);
 	m_bShutdown = true;
 	MUTEX_UNLOCK(&lock);

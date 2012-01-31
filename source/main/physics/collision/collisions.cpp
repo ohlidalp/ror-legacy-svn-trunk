@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -503,7 +503,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	Ogre::Vector3 h(hx, hy, hz);
 	Ogre::Vector3 p(px, py, pz);
 	Ogre::Vector3 sc(scx, scy, scz);
-	collision_box_t& coll_box = collision_boxes[free_collision_box]; 
+	collision_box_t& coll_box = collision_boxes[free_collision_box];
 	coll_box.enabled = true;
 	//set refined box anyway
 	coll_box.relo = l*sc;
@@ -751,7 +751,7 @@ int Collisions::removeCollisionBox(int num)
 	if(num < 0 || num > free_collision_box)
 		return 1;
 	
-	collision_box_t& coll_box = collision_boxes[num]; 
+	collision_box_t& coll_box = collision_boxes[num];
 	
 	if(!coll_box.enabled)
 		return 2;

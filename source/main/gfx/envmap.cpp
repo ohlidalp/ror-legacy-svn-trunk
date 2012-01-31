@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -77,7 +77,7 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 			camera[face]->setDirection(0, 0, -1);
 			break;
 		}
-	} 
+	}
 
 	bool debug = BSETTING("EnvMapDebug");
 	if(debug)
@@ -216,15 +216,15 @@ void Envmap::update(Vector3 center, Beam *beam)
 		else
 		{
 			//capture all images at once
-			for (int i=0; i<6; i++) 
+			for (int i=0; i<6; i++)
 			{
-				camera[i]->setPosition(center); 
+				camera[i]->setPosition(center);
 				rt[i]->update();
 			}
 			inited=true;
 		}
 	}
-	for (int i=0; i<6; i++) camera[i]->setPosition(center); 
+	for (int i=0; i<6; i++) camera[i]->setPosition(center);
 	
 	// try to hide all flexbodies and cabs prior render, and then show them again after done
 	// but only if they are visible ...
@@ -250,9 +250,9 @@ void Envmap::forceUpdate(Vector3 center)
 {
 	if (isDynamic) return;
 	//capture all images at once
-	for (int i=0; i<6; i++) 
+	for (int i=0; i<6; i++)
 	{
-		camera[i]->setPosition(center); 
+		camera[i]->setPosition(center);
 		rt[i]->update();
 	}
 	inited=true;

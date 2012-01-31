@@ -6,7 +6,7 @@ Copyright 2007-2012 Thomas Fischer
 For more information, see http://www.rigsofrods.com/
 
 Rigs of Rods is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 3, as 
+it under the terms of the GNU General Public License version 3, as
 published by the Free Software Foundation.
 
 Rigs of Rods is distributed in the hope that it will be useful,
@@ -33,7 +33,7 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 		sprintf(dename,"Dust %s %i", dname, i);
 		sns[i]=parent->createChildSceneNode();
 		pss[i]=smgr->createParticleSystem(dename, dname);
-		if (pss[i]) 
+		if (pss[i])
 		{
 			sns[i]->attachObject(pss[i]);
 			pss[i]->setCastShadows(false);
@@ -51,7 +51,7 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr
 void DustPool::setVisible(bool s)
 {
 	int i;
-	for (i=0; i<size; i++) 
+	for (i=0; i<size; i++)
 	{
 		//visible[i] = s;
 		pss[i]->setVisible(s);

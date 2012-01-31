@@ -674,7 +674,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						}
 					} else if(i == 1)
 					{
-						// wheelspeed adaption: 60 sec * 60 mins / 1000(kilometer) = 3.6 to get meter per sec 
+						// wheelspeed adaption: 60 sec * 60 mins / 1000(kilometer) = 3.6 to get meter per sec
 						alb_minspeed = (StringConverter::parseReal(options[i])/3.6f);
 						if (alb_minspeed < 0.5f) alb_minspeed = 0.5f;
 
@@ -717,16 +717,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 									alb_present = true;
 								}
 								else if (sourceStr == "OFF" || sourceStr == "off")
-								{ 
+								{
 									alb_mode = 0;
 									alb_present = true;
 								}
 								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
-								{ 
+								{
 									alb_present = false;
 								}
 								else if (sourceStr == "NOTOGGLE" || sourceStr == "notoggle" || sourceStr == "Notoggle" || sourceStr == "NoToggle")
-								{ 
+								{
 									alb_notoggle = true;
 								}
 
@@ -787,7 +787,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						else
 						{
 							tc_pulse = int( 2000.0f / fabs(pulse));
-							if (tc_pulse < 1) 
+							if (tc_pulse < 1)
 								tc_pulse = 1;
 						}
 					} else
@@ -814,21 +814,21 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 								String sourceStr = args3[j];
 								Ogre::StringUtil::trim(sourceStr);
 								if (sourceStr == "ON" || sourceStr == "on" || sourceStr == "On")	
-								{ 
+								{
 									tc_mode = 1;
 									tc_present = true;
 								}
 								else if (sourceStr == "OFF" || sourceStr == "off" || sourceStr == "Off")
-								{ 
+								{
 									tc_mode = 0;
 									tc_present = true;
 								}
 								else if (sourceStr == "NODASH" || sourceStr == "nodash" || sourceStr == "Nodash" || sourceStr == "NoDash")
-								{ 
+								{
 									tc_present = false;
 								}
 								else if (sourceStr == "NOTOGGLE" || sourceStr == "notoggle" || sourceStr == "Notoggle" || sourceStr == "NoToggle")
-								{ 
+								{
 									tc_notoggle = true;
 								}
 							}
@@ -1866,7 +1866,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (!triggerblocker && !triggerblocker_inverted && !hooktoggle)
 				{
 					// this is no Trigger-Blocker, make the full check
-					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0)) 
+					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
 					{
 						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.", PARSER_ERROR);
 						continue;
@@ -2661,7 +2661,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				std::vector<int> special_numbers;
 				special_numbers.push_back(-1);
 
-				// node usage before node section ... 
+				// node usage before node section ...
 				int nodepos = parse_node_number(c, args[0], &special_numbers); // special behavior, beware
 				int nodedir = parse_node_number(c, args[1], &special_numbers); // special behavior, beware
 				int dir     = parse_node_number(c, args[2], &special_numbers); // special behavior, beware
@@ -3975,10 +3975,10 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					front  = parse_node_number(c, args[0]);
 					back   = parse_node_number(c, args[1]);
 					// calculate fusedrag by truck size
-					if (n > 3) 
+					if (n > 3)
 						factor  = PARSEREAL(args[3]);
 					width  =  (fuse_z_max - fuse_z_min) * (fuse_y_max - fuse_y_min) * factor;
-					if (n > 4) 
+					if (n > 4)
 						strncpy(fusefoil, args[4].c_str(), 255);
 					if(!virtuallyLoaded)
 						fuseAirfoil = new Airfoil(fusefoil);
@@ -3992,7 +3992,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					front  = parse_node_number(c, args[0]);
 					back   = parse_node_number(c, args[1]);
 					width  = PARSEREAL(args[2]);
-					if (n > 3) 
+					if (n > 3)
 						strncpy(fusefoil, args[3].c_str(), 255);
 					
 					if(!virtuallyLoaded)
@@ -5302,7 +5302,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	}
 	
 
- 
+
 
 	parser_warning(c, "parsing done", PARSER_INFO);
 	return 0;
@@ -5373,7 +5373,7 @@ void SerializedRig::serialize(Ogre::String targetFilename, ScopeLog *scope_log)
 			root[L"maxy"]     = new JSONValue(TOSTRING(aab.getMaximum().y).c_str());
 			root[L"maxz"]     = new JSONValue(TOSTRING(aab.getMaximum().z).c_str());
 		}
- 
+
 		if(scope_log)
 		{
 			root[L"ogre_info"]       = new JSONValue(TOSTRING(scope_log->info).c_str());
@@ -6239,20 +6239,20 @@ bool SerializedRig::parseRailGroupLine(parsecontext_t c)
 {
 	const Ogre::String line = String(c.line);
 	Ogre::StringVector options = Ogre::StringUtil::split(line, ",");
-    
+
 	if( options.size() < 3)
 	{
 		parser_warning(c, "RAILGROUP: not enough nodes: " + String(line), PARSER_ERROR);
 		return false;
 	}
-    
+
 	unsigned int railID = StringConverter::parseInt(options[0]);
 	options.erase( options.begin() );
-    
+
 	Rail* newRail = parseRailString( options , c);
 	if( !newRail ) return false;
 	RailGroup* newGroup = new RailGroup( newRail, railID );
-        
+
 	mRailGroups.push_back(newGroup); // keep track of all allocated Rails
 	return true;
 }
@@ -6260,9 +6260,9 @@ bool SerializedRig::parseRailGroupLine(parsecontext_t c)
 bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 {
 	const Ogre::String line = String(c.line);
-	// add spaces as a separator to remove them 
+	// add spaces as a separator to remove them
 	Ogre::StringVector options = Ogre::StringUtil::split(line, ", ");
-    
+
 	if( options.size() < 2)
 	{
 		parser_warning(c, "SLIDENODE: not enough options provided: " + String(line), PARSER_ERROR);
@@ -6281,11 +6281,11 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 				TOSTRING( nodeid ) , PARSER_ERROR);
 		return false;
 	}
-    
+
 	RailGroup* rgGroup = NULL;
 	// options,
 	//if ends are open or closed ends, ie can node slide right off the end of a Rail
-	// attachment constraints, none, self, foreign, all 
+	// attachment constraints, none, self, foreign, all
 
 	//parser_warning(c, "SLIDENODE: making new SlideNode", PARSER_INFO);
 	SlideNode newSlideNode = SlideNode(node, NULL);
@@ -6294,7 +6294,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 	// check if tolerance value was provided ///////////////////////////////////
 	for( bool moreOptions = true; moreOptions && options.size() > 0; )
 	{
-		std::pair<char, Ogre::String> option(options.back()[0], 
+		std::pair<char, Ogre::String> option(options.back()[0],
 				Ogre::String( options.back().begin() + 1, options.back().end() ) );
 		
 		switch( option.first )
@@ -6304,7 +6304,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 		{			
 			parser_warning(c, "SLIDENODE: setting tolerance to : " + option.second , PARSER_INFO);
 			newSlideNode.setThreshold( StringConverter::parseReal( option.second ) );
-		} 
+		}
 		break;
 		
 		// specify a rail group
@@ -6315,7 +6315,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 			if( !rgGroup )
 			{
 				parser_warning(c, "RAILGROUP: warning could not find "
-						"a Railgroup with corresponding ID: " + 
+						"a Railgroup with corresponding ID: " +
 						option.second + ". Will check for anonymous rail", PARSER_WARNING);
 			}
 			else
@@ -6340,7 +6340,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 
 		// Maximum attachment Distance in meters, default infinity
 		case 'd': case 'D':
-			newSlideNode.setAttachmentDistance( StringConverter::parseReal( option.second ) ); 
+			newSlideNode.setAttachmentDistance( StringConverter::parseReal( option.second ) );
 			break;
 		
 		// Attachment constraints, bit Flags, default none
@@ -6370,7 +6370,7 @@ bool SerializedRig::parseSlideNodeLine(parsecontext_t c)
 		if( moreOptions ) options.pop_back();
 	}
 
-	// find beam ///////////////////////////////////////////////////////////////    
+	// find beam ///////////////////////////////////////////////////////////////
 	// rail builder allocates the memory for each rail, it will not free it,
 	if( !rgGroup && options.size() > 0 )
 	{
@@ -6428,7 +6428,7 @@ RailGroup* SerializedRig::getRailFromID(unsigned int id)
 Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, parsecontext_t c)
 {
 	std::vector<int> nodeids;
-    
+
 	// convert all strings to integers
 	for( unsigned int i = 0; i < railStrings.size(); ++i)
 	{
@@ -6439,9 +6439,9 @@ Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, pa
     		
 			// from start to '-'
 			const int start = StringConverter::parseInt(railStrings[i].substr(0, pos) );
-			// from character after '-' to end 
+			// from character after '-' to end
 			const int end = StringConverter::parseInt( railStrings[i].substr(++pos) );
-    		 
+    		
 			// if start is a lower value than the end, we need to start at the
 			// higher value and decrement to the lower value. to avoid duplicate
 			// logic (ie one loop for positive and one loop for negative
@@ -6456,7 +6456,7 @@ Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, pa
     		
 			for(int j = start ; inc * j <= inc * end; j += inc )
 			{
-				// if end is lower than start then 
+				// if end is lower than start then
 				nodeids.push_back( j );
 			}
     		
@@ -6465,26 +6465,26 @@ Rail* SerializedRig::parseRailString( const Ogre::StringVector & railStrings, pa
     	
 		nodeids.push_back(StringConverter::parseInt(railStrings[i]));
 	}
-    
+
 	return getRails( nodeids,  c);
 }
 
 Rail* SerializedRig::getRails(const std::vector<int>& nodeids, parsecontext_t c)
 {
-	// find beam ///////////////////////////////////////////////////////////////    
+	// find beam ///////////////////////////////////////////////////////////////
 	// rail builder allocates the memory for each rail, it will not free it
 	RailBuilder builder;
-    
+
 	if( nodeids.front() == nodeids.back() )
 	{
 		parser_warning(c, "RAIL: Looping SlideRail", PARSER_INFO);
 			builder.loopRail();
-	} 
-    
+	}
+
 	for( unsigned int i = 0; i < (nodeids.size() - 1); ++i)
 	{
 		beam_t* beam = getBeam( nodeids[i], nodeids[i+1] );
-    
+
 		// Verify Beam
 		if( !beam )
 		{
