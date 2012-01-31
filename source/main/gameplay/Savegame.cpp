@@ -55,7 +55,7 @@ int Savegame::save(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "wb");
 
 	// wait for engine sync
-	BeamFactory::getSingleton()._waitForSync();
+	BeamWaitAndLock syncBeams();
 
 	// TODO: show error
 	if(!f) 
@@ -223,7 +223,7 @@ int Savegame::load(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "rb");
 
 	// wait for engine sync
-	BeamFactory::getSingleton()._waitForSync();
+	BeamWaitAndLock syncBeams();
 
 	if(!f)
 	{

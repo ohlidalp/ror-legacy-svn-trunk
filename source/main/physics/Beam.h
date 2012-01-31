@@ -171,8 +171,6 @@ public:
 	SceneManager *tsm;
 	//! @}
 
-	void _waitForSync();
-
 	//! @{ startup / shutdown
 	void prepareShutdown();
 	//! @}

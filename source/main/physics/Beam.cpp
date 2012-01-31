@@ -22,8 +22,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <float.h>
 #include "Beam.h"
 #include "BeamData.h"
-
-
 #include "engine.h"
 #include "SoundScriptManager.h"
 #include "heightfinder.h"
@@ -65,12 +63,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColoredTextAreaOverlayElement.h"
 #include "Scripting.h"
 #include "PreviewRenderer.h"
-
 #include "DashBoardManager.h"
-
 #include "rornet.h"
 #include "MeshObject.h"
-
+#include "BeamWaitAndLock.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -81,11 +77,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "crashrpt.h"
 #endif
 
-// TODO WHAT IS THIS?
+// Birthtime
 float mrtime;
 
 //threads and mutexes, see also at the bottom
-int thread_mode=0;
+int thread_mode=THREAD_SINGLE;
 
 void *threadstart(void* vid);
 
@@ -97,20 +93,14 @@ int free_tb=0;
 Beam::~Beam()
 {
 	// TODO: IMPROVE below: delete/destroy prop entities, etc
-
+	
 	deleting = true;
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
 
 	//block until all threads done
-	if (thread_mode==THREAD_HT)
-	{
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
-	}
+	BeamWaitAndLock beamSync();
 
 	// delete all classes we might have constructed
 #ifdef USE_MYGUI
@@ -303,7 +293,6 @@ Beam::~Beam()
 		delete netMT;
 		netMT = 0;
 	}
-
 }
 
 Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
@@ -336,7 +325,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		for(std::vector<String>::iterator it = _truckconfig->begin(); it!=_truckconfig->end();it++)
 			truckconfig.push_back(*it);
 #ifdef USE_OPENAL
-	ssm=SoundScriptManager::getSingleton();
+	ssm=SoundScriptManager::getInstancePtrNoCreation();
 #endif //OPENAL
 	materialFunctionMapper = new MaterialFunctionMapper();
 	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
@@ -535,7 +524,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	heathaze=BSETTING("HeatHaze");
 	if(heathaze && disable_smoke)
-		//no heathaze without smoke!
+		// no heathaze without smoke!
 		heathaze=false;
 
 
@@ -607,71 +596,50 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	nodebuffersize = sizeof(float) * 3 + (first_wheel_node-1) * sizeof(short int) * 3;
 	netbuffersize  = nodebuffersize + free_wheel * sizeof(float);
 	updateVisual();
-	//stop lights
+	// stop lights
 	lightsToggle();
 
 	updateFlares(0);
 	updateProps();
 	if (engine) engine->offstart();
-	//pressurize tires
+	// pressurize tires
 	addPressure(0.0);
-	//thread start
-	//get parameters
-	if (SSETTING("Threads")=="1 (Single Core CPU)")thread_mode=THREAD_MONO;
-	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)") thread_mode=THREAD_HT;
-	if (SSETTING("Threads")=="3 (multi core CPU, one thread per beam)") thread_mode=THREAD_HT2;
+	// thread start
+	// get parameters
+	if (SSETTING("Threads")=="1 (Single Core CPU)")	thread_mode=THREAD_SINGLE;
+	if (SSETTING("Threads")=="2 (Hyper-Threading or Dual core CPU)")		thread_mode=THREAD_MULTI;
 
 	checkBeamMaterial();
 
-	//init mutexes
+	// init mutexes
 	pthread_mutex_init(&work_mutex, NULL);
 	pthread_cond_init(&work_cv, NULL);
 
-	if (thread_mode == THREAD_HT)
-		done_count=thread_mode;//for ready test
-	else if (thread_mode == THREAD_HT2)
-		done_count=1;//for ready test
+	done_count=thread_mode; // for ready test
 
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
 
 	threadbeam[free_tb]=this;
 	free_tb++;
-
-	//starting threads
-	if (thread_mode == THREAD_HT)
+	
+	// start threads
+	if (thread_mode > THREAD_SINGLE)
 	{
 		for (i=0; i<thread_mode; i++)
-		{
-			int rc;
-			rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
-			if (rc) LOG("BEAM: Can not start a thread");
-		}
+			if (pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1)))
+				LOG("BEAM: Can not start a thread");
 
-		//we must wait the threads to be ready
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
-	} else if (thread_mode == THREAD_HT2)
-	{
-		// just create ONE thread for this beam
-		int rc;
-		i=0;
-		rc=pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1));
-		if (rc) LOG("BEAM: Can not start a thread");
-
-		//we must wait the threads to be ready
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
 	}
-	//all finished? so start network stuff
+
+	// wait for the thread(s) to be ready	
+	BeamWaitAndLock beamSync();
+
+	// all finished? so start network stuff
 	if (networked)
 	{
 		state=NETWORKED;
-		//malloc memory
+		// malloc memory
 		oob1=(oob_t*)malloc(sizeof(oob_t));
 		oob2=(oob_t*)malloc(sizeof(oob_t));
 		oob3=(oob_t*)malloc(sizeof(oob_t));
@@ -681,7 +649,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		nettimer = new Timer();
 		net_toffset=0;
 		netcounter=0;
-		//init mutex
+		// init mutex
 		pthread_mutex_init(&net_mutex, NULL);
 		if (engine) engine->start();
 	}
@@ -867,7 +835,7 @@ beam_t *Beam::addBeam(int id1, int id2)
 		LOG("Error: unknown node number in beams section ("
 			+TOSTRING(id1)+","+TOSTRING(id2)+")");
 		exit(3);
-	};
+	}
 	//skip if a beam already exists
 	LOG(TOSTRING(nodes[id1].AbsPosition)+" -> "+TOSTRING(nodes[id2].AbsPosition));
 	int i;
@@ -998,7 +966,7 @@ void Beam::pushNetwork(char* data, int size)
 		LOG("WRONG network size: we expected " + TOSTRING(netbuffersize+sizeof(oob_t)) + " but got " + TOSTRING(size) + " for vehicle " + String(truckname));
 		state = SLEEPING;
 		return;
-	};
+	}
 	//okay, the big switch
 	MUTEX_LOCK(&net_mutex);
 	
@@ -1268,7 +1236,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 			Real newlen=beams[i].L;
 			if (!(beams[i].p1->iswheel)) len+=newlen/2.0;
 			if (!(beams[i].p2->iswheel)) len+=newlen/2.0;
-		};
+		}
 	}
 	if(!reCalc)
 	{
@@ -1279,7 +1247,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 				Real mass=beams[i].L*total/len;
 				if (!(beams[i].p1->iswheel)) beams[i].p1->mass+=mass/2;
 				if (!(beams[i].p2->iswheel)) beams[i].p2->mass+=mass/2;
-			};
+			}
 		}
 	}
 	//fix rope masses
@@ -1951,54 +1919,28 @@ void Beam::SyncReset()
 //this is called by the threads
 void Beam::threadentry(int id)
 {
-	if (thread_mode==THREAD_HT)
+	if (thread_mode == THREAD_MULTI)
 	{
-		int steps,i;
-		float dt;
-		Beam **trucks;
-		int numtrucks;
-		steps=tsteps;
-		dt=tdt;
-		trucks=ttrucks;
-		numtrucks=tnumtrucks;
-		float dtperstep=dt/(Real)steps;
+		Beam **trucks=ttrucks;
+		int steps=tsteps;
+		int numtrucks=tnumtrucks;
+		float dt=tdt;
+		float dtperstep = dt / (Real)steps;
 
-		for (i=0; i<steps; i++)
+		for (int i=0; i<steps; i++)
 		{
-			int t;
-			for (t=0; t<numtrucks; t++)
+			for (int t=0; t<numtrucks; t++)
 			{
 				if(!trucks[t]) continue;
-				//engine update
-				//				if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
+
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-				{
 					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
-					//trucks[t]->position=trucks[t]->aposition;
-				}
 			}
 			truckTruckCollisions(dtperstep);
 		}
-		ffforce=affforce/steps;
-		ffhydro=affhydro/steps;
-		if (free_hydro) ffhydro=ffhydro/free_hydro;
 
-	} else if (thread_mode==THREAD_HT2)
-	{
-		// work on 'this'
-		if (this->state==SLEEPING || this->state==NETWORKED || this->state==RECYCLE)
-		{
-			debugText = "";
-			return;
-		}
-		float dtperstep = tdt / (Real)tsteps;
-
-		for (int i=0; i<tsteps; i++)
-		{
-			this->calcForcesEuler(i==0, dtperstep, i, tsteps);
-		}
-		ffforce = affforce / tsteps;
-		ffhydro = affhydro / tsteps;
+		ffforce = affforce / steps;
+		ffhydro = affhydro / steps;
 		if (free_hydro) ffhydro = ffhydro / free_hydro;
 	}
 }
@@ -2043,7 +1985,7 @@ bool Beam::frameStep(Real dt)
 	else
 	{
 		debugText="SL - Fasttrack: "+TOSTRING(fasted*100/(fasted+slowed))+"% "+TOSTRING(steps)+" steps";
-	};
+	}
 
 	// TODO: move this to the correct spot
 	// update all dashboards
@@ -2053,8 +1995,6 @@ bool Beam::frameStep(Real dt)
 	if(dash)
 		dash->update(dt);
 #endif // USE_MYGUI
-
-
 
 	//update visual - antishaking
 	//	int t;
@@ -2130,82 +2070,66 @@ bool Beam::frameStep(Real dt)
 	else
 	{
 		//simulation update
-		int t;
-
-		if (thread_mode==THREAD_MONO)
+		if (thread_mode == THREAD_SINGLE)
 		{
 			ttdt=tdt;
 			tdt=dt;
 			float dtperstep=dt/(Real)steps;
 
-			for (t=0; t<numtrucks; t++)
+			for (int i=0; i<steps; i++)
 			{
-				if(!trucks[t]) continue;
-				trucks[t]->lastlastposition=trucks[t]->lastposition;
-				trucks[t]->lastposition=trucks[t]->position;
-			}
-			for (i=0; i<steps; i++)
-			{
-				int t;
-				for (t=0; t<numtrucks; t++)
+				for (int t=0; t<numtrucks; t++)
 				{
 					if(!trucks[t]) continue;
-					//engine update
-					//							if (trucks[t]->engine) trucks[t]->engine->update(dt/(Real)steps, i==0);
+
 					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-					{
 						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
-//							trucks[t]->position=trucks[t]->aposition;
-					}
 				}
 				truckTruckCollisions(dtperstep);
 			}
-			//smooth
-			for (t=0; t<numtrucks; t++)
+
+			for (int t=0; t<numtrucks; t++)
 			{
 				if(!trucks[t]) continue;
-				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
+
+				if (trucks[t]->reset_requested)
+					trucks[t]->SyncReset();
+
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
 				{
+					trucks[t]->lastlastposition=trucks[t]->lastposition;
+					trucks[t]->lastposition=trucks[t]->position;
 					trucks[t]->updateTruckPosition();
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-				{
 					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
-				}
 			}
 
 			ffforce=affforce/steps;
 			ffhydro=affhydro/steps;
 			if (free_hydro) ffhydro=ffhydro/free_hydro;
 
-		} else if (thread_mode==THREAD_HT)
+		} else
 		{
-			//block until all threads done
-			MUTEX_LOCK(&done_count_mutex);
-			while (done_count>0)
-				pthread_cond_wait(&done_count_cv, &done_count_mutex);
-			MUTEX_UNLOCK(&done_count_mutex);
-
-			for (t=0; t<numtrucks; t++)
+			//block until all threads are done
 			{
-				if(!trucks[t]) continue;
-				trucks[t]->lastlastposition=trucks[t]->lastposition;
-				trucks[t]->lastposition=trucks[t]->position;
-			}
+				BeamWaitAndLock beamSync();
+				for (int t=0; t<numtrucks; t++)
+				{
+					if (!trucks[t]) continue;
 
-			//smooth
-			for (t=0; t<numtrucks; t++)
-			{
-				if (!trucks[t]) continue;
-				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-				{
-					trucks[t]->updateTruckPosition();
-				}
-				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-				{
-					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+					if (trucks[t]->reset_requested)
+						trucks[t]->SyncReset();
+
+					if (trucks[t]->state != SLEEPING && trucks[t]->state != NETWORKED && trucks[t]->state != RECYCLE)
+					{
+						trucks[t]->lastlastposition=trucks[t]->lastposition;
+						trucks[t]->lastposition=trucks[t]->position;
+						trucks[t]->updateTruckPosition();
+					}
+
+					if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+						trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
 				}
 			}
 
@@ -2214,6 +2138,7 @@ bool Beam::frameStep(Real dt)
 			tdt=dt;
 			ttrucks=trucks;
 			tnumtrucks=numtrucks;
+
 			//preparing workdone
 			MUTEX_LOCK(&done_count_mutex);
 			done_count=thread_mode;
@@ -2223,30 +2148,6 @@ bool Beam::frameStep(Real dt)
 			MUTEX_LOCK(&work_mutex);
 			pthread_cond_broadcast(&work_cv);
 			MUTEX_UNLOCK(&work_mutex);
-
-		} else if (thread_mode==THREAD_HT2)
-		{
-			// just for this truck
-			lastlastposition = lastposition;
-			lastposition = position;
-
-			if (reset_requested) SyncReset();
-
-			if (state!=SLEEPING && state!=NETWORKED && state!=RECYCLE)
-			{
-				updateTruckPosition();
-			}
-
-			if (floating_origin_enable && nodes[0].RelPosition.length()>100.0)
-			{
-				moveOrigin(nodes[0].RelPosition);
-			}
-
-			tsteps=steps;
-			ttdt=tdt;
-			tdt=dt;
-			ttrucks=trucks;
-			tnumtrucks=numtrucks;
 		}
 
 
@@ -2264,7 +2165,7 @@ bool Beam::frameStep(Real dt)
 			{
 				trucks[t]->sleepcount++;
 				if ((trucks[t]->lastposition-trucks[t]->lastlastposition).length()/dt>0.1) trucks[t]->sleepcount=7;
-				if (trucks[t]->sleepcount>10) {trucks[t]->state=MAYSLEEP;trucks[t]->sleepcount=0;};
+				if (trucks[t]->sleepcount>10) {trucks[t]->state=MAYSLEEP;trucks[t]->sleepcount=0;}
 			}
 		}
 	}
@@ -2273,15 +2174,7 @@ bool Beam::frameStep(Real dt)
 
 void Beam::prepareShutdown()
 {
-	if (thread_mode==THREAD_HT)
-	{
-		//block until all threads done
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
-	};
-
+	BeamWaitAndLock sync();
 }
 
 void Beam::sendStreamSetup()
@@ -3631,7 +3524,7 @@ void Beam::lightsToggle()
 				//			((Entity*)(cabNode->getAttachedObject(0)))->setMaterialName(texname);
 			}
 		}
-	};
+	}
 
 	TRIGGER_EVENT(SE_TRUCK_LIGHT_TOGGLE, trucknum);
 }
@@ -3661,7 +3554,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 				//billboard
 				Vector3 vdir=props[i].light[0]->getPosition()-mCamera->getPosition();
 				float vlen=vdir.length();
-				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;};
+				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;}
 				//normalize
 				vdir=vdir/vlen;
 				props[i].bbsnode[0]->setPosition(props[i].light[0]->getPosition()-vdir*0.1);
@@ -3696,7 +3589,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 					//billboard
 					Vector3 vdir=props[i].light[k]->getPosition()-mCamera->getPosition();
 					float vlen=vdir.length();
-					if (vlen>100.0) {props[i].bbsnode[k]->setVisible(false);continue;};
+					if (vlen>100.0) {props[i].bbsnode[k]->setVisible(false);continue;}
 					//normalize
 					vdir=vdir/vlen;
 					props[i].bbsnode[k]->setPosition(props[i].light[k]->getPosition()-vdir*0.2);
@@ -3722,7 +3615,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 				//billboard
 				Vector3 vdir=props[i].light[0]->getPosition()-mCamera->getPosition();
 				float vlen=vdir.length();
-				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;};
+				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;}
 				//normalize
 				vdir=vdir/vlen;
 				props[i].bbsnode[0]->setPosition(props[i].light[0]->getPosition()-vdir*0.1);
@@ -3743,7 +3636,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 				//billboard
 				Vector3 vdir=mposition-mCamera->getPosition();
 				float vlen=vdir.length();
-				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;};
+				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;}
 				//normalize
 				vdir=vdir/vlen;
 				props[i].bbsnode[0]->setPosition(mposition-vdir*0.1);
@@ -3756,7 +3649,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 				//billboard
 				Vector3 vdir=mposition-mCamera->getPosition();
 				float vlen=vdir.length();
-				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;};
+				if (vlen>100.0) {props[i].bbsnode[0]->setVisible(false);continue;}
 				//normalize
 				vdir=vdir/vlen;
 				props[i].bbsnode[0]->setPosition(mposition-vdir*0.1);
@@ -3847,7 +3740,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		{
 			flares[i].snode->setVisible(false);
 			continue;
-		};
+		}
 		//normalize
 		vdir=vdir/vlen;
 		float amplitude=normal.dotProduct(vdir);
@@ -4090,7 +3983,7 @@ void Beam::updateVisual(float dt)
 			else
 			{
 				emit->setEnabled(false);
-			};
+			}
 			emit->setParticleVelocity(1.0+engine->getSmoke()*2.0, 2.0+engine->getSmoke()*3.0);
 		}
 	}
@@ -4171,7 +4064,7 @@ void Beam::updateVisual(float dt)
 				beams[i].mSceneNode->setOrientation(specialGetRotationTo(ref,beams[i].p1->smoothpos-beams[i].p2->smoothpos));
 				//					beams[i].mSceneNode->setScale(default_beam_diameter/100.0,(beams[i].p1->smoothpos-beams[i].p2->smoothpos).length()/100.0,default_beam_diameter/100.0);
 				beams[i].mSceneNode->setScale(beams[i].diameter, (beams[i].p1->smoothpos-beams[i].p2->smoothpos).length(), beams[i].diameter);
-			};
+			}
 		}
 		for (i=0; i<free_wheel; i++)
 		{
@@ -4191,7 +4084,7 @@ void Beam::updateVisual(float dt)
 					beams[i].mSceneNode->setOrientation(specialGetRotationTo(ref,beams[i].p1->smoothpos-beams[i].p2->smoothpos));
 					beams[i].mSceneNode->setScale(skeleton_beam_diameter,(beams[i].p1->smoothpos-beams[i].p2->smoothpos).length(),skeleton_beam_diameter);
 					//					beams[i].mSceneNode->setScale(default_beam_diameter/100.0,(beams[i].p1->smoothpos-beams[i].p2->smoothpos).length()/100.0,default_beam_diameter/100.0);
-				};
+				}
 			}
 			for (i=0; i<free_wheel; i++)
 			{
