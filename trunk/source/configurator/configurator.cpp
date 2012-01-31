@@ -245,7 +245,8 @@ public:
 	void OnButCheckOpenCL(wxCommandEvent& event);
 	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
-	void OnsightrangesliderScroll(wxScrollEvent& event);
+	void OnSightrangesliderScroll(wxScrollEvent& event);
+	void OnVolumesliderScroll(wxScrollEvent& event);
 	void OnForceFeedbackScroll(wxScrollEvent& event);
 	void OnNoteBookPageChange(wxNotebookEvent& event);
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
@@ -309,6 +310,8 @@ private:
 	wxCheckBox *skidmarks;
 	wxCheckBox *creaksound;
 	wxValueChoice *sound;
+	wxSlider *soundVolume;
+	wxStaticText *soundVolumeText;
 	wxValueChoice *thread;
 	wxValueChoice *flaresMode;
 	wxValueChoice *languageMode;
@@ -400,6 +403,7 @@ enum
 	check_opencl,
 	check_opencl_bw,
 	sightrangeslider,
+	volumeslider,
 	shadowschoice,
 	shadowopt,
 };
@@ -430,7 +434,9 @@ BEGIN_EVENT_TABLE(MyDialog, wxDialog)
 	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
 #endif  // wxCHECK_VERSION(2, 8, 0)
 	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
-	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnsightrangesliderScroll)
+	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnSightrangesliderScroll)
+	EVT_COMMAND_SCROLL(volumeslider, MyDialog::OnVolumesliderScroll)
+	
 	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
 	EVT_CHOICE(EVC_LANG, MyDialog::onChangeLanguageChoice)
 	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
@@ -1479,6 +1485,13 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 #endif
 	y+=35;
 
+	dText = new wxStaticText(advancedPanel, wxID_ANY, _("Sound Volume:"), wxPoint(10,y+3));
+	soundVolume=new wxSlider(advancedPanel, volumeslider, 100, 0, 100, wxPoint(x_row1, y), wxSize(200, -1));
+	soundVolume->SetToolTip(_("sets the master volume"));
+	soundVolumeText = new wxStaticText(advancedPanel, wxID_ANY, _("100 %"), wxPoint(x_row1 + 210,y+3));
+	y+=35;
+
+
 	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10,y+3));
 	thread=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	thread->AppendValueItem(wxT("1 (Single Core CPU)"), _("1 (Single Core CPU)"));
@@ -2087,6 +2100,7 @@ void MyDialog::SetDefaults()
 	skidmarks->SetValue(false);
 	creaksound->SetValue(true);
 	sound->SetSelection(1);//default
+	soundVolume->SetValue(100);
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 
 #ifdef NETWORK
@@ -2158,6 +2172,9 @@ void MyDialog::getSettingsControls()
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["3D Sound renderer"] = sound->getSelectedValueAsSTDString();
+
+	sprintf(tmp, "%d", soundVolume->GetValue());
+	settings["Sound Volume"] = tmp;
 	settings["Threads"] = thread->getSelectedValueAsSTDString();
 
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
@@ -2228,6 +2245,15 @@ void MyDialog::updateSettingsControls()
 		if(conv(st).ToDouble(&sightrange))
 			sightRange->SetValue(sightrange);
 	}
+
+	st = settings["Sound Volume"];
+	long volume = 100;
+	if (st.length()>0)
+	{
+		if(conv(st).ToLong(&volume))
+			soundVolume->SetValue(volume);
+	}
+
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
 	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
@@ -2306,7 +2332,9 @@ void MyDialog::updateSettingsControls()
 	st = settings["User Token"]; if (st.length()>0) usertoken->SetValue(conv(st));
 #endif
 	// update slider text
-	OnsightrangesliderScroll(dummye);
+	OnSightrangesliderScroll(dummye);
+	OnVolumesliderScroll(dummye);
+
 }
 
 bool MyDialog::LoadConfig()
@@ -2822,7 +2850,7 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	wxMessageBox(_("Cache cleared"), wxT("RoR: Cache cleared"), wxICON_INFORMATION);
 }
 
-void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
+void MyDialog::OnSightrangesliderScroll(wxScrollEvent &e)
 {
 	wxString s;
 	int v = sightRange->GetValue();
@@ -2834,6 +2862,20 @@ void MyDialog::OnsightrangesliderScroll(wxScrollEvent &e)
 		s.Printf(wxT("%i m"), v);
 	}
 	sightRangeText->SetLabel(s);
+}
+
+void MyDialog::OnVolumesliderScroll(wxScrollEvent &e)
+{
+	wxString s;
+	int v = soundVolume->GetValue();
+	if(v == soundVolume->GetMin())
+	{
+		s = _("Muted");
+	} else
+	{
+		s.Printf(wxT("%i %%"), v);
+	}
+	soundVolumeText->SetLabel(s);
 }
 
 void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
