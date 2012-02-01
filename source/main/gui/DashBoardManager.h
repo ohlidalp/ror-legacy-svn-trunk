@@ -55,11 +55,13 @@ typedef struct dashData_t
 
 	dashData_t() : type(DC_INVALID)
 	{
+		memset(&data, 0, sizeof(data));
 	}
 
 	dashData_t(char type, const char *name) : type(type), name(name)
 	{
-	};
+		memset(&data, 0, sizeof(data));
+	}
 
 } dashData_t;
 
