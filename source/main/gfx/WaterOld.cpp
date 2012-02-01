@@ -423,18 +423,43 @@ void WaterOld::setHeight(float value)
 
 float WaterOld::getHeightWaves(Vector3 pos)
 {
+	// no waves?
 	if(!haswaves)
-		return height;
-	if (pos.y>height+maxampl) return height;
-	int i;
-	float waveheight=(pos-Vector3((*mapsizex * mScale)/2, height, (*mapsizez * mScale)/2)).squaredLength()/3000000.0;
-	float result=height;
-	for (i=0; i<free_wavetrain; i++)
 	{
-		float amp=wavetrains[i].amplitude*waveheight;
-		if (amp>wavetrains[i].maxheight) amp=wavetrains[i].maxheight;
-		result+=amp*sin(6.28318*((mrtime*wavetrains[i].wavespeed+sin(wavetrains[i].direction)*pos.x+cos(wavetrains[i].direction)*pos.z)/wavetrains[i].wavelength));
+		// constant height, sea is flat as pancake
+		return height;
 	}
+
+	// uh, some upper limit?!
+	if (pos.y > height + maxampl)
+		return height;
+
+	// calculate how heigh the waves should be at this point
+	//  (*mapsizex * mScale) / 2 = terrain width / 2
+	//  (*mapsizez * mScale) / 2 = terrain height / 2
+	// calculates the distance to the center of the terrain and dives it through 3.000.000
+	float waveheight = (pos - Vector3((*mapsizex * mScale) / 2, height, (*mapsizez * mScale) / 2)).squaredLength() / 3000000.0;
+	// we will store the result in this variable, init it with the deafult height
+	float result = height;
+	// now walk through all the wave trains. One 'train' is one sin/cos set that will generate once wave. All the trains together will sum up, so that they generate a 'rough' sea
+	for (int i=0; i<free_wavetrain; i++)
+	{
+		// calculate the amplitude that this wave will have. wavetrains[i].amplitude is read from the config
+		float amp = wavetrains[i].amplitude * waveheight;
+		// upper limit: prevent too big waves by setting an uper limit
+		if (amp > wavetrains[i].maxheight)
+			amp = wavetrains[i].maxheight;
+		// now the main thing:
+		// calculate the sinus with the values of the config file and add it to the result
+		result += amp * sin(Math::TWO_PI * ( \
+											(mrtime * wavetrains[i].wavespeed \
+											+ sin(wavetrains[i].direction) * pos.x \
+											+ cos(wavetrains[i].direction) * pos.z \
+											) \
+											/ wavetrains[i].wavelength) \
+											);
+	}
+	// return the summed up waves
 	return result;
 }
 
