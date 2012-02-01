@@ -48,49 +48,55 @@ Settings::~Settings()
 {
 }
 
-Ogre::String Settings::getSetting(Ogre::String key, Ogre::String default)
+Ogre::String Settings::getSetting(Ogre::String key, Ogre::String defaultValue)
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
 	{
-		setSetting(key, default);
-		return default;
+		setSetting(key, defaultValue);
+		return defaultValue;
 	}
 	return it->second;
 }
 
-Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key, Ogre::UTFString default)
+Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key, Ogre::UTFString defaultValue)
 {
-	return getSetting(key, default);
+	return getSetting(key, defaultValue);
 }
 
-int Settings::getIntegerSetting( Ogre::String key, int default )
+int Settings::getIntegerSetting( Ogre::String key, int defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
 	{
-		setSetting(key, TOSTRING(default));
-		return default;
+		setSetting(key, TOSTRING(defaultValue));
+		return defaultValue;
 	}
 	return PARSEINT(it->second);
 }
 
-float Settings::getFloatSetting( Ogre::String key, float default )
+float Settings::getFloatSetting( Ogre::String key, float defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
 	{
-		setSetting(key, TOSTRING(default));
-		return default;
+		setSetting(key, TOSTRING(defaultValue));
+		return defaultValue;
 	}
 	return PARSEREAL(it->second);
 }
 
-bool Settings::getBooleanSetting(Ogre::String key, bool default)
+bool Settings::getBooleanSetting(Ogre::String key, bool defaultValue)
 {
-	String value = settings[key];
-	StringUtil::toLowerCase(value);
-	return value == "yes";
+	settings_map_t::iterator it = settings.find(key);
+	if(it == settings.end())
+	{
+		setSetting(key, defaultValue?"Yes":"No");
+		return defaultValue;
+	}
+	String strValue = it->second;
+	StringUtil::toLowerCase(strValue);
+	return (strValue == "yes");
 }
 
 Ogre::String Settings::getSettingScriptSafe(const Ogre::String &key)
