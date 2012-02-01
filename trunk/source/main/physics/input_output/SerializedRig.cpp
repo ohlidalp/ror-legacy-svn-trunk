@@ -292,7 +292,6 @@ SerializedRig::SerializedRig()
 	fuseWidth=0;
 	brakeforce=30000.0;
 	hbrakeforce = 2*brakeforce;
-	dynamicMapMode = 0;
 	debugVisuals = SETTINGS.getBooleanSetting("DebugBeams", false);
 	shadowOptimizations = SETTINGS.getBooleanSetting("Shadow optimizations", true);
 
@@ -4148,16 +4147,6 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(keyword, args[0].c_str(), 255);
 				strncpy(value,   args[1].c_str(), 255);
 
-				if(!strncmp(keyword, "interactiveOverviewMap", 255) && strnlen(value, 255) > 0)
-				{
-					dynamicMapMode = 0;
-					if(!strncmp(value, "off", 255))
-						dynamicMapMode = 0;
-					else if(!strncmp(value, "simple", 255))
-						dynamicMapMode = 1;
-					else if(!strncmp(value, "zoom", 255))
-						dynamicMapMode = 2;
-				}
 				if(!strncmp(keyword, "debugBeams", 255) && strnlen(value, 255) > 0)
 				{
 					// obsolete

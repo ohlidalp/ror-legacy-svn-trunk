@@ -151,7 +151,6 @@ protected:
 
 	MapControl *bigMap;
 	StaticGeometry *bakesg;
-	int interactivemap;
 	int externalCameraMode;
 	int netPointToUID;
 

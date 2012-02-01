@@ -882,24 +882,6 @@ eventInfo_t eventInfo[] = {
 		_L("EXPERIMENTAL: save changes to the grass density image")
 	},
 	{
-		"MAP_IN",
-		EV_MAP_IN,
-		"Keyboard EXPL+DIVIDE",
-		_L("zoom into the overview map in interactive mode")
-	},
-	{
-		"MAP_INTERACTIVE_TOGGLE",
-		EV_MAP_INTERACTIVE_TOGGLE,
-		"Keyboard EXPL+CTRL+DIVIDE",
-		_L("toggle overview map interactive mode")
-	},
-	{
-		"MAP_OUT",
-		EV_MAP_OUT,
-		"Keyboard EXPL+MULTIPLY",
-		_L("zoom into the overview map in interactive mode")
-	},
-	{
 		"MENU_DOWN",
 		EV_MENU_DOWN,
 		"Keyboard DOWN",

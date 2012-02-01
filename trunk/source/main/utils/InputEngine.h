@@ -220,9 +220,6 @@ enum events
 	EV_GRASS_MOST, //!< EXPERIMENTAL: set maximum amount of grass
 	EV_GRASS_NONE, //!< EXPERIMENTAL: remove grass completely
 	EV_GRASS_SAVE, //!< EXPERIMENTAL: save changes to the grass density image
-	EV_MAP_IN, //!< zoom into the overview map in interactive mode
-	EV_MAP_INTERACTIVE_TOGGLE, //!< toggle overview map interactive mode
-	EV_MAP_OUT, //!< zoom into the overview map in interactive mode
 	EV_MENU_DOWN, //!< select next element in current category
 	EV_MENU_LEFT, //!< select previous category
 	EV_MENU_RIGHT, //!< select next category

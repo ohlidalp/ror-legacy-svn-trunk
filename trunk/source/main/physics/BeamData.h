@@ -947,7 +947,6 @@ struct rig
 	float fuseWidth;
 	float brakeforce;
 	float hbrakeforce;
-	int dynamicMapMode;
 	int debugVisuals;
 	Ogre::String speedomat, tachomat;
 	float speedoMax;
