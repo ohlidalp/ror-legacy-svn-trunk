@@ -54,4 +54,4 @@ protected:
 
 };
 
-#endif __CmdKeyInertia_H_
+#endif // __CmdKeyInertia_H_

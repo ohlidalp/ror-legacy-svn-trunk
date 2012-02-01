@@ -299,31 +299,6 @@ void RoRFrameListener::updateGUI(float dt)
 	if (raceStartTime > 0)
 		updateRacingGUI();
 
-	// update map
-#ifdef USE_MYGUI
-	/*
-	if(bigMap)
-	{
-		for (int i=0; i<free_truck; i++)
-		{
-			if(!trucks[i]) continue;
-			MapEntity *e = bigMap->getEntityByName("Truck"+TOSTRING(i));
-			if(!e) continue;
-			if (trucks[i]->state != RECYCLE && !interactivemap)
-			{
-				e->setState(trucks[i]->state);
-				e->setVisibility(true);
-				e->setPosition(trucks[i]->getPosition());
-				e->setRotation(-Radian(trucks[i]->getHeadingDirectionAngle()));
-			} else
-			{
-				e->setVisibility(false);
-			}
-		}
-	}
-	*/
-#endif // MYGUI
-
 	if (curr_truck->driveable == TRUCK)
 	{
 		//TRUCK
@@ -839,7 +814,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	bigMap=0;
 	envmap=0;
 	debugCollisions=false;
-	interactivemap=0;
 	free_localizer=0;
 	loading_state=NONE_LOADED;
 	pressure_pressed=false;
@@ -3231,18 +3205,6 @@ bool RoRFrameListener::updateEvents(float dt)
 				case 1 : mCamera->setPolygonMode(Ogre::PM_WIREFRAME) ; break ;
 				case 2 : mCamera->setPolygonMode(Ogre::PM_POINTS) ; break ;
 			}
-#ifdef USE_MYGUI
-			if(mtc && interactivemap)
-			{
-				switch(mSceneDetailIndex) {
-					case 0 : mtc->setCameraMode(Ogre::PM_SOLID) ; break ;
-					case 1 : mtc->setCameraMode(Ogre::PM_WIREFRAME) ; break ;
-					case 2 : mtc->setCameraMode(Ogre::PM_POINTS) ; break ;
-				}
-				mtc->update();
-
-			}
-#endif //MYGUI
 		}
 
 #ifdef USE_MYGUI
@@ -3259,7 +3221,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					bigMap->setVisibility(true);
 					if(cameramode!=CAMERA_INT)
 					{
-						if(mtc) mtc->update();
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
 						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
@@ -3267,7 +3228,6 @@ bool RoRFrameListener::updateEvents(float dt)
 				} else if(mapMode==1)
 				{
 					bigMap->setVisibility(true);
-					if(mtc) mtc->update();
 					// make it big
 					bigMap->updateRenderMetrics(mWindow);
 					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
@@ -3285,17 +3245,14 @@ bool RoRFrameListener::updateEvents(float dt)
 				if(fabs(1-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(0.5);
-					if(mtc) mtc->setTranlucency(0.5);
 				}
 				else if(fabs(0.5-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(0.2);
-					if(mtc) mtc->setTranlucency(0.2);
 				}
 				else if(fabs(0.2-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(1);
-					if(mtc) mtc->setTranlucency(1);
 				}
 			}
 		}
@@ -3534,49 +3491,6 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(ow) ow->showDebugOverlay(mStatsOn);
 	}
 
-#ifdef USE_MYGUI
-	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_INTERACTIVE_TOGGLE, 0.5f) && mtc)
-	{
-		if(mtc && bigMap)
-		{
-			if(interactivemap)
-			{
-				interactivemap=0;
-				mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5); // zoom that fits 1:1 to the map
-				mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
-				mtc->update();
-				bigMap->setEntitiesVisibility(true);
-				LOG("disabled interactive Map");
-			} else
-			{
-				mtc->setCamZoom(30); // zoom very near
-				bigMap->setEntitiesVisibility(false);
-				interactivemap=1;
-				LOG("enabled interactive Map");
-			}
-		}
-	}
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_IN) && interactivemap && mtc)
-	{
-		//LOG("zoom in");
-		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-			mtc->setCamZoomRel(4);
-		else
-			mtc->setCamZoomRel(1);
-		mtc->update();
-	}
-	if (INPUTENGINE.getEventBoolValueBounce(EV_MAP_OUT) && interactivemap && mtc)
-	{
-		//LOG("zoom out");
-		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-			mtc->setCamZoomRel(-4);
-		else
-			mtc->setCamZoomRel(-1);
-		mtc->update();
-	}
-#endif //MYGUI
-
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
@@ -3681,7 +3595,6 @@ void RoRFrameListener::initializeCompontents()
 		// important: update first!
 		bigMap->updateRenderMetrics(mWindow);
 		bigMap->setVisibility(true);
-		if(mtc) mtc->update();
 		//make it small again
 		bigMap->updateRenderMetrics(mWindow);
 		bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
@@ -4608,10 +4521,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if(bigMap)
 	{
 		mtc = new MapTextureCreator(mScene, mCamera, this);
-		//mtc->setCamClip(mapsizex*1.2);
-		mtc->setCamZoom(((mapsizex+mapsizez)/2)*0.5);
-		mtc->setCamPosition(Vector3(mapsizex/2, hfinder->getHeightAt(mapsizex/2, mapsizez/2) , mapsizez/2), Quaternion(Degree(0), Vector3::UNIT_X));
-		mtc->setAutoUpdated(false); // important!
 		bigMap->setVisibility(false);
 		bigMap->setMapTexture(mtc->getRTName());
 	}
@@ -5434,16 +5343,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		// hide truckhud
 		if(ow) ow->truckhud->show(false);
 
-#ifdef USE_MYGUI
-		// return to normal mapmode
-		if(mtc && interactivemap > 1)
-		{
-			// 2 = disabled normally, enabled for car
-			interactivemap = 0;
-			bigMap->setEntitiesVisibility(true);
-		}
-#endif //MYGUI
-
 		//getting outside
 		Vector3 position = Vector3::ZERO;
 		if(previousTruck)
@@ -5508,17 +5407,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 		// mapmode change?
 #ifdef USE_MYGUI
-		if(mtc && currentTruck->dynamicMapMode > 0)
-		{
-			// > 1 = disabled normally, enabled for car
-			if(interactivemap == 0)
-				interactivemap = 1 + currentTruck->dynamicMapMode;
-			else if(interactivemap == 1 && currentTruck->dynamicMapMode == 2)
-				interactivemap = 3;
-			mtc->setCamZoom(30);
-			bigMap->setEntitiesVisibility(false);
-		}
-
 		// show minimap and put it into lower left corner
 		if(bigMap)
 		{
@@ -5676,13 +5564,6 @@ void RoRFrameListener::moveCamera(float dt)
 	}
 	if (!curr_truck)
 	{
-#ifdef USE_MYGUI
-		if(mtc && interactivemap)
-		{
-			mtc->setCamPosition(person->getPosition(), mCamera->getOrientation());
-			mtc->update();
-		}
-#endif //MYGUI
 		//perso mode
 		if (cameramode==CAMERA_EXT)
 		{
@@ -5798,20 +5679,6 @@ void RoRFrameListener::moveCamera(float dt)
 	else
 	{
 		// in truck
-#ifdef USE_MYGUI
-		if(mtc && interactivemap)
-		{
-			// update the interactive map
-			// to improve: make the map, so it "looks forward", means the truck is at the bottom
-			// to improve: use average vehicle speed, not the current one
-			if(interactivemap == 3) // auto - zoom
-			{
-				mtc->setCamZoom(30 + curr_truck->WheelSpeed * 0.5);
-			}
-			mtc->setCamPosition(curr_truck->getPosition(), mCamera->getOrientation());
-			mtc->update();
-		}
-#endif // MYGUI
 		if (cameramode==CAMERA_EXT)
 		{
 			if (collisions->forcecam)

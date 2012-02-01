@@ -43,7 +43,7 @@ void MapTextureCreator::init()
 	mCamera = mSceneManager->createCamera("MapRenderCam");
 
 	mViewport = mRttTex->addViewport(mCamera);
-	mViewport->setBackgroundColour(Ogre::ColourValue::Black);
+	mViewport->setBackgroundColour(Ogre::ColourValue::White);
 	mViewport->setOverlaysEnabled(false);
 
 	mMaterial = Ogre::MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -51,71 +51,33 @@ void MapTextureCreator::init()
 	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+TOSTRING(mCounter));
 
 	mRttTex->addListener(this);
-	//mCamera->setProjectionType(PT_ORTHOGRAPHIC);
-
-	mZoom = 3;
-
-	mCamera->setPosition(0, 4500, 0.0001);
-	mCamera->lookAt(0,0,0);
 
 	mCamera->setFarClipDistance(0);
 	mCamera->setAspectRatio(1.0);
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
-	mCamera->setFOVy(Ogre::Radian(Ogre::Math::HALF_PI));
-	mCamera->setNearClipDistance(mZoom);
+	//mCamera->setFOVy(Ogre::Radian(Ogre::Math::HALF_PI));
 }
 
-void MapTextureCreator::setTranlucency(float amount)
-{
-	//mTextureUnitState->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, amount);
-}
-
-void MapTextureCreator::setCameraMode(Ogre::PolygonMode pm)
-{
-	mCamera->setPolygonMode(pm);
-}
 
 void MapTextureCreator::setStaticGeometry(Ogre::StaticGeometry *geo)
 {
 	mStatics = geo;
 }
 
-void MapTextureCreator::setCamZoomRel(float zoomdelta)
-{
-	mZoom += zoomdelta * mZoom/100;
-}
-
-void MapTextureCreator::setCamZoom(float newzoom)
-{
-	mZoom = newzoom;
-}
-
-void MapTextureCreator::setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction)
-{
-	mCampos = pos;
-	mCamdir = direction;
-}
-
-
 void MapTextureCreator::update()
 {
 	// 1 = max out = total overview
-	if(mZoom<=0.3)
-		mZoom=0.3;
 
 	float width = mEfl->mapsizex;
 	float height = mEfl->mapsizez;
-	float zoomfactor = mZoom * ((width+height)/2) * 0.002;
 
 	//LOG(TOSTRING(mZoom));
-	mCamera->setNearClipDistance(mZoom);
-	mCamera->setPosition(mCampos + Ogre::Vector3(0, zoomfactor, 0));
-	if(mCamdir != Ogre::Quaternion::ZERO) mCamera->setOrientation(mCamdir);
-	mCamera->lookAt(mCampos - Ogre::Vector3(0, zoomfactor, 0));
+	mCamera->setOrthoWindow(1024, 1024);
+	mCamera->setPosition(width*0.5f, 100, height*0.5f);
+	mCamera->lookAt(width*0.5f + 0.0001f, 0, height*0.5f);
+	//mCamera->setOrientation(Quaternion(Radian(0), Vector3::UNIT_Z));
 
-	// output the zoom factor for debug purposes
-	//LOG(TOSTRING(mZoom));
 
 	/*
 	// this is bugged, so deactivated for now
@@ -184,11 +146,6 @@ void MapTextureCreator::setFogVisible(bool value)
 	}
 
 #endif //0
-}
-
-void MapTextureCreator::setAutoUpdated(bool value)
-{
-	mRttTex->setAutoUpdated(value);
 }
 
 Ogre::String MapTextureCreator::getMaterialName()

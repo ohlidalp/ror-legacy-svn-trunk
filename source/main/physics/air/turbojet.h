@@ -98,4 +98,4 @@ public:
 	float getAfterburner() {return (float)afterburner;};
 };
 
-#endif __Turbojet_H_
+#endif // __Turbojet_H_

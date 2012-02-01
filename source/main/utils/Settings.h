@@ -40,11 +40,11 @@ class Settings : public RoRSingleton<Settings>
 	friend class RoRSingleton<Settings>;
 public:
 
-	Ogre::String getSetting(Ogre::String key, Ogre::String default);
-	int getIntegerSetting(Ogre::String key, int default);
-	float getFloatSetting(Ogre::String key, float default);
-	Ogre::UTFString getUTFSetting(Ogre::UTFString key, Ogre::UTFString default);
-	bool getBooleanSetting(Ogre::String key, bool default);
+	Ogre::String getSetting(Ogre::String key, Ogre::String defaultValue);
+	int getIntegerSetting(Ogre::String key, int defaultValue);
+	float getFloatSetting(Ogre::String key, float defaultValue);
+	Ogre::UTFString getUTFSetting(Ogre::UTFString key, Ogre::UTFString defaultValue);
+	bool getBooleanSetting(Ogre::String key, bool defaultValue);
 	
 	Ogre::String getSettingScriptSafe(const Ogre::String &key);
 	void setSettingScriptSafe(const Ogre::String &key, const Ogre::String &value);

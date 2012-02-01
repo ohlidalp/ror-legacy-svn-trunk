@@ -78,4 +78,4 @@ private:
 	void partintwo(const int start, const int median, const int end, const int axis, float &minex, float &maxex);
 };
 
-#endif __PointColDetector_H_
+#endif // __PointColDetector_H_

@@ -30,7 +30,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 template <class T>
 class RoRSingleton
 {
-	friend class RoRSingleton;
 	static T* _instance;
 protected:
 	RoRSingleton(){}
@@ -65,7 +64,6 @@ T* RoRSingleton<T>::_instance = 0;
 template <class T>
 class RoRSingletonNoCreation
 {
-	friend class RoRSingletonNoCreation;
 	static T* _instance;
 protected:
 	RoRSingletonNoCreation(){}

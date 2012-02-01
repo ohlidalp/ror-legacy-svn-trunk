@@ -106,10 +106,10 @@ void LanguageEngine::setup()
 	else
 		LOG("unable to read system locale!");
 
-	if(!SSETTING("Language Short").empty())
+	if(!SSETTING("Language Short", "en").empty())
 	{
-		LOG("setting new locale to " + SSETTING("Language Short"));
-		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short").c_str());
+		LOG("setting new locale to " + SSETTING("Language Short", "en"));
+		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short", "en").c_str());
 		if(newlocale)
 			LOG("new locale is: " + String(newlocale));
 		else

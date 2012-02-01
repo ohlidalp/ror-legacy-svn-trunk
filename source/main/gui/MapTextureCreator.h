@@ -29,22 +29,14 @@ public:
 	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, RoRFrameListener *efl);
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
-	void setAutoUpdated(bool value);
 	void update();
-	void setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction);
-	void setCameraMode(Ogre::PolygonMode pm);
 	void setStaticGeometry(Ogre::StaticGeometry *geo);
-	void setCamZoom(float newzoom);
-	void setCamZoomRel(float zoomdelta);
-	void setTranlucency(float amount);
-	Ogre::Camera *getCamera() { return mMainCam; };
 protected:
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 	void setFogVisible(bool value);
 
 	static int mCounter;
-	float mZoom;
 	Ogre::Vector3 mCampos;
 	Ogre::Quaternion mCamdir;
 	Ogre::Viewport *mViewport;
