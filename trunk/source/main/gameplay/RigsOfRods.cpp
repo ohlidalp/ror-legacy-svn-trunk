@@ -36,6 +36,7 @@ RigsOfRods::RigsOfRods(Ogre::String name, Ogre::String hwnd, Ogre::String mainhw
 	name(name),
 	embedded(embedded)
 {
+	setSingleton(this);
 }
 
 RigsOfRods::~RigsOfRods()
@@ -100,7 +101,12 @@ void RigsOfRods::update(double dt)
 void RigsOfRods::shutdown()
 {
 	if(stateManager)
+	{
 		stateManager->shutdown();
+	} else
+	{
+		printf("shutdown failed, no statemanager instance!\n");
+	}
 }
 
 void RigsOfRods::tryShutdown()

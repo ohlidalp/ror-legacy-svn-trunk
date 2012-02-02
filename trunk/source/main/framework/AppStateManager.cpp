@@ -238,6 +238,7 @@ void AppStateManager::shutdown()
 	// shutdown needs to be synced
 	MUTEX_LOCK(&lock);
 	m_bShutdown = true;
+printf(">SH\n");
 	MUTEX_UNLOCK(&lock);
 }
 

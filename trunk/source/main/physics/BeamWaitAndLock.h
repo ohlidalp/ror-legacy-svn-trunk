@@ -30,9 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef FEAT_DEBUG_MUTEX
 # define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
 #else //!FEAT_DEBUG_MUTEX
-// TODO: remove this later on
-# define BEAMLOCK() BeamWaitAndLock sync(__FILE__, __FUNCTION__, __LINE__)
-//# define BEAMLOCK()
+# define BEAMLOCK()
 #endif //FEAT_DEBUG_MUTEX
 
 
@@ -65,6 +63,29 @@ public:
 	~BeamWaitAndLock()
 	{
 		BeamFactory::getSingleton()._ReleaseLock();
+	}
+};
+
+/**
+ * @brief helper class that locks the vehicles array during its lifetime
+ */
+class BeamWaitNoLock
+{
+public:
+	/**
+	 *	constructor
+	 */
+	BeamWaitNoLock()
+	{
+		BeamFactory::getSingleton()._waitForSyncAndLock();
+		BeamFactory::getSingleton()._ReleaseLock();
+	}
+
+	/**
+	 * destructor
+	 */
+	~BeamWaitNoLock()
+	{
 	}
 };
 

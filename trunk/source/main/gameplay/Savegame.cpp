@@ -56,7 +56,7 @@ int Savegame::save(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "wb");
 
 	// wait for engine sync
-	BEAMLOCK();
+	BeamWaitNoLock sync();
 
 	// TODO: show error
 	if(!f)
