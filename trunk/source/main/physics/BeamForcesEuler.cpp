@@ -1841,7 +1841,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				if(beams[bbeam_abs].isforcerestricted && crankfactor > 1)
 					crankfactor=1;
 
-				float v = commandkey[i].commandValue;
+				float v  = commandkey[i].commandValue;
+				int &vst = commandkey[i].commandValueState;
+
+
 				/*
 				if(i==1)
 				LOG(TOSTRING(v) + "/" + TOSTRING(beams[bbeam].autoMovingMode));
@@ -1941,6 +1944,26 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if(!canwork)
 								continue;
 
+#ifdef USE_OPENAL
+							// command sounds
+							if(vst == 1)
+							{
+								// just started
+								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
+								vst = 0;
+
+							} else if(vst == -1)
+							{
+								// just stopped
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
+								vst = 0;
+							} else if (vst == 0)
+							{
+								// already running, modulate
+								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_LINKED_COMMANDRATE, v, SL_COMMAND, i);
+							}
+#endif // USE_OPENAL
+
 							beams[bbeam].L *= (1.0 + beams[bbeam].commandRatioLong * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
 							if(v>0.5)
@@ -2014,6 +2037,26 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 							if(!canwork)
 								continue;
+
+#ifdef USE_OPENAL
+							// command sounds
+							if(vst == 1)
+							{
+								// just started
+								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
+								vst = 0;
+
+							} else if(vst == -1)
+							{
+								// just stopped
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
+								vst = 0;
+							} else if (vst == 0)
+							{
+								// already running, modulate
+								SoundScriptManager::getSingleton().modulate(trucknum, SS_LINKED_COMMAND, v, SL_COMMAND, -i);
+							}
+#endif // USE_OPENAL
 
 							beams[bbeam].L *= (1.0 - beams[bbeam].commandRatioShort * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);

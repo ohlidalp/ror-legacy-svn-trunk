@@ -100,6 +100,7 @@ trucksection_t truck_sections[] = {
 	{BTS_MATERIALFLAREBINDINGS, "materialflarebindings", false},
 	{BTS_SOUNDSOURCES, "soundsources", false},
 	{BTS_SOUNDSOURCES2, "soundsources2", false},
+	{BTS_SOUNDSOURCES3, "soundsources3", false},
 	{BTS_ENVMAP, "envmap", false},
 	{BTS_MANAGEDMATERIALS, "managedmaterials", false},
 	{BTS_SECTIONCONFIG, "BTS_SECTIONCONFIG", false},
@@ -4491,7 +4492,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				strncpy(script, args[1].c_str(), 255);
 
 	#ifdef USE_OPENAL
-				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum, NULL), ref, -2, &c);
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum), ref, -2, &c);
 	#endif //OPENAL
 			}
 			else if (c.mode == BTS_SOUNDSOURCES2)
@@ -4504,9 +4505,38 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				type = PARSEINT(args[1]);
 				strncpy(script, args[2].c_str(), 255);
 
-	#ifdef USE_OPENAL
-				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum, NULL), ref, type, &c);
-	#endif //OPENAL
+#ifdef USE_OPENAL
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum), ref, type, &c);
+#endif //OPENAL
+			}
+			else if (c.mode == BTS_SOUNDSOURCES3)
+			{
+				//parse soundsources3
+				int ref, mode, itemNum;
+				char script[256];
+				int n = parse_args(c, args, 5);
+				ref = PARSEINT(args[0]); // DO NOT check nodes here, they may come afterwards
+				mode = PARSEINT(args[1]);
+				int slType = SL_DEFAULT;
+				if     (args[2] == "command")     slType = SL_COMMAND;
+				else if(args[2] == "hydro")       slType = SL_HYDRO;
+				else if(args[2] == "collision")   slType = SL_COLLISION;
+				else if(args[2] == "shock")       slType = SL_SHOCKS;
+				else if(args[2] == "brake")       slType = SL_BRAKES;
+				else if(args[2] == "rope")        slType = SL_ROPES;
+				else if(args[2] == "tie")         slType = SL_TIES;
+				else if(args[2] == "particle")    slType = SL_PARTICLES;
+				else if(args[2] == "axle")        slType = SL_AXLES;
+				else if(args[2] == "flare")       slType = SL_FLARES;
+				else if(args[2] == "flexbody")    slType = SL_FLEXBODIES;
+				else if(args[2] == "exhaust")     slType = SL_EXHAUSTS;
+				else if(args[2] == "videocamera") slType = SL_VIDEOCAMERA;
+
+				itemNum = PARSEINT(args[3]);
+				strncpy(script, args[4].c_str(), 255);
+#ifdef USE_OPENAL
+				addSoundSource(SoundScriptManager::getSingleton().createInstance(script, trucknum, NULL, slType, itemNum), ref, mode, &c);
+#endif //OPENAL
 			}
 			else if (c.mode == BTS_ENVMAP)
 			{

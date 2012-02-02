@@ -136,6 +136,7 @@ enum TRUCK_SECTIONS {
 	BTS_MATERIALFLAREBINDINGS,
 	BTS_SOUNDSOURCES,
 	BTS_SOUNDSOURCES2,
+	BTS_SOUNDSOURCES3,
 	BTS_ENVMAP,
 	BTS_MANAGEDMATERIALS,
 	BTS_SECTIONCONFIG,
@@ -635,6 +636,7 @@ struct wing
 struct command
 {
 	float commandValue;
+	int commandValueState;
 	bool trigger_cmdkeyblock_state;  //identifies blocked F-commands for triggers
 	std::vector<int> beams;
 	std::vector<int> rotators;
