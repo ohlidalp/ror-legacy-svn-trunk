@@ -117,10 +117,18 @@ void TextureToolWindow::updateControls( Ogre::String texName )
 {
 	try
 	{
+		bool exists = Ogre::TextureManager::getSingleton().resourceExists(texName);
+		if(!exists)
+		{
+			mTxt->setCaption(convertToMyGUIString("Texture not found:\n"+texName));
+			mBtnSavePNG->setEnabled(false);
+			return;
+		}
+
 		TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(texName);
 		if(tex.isNull())
 		{
-			mTxt->setCaption(convertToMyGUIString("Texture not found:\n"+texName));
+			mTxt->setCaption(convertToMyGUIString("Error loading texture:\n"+texName));
 			mBtnSavePNG->setEnabled(false);
 			return;
 		}
