@@ -1702,12 +1702,15 @@ bool InputEngine::setup(RenderWindow* rw, Ogre::String hwnd, bool capture, bool 
 		}
 
 		// set the mouse to the middle of the screen, hackish!
+#if WIN32
+		// under linux, this will not work and the cursor will never reach (0,0)
 		if(mMouse && renderWindow)
 		{
 			OIS::MouseState &mutableMouseState = const_cast<OIS::MouseState &>(mMouse->getMouseState());
 			mutableMouseState.X.abs = renderWindow->getWidth()  * 0.5f;
 			mutableMouseState.Y.abs = renderWindow->getHeight() * 0.5f;
 		}
+#endif // WIN32
 	}
 	//this becomes more and more convoluted!
 #ifdef NOOGRE
