@@ -43,7 +43,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
     add_definitions("-DUSE_MUMBLE")	
   ELSEIF(UNIX)
     include_directories(${GTK_INCLUDE_DIRS})
-    set(OS_LIBS "X11")
+    set(OS_LIBS "X11 ${CMAKE_DL_LIBS}")
   ENDIF(WIN32)
 
   include_directories(${Ogre_INCLUDE_DIRS})
