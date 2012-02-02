@@ -1449,6 +1449,14 @@ void Beam::setupDefaultSoundSources()
 		}
 	}
 
+
+	// linked sounds
+	for(int i=0; i<free_commands; i++)
+	{
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/linked/default_command/extend"), trucknum, NULL, SL_COMMAND, i), 0);
+		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/linked/default_command/retract"), trucknum, NULL, SL_COMMAND, -i), 0);
+	}
+
 #endif //OPENAL
 }
 
@@ -3700,9 +3708,29 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		// apply blinking
 		isvisible = isvisible && flares[i].blinkdelay_state;
 
-		if     (flares[i].type == 'l' && blinkingtype == BLINK_LEFT)  left_blink_on  = isvisible;
-		else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT) right_blink_on = isvisible;
-		else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)  warn_blink_on  = isvisible;
+		if (flares[i].type == 'l' && blinkingtype == BLINK_LEFT)
+		{
+			left_blink_on  = isvisible;
+#ifdef USE_OPENAL
+			if(left_blink_on)
+				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_TICK);
+#endif //USE_OPENAL
+		} else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT)
+		{
+			right_blink_on = isvisible;
+#ifdef USE_OPENAL
+			if(right_blink_on)
+				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_TICK);
+#endif //USE_OPENAL
+		} else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)
+		{
+			warn_blink_on  = isvisible;
+#ifdef USE_OPENAL
+			if(warn_blink_on)
+				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_WARN_TICK);
+#endif //USE_OPENAL
+		}
+
 
 		//left_blink_on, right_blink_on, warn_blink_on;
 		// update material Bindings

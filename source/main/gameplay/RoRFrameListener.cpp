@@ -2232,11 +2232,26 @@ bool RoRFrameListener::updateEvents(float dt)
 // -- available, so why should we iterate till MAX_COMMANDS?
 				for (i=1; i<=MAX_COMMANDS; i++)
 				{
-					curr_truck->commandkey[i].commandValue=0;
+					float oldVal = curr_truck->commandkey[i].commandValue;
+					
+					curr_truck->commandkey[i].commandValue = 0;
 					int eventID = EV_COMMANDS_01 + (i - 1);
 					float tmp = INPUTENGINE.getEventValue(eventID);
 					if(tmp > 0.0)
+					{
 						curr_truck->commandkey[i].commandValue = tmp;
+					}
+
+					if(tmp > 0.01f && oldVal < 0.01f)
+					{
+						// just started
+						curr_truck->commandkey[i].commandValueState = 1;
+					} else if(tmp < 0.01f && oldVal > 0.01f)
+					{
+						// just stopped
+						curr_truck->commandkey[i].commandValueState = -1;
+					}
+
 				}
 
 				// replay mode
