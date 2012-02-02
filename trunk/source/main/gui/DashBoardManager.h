@@ -191,7 +191,8 @@ public:
 
 	bool wasLoaded() { return (free_dashboard > 0); };
 
-	void setVisible(bool visible);
+	void setVisible(bool visibility);
+	void setVisible3d(bool visibility);
 	bool getVisible() { return visible; };
 	void windowResized();
 
@@ -209,8 +210,10 @@ public:
 	DashBoard(DashBoardManager *manager, Ogre::String filename, bool textureLayer);
 	~DashBoard();
 
-	void setVisible(bool visible);
+	void setVisible(bool visible, bool smooth=true);
 	bool getVisible() { return visible; };
+
+	bool getIsTextureLayer() { return textureLayer; }
 
 	void update(float &dt);
 

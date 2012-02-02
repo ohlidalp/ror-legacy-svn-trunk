@@ -176,12 +176,22 @@ float DashBoardManager::getNumeric( size_t key )
 	return 0;
 }
 
-void DashBoardManager::setVisible( bool v )
+void DashBoardManager::setVisible( bool visibility )
 {
-	visible = v;
+	visible = visibility;
 	for(int i=0; i < free_dashboard; i++)
 	{
-		dashboards[i]->setVisible(visible);
+		if(!dashboards[i]->getIsTextureLayer())
+			dashboards[i]->setVisible(visibility);
+	}
+}
+
+void DashBoardManager::setVisible3d( bool visibility )
+{
+	for(int i=0; i < free_dashboard; i++)
+	{
+		if(dashboards[i]->getIsTextureLayer())
+			dashboards[i]->setVisible(visibility, false);
 	}
 }
 
@@ -650,10 +660,15 @@ void DashBoard::loadLayout( Ogre::String filename )
 		mainWidget->detachFromWidget("RTTLayer1");
 }
 
-void DashBoard::setVisible(bool v)
+void DashBoard::setVisible(bool v, bool smooth)
 {
+	if(!mainWidget) return;
 	visible = v;
-	if(mainWidget) mainWidget->setVisibleSmooth(v);
+
+	if(smooth)
+		mainWidget->setVisibleSmooth(v);
+	else
+		mainWidget->setVisible(v);
 }
 
 #endif // USE_MYGUI

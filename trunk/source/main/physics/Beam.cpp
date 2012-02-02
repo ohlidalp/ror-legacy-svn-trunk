@@ -5426,7 +5426,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 			{
 				dash->loadDashBoard("default_dashboard.layout", false);
 				// TODO: load texture dashboard by default as well
-				//dash->loadDashBoard("default_dashboard.layout", true);
+				dash->loadDashBoard("default_dashboard.layout", true);
 			}
 		} else
 		{
