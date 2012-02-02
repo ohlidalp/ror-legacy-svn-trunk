@@ -568,8 +568,8 @@ SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, 
 	, sm(sm)
 	, soundLinkType(soundLinkType)
 	, soundLinkItemId(soundLinkItemId)
-	, startSound(nullptr)
-	, stopSound(nullptr)
+	, startSound(NULL)
+	, stopSound(NULL)
 {
 	//create sounds
 	if (templ->has_start_sound)
