@@ -86,6 +86,9 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   if(ROR_FEAT_TIMING)
     add_definitions("-DFEAT_TIMING")
   endif(ROR_FEAT_TIMING)
+ 
+
+  #add_definitions("-DFEAT_DEBUG_MUTEX")
 
 
   add_definitions("-DBOOST_ALL_NO_LIB")

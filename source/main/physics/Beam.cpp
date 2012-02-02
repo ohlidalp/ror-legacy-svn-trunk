@@ -85,9 +85,6 @@ Beam::~Beam()
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
 
-	//block until all threads done
-	BEAMLOCK();
-
 	// delete all classes we might have constructed
 #ifdef USE_MYGUI
 	if(dash) delete dash; dash=0;
@@ -615,7 +612,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	}
 
 	// wait for the thread(s) to be ready
-	BEAMLOCK();
+	BeamWaitNoLock sync();
 
 	// all finished? so start network stuff
 	if (networked)
@@ -2103,7 +2100,7 @@ bool Beam::frameStep(Real dt)
 		{
 			//block until all threads are done
 			{
-				BEAMLOCK();
+				BeamWaitNoLock sync();
 				for (int t=0; t<numtrucks; t++)
 				{
 					if (!trucks[t]) continue;
@@ -2164,7 +2161,7 @@ bool Beam::frameStep(Real dt)
 
 void Beam::prepareShutdown()
 {
-	BEAMLOCK();
+	BeamWaitNoLock sync();
 }
 
 void Beam::sendStreamSetup()

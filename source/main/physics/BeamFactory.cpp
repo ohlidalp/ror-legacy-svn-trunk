@@ -341,7 +341,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 bool BeamFactory::syncRemoteStreams()
 {
 	// block until all threads done
-	BEAMLOCK();
+	BeamWaitNoLock sync();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
@@ -564,13 +564,16 @@ void BeamFactory::_deleteTruck(Beam *b)
 		return;
 
 	// block until all threads done
-	BEAMLOCK();
+	{
+		BEAMLOCK();
 
-	// synced delete
-	trucks[b->trucknum] = 0;
-	// TODO: properly delete trucks
-	//delete b;
-	b = 0;
+		// synced delete
+		trucks[b->trucknum] = 0;
+		// TODO: properly delete trucks
+
+		delete b;
+		b = 0;
+	}
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
