@@ -434,7 +434,7 @@ float WaterOld::getHeightWaves(Vector3 pos)
 	if (pos.y > height + maxampl)
 		return height;
 
-	// calculate how height the waves should be at this point
+	// calculate how high the waves should be at this point
 	//  (*mapsizex * mScale) / 2 = terrain width / 2
 	//  (*mapsizez * mScale) / 2 = terrain height / 2
 	// calculates the distance to the center of the terrain and dives it through 3.000.000
