@@ -5334,6 +5334,15 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 	enforceCameraFOVUpdate = true;
 
+	// hide any old dashes
+	if(previousTruck && previousTruck->dash)
+		previousTruck->dash->setVisible3d(false);
+	// show new
+	if(currentTruck && currentTruck->dash)
+		currentTruck->dash->setVisible3d(true);
+
+
+	// normal workflow
 	if (!currentTruck)
 	{
 		// get out
