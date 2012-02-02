@@ -22,61 +22,59 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TorqueCurve.h"
 #include "Scripting.h"
 
-BeamEngine::BeamEngine(
-float iddle
-, float max
-, float torque
-, std::vector<float> gears
-, float diff
-, int trucknum)
+BeamEngine::BeamEngine( float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum) :
+	  clutch_time(0.2f)
+	, shift_time(0.5f)
+	, post_shift_time(0.2f)
 
-: clutch_time(0.2f)
-, shift_time(0.5f)
-, post_shift_time(0.2f)
+	, numGears((int)gears.size() - 2)
+	, gearsRatio( gears )
+	, inertia(10.0)
+	, clutchForce(10000.0f)
 
-, numGears((int)gears.size() - 2)
-, gearsRatio( gears )
-, inertia(10.0)
-, clutchForce(10000.0f)
+	, curGear(0)
 
-, curGear(0)
+	, curEngineRPM(0.0f)
+	, curGearboxRPM(0.0f)
+	, curClutch(0.0f)
+	, curAcc(0.0f)
+	, curClutchTorque(0.0f)
 
-, curEngineRPM(0.0f)
-, curGearboxRPM(0.0f)
-, curClutch(0.0f)
-, curAcc(0.0f)
-, curClutchTorque(0.0f)
+	, shifting(0)
+	, postshifting(0)
 
-, shifting(0)
-, postshifting(0)
+	, autocurAcc(0)
+	, starter(0)
+	, autoselect(DRIVE)
 
-, autocurAcc(0)
-, starter(0)
-, autoselect(DRIVE)
-
-, curTurboRPM(0.0f)
-, apressure(0)
-, automode(AUTOMATIC)
-, trucknum(trucknum)
-, torqueCurve (new TorqueCurve())
+	, curTurboRPM(0.0f)
+	, apressure(0)
+	, automode(AUTOMATIC)
+	, trucknum(trucknum)
+	, torqueCurve (new TorqueCurve())
 
 
-, iddleRPM(iddle)
-, maxRPM(max)
-, stallRPM(300.0f)
-, brakingTorque(-torque/5.0f)
-, engineTorque(torque - brakingTorque)
+	, iddleRPM(iddle)
+	, maxRPM(max)
+	, stallRPM(300.0f)
+	, brakingTorque(-torque/5.0f)
+	, engineTorque(torque - brakingTorque)
 
-, hasturbo(true)
-, hasair(true)
-, type('t')
-, running(0)
-, contact(0)
-, hydropump(0.0)
-, prime(0)
+	, hasturbo(true)
+	, hasair(true)
+	, type('t')
+	, running(0)
+	, contact(0)
+	, hydropump(0.0)
+	, prime(0)
+	, curGearRange(0)
+	, shiftval(0)
+	, shiftclock(0)
+	, postshiftclock(0)
+	, status("")
 {
 	gearsRatio[0] = -gearsRatio[0];
-	for(std::vector< float >::iterator it = gearsRatio.begin(); it != gearsRatio.end(); it++)
+	for(std::vector< float >::iterator it = gearsRatio.begin(); it != gearsRatio.end(); ++it)
 	{
 		(*it) *= diff;
 	}
@@ -175,12 +173,14 @@ void BeamEngine::update(float dt, int doUpdate)
 	curEngineRPM += dt*totaltorque/inertia;
 
 	//update clutch torque
-	float gearboxspinner=0.0f;
-	if (curGear){
-		gearboxspinner = curEngineRPM/gearsRatio[curGear + 1];
+	if (curGear)
+	{
+		float gearboxspinner = curEngineRPM/gearsRatio[curGear + 1];
 		curClutchTorque = (gearboxspinner-curGearboxRPM)*curClutch*clutchForce;
-	}	
-	else curClutchTorque=0.0f;
+	} else
+	{
+		curClutchTorque=0.0f;
+	}
 
 	if (curEngineRPM<0.0f) curEngineRPM=0.0f;
 
@@ -290,19 +290,13 @@ void BeamEngine::updateAudio(int doUpdate) // updates more, just not sound, misl
 		}
 		
 	}
+#ifdef USE_OPENAL
 	// reverse gear beep
 	if (curGear==-1 && running)
-	{
-#ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
-#endif //OPENAL
-	}
 	else
-	{
-#ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
 #endif //OPENAL
-	}
 	
 }
 
@@ -378,7 +372,7 @@ void BeamEngine::netForceSettings(float rpm, float force, float clutch, int gear
 
 float BeamEngine::getSmoke()
 {
-	int maxTurboRPM = 200000.0f;
+	const int maxTurboRPM = 200000.0f;
 	if (running) return curAcc*(1.0f-curTurboRPM/maxTurboRPM);//*engineTorque/5000.0;
 	else return -1;
 }

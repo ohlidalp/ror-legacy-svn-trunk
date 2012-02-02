@@ -62,10 +62,23 @@ protected:
 	OverlayElement* mLoadingDescriptionElement;
 	OverlayElement* mLoadingCommentElement;
 	Ogre::Timer *t;
-
 	int counterGroups;
+
 public:
-	ExampleLoadingBar() : counterGroups(0)
+	ExampleLoadingBar() :
+	    mWindow(NULL)
+	  , mLoadOverlay(NULL)
+	  , mInitProportion(1)
+	  , mNumGroupsInit(0)
+	  , mNumGroupsLoad(0)
+	  , mProgressBarMaxSize(1)
+	  , mProgressBarScriptSize(1)
+	  , mProgressBarInc(1)
+	  , mLoadingBarElement(NULL)
+	  , mLoadingDescriptionElement(NULL)
+	  , mLoadingCommentElement(0)
+	  , t(NULL)
+	  , counterGroups(0)
 	{
 		t = new Ogre::Timer();
 	}
