@@ -1949,6 +1949,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if(vst == 1)
 							{
 								// just started
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
 								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
 								vst = 0;
 
@@ -2043,6 +2044,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if(vst == 1)
 							{
 								// just started
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
 								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
 								vst = 0;
 

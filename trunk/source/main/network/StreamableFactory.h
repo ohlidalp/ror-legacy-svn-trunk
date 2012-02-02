@@ -159,11 +159,11 @@ public:
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		for(it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
 			if(it1->first != del->sourceid) continue;
 
-			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				if(del->streamid == -1 || del->streamid == (int)it2->first)
 				{
@@ -187,10 +187,10 @@ public:
 
 		int ok = 0;
 		int num = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		for(it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
 			if(it1->first != sourceid) continue;
-			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				num++;
 				if(it2->second != 0)
@@ -214,9 +214,9 @@ public:
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		for(it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				if(!it2->second) continue;
 				if(it2->second->getStreamResultsChanged())
@@ -240,9 +240,9 @@ public:
 
 		int ok = 0;
 		int originstreams = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		for(it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				if(!it2->second)
 					continue;
@@ -299,15 +299,15 @@ public:
 		typename std::map < unsigned int, X *>::iterator it2;
 
 		int res = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();it1++)
+		for(it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				if(!it2->second)
 					continue;
 				if(!it2->second->getIsOrigin())
 					continue;
-				int sid = it2->second->getSourceID();
+				//int sid = it2->second->getSourceID(); // unused
 				int stid = it2->second->getStreamID();
 				// only use our locally created streams
 				if(stid == reg->origin_streamid)

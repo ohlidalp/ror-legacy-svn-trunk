@@ -35,7 +35,7 @@ void GameState::enter()
 	//m_pSceneMgr->setCameraRelativeRendering(true);
 
 	LOG("Adding Frame Listener");
-	bool isEmbedded = OgreFramework::getSingleton().isEmbedded();
+
 	mFrameListener = new RoRFrameListener(this,
 		OgreFramework::getSingleton().m_pRenderWnd,
 		m_pCamera,

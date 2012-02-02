@@ -34,7 +34,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // TODO: fix this fugly defines into a proper enum
 #define MAX_SOUNDS_PER_SCRIPT 16
 #define MAX_INSTANCES_PER_GROUP 256
-#define MAX_SOUNDLINK_ITEM 64
 
 #define PITCHDOWN_FADE_FACTOR   3.0
 #define PITCHDOWN_CUTOFF_FACTOR 5.0
