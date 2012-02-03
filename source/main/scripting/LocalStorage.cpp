@@ -51,7 +51,7 @@ LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string 
 LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in)
 {
 	this->engine = engine_in;
-	refCount--;
+	refCount++;
 
 	engine->NotifyGarbageCollectorOfNewObject(this, engine->GetTypeIdByDecl("LocalStorage"));	
 	saved = true;

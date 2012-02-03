@@ -530,7 +530,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	for(it = params.dict->dict.begin(); it != params.dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
-		if(typeId == mse->getEngine()->GetTypeIdByDecl("std::string"))
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
 		{
 			// its a std::string
 			std::string *str = (std::string *)it->second.valueObj;
@@ -720,7 +720,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	for(it = params->dict->dict.begin(); it != params->dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
-		if(typeId == mse->getEngine()->GetTypeIdByDecl("std::string"))
+		if(typeId == mse->getEngine()->GetTypeIdByDecl("string"))
 		{
 			// its a std::string, copy it over
 			std::string *str = (std::string *)it->second.valueObj;
