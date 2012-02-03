@@ -203,7 +203,7 @@ void MeshObject::postProcess()
 	if(mfm)
 		mfm->replaceMeshMaterials(ent);
 
-	if(!materialName.empty())
+	if(ent && !materialName.empty())
 		ent->setMaterialName(materialName);
 
 	// only set it if different from default (true)

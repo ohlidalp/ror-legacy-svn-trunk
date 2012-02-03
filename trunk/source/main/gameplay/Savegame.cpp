@@ -56,7 +56,7 @@ int Savegame::save(Ogre::String &filename)
 	FILE *f = fopen(filename.c_str(), "wb");
 
 	// wait for engine sync
-	BeamWaitNoLock sync();
+	BEAMLOCK();
 
 	// TODO: show error
 	if(!f)
@@ -472,8 +472,8 @@ int Savegame::load(Ogre::String &filename)
 
 		// important: active all vehicles upon loading!
 		// they will go sleeping automatically
-		if(t->state != ACTIVATED || t->state != DESACTIVATED)
-			t->state = DESACTIVATED; // deactivated = active but not leading
+		if(t->state > DESACTIVATED)
+			t->state = DESACTIVATED; // desactivated = active but not leading
 	}
 
 	// try to set the current truck

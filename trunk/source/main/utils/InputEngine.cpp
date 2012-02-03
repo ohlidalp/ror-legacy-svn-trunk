@@ -2471,18 +2471,23 @@ bool InputEngine::processLine(char *line)
 	{
 	case ET_Keyboard:
 		{
-			char keycodes[256], *keycode=0;
+			bool alt   = false;
+			bool shift = false;
+			bool ctrl  = false;
+			bool expl  = false;
+
+			char *keycode            = 0;
+			char  keycodes[256]      = {};
+			char  keycodes_work[256] = {};
+
 			OIS::KeyCode key = KC_UNASSIGNED;
+
 			sscanf(line, "%s %s %s", eventName, evtype, keycodes);
-			// seperate all keys and construct the key combination
-			//LOG("try to add key: " + String(keyname)+","+ String(evtype)+","+String(keycodes));
-			bool alt=false;
-			bool shift=false;
-			bool ctrl=false;
-			bool expl=false;
-			char keycodes_work[256] = "";
+			// separate all keys and construct the key combination
+			//LOG("try to add key: " + String(eventName)+","+ String(evtype)+","+String(keycodes));
 			strncpy(keycodes_work, keycodes, 255);
 			char *token = strtok(keycodes_work, delimiters);
+
 			while (token != NULL)
 			{
 				if (strncmp(token, "SHIFT", 5) == 0)
@@ -2504,7 +2509,8 @@ bool InputEngine::processLine(char *line)
 				LOG("unknown key: " + string(keycodes));
 #endif
 				key = KC_UNASSIGNED;
-			} else {
+			} else
+			{
 				//LOG("found key: " + string(keycode) + " = " + TOSTRING((int)key));
 				key = allit->second;
 			}
@@ -2513,22 +2519,19 @@ bool InputEngine::processLine(char *line)
 			event_trigger_t t_key = newEvent();
 			//memset(&t_key, 0, sizeof(event_trigger_t));
 			t_key.eventtype = ET_Keyboard;
-			t_key.shift = shift;
-			t_key.ctrl = ctrl;
-			t_key.alt = alt;
+			t_key.shift     = shift;
+			t_key.ctrl      = ctrl;
+			t_key.alt       = alt;
+			t_key.keyCode   = key;
 			t_key.explicite = expl;
-			t_key.keyCode = key;
+			
 			strncpy(t_key.configline, keycodes, 128);
 			strncpy(t_key.group, getEventGroup(eventName).c_str(), 128);
 			strncpy(t_key.tmp_eventname, eventName, 128);
 
 			strncpy(t_key.comments, cur_comment.c_str(), 1024);
-			cur_comment = "";
 			addEvent(eventID, t_key);
 
-#ifndef NOOGRE
-			//LOG("adding: " + String(eventName) + ": "+TOSTRING((int)key));
-#endif
 			return true;
 		}
 	case ET_JoystickButton:
@@ -2563,25 +2566,25 @@ bool InputEngine::processLine(char *line)
 	case ET_JoystickAxisRel:
 	case ET_JoystickAxisAbs:
 		{
-			int axisNo=0;
-			char options[250];
+			int axisNo = 0;
+			char options[250] = {};
 			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &axisNo, options);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
 
-			bool half=false;
-			bool reverse=false;
-			bool linear=false;
-			bool relative=false;
-			bool usedigital=false;
-			float deadzone=defaultDeadzone;
-			float linearity=defaultLinearity;
-			int jAxisRegion=0;
-			// 0 = all
+			bool half       = false;
+			bool reverse    = false;
+			bool linear     = false;
+			bool relative   = false;
+			bool usedigital = false;
+			float deadzone  = defaultDeadzone;
+			float linearity = defaultLinearity;
+			int jAxisRegion = 0;
+			//  0 = all
 			// -1 = lower
-			// 1 = upper
-			char tmp[250] = "";
+			//  1 = upper
+			char tmp[250] = {};
 			strncpy(tmp, options, 250);
 			char *token = strtok(tmp, delimiters);
 			while (token != NULL)
@@ -2602,14 +2605,14 @@ bool InputEngine::processLine(char *line)
 					usedigital=true;
 				else if (strncmp(token, "DEADZONE", 8) == 0 && strnlen(token, 250) > 9)
 				{
-					char tmp2[256];
+					char tmp2[256] = {};
 					strcpy(tmp2,token+9);
 					deadzone = atof(tmp2);
 					//LOG("got deadzone: " + TOSTRING(deadzone)+", "+String(tmp2));
 				}
 				else if (strncmp(token, "LINEARITY", 9) == 0 && strnlen(token, 250) > 10)
 				{
-					char tmp2[256];
+					char tmp2[256] = {};
 					strcpy(tmp2,token+10);
 					linearity = atof(tmp2);
 				}
@@ -2858,7 +2861,7 @@ int InputEngine::getCurrentKeyCombo(Ogre::String *combo)
 Ogre::String InputEngine::getEventGroup(Ogre::String eventName)
 {
 	const char delimiters[] = "_";
-	char tmp[250] = "";
+	char tmp[250] = {};
 	strncpy(tmp, eventName.c_str(), 250);
 	char *token = strtok(tmp, delimiters);
 	while (token != NULL)

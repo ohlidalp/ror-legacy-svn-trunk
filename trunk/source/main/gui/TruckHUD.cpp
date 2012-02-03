@@ -333,7 +333,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 	if(truck->driveable == TRUCK && truck->engine)
 	{
 		wchar_t rpmstring[256];
-		UTFString rpmsstr = _L("current RPM:");
+		rpmsstr = _L("current RPM:");
 		swprintf(rpmstring, 256, L"%ls %.0f / %.0f", rpmsstr.asWStr_c_str(), truck->engine->getRPM(), truck->engine->getMaxRPM()*1.25);
 		descl = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
 		descl->setCaption(UTFString(rpmstring));
@@ -423,7 +423,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		else if(truck->driveable == BOAT)
 	{
 		wchar_t velostring[256];
-		Vector3 hdir=truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
+		hdir=truck->nodes[truck->cameranodepos[0]].RelPosition-truck->nodes[truck->cameranodedir[0]].RelPosition;
 		hdir.normalise();
 		float velocity=hdir.dotProduct(truck->nodes[truck->cameranodepos[0]].Velocity)*1.9438;
 
@@ -458,7 +458,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		// update commands
 
 		//clear them first
-		for(int i=1;i<=COMMANDS_VISIBLE;i++)
+		for(int i=1; i<=COMMANDS_VISIBLE; i++)
 		{
 			char commandOverlayID[256];
 			sprintf(commandOverlayID, "tracks/TruckInfoBox/Command%d", i); // no wchar needed
@@ -467,7 +467,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		}
 
 		int j = 0;
-		for(int i=1,j=0;i<MAX_COMMANDS && j<COMMANDS_VISIBLE;i+=2)
+		for(int i=1; i<MAX_COMMANDS && j<COMMANDS_VISIBLE; i+=2)
 		{
 			if (truck->commandkey[i].description.size() == 0)
 				continue;

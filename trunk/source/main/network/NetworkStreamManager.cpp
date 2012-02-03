@@ -89,39 +89,36 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 {
 #ifdef USE_SOCKETW
 	int mysourceid = net->getUserID();
-	if(sourceid == -1)
+
+	if (sourceid == -1)
+	{
 		sourceid = mysourceid;
+	}
 
 	MUTEX_LOCK(&stream_mutex);
 
-	bool deleted=false;
-	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
-	for(it=streams.begin(); it!=streams.end(); it++)
+	std::map < int, std::map < unsigned int, Streamable *> >::iterator it_source = streams.find(sourceid);
+	std::map < unsigned int, Streamable *>::iterator it_stream;
+
+	if (it_source != streams.end() && !it_source->second.empty())
 	{
-		if(it->second.empty()) continue;
-		std::map<unsigned int,Streamable *>::iterator it2;
-		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
-		{
-			if(it->first == sourceid && (int)it2->first == streamid)
-			{
-				streams[it->first].erase(it2);
-				// iterator gets invalid!
-				deleted=true;
-				break;
-			}
-		}
-		if(deleted) break;
+		it_stream = it_source->second.find(streamid);
+		if (it_stream != it_source->second.end())
+			streams[sourceid].erase(it_stream);
 	}
+
 	if(sourceid != mysourceid)
 	{
 		// now iterate over all factories and remove their instances (only triggers)
-		for(std::vector < StreamableFactoryInterface * >::iterator it=factories.begin(); it!=factories.end(); it++)
+		std::vector < StreamableFactoryInterface * >::iterator it;
+		for(it=factories.begin(); it!=factories.end(); it++)
 		{
 			(*it)->deleteRemote(sourceid, streamid);
 		}
 	}
+
 	MUTEX_UNLOCK(&stream_mutex);
-#endif //USE_SOCKETW
+#endif // USE_SOCKETW
 }
 
 

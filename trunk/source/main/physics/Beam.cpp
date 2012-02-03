@@ -324,7 +324,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	//truckScript = new TruckCommandScheduler();
 	flaresMode = _flaresMode;
-	int i;
 	airbrakeval=0;
 	origin=Vector3::ZERO;
 	cameranodeacc=Vector3::ZERO;
@@ -555,7 +554,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	//search first_wheel_node
 	first_wheel_node=free_node;
-	for (i=0; i<free_node; i++)
+	for (int i=0; i<free_node; i++)
 	{
 		if (nodes[i].iswheel)
 		{
@@ -605,14 +604,14 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	// start threads
 	if (thread_mode > THREAD_SINGLE)
 	{
-		for (i=0; i<thread_mode; i++)
+		for (int i=0; i<thread_mode; i++)
 			if (pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1)))
 				LOG("BEAM: Can not start a thread");
 
 	}
 
 	// wait for the thread(s) to be ready
-	BeamWaitNoLock sync();
+	BEAMLOCK();
 
 	// all finished? so start network stuff
 	if (networked)
@@ -808,8 +807,9 @@ node_t *Beam::addNode(Vector3 pos)
 
 beam_t *Beam::addBeam(int id1, int id2)
 {
-	int type=BEAM_NORMAL;
-	if (id1>=free_node || id2>=free_node)
+	int type = BEAM_NORMAL;
+
+	if (id1 >= free_node || id2 >= free_node)
 	{
 		LOG("Error: unknown node number in beams section ("
 			+TOSTRING(id1)+","+TOSTRING(id2)+")");
@@ -817,8 +817,8 @@ beam_t *Beam::addBeam(int id1, int id2)
 	}
 	//skip if a beam already exists
 	LOG(TOSTRING(nodes[id1].AbsPosition)+" -> "+TOSTRING(nodes[id2].AbsPosition));
-	int i;
-	for (i=0; i<free_beam; i++)
+
+	for (int i=0; i<free_beam; i++)
 	{
 		if ((beams[i].p1==&nodes[id1] && beams[i].p2==&nodes[id2]) || (beams[i].p1==&nodes[id2] && beams[i].p2==&nodes[id1]))
 		{
@@ -983,7 +983,6 @@ void Beam::calcNetwork()
 	//we must update Nodes positions from available network informations
 	//we must lock as long as we use oob1, oob2, netb1, netb2
 	MUTEX_LOCK(&net_mutex);
-	int i;
 	int tnow=nettimer->getMilliseconds();
 	//adjust offset to match remote time
 	int rnow=tnow+net_toffset;
@@ -1000,7 +999,7 @@ void Beam::calcNetwork()
 
 	Vector3 p1 = Vector3::ZERO;
 	Vector3 p2 = Vector3::ZERO;
-	for (i = 0; i < first_wheel_node; i++)
+	for (int i = 0; i < first_wheel_node; i++)
 	{
 		//linear interpolation
 		if (i == 0)
@@ -1040,7 +1039,7 @@ void Beam::calcNetwork()
 	position = apos / first_wheel_node;
 
 	// take care of the wheels
-	for (i=0; i<free_wheel; i++)
+	for (int i=0; i<free_wheel; i++)
 	{
 		float rp=wheels[i].rp1+tratio*(wheels[i].rp2-wheels[i].rp1);
 		//compute ideal positions
@@ -1601,11 +1600,10 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 {
 	if(!hfinder)
 		return;
-	int i;
-	//horizontal displacement
-	Vector3 offset=Vector3(px,0,pz)-nodes[0].AbsPosition;
+	// horizontal displacement
+	Vector3 offset = Vector3(px,0,pz)-nodes[0].AbsPosition;
 	offset.y=-ipy;
-	for (i=0; i<free_node; i++)
+	for (int i=0; i<free_node; i++)
 	{
 		nodes[i].AbsPosition+=offset;
 	}
@@ -1614,7 +1612,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	if (miny<-9000)
 	{
 		minoffset=nodes[0].AbsPosition.y-hfinder->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
-		for (i=1; i<free_node; i++)
+		for (int i=1; i<free_node; i++)
 		{
 			Vector3 pos=Vector3(nodes[i].AbsPosition.x,hfinder->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
 			//if (water && pos.y<water->getHeight()) pos.y=water->getHeight();
@@ -1626,7 +1624,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	else
 	{
 		minoffset=nodes[0].AbsPosition.y-miny;
-		for (i=1; i<free_node; i++)
+		for (int i=1; i<free_node; i++)
 		{
 			float offset=nodes[i].AbsPosition.y-miny;
 			if (offset<minoffset) minoffset=offset;
@@ -1636,7 +1634,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 
 	// calculate average position
 	Vector3 apos=Vector3::ZERO;
-	for (i=0; i<free_node; i++)
+	for (int i=0; i<free_node; i++)
 	{
 		nodes[i].AbsPosition.y-=minoffset;
 		if (setI) nodes[i].iPosition=nodes[i].AbsPosition;
@@ -1652,7 +1650,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	if(minCameraRadius<0.01)
 	{
 		// recalc
-		for (i=0; i<free_node; i++)
+		for (int i=0; i<free_node; i++)
 		{
 			Real dist = nodes[i].AbsPosition.distance(position);
 			if(dist > minCameraRadius)
@@ -2100,7 +2098,7 @@ bool Beam::frameStep(Real dt)
 		{
 			//block until all threads are done
 			{
-				BeamWaitNoLock sync();
+				BEAMLOCK();
 				for (int t=0; t<numtrucks; t++)
 				{
 					if (!trucks[t]) continue;
@@ -2161,7 +2159,7 @@ bool Beam::frameStep(Real dt)
 
 void Beam::prepareShutdown()
 {
-	BeamWaitNoLock sync();
+	BEAMLOCK();
 }
 
 void Beam::sendStreamSetup()
@@ -2861,7 +2859,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 	{
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
-			if (beams[i].shock && (beams[i].shock->flags & !SHOCK_FLAG_ISTRIGGER)) // this is NOT a trigger beam
+			if (beams[i].shock && (beams[i].shock->flags & ~SHOCK_FLAG_ISTRIGGER)) // this is NOT a trigger beam
 			{
 				// hard (normal) shock bump
 				k = beams[i].shock->sbd_spring;
@@ -3438,7 +3436,6 @@ void Beam::lightsToggle()
 	// no lights toggling in skeleton mode because of possible bug with emissive texture
 	if(skeleton)
 		return;
-	int i;
 
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
@@ -3446,8 +3443,7 @@ void Beam::lightsToggle()
 	//export light command
 	if (trucks!=0 && state==ACTIVATED && forwardcommands)
 	{
-		int i;
-		for (i=0; i<trucksnum; i++)
+		for (int i=0; i<trucksnum; i++)
 		{
 			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle();
@@ -3458,7 +3454,7 @@ void Beam::lightsToggle()
 		cablightNode->setVisible((lights!=0));
 	if (!lights)
 	{
-		for (i=0; i<free_flare; i++)
+		for (int i=0; i<free_flare; i++)
 		{
 			if(flares[i].type == 'f')
 			{
@@ -3470,13 +3466,13 @@ void Beam::lightsToggle()
 		}
 		if (hasEmissivePass)
 		{
-			char clomatname[256];
+			char clomatname[256] = {};
 			sprintf(clomatname, "%s-noem", texname);
 			if(cabNode->numAttachedObjects())
 			{
 				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
 				int numsubent=ent->getNumSubEntities();
-				for (i=0; i<numsubent; i++)
+				for (int i=0; i<numsubent; i++)
 				{
 					SubEntity *subent=ent->getSubEntity(i);
 					if (!strcmp((subent->getMaterialName()).c_str(), texname)) subent->setMaterialName(clomatname);
@@ -3487,7 +3483,7 @@ void Beam::lightsToggle()
 	}
 	else
 	{
-		for (i=0; i<free_flare; i++)
+		for (int i=0; i<free_flare; i++)
 		{
 			if(flares[i].type == 'f')
 			{
@@ -3498,13 +3494,13 @@ void Beam::lightsToggle()
 		}
 		if (hasEmissivePass)
 		{
-			char clomatname[256];
+			char clomatname[256] = {};
 			sprintf(clomatname, "%s-noem", texname);
 			if(cabNode->numAttachedObjects())
 			{
 				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
 				int numsubent=ent->getNumSubEntities();
-				for (i=0; i<numsubent; i++)
+				for (int i=0; i<numsubent; i++)
 				{
 					SubEntity *subent=ent->getSubEntity(i);
 					if (!strcmp((subent->getMaterialName()).c_str(), clomatname)) subent->setMaterialName(texname);
@@ -4888,12 +4884,23 @@ void Beam::beaconsToggle()
 		{
 			for (int k=0; k<4; k++)
 			{
-				if(props[i].light[k])props[i].light[k]->setVisible(beacon && enableLight);
-				if(props[i].bbsnode[k])props[i].bbsnode[k]->setVisible(beacon);
-				if(props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
-					props[i].bbsnode[k]->attachObject(props[i].bbs[k]);
-				else if(props[i].bbs[k] && !beacon)
-					props[i].bbsnode[k]->detachAllObjects();
+				if (props[i].light[k])
+				{
+					props[i].light[k]->setVisible(beacon && enableLight);
+				}
+				if (props[i].bbsnode[k])
+				{
+					props[i].bbsnode[k]->setVisible(beacon);
+
+					if (props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
+					{
+						props[i].bbsnode[k]->attachObject(props[i].bbs[k]);
+					}
+					else if (props[i].bbs[k] && !beacon)
+					{
+						props[i].bbsnode[k]->detachAllObjects();
+					}
+				}
 			}
 		}
 	}

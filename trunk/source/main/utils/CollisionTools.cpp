@@ -566,6 +566,7 @@ void CollisionTools::getStaticGeometry(
 	}
 #endif //0
 
+	// TODO: What if theBucket == 0?
 	Ogre::StaticGeometry::LODBucket::MaterialIterator mit(theBucket->getMaterialIterator());
 
 	while (mit.hasMoreElements())
@@ -612,7 +613,6 @@ void CollisionTools::getStaticGeometry(
 			next_offset += vertex_data->vertexCount;
 		}
 	}
-
 
 	overtex_count = vertices.size();
 	overtices = 0;

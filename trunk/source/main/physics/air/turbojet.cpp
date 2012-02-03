@@ -75,7 +75,7 @@ Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int truck
 	if (afterburnable)
 	{
 		sprintf(paname, "%s-abflame", propname);
-		Entity *te = manager->createEntity(paname, "abflame.mesh");
+		te = manager->createEntity(paname, "abflame.mesh");
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
 		if(mfm) mfm->replaceMeshMaterials(te);
 		if(mr) mr->replaceMeshMaterials(te);

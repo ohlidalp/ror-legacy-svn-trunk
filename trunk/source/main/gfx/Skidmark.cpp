@@ -137,7 +137,7 @@ Skidmark::Skidmark(SceneManager *scm
 , mNode(snode)
 , hfinder(hfinder)
 , mDirty(true)
-, lenght(_lenght%2 ? _lenght - (_lenght%2) : _lenght)
+, lenght((_lenght%2) ? (_lenght-(_lenght%2)) : _lenght)
 , bucketCount(bucketCount)
 , wheel(wheel)
 , minDistance(0.1f)
@@ -145,7 +145,6 @@ Skidmark::Skidmark(SceneManager *scm
 , minDistanceSquared(minDistance * minDistance)
 , maxDistanceSquared(maxDistance * maxDistance)
 {
-	if(lenght%2) lenght -= lenght%2; // round it!
 }
 
 Skidmark::~Skidmark()
@@ -159,7 +158,8 @@ void Skidmark::addObject(Ogre::Vector3 start, Ogre::String texture)
 	skid.pos=0;
 	skid.lastPointAv=start;
 	skid.facecounter=0;
-	for(int i=0;i<3;i++) skid.face[i] = Ogre::Vector3::ZERO;
+	skid.face[0] = Ogre::Vector3::ZERO;
+	skid.face[1] = Ogre::Vector3::ZERO;
 	skid.colour = ColourValue(Ogre::Math::RangeRandom(0, 100)/100.0f, Ogre::Math::RangeRandom(0, 100)/100.0f, Ogre::Math::RangeRandom(0, 100)/100.0f, 0.8f);
 
 

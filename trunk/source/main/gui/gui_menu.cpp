@@ -245,7 +245,7 @@ void GUI_MainMenu::vehiclesListUpdate()
 		{
 			if(!trucks[i]) continue;
 
-			char tmp[255] = "";
+			char tmp[255] = {};
 			sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
 
 			vehiclesMenu->addItem(String(tmp), MyGUI::MenuItemType::Normal, "TRUCK_"+TOSTRING(i));

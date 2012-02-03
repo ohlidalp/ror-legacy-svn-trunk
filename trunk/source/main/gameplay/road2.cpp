@@ -581,6 +581,7 @@ void Road2::createMesh()
 	//compute normals
 	for (i=0; i<(int)nTris; i++)
 	{
+		// TODO: fix warning C6011: Dereferencing NULL pointer '$S5.covertices'
 		Vector3 v1, v2;
 		v1=covertices[tris[i*3+1]].vertex-covertices[tris[i*3]].vertex;
 		v2=covertices[tris[i*3+2]].vertex-covertices[tris[i*3]].vertex;
