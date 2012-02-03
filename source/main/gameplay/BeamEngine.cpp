@@ -71,7 +71,7 @@ BeamEngine::BeamEngine( float iddle, float max, float torque, std::vector<float>
 	, shiftval(0)
 	, shiftclock(0)
 	, postshiftclock(0)
-	, status("")
+	, status() // alternative: std::fill(status, status + 256, 0);
 {
 	gearsRatio[0] = -gearsRatio[0];
 	for(std::vector< float >::iterator it = gearsRatio.begin(); it != gearsRatio.end(); ++it)
