@@ -93,18 +93,14 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	visible=true;
 	haswaves=usewaves;
 	free_wavetrain=0;
-	FILE *fd;
-	char line[1024];
-	fd=fopen((SSETTING("Config Root", "")+"wavefield.cfg").c_str(), "r");
+	char line[1024] = {};
+	FILE *fd = fopen((SSETTING("Config Root", "")+"wavefield.cfg").c_str(), "r");
 	if (fd)
 	{
 		while (!feof(fd))
 		{
 			int res = fscanf(fd," %[^\n\r]",line);
-			if (line[0]==';')
-			{
-				continue;
-			};
+			if (line[0] == ';') continue;
 			float wl,amp,mx,dir;
 			res = sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
 			if(res < 4) continue;
@@ -116,10 +112,9 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 		}
 		fclose(fd);
 	}
-	//        theCam=camera;
-	int i;
+	//theCam=camera;
 	maxampl=0;
-	for (i=0; i<free_wavetrain; i++)
+	for (int i=0; i<free_wavetrain; i++)
 	{
 		wavetrains[i].wavespeed=1.25*sqrt(wavetrains[i].wavelength);
 		maxampl+=wavetrains[i].maxheight;
@@ -136,11 +131,11 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	MeshPtr mprt;
 	mReflectCam=0;
 	mRefractCam=0;
-	//		wbuf=0;
-	//		ColourValue fade=camera->getViewport()->getBackgroundColour();
+	//wbuf=0;
+	//ColourValue fade=camera->getViewport()->getBackgroundColour();
 	ColourValue fade=mSceneMgr->getFogColour();
 
-	if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED || mType==WATER_REFLECT)
+	if (mType == WATER_FULL_QUALITY || mType == WATER_FULL_SPEED || mType == WATER_REFLECT)
 	{
 		// Check prerequisites first
 		const RenderSystemCapabilities* caps = Root::getSingleton().getRenderSystem()->getCapabilities();
@@ -162,7 +157,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 					"WaterOld effects");
 			}
 		}
-		//okay
+		// Ok
 		// Define a floor plane mesh
 		reflectionPlane.normal = Vector3::UNIT_Y;
 		reflectionPlane.d = -wheight+0.15;
@@ -171,7 +166,7 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 		waterPlane.normal = Vector3::UNIT_Y;
 		waterPlane.d = -wheight;
 
-		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED)
+		if (mType == WATER_FULL_QUALITY || mType == WATER_FULL_SPEED)
 		{
 			TexturePtr rttTex1Ptr = TextureManager::getSingleton().createManual("Refraction", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 			rttTex1 = rttTex1Ptr->getBuffer()->getRenderTarget();

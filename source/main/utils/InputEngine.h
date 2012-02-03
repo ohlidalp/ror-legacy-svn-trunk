@@ -404,7 +404,7 @@ typedef struct
 	int joystickSliderRegion;
 
 	//others
-	char configline[128];
+	char configline[256];
 	char group[128];
 	char tmp_eventname[128];
 	char comments[1024];

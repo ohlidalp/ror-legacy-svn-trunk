@@ -690,6 +690,11 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 {
 	// malloc this, so we are safe from this function scope
 	OnlineAPIParams_t *params = (OnlineAPIParams_t *)malloc(sizeof(OnlineAPIParams_t));
+	if (!params)
+	{
+		free(params);
+		return 1;
+	}
 	params->cls      = this;
 	strncpy(params->apiquery, apiquery.c_str(), 2048);
 

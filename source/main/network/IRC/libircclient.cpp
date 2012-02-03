@@ -522,7 +522,7 @@ static void libirc_process_incoming_data (irc_session_t * session, int process_l
 	}
 	else
 	{
-		if ( !strcmp (command, "NICK") )
+		if ( command && !strcmp (command, "NICK") )
 		{
 			/*
 			 * If we're changed our nick, we should save it.
@@ -835,7 +835,7 @@ int irc_process_select_descriptors (irc_session_t * session, fd_set *in_set, fd_
 
 int irc_send_raw (irc_session_t * session, const char * format, ...)
 {
-	char buf[1024];
+	char buf[1024] = {};
 	va_list va_alist;
 
 	if ( session->state != LIBIRC_STATE_CONNECTED )

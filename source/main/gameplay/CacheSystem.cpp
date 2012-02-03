@@ -1451,35 +1451,34 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		}
 
 		size_t fsize = 0;
-		char *buffer=0;
+		char *buffer = 0;
 		{
 			DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(minifn, group);
 			fsize = ds->size();
 			buffer = (char*)malloc(fsize);
 			memset(buffer, 0, fsize);
 			size_t read = ds->read(buffer, fsize);
-			if(read!=fsize)
+			if(read != fsize)
 				return;
 		}
 
 		bool written=false;
-		FILE *f = fopen(dst.c_str(),"wb");
-		if(f)
+		if (buffer)
 		{
-			fwrite(buffer, 1, fsize,  f);
-			fclose(f);
-			written=true;
-		}
-		if(buffer)
+			FILE *f = fopen(dst.c_str(),"wb");
+			if (f)
+			{
+				fwrite(buffer, 1, fsize,  f);
+				fclose(f);
+				written=true;
+			}
 			free(buffer);
-		if(written)
-		{
-			//setProgress(counter/(float)size, "Caching Mini Files ...");
-		} else
+		}
+		if(!written)
 		{
 			deleteFileCache(const_cast<char*>(dst.c_str()));
 		}
-	}catch(Ogre::Exception& e)
+	} catch(Ogre::Exception& e)
 	{
 		LOG("error while generating File cache: " + e.getFullDescription());
 		LOG("trying to continue ...");
@@ -1780,47 +1779,39 @@ int CacheSystem::getCategoryUsage(int category)
 void CacheSystem::readCategoryTitles()
 {
 	LOG("Loading category titles from "+configlocation+"categories.cfg");
-	FILE *fd;
-	char line[1024];
 	String filename = configlocation + String("categories.cfg");
-	fd=fopen(filename.c_str(), "r");
-	if(!fd)
+	FILE *fd = fopen(filename.c_str(), "r");
+	if (!fd)
 	{
 		LOG("error opening file: "+configlocation+"categories.cfg");
 		return;
 	}
+	char line[1024] = {0};
 	while (!feof(fd))
 	{
-		int res = fscanf(fd," %[^\n\r]",line);
-		if (line[0]==';')
-		{
-			continue;
-		};
-		int number=0;
-		char title[256];
+		int res = fscanf(fd, " %[^\n\r]", line);
+		if (line[0] == ';')	continue;
+		int number = 0;
+		char title[256] = {0};
 		const char delimiters[] = ",";
-		char *token, str_work[1024]="";
-		strncpy(str_work, line, 1024);
-		token = strtok(str_work, delimiters);
-		if(token != NULL)
-			number = atoi(token);
-		else
-			continue;
+		char str_work[1024] = {0};
 
+		strncpy(str_work, line, 1024);
+
+		char *token = strtok(str_work, delimiters);
+		if (token == NULL) continue;
+		number = atoi(token);
 		token = strtok(NULL, delimiters);
-		if(token != NULL)
-		{
-			//strip spaces at the beginning
-			while(*token == ' ') token++;
-			strncpy(title, token, 255);
-		}
-		else
-			continue;
+		if (token == NULL) continue;
+		//strip spaces at the beginning
+		while(*token == ' ') token++;
+		strncpy(title, token, 255);
+
 		//LOG(String(title));
 		Category_Entry ce;
 		ce.title = Ogre::String(title);
 		ce.number = number;
-		if(!ce.title.empty())
+		if (!ce.title.empty())
 			categories[number] = ce;
 	}
 	fclose(fd);
@@ -1845,15 +1836,14 @@ Cache_Entry CacheSystem::getResourceInfo(Ogre::String &filename)
 bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &group)
 {
 	// check if we already loaded it via ogre ...
-	bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
-	if(exists)
+	if (ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename))
 	{
 		group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
 		return true;
 	}
 
 	std::vector<Cache_Entry>::iterator it;
-	//int counter=0;
+
 	for(it = entries.begin(); it != entries.end(); it++)
 	{
 		// case insensitive comparison
@@ -1863,13 +1853,13 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 		StringUtil::toLowerCase(fname);
 		StringUtil::toLowerCase(filename_lower);
 		StringUtil::toLowerCase(fname_without_uid_lower);
-		if(fname == filename_lower || fname_without_uid_lower == filename_lower)
+		if (fname == filename_lower || fname_without_uid_lower == filename_lower)
 		{
 			// we found the file, load it
 			filename = it->fname;
 			bool res = checkResourceLoaded(*it);
 			bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(filename);
-			if(!exists)
+			if (!exists)
 				return false;
 			group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
 			return res;

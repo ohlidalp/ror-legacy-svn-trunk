@@ -69,9 +69,10 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 		trucks[t] = 0;
 
 	String threadMode = SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)");
+
 	if (threadMode == "1 (Single Core CPU)")
 		thread_mode = THREAD_SINGLE;
-	if (threadMode == "2 (Hyper-Threading or Dual core CPU)")
+	else
 		thread_mode = THREAD_MULTI;
 
 	if (BSETTING("2DReplay", false))
@@ -157,7 +158,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 
 	trucks[truck_num] = b;
 
-	// lock slidenodes after spawning the truck?
+	// lock slide nodes after spawning the truck?
 	if (b->getSlideNodesLockInstant())
 		b->toggleSlideNodeLock();
 
@@ -311,7 +312,7 @@ void BeamFactory::netUserAttributesChanged(int source_id, int stream_id)
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it_source = streamables.find(source_id);
 	std::map < unsigned int, Beam *>::iterator it_stream;
 	
-	if (it_source != streamables.end())
+	if (it_source != streamables.end() && !it_source->second.empty())
 	{
 		it_stream = it_source->second.find(stream_id);
 		if (it_stream != it_source->second.end() && it_stream->second)
@@ -328,7 +329,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it_source = streamables.find(source_id);
 	std::map < unsigned int, Beam *>::iterator it_stream;
 
-	if (it_source != streamables.end())
+	if (it_source != streamables.end() && !it_source->second.empty())
 	{
 		it_stream = it_source->second.find(stream_id);
 		if (it_stream != it_source->second.end() && it_stream->second)
@@ -341,7 +342,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 bool BeamFactory::syncRemoteStreams()
 {
 	// block until all threads done
-	BeamWaitNoLock sync();
+	BEAMLOCK();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
@@ -725,12 +726,10 @@ void BeamFactory::removeInstance(stream_del_t *del)
 	// already locked
 	// lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it_stream;
+	std::map < int, std::map < unsigned int, Beam *> >::iterator it_stream = streamables.find(del->sourceid);;
 	std::map < unsigned int, Beam *>::iterator it_beam;
 
-	it_stream = streamables.find(del->sourceid);
-
-	if (it_stream == streamables.end())
+	if (it_stream == streamables.end() || it_stream->second.empty())
 		// no stream for this source id
 		return;
 

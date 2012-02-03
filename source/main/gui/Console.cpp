@@ -588,7 +588,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 		} else if(msg == "/as")
 		{
 			angelscriptMode = !angelscriptMode;
-			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + (_L("AngelScript Mode ") + angelscriptMode ? _L("enabled") : _L("disabled")), "information.png");
+			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("AngelScript Mode ") + (angelscriptMode ? _L("enabled") : _L("disabled")), "information.png");
 			return;
 
 		} else if(msg == "/log")
@@ -977,7 +977,7 @@ void Console::outputCurrentPosition()
 		Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
-	else
+	else if (b)
 	{
 		Vector3 pos = b->getPosition();
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Vehicle position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
@@ -994,7 +994,7 @@ void Console::outputCurrentTerrainHeight()
 	{
 		pos = RoRFrameListener::eflsingleton->person->getPosition();
 	}
-	else
+	else if (b)
 	{
 		pos = b->getPosition();
 	}
@@ -1011,7 +1011,7 @@ void Console::jumpToPosition( Ogre::Vector3 pos )
 		RoRFrameListener::eflsingleton->person->setPosition(pos);
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
-	else
+	else if (b)
 	{
 		b->resetPosition(pos, false);
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Vehicle position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");

@@ -697,7 +697,7 @@ void RoRFrameListener::updateGUI(float dt)
 	{
 		//BOAT GUI
 		int fsp = curr_truck->free_screwprop;
-		//throtles
+		//throttles
 		ow->bthro1->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[0]->getThrottle()/2.0)-1.0);
 		if (fsp>1)
 			ow->bthro2->setTop(ow->thrtop+ow->thrheight*(0.5-curr_truck->screwprops[1]->getThrottle()/2.0)-1.0);
@@ -1413,22 +1413,21 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		return;
 
 	//FILE *fd;
-	char fname[1024];
-	char oname[1024];
-	char mesh[1024];
-	char line[1024];
-	float scx, scy, scz;
-	float lx, hx, ly, hy, lz, hz;
-	float srx, sry, srz;
-	float drx, dry, drz;
-	float fcx, fcy, fcz;
+	char fname[1024] = {};
+	char oname[1024] = {};
+	char mesh[1024] = {};
+	char line[1024] = {};
+	char collmesh[1024] = {};
+	float scx = 0, scy = 0, scz = 0;
+	float lx = 0, hx = 0, ly = 0, hy = 0, lz = 0, hz = 0;
+	float srx = 0, sry = 0, srz = 0;
+	float drx = 0, dry = 0, drz = 0;
+	float fcx = 0, fcy = 0, fcz = 0;
 	bool forcecam=false;
-	char collmesh[1024];
-	Quaternion rotation;
 	bool ismovable=false;
 
 	int event_filter = EVENT_ALL;
-	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
+	Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
 
 	// try to load with UID first!
 	String odefgroup = "";
@@ -2227,10 +2226,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			else //we are in a vehicle
 			{
 				// get commands
-				int i;
-// -- maxbe here we should define a maximum numbers per trucks. Some trucks does not have that much commands
-// -- available, so why should we iterate till MAX_COMMANDS?
-				for (i=1; i<=MAX_COMMANDS; i++)
+				// -- here we should define a maximum numbers per trucks. Some trucks does not have that much commands
+				// -- available, so why should we iterate till MAX_COMMANDS?
+				for (int i=1; i<=MAX_COMMANDS; i++)
 				{
 					float oldVal = curr_truck->commandkey[i].commandValue;
 					
@@ -2790,16 +2788,14 @@ bool RoRFrameListener::updateEvents(float dt)
 					//reverse
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_REVERSE))
 					{
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->toggleReverse();
 					}
 
 					// toggle engines
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_TOGGLE_ENGINES))
 					{
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->flipStart();
 					}
 
@@ -2861,36 +2857,32 @@ bool RoRFrameListener::updateEvents(float dt)
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_DOWN, 0.1f))
 					{
-						//throtle down
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						//throttle down
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(curr_truck->aeroengines[i]->getThrottle()-0.05);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_UP, 0.1f))
 					{
-						//throtle up
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						//throttle up
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(curr_truck->aeroengines[i]->getThrottle()+0.05);
 					}
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_NO, 0.1f))
 					{
-						// no throtle
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						// no throttle
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(0);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_THROTTLE_FULL, 0.1f))
 					{
-						// full throtle
-						int i;
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						// full throttle
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(1);
 					}
 					if (curr_truck->autopilot)
 					{
-						for (i=0; i<curr_truck->free_aeroengine; i++)
+						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(curr_truck->autopilot->getThrottle(curr_truck->aeroengines[i]->getThrottle(), dt));
 					}
 
@@ -2912,16 +2904,14 @@ bool RoRFrameListener::updateEvents(float dt)
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_DOWN, 0.1f))
 					{
-						//throtle down
-						int i;
-						for (i=0; i<curr_truck->free_screwprop; i++)
+						//throttle down
+						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->setThrottle(curr_truck->screwprops[i]->getThrottle()-0.05);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_THROTTLE_UP, 0.1f))
 					{
-						//throtle up
-						int i;
-						for (i=0; i<curr_truck->free_screwprop; i++)
+						//throttle up
+						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->setThrottle(curr_truck->screwprops[i]->getThrottle()+0.05);
 					}
 
@@ -2939,23 +2929,21 @@ bool RoRFrameListener::updateEvents(float dt)
 					}
 					if(INPUTENGINE.isEventDefined(EV_BOAT_STEER_LEFT_AXIS) && INPUTENGINE.isEventDefined(EV_BOAT_STEER_RIGHT_AXIS))
 					{
-						float tmp_steer_left = INPUTENGINE.getEventValue(EV_BOAT_STEER_LEFT_AXIS);
-						float tmp_steer_right = INPUTENGINE.getEventValue(EV_BOAT_STEER_RIGHT_AXIS);
-						float sum_steer = (tmp_steer_left - tmp_steer_right);
+						tmp_steer_left = INPUTENGINE.getEventValue(EV_BOAT_STEER_LEFT_AXIS);
+						tmp_steer_right = INPUTENGINE.getEventValue(EV_BOAT_STEER_RIGHT_AXIS);
+						sum_steer = (tmp_steer_left - tmp_steer_right);
 						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->setRudder(sum_steer);
 					}
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_CENTER_RUDDER, 0.1f))
 					{
-						int i;
-						for (i=0; i<curr_truck->free_screwprop; i++)
+						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->setRudder(0);
 					}
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_BOAT_REVERSE))
 					{
-						int i;
-						for (i=0; i<curr_truck->free_screwprop; i++)
+						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->toggleReverse();
 					}
 				}
@@ -3313,38 +3301,39 @@ bool RoRFrameListener::updateEvents(float dt)
 			int current_truck = BeamFactory::getSingleton().getCurrentTruckNumber();
 			int free_truck    = BeamFactory::getSingleton().getTruckCount();
 			Beam **trucks     = BeamFactory::getSingleton().getTrucks();
-			if (current_truck==-1)
+			if (current_truck == -1)
 			{
 				//find the nearest truck
-				int i;
-				float mindist=1000.0;
-				int minindex=-1;
-				for (i=0; i<free_truck; i++)
+				float mindist   =  1000.0;
+				int   minindex  = -1;
+				for (int i=0; i<free_truck; i++)
 				{
 					if (!trucks[i]) continue;
-					if (!trucks[i]->driveable)
-
-						continue;
+					if (!trucks[i]->driveable) continue;
 					if (trucks[i]->cinecameranodepos[0]==-1)
 					{
 						LOG("cinecam missing, cannot enter truck!");
 						continue;
 					}
-					float len=(trucks[i]->nodes[trucks[i]->cinecameranodepos[0]].AbsPosition-(person->getPosition()+Vector3(0.0, 2.0, 0.0))).length();
-					if (len<mindist)
+					float len = (trucks[i]->nodes[trucks[i]->cinecameranodepos[0]].AbsPosition-(person->getPosition()+Vector3(0.0, 2.0, 0.0))).length();
+					if (len < mindist)
 					{
 						mindist=len;
 						minindex=i;
 					}
 				}
-				if (mindist<20.0) BeamFactory::getSingleton().setCurrentTruck(minindex);
+				if (mindist < 20.0)
+				{
+					BeamFactory::getSingleton().setCurrentTruck(minindex);
+				}
 			}
 			else if (curr_truck->nodes[curr_truck->cinecameranodepos[0]].Velocity.length()<1)
 			{
 				BeamFactory::getSingleton().setCurrentTruck(-1);
-			} else
+			}
+			else
 			{
-				curr_truck->brake=curr_truck->brakeforce*0.66;
+				curr_truck->brake    = curr_truck->brakeforce * 0.66;
 				mTimeUntilNextToggle = 0.0; //No delay in this case: the truck must brake like braking normally
 			}
 		}
@@ -5264,8 +5253,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	// in netmode, dont load other trucks!
 	if (!netmode)
 	{
-		int i;
-		for (i=0; i<truck_preload_num; i++)
+		for (int i=0; i<truck_preload_num; i++)
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, 0, truck_preload[i].freePosition);
 #ifdef USE_MYGUI
@@ -5390,9 +5378,12 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 				position=previousTruck->nodes[0].AbsPosition;
 			}
 		}
-		//			position.y=hfinder->getHeightAt(position.x,position.z);
-		if(position != Vector3::ZERO) person->setPosition(position);
-		//person->setVisible(true);
+		//position.y=hfinder->getHeightAt(position.x,position.z);
+		if(person && position != Vector3::ZERO)
+		{
+			person->setPosition(position);
+			//person->setVisible(true);
+		}
 		if(ow) ow->showDashboardOverlays(false, currentTruck);
 		if(ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
@@ -5924,8 +5915,7 @@ void RoRFrameListener::moveCamera(float dt)
 	//set LOD per truck
 	/*
 	// TODO: XXX: fix below
-	int i;
-	for (i=0; i<free_truck; i++)
+	for (int i=0; i<free_truck; i++)
 	{
 		if(!trucks[i]) continue;
 		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);

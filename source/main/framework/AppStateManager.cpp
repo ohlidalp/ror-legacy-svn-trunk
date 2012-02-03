@@ -106,12 +106,7 @@ void AppStateManager::start(AppState* state)
 	unsigned long timeSinceLastFrame = 1;
 	unsigned long startTime          = 0;
 	unsigned long minTimePerFrame    = 0;
-	unsigned long maxFPS = ISETTING("Max FPS", 0);
-
-	
-	// useful or not?
-	Ogre::Root::getSingleton().setFrameSmoothingPeriod(4);
-
+	unsigned long maxFPS             = ISETTING("Max FPS", 0);
 
 	if (maxFPS)
 	{

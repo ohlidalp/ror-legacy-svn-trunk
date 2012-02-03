@@ -402,7 +402,7 @@ protected:
 	int raceStartTime;
 
 	int objcounter;
-	char terrainmap[256];
+	char terrainmap[1024];
 
 	Ogre::String terrainUID;
 	Road *road;

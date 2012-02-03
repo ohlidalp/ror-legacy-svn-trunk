@@ -377,7 +377,7 @@ void addlog (const char * fmt, ...)
 
 void dump_event (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
 {
-	char buf[512];
+	char buf[512] = {};
 	unsigned int cnt;
 
 	buf[0] = '\0';
