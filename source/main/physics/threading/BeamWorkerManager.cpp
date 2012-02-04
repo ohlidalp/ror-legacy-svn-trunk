@@ -30,6 +30,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include <unistd.h>
 #endif // WIN32
 #include <time.h>
+#include "OgrePanelOverlayElement.h"
+
+#ifdef USE_SKIA
+#include <CanvasTexture.h>
+#endif // USE_SKIA
 
 using namespace Ogre;
 
@@ -39,13 +44,13 @@ void *threadWorkerManagerEntry(void* ptr)
 	BeamWorkerManager::getSingleton()._startWorkerLoop();
 	// delete singleton maybe?
 	pthread_exit(NULL);
-	return NULL;	
+	return NULL;
 }
 
 BeamWorkerManager::BeamWorkerManager() :
 	      threads()
 		, threadsSize(0)
-		, targetThreadSize(4096)
+		, targetThreadSize(16)
 		, done_count(0)
 		, done_count_mutex()
 		, done_count_cv()
@@ -56,6 +61,8 @@ BeamWorkerManager::BeamWorkerManager() :
 	pthread_cond_init(&done_count_cv, NULL);
 
 	threads.clear();
+
+	initDebugging();
 }
 
 BeamWorkerManager::~BeamWorkerManager()
@@ -81,7 +88,7 @@ void BeamWorkerManager::_startWorkerLoop()
 {
 	LOG("worker manager started in thread " + getThreadIDAsString());
 	int rc = 0;
-	struct timespec timeout;
+	//struct timespec timeout;
 	int local_done_count = -1;
 	while (1)
 	{
@@ -212,4 +219,36 @@ void BeamWorkerManager::syncThreads(BeamThread *bthread)
 	pthread_cond_wait(&wd.work_cv, &wd.work_mutex);
 	MUTEX_UNLOCK(&wd.work_mutex);
 	// return to continue to do work
+}
+
+void BeamWorkerManager::initDebugging()
+{
+#ifdef USE_SKIA
+	Ogre::Canvas::Texture *mCanvasTextureClock1 = new Ogre::Canvas::Texture("CanvasClock1", 150, 150);
+	mCanvasTextureClock1->createMaterial();
+
+	// paint
+	Ogre::Canvas::Context* ctx = mCanvasTextureClock1->getContext();
+	ctx->save();		
+	ctx->clearRect(0, 0, 150, 150);
+	ctx->strokeStyle(Ogre::ColourValue::Black);
+	ctx->fillStyle(Ogre::ColourValue::White);
+	ctx->fillRect(0, 0, 150, 150);
+	ctx->translate(75, 75);
+	ctx->scale(0.4f, 0.4f);
+	ctx->rotate(-Ogre::Math::PI/2.0f);
+	ctx->lineWidth(8);
+	ctx->lineCap(Ogre::Canvas::LineCap_Round);
+	ctx->restore();
+	mCanvasTextureClock1->uploadTexture();
+
+	Ogre::Overlay* overlay = Ogre::OverlayManager::getSingleton().create("Canvas/Overlay");
+	Ogre::PanelOverlayElement* panel = static_cast<Ogre::PanelOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "CanvasClock1/Panel"));
+	panel->setMetricsMode(Ogre::GMM_PIXELS);
+	panel->setMaterialName("CanvasClock1");
+	panel->setDimensions(600.0f, 150.0f);
+	panel->setPosition(0, 0);
+	overlay->add2D(panel);
+	overlay->show();
+#endif // USE_SKIA
 }

@@ -51,7 +51,7 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   
   if(ROR_USE_SKIA)
 	setup_lib(SKIA)
-	set(optional_libs ${optional_libs};${SKIA_LIBRARIES})
+	set(optional_libs ${optional_libs};${SKIA_LIBRARIES};OgreCanvas)
   endif()
 
 

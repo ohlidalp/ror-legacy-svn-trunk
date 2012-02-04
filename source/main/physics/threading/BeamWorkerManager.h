@@ -61,6 +61,7 @@ protected:
 	void addThread(BeamThread *bthread);
 	void removeThread(BeamThread *bthread);
 	void syncThreads(BeamThread *bthread);
+	void initDebugging();
 
 public:
 	static void createThread();
