@@ -1,31 +1,7 @@
 project(RoR_Main)
 
 #setup libraries
-macro(setup_lib name)
-  if(ROR_USE_${name})
-      include_directories(${${name}_INCLUDE_DIRS})
-      link_directories   (${${name}_LIBRARY_DIRS})
-      add_definitions("-DUSE_${name}")
-      set(optional_libs ${optional_libs};${${name}_LIBRARIES})
-      message(STATUS "${name} Enabled:      \tYES")
-      message(STATUS "${name}_INCLUDE_DIRS: \t${${name}_INCLUDE_DIRS}")
-      #if(${${name}_LIBRARY_DIRS})
-        message(STATUS "${name}_LIBRARY_DIRS: \t${${name}_LIBRARY_DIRS}")
-      #endif(${${name}_LIBRARY_DIRS})
-      message(STATUS "${name}_LIBRARIES:    \t${${name}_LIBRARIES}")
-  else()
-      message(STATUS "${name} Enabled:      \tNO")
-  endif(ROR_USE_${name})
-endmacro(setup_lib)
 
-macro(add_sub_dir BINNAME name)
-	FILE(GLOB_RECURSE ${BINNAME}_${name}_source ${RoR_Main_SOURCE_DIR}/${name}/*.cpp ${RoR_Main_SOURCE_DIR}/${name}/*.c)
-	FILE(GLOB_RECURSE ${BINNAME}_${name}_header ${RoR_Main_SOURCE_DIR}/${name}/*.h)
-	SOURCE_GROUP("${name}" FILES ${${BINNAME}_${name}_source} ${${BINNAME}_${name}_header})
-	include_directories(${RoR_Main_SOURCE_DIR}/${name})
-	set(${BINNAME}_sources ${${BINNAME}_sources} ${${BINNAME}_${name}_source})
-	set(${BINNAME}_headers ${${BINNAME}_headers} ${${BINNAME}_${name}_header})
-endmacro(add_sub_dir)
 
 macro(add_ror_project BINNAME folder useWxWidgets)
   # config below
@@ -72,6 +48,12 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   setup_lib(PAGED)
   setup_lib(CAELUM)
   setup_lib(ANGELSCRIPT)
+  
+  if(ROR_USE_SKIA)
+	setup_lib(SKIA)
+	set(optional_libs ${optional_libs};${SKIA_LIBRARIES})
+  endif()
+
 
   if(ROR_USE_ANGELSCRIPT)
     # CLEAR_FPU_STACK prevents angelscript from breaking our physics engine

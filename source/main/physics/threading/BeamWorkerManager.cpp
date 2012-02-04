@@ -26,7 +26,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include "Settings.h"
 #include "utils.h"
-#include <unistd.h>
+#ifndef WIN32
+# include <unistd.h>
+#endif // WIN32
 #include <time.h>
 
 using namespace Ogre;
@@ -131,7 +133,7 @@ void BeamWorkerManager::_startWorkerLoop()
 void BeamWorkerManager::_checkRunThreads()
 {
 	int c = 0;
-	for(int i=threadsSize; i < targetThreadSize; i++)
+	for(unsigned int i=threadsSize; i < targetThreadSize; i++)
 	{
 		BeamWorker::createThread();
 		c++;

@@ -31,6 +31,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI.h>
 #endif //USE_MYGUI
 
+#include <pthread.h>
+
+#if WIN32
+# include <windows.h> // Sleep()
+#endif // WIN32
+
+
 // from http://stahlforce.com/dev/index.php?tool=csc01
 Ogre::String hexdump(void *pAddressIn, long  lSize);
 
@@ -114,7 +121,11 @@ inline void sleepMilliSeconds(unsigned int ms)
 
 inline unsigned long getThreadID()
 {
+#ifdef WIN32
+	return (unsigned long)pthread_self().p;
+#else
 	return (unsigned long)pthread_self();
+#endif // WIN32
 }
 
 inline Ogre::String getThreadIDAsString()
