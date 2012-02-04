@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamThread.h"
 #include "errorutils.h"
 #include "InputEngine.h"
+#include "utils.h"
 
 using namespace Ogre;
 
@@ -61,6 +62,7 @@ void BeamWorker::_startWorkerLoop()
 	}
 #endif //USE_CRASHRPT
 
+	LOG("TR| BeamWorker created: " + TOSTRING(ThreadID::getID()));
 	try
 	{
 		// additional exception handler required, otherwise RoR just crashes upon exception
@@ -74,20 +76,19 @@ void BeamWorker::_startWorkerLoop()
 		}
 	} catch(Ogre::Exception& e)
 	{
-		// try to shutdown input system upon an error
-		if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
-			INPUTENGINE.prepareShutdown();
-
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
-		showOgreWebError("An exception has occurred!", e.getFullDescription(), url);
+		LOG("TR| BeamWorker exception: " + TOSTRING(ThreadID::getID()) + ": " + e.getFullDescription());
+		// TODO: error handling
 	}
+	LOG("TR| BeamWorker exiting: " + TOSTRING(ThreadID::getID()));
 }
 
 void BeamWorker::_doWork()
 {
-	LOG("BeamWorker doing work: " + TOSTRING((unsigned int)pthread_self().p));
+	int seconds = Ogre::Math::RangeRandom(1, 10);
+	LOG("TR| BeamWorker doing work: " + TOSTRING(ThreadID::getID()) + " sleeping " + TOSTRING(seconds) + " seconds");
 
-	Sleep(rand() * 5000);
+	sleep(seconds);
+
 #if 0
 	float dtperstep=dt/(Real)steps;
 
