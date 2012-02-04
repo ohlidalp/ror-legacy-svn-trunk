@@ -80,9 +80,14 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 		tdr = new TwoDReplay();
 
 
-	// TEST for Beamworker, add two instances
-	//new BeamWorker();
-	//new BeamWorker();
+	// TEST for Beamworker, add example instances
+	/*
+		for(int i=0; i < 60; i++)
+		{
+			new BeamWorker();
+		//new BeamWorker();
+		}
+	*/
 }
 
 BeamFactory::~BeamFactory()

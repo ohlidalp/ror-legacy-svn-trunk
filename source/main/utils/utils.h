@@ -101,4 +101,31 @@ inline void replaceString(std::string &str, std::string searchString, std::strin
 	}
 }
 
+inline void sleepMilliSeconds(unsigned int ms)
+{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	// accepts milliseconds
+	Sleep(ms);
+#else
+	// accepts microseconds
+	usleep(ms * 1000);
+#endif
+}
+
+class ThreadID
+{
+
+public:
+        static unsigned int getID();
+
+private:
+        ThreadID();
+        static void make_key();
+
+        unsigned int thread_id;
+        static pthread_key_t key;
+        static pthread_once_t key_once;
+        static unsigned int tuid;
+};
+
 #endif //UTILS_H_

@@ -328,3 +328,30 @@ void trimUTFString( Ogre::UTFString &str, bool left, bool right)
 	if(left)
 		str.erase(0, str.find_first_not_of(delims)); // trim left
 }
+
+pthread_key_t ThreadID::key;
+pthread_once_t ThreadID::key_once = PTHREAD_ONCE_INIT;
+unsigned int ThreadID::tuid = 1;
+
+unsigned int ThreadID::getID()
+{
+        ThreadID *ptr = NULL;
+        pthread_once(&key_once, ThreadID::make_key);
+        ptr = (ThreadID*)pthread_getspecific(key);
+
+        if( !ptr ) {
+                ptr = new ThreadID();
+                pthread_setspecific(key, (void*)ptr);
+        }
+
+        return ptr->thread_id;
+}
+
+ThreadID::ThreadID() : thread_id( tuid )
+{
+	tuid++;
+}
+void ThreadID::make_key()
+{
+	pthread_key_create(&key, NULL);
+}

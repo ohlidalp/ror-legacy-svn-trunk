@@ -508,11 +508,7 @@ void Network::receivethreadstart()
 	// otherwise you can get runtime conditions
 	while(!BeamFactory::getSingletonPtr())
 	{
-#ifndef WIN32
-			sleep(1);
-#else
-			Sleep(1000);
-#endif
+		sleepMilliSeconds(1000);
 	};
 
 
