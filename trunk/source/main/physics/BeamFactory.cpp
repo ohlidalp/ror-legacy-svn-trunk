@@ -81,7 +81,7 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 
 
 	// TEST for Beamworker
-	//BeamWorkerManager::getSingleton();
+	//BeamWorkerManager::createThread();
 }
 
 BeamFactory::~BeamFactory()

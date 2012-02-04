@@ -26,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamWorkerManager.h"
 #include "BeamFactory.h"
 #include "Singleton.h"
+#include "utils.h"
 
 // this class should be derived by every thread that wants to access the Beam array
 // it will automatically register with the thread manager upon initialization

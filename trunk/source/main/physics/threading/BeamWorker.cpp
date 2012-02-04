@@ -34,21 +34,32 @@ using namespace Ogre;
 
 void *threadWorkerEntry(void *beamWorkerPtr)
 {
-	// call worker method in class
-	BeamWorker *worker = (BeamWorker*)beamWorkerPtr;
+	// create new beam worker inside the new thread, not outside!
+	BeamWorker *worker = new BeamWorker();
 	worker->_startWorkerLoop();
+	delete(worker);
 	pthread_exit(NULL);
 	return NULL;	
 }
 
 BeamWorker::BeamWorker() : running(true), test1(0)
 {
-	pthread_create(&thread, NULL, threadWorkerEntry, (void*)this);
+}
+
+void BeamWorker::createThread()
+{
+	pthread_t thread;
+	int res = pthread_create(&thread, NULL, threadWorkerEntry, NULL);
+	if(res)
+	{
+		perror("error creating new thread: ");
+	}
+	pthread_detach(thread);
 }
 
 BeamWorker::~BeamWorker()
 {
-	// TODO: make sure the thread is gone!
+	running = false;
 }
 
 void BeamWorker::_startWorkerLoop()
@@ -62,7 +73,8 @@ void BeamWorker::_startWorkerLoop()
 	}
 #endif //USE_CRASHRPT
 
-	LOG("TR| BeamWorker created: " + TOSTRING(ThreadID::getID()));
+
+	//LOG("TR| BeamWorker created: " + getThreadIDAsString());
 	try
 	{
 		// additional exception handler required, otherwise RoR just crashes upon exception
@@ -76,21 +88,20 @@ void BeamWorker::_startWorkerLoop()
 		}
 	} catch(Ogre::Exception& e)
 	{
-		LOG("TR| BeamWorker exception: " + TOSTRING(ThreadID::getID()) + ": " + e.getFullDescription());
+		LOG("TR| BeamWorker exception: " + getThreadIDAsString() + ": " + e.getFullDescription());
 		// TODO: error handling
 	}
-	LOG("TR| BeamWorker exiting: " + TOSTRING(ThreadID::getID()));
-	delete(this);
+	//LOG("TR| BeamWorker exiting: " + getThreadIDAsString());
 }
 
 void BeamWorker::_doWork()
 {
 	float seconds = Ogre::Math::RangeRandom(0.1f, 2.0f);
-	LOG("TR| BeamWorker doing work: " + TOSTRING(ThreadID::getID()) + " sleeping " + TOSTRING(seconds) + " seconds");
+	//LOG("TR| BeamWorker doing work: " + getThreadIDAsString() + " sleeping " + TOSTRING(seconds) + " seconds");
 
 	test1 += seconds;
 
-	if(test1 > 5)
+	if(test1 > 20)
 		killWorker();
 
 	sleepMilliSeconds(seconds);

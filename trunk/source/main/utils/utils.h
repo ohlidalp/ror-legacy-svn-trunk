@@ -112,20 +112,14 @@ inline void sleepMilliSeconds(unsigned int ms)
 #endif
 }
 
-class ThreadID
+inline unsigned long getThreadID()
 {
+	return (unsigned long)pthread_self();
+}
 
-public:
-        static unsigned int getID();
-
-private:
-        ThreadID();
-        static void make_key();
-
-        unsigned int thread_id;
-        static pthread_key_t key;
-        static pthread_once_t key_once;
-        static unsigned int tuid;
-};
+inline Ogre::String getThreadIDAsString()
+{
+	return TOSTRING(getThreadID());
+}
 
 #endif //UTILS_H_
