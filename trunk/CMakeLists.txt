@@ -11,42 +11,8 @@ if (WIN32)
 endif()
 	
 project(RoR)
+include(CMakeMacros.txt)
 
-macro(copy_files srcDir destDir)
-    message(STATUS "Copying ${srcDir} -> ${destDir} ...")
-    #make_directory(${destDir})
-
-    file(GLOB files RELATIVE ${srcDir} ${srcDir}/*)
-    foreach(filename ${files})
-        set(srcTemplatePath ${srcDir}/${filename})
-        if(NOT IS_DIRECTORY ${srcTemplatePath})
-            message(STATUS "Copying file ${filename}")
-            configure_file(
-                    ${srcTemplatePath}
-                    ${destDir}/${filename}
-                    COPYONLY)
-        endif(NOT IS_DIRECTORY ${srcTemplatePath})
-    endforeach(filename)
-endmacro(copy_files)
-
-macro(copy_files_for_target TRGT SRC)
-	set(mysrc ${SRC})
-	set(mydst ${EXECUTABLE_OUTPUT_PATH}/$(ConfigurationName)/)
-if (WIN32) 
-	STRING(REGEX REPLACE "/" "\\\\" mysrc ${mysrc}) 
-	STRING(REGEX REPLACE "/" "\\\\" mydst ${mydst}) 
-endif() 
-	add_custom_command(
-	  TARGET ${TRGT}
-	  POST_BUILD
-	  COMMAND xcopy /S /Y ${mysrc} ${mydst}
-	  COMMENT "Copying ${mysrc} to ${mydst}"
-	  )
-endmacro(copy_files_for_target)
-
-macro(copy_lib_files_for_target TRGT SRC)
-	copy_files_for_target("${TRGT}" "${ROR_DEPENDENCIES_DIR}/bin/${ARCH_DIR}/${SRC}/$(ConfigurationName)/*" ${SRC})
-endmacro(copy_lib_files_for_target)
 
 # check 64 bit
 set(ARCH_DIR "")

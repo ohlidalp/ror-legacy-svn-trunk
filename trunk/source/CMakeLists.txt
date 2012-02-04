@@ -1,5 +1,8 @@
 add_subdirectory(main)
 
+if(ROR_USE_SKIA)
+add_subdirectory(OgreCanvas)
+endif()
 
 if(ROR_USE_ANGELSCRIPT)
 	add_subdirectory(angelscript_addons)
@@ -9,8 +12,8 @@ set(ROR_BUILD_CONFIGURATOR "TRUE" CACHE BOOL "build the configurator")
 
 IF(ROR_BUILD_CONFIGURATOR)
   add_subdirectory(configurator)
-ENDIF(ROR_BUILD_CONFIGURATOR)
+ENDIF()
 
 IF(ROR_BUILD_UPDATER)
   add_subdirectory(updater)
-ENDIF(ROR_BUILD_UPDATER)
+ENDIF()
