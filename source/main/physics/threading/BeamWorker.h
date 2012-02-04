@@ -28,16 +28,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // this class wraps a thread that acts as worker thread.
 // it will request work and sync with the others
-class BeamWorker : public BeamThread
+class BeamWorker :
+	  public BeamThread
 {
 protected:
-	pthread_t thread;
 	bool running;
 
 	float test1;
 public:
 	BeamWorker();
 	~BeamWorker();
+
+	static void createThread();
 	// called from the new thread, do not execute manually
 	void _startWorkerLoop();
 	void killWorker() { running=false; }

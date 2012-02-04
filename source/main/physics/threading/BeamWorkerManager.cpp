@@ -33,8 +33,9 @@ using namespace Ogre;
 
 void *threadWorkerManagerEntry(void* ptr)
 {
-	BeamWorkerManager *btlm = (BeamWorkerManager*)ptr;
-	btlm->_startWorkerLoop();
+	// create instance inside the new thread, not outside
+	BeamWorkerManager::getSingleton()._startWorkerLoop();
+	// delete singleton maybe?
 	pthread_exit(NULL);
 	return NULL;	
 }
@@ -53,37 +54,50 @@ BeamWorkerManager::BeamWorkerManager() :
 	pthread_cond_init(&done_count_cv, NULL);
 
 	threads.clear();
-
-	// start worker thread:
-	pthread_create(&workerThread, NULL, threadWorkerManagerEntry, (void*)this);
 }
-
 
 BeamWorkerManager::~BeamWorkerManager()
 {
-	pthread_cond_destroy(&done_count_cv);
 	pthread_mutex_destroy(&api_mutex);
 	pthread_mutex_destroy(&done_count_mutex);
+	pthread_cond_destroy(&done_count_cv);
+}
+
+void BeamWorkerManager::createThread()
+{
+	// start worker thread:
+	pthread_t workerThread;
+	int res = pthread_create(&workerThread, NULL, threadWorkerManagerEntry, NULL);
+	if(res)
+	{
+		perror("error starting thread: ");
+	}
+	pthread_detach(workerThread);
 }
 
 void BeamWorkerManager::_startWorkerLoop()
 {
-	LOG("worker manager started in thread " + TOSTRING(ThreadID::getID()));
+	LOG("worker manager started in thread " + getThreadIDAsString());
 	int rc = 0;
 	struct timespec timeout;
+	int local_done_count = -1;
 	while (1)
 	{
 		MUTEX_LOCK(&done_count_mutex);
 		while (done_count < threadsSize)
 		{
-			LOG("TR| worker loop continued, waiting for more threads | threads waiting: " + TOSTRING(done_count) + " / " + TOSTRING(threadsSize));
+			//LOG("TR| worker loop continued, waiting for more threads | threads waiting: " + TOSTRING(done_count) + " / " + TOSTRING(threadsSize));
 
 			// set timeout
+#if 1
+			pthread_cond_wait(&done_count_cv, &done_count_mutex);
+#else
 			timeout.tv_sec = time(NULL);
-			timeout.tv_nsec = 5000;
+			timeout.tv_nsec = 50000;
 
 			// then wait for signal or time
 			rc = pthread_cond_timedwait(&done_count_cv, &done_count_mutex, &timeout);
+#endif //0
 		}
 		LOG("TR| worker loop done | threads waiting: " + TOSTRING(done_count) + " / " + TOSTRING(threadsSize));
 		MUTEX_UNLOCK(&done_count_mutex);
@@ -95,55 +109,64 @@ void BeamWorkerManager::_startWorkerLoop()
 		_checkRunThreads();
 
 		// TODO: make modifications on truck array in here
-		if(threadsSize < 409)
-		sleepMilliSeconds(100);
+		//	sleepMilliSeconds(100);
 
 		// reset counter, continue all threads via signal
 		LOG("TR| worker loop: un-pausing all threads");
 		MUTEX_LOCK(&done_count_mutex);
 		done_count=0;
 		// send signals to the threads
+		MUTEX_LOCK(&api_mutex);
 		threadMap::iterator it;
 		for(it = threads.begin(); it != threads.end(); ++it)
 		{
 			pthread_cond_signal(&it->second.work_cv);
 		}
+		MUTEX_UNLOCK(&api_mutex);
+
 		MUTEX_UNLOCK(&done_count_mutex);
 	}
 }
 
 void BeamWorkerManager::_checkRunThreads()
 {
+	int c = 0;
 	for(int i=threadsSize; i < targetThreadSize; i++)
-		new BeamWorker();
+	{
+		BeamWorker::createThread();
+		c++;
+	}
+	if(c>0)
+		LOG("TR| "+ TOSTRING(c) + " threads died, restarted them");
 }
 
 void BeamWorkerManager::addThread(BeamThread *bthread)
 {
-	// threadID is not valid in this context!
 	MUTEX_LOCK(&api_mutex);
+	unsigned long tid = getThreadID();
 	workerData_t wd;
 	pthread_mutex_init(&wd.work_mutex, NULL);
 	pthread_cond_init(&wd.work_cv, NULL);
 	wd.bthread = bthread;
-	wd.threadID = -1;
-	LOG("TR| add Thread: " + TOSTRING(bthread));
-	threads[bthread] = wd;
+	wd.threadID = tid;
+	//LOG("TR| add Thread: " + TOSTRING((unsigned long)bthread) + " / thread " + TOSTRING(tid));
+	// using insert instead of [] -> speed
+	threads.insert(std::pair<BeamThread*, workerData_t>(bthread, wd));
 	threadsSize = threads.size();
 	MUTEX_UNLOCK(&api_mutex);
 }
 
 void BeamWorkerManager::removeThread(BeamThread *bthread)
 {
-	// threadID is not valid in this context!
 	MUTEX_LOCK(&api_mutex);
+	unsigned long tid = getThreadID();
 	threadMap::iterator it = threads.find(bthread);
 	if(it == threads.end())
 	{
-		LOG("unknown thread calling remove: class " + TOSTRING((unsigned long)bthread));
+		LOG("TR| unknown thread calling remove: class " + TOSTRING((unsigned long)bthread) + " / thread " + TOSTRING(tid));
 		return;
 	}
-	LOG("TR| remove Thread: " + TOSTRING((unsigned long)bthread));
+	//LOG("TR| remove Thread: " + TOSTRING((unsigned long)bthread) + " / thread " + TOSTRING(tid));
 	workerData_t &wd = it->second;
 	pthread_cond_destroy(&wd.work_cv);
 	pthread_mutex_destroy(&wd.work_mutex);
@@ -155,17 +178,21 @@ void BeamWorkerManager::removeThread(BeamThread *bthread)
 	MUTEX_LOCK(&done_count_mutex);
 	pthread_cond_signal(&done_count_cv);
 	MUTEX_UNLOCK(&done_count_mutex);
-
 }
 
 void BeamWorkerManager::syncThreads(BeamThread *bthread)
 {
-	unsigned int tid = ThreadID::getID();
-	LOG("TR| Thread visiting syncing point| class: " + TOSTRING((unsigned long)bthread) + " / thread: " + TOSTRING(tid));
+	unsigned long tid = getThreadID();
+	//LOG("TR| Thread visiting syncing point| class: " + TOSTRING((unsigned long)bthread) + " / thread: " + TOSTRING(tid));
+
+	// yes, we need this lock here
+	MUTEX_LOCK(&api_mutex);
 	threadMap::iterator it = threads.find(bthread);
+	MUTEX_UNLOCK(&api_mutex);
+	// result?
 	if(it == threads.end())
 	{
-		LOG("unknown thread calling: " + TOSTRING(tid) + " / class " + TOSTRING((unsigned long)bthread));
+		LOG("TR| unknown thread calling: " + TOSTRING(tid) + " / class " + TOSTRING((unsigned long)bthread));
 		return;
 	}
 	

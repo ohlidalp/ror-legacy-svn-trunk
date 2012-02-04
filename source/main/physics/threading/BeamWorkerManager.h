@@ -25,11 +25,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "Singleton.h"
+#include "utils.h"
 
 class BeamThread;
 
 // Manager that manages all threads and the beam locking
-class BeamWorkerManager : public RoRSingleton<BeamWorkerManager>
+class BeamWorkerManager :
+	  public RoRSingleton<BeamWorkerManager>
 {
 	friend class BeamThread;
 	friend class RoRSingleton<BeamWorkerManager>;
@@ -38,29 +40,30 @@ protected:
 	{
 		pthread_mutex_t work_mutex;
 		pthread_cond_t work_cv;
-		int threadID;
+		unsigned long threadID;
 		BeamThread *bthread;
 	} workerData_t;
 
 	typedef std::map <BeamThread*, workerData_t> threadMap;
 	threadMap threads;
-	int threadsSize;
-	int targetThreadSize;
+	unsigned long threadsSize;
+	unsigned long targetThreadSize;
 
-	int done_count;
+	unsigned long done_count;
 	pthread_mutex_t api_mutex;
 	pthread_mutex_t done_count_mutex;
 	pthread_cond_t done_count_cv;
-	pthread_t workerThread;
 
 	BeamWorkerManager();
 	~BeamWorkerManager();
+
 
 	void addThread(BeamThread *bthread);
 	void removeThread(BeamThread *bthread);
 	void syncThreads(BeamThread *bthread);
 
 public:
+	static void createThread();
 	void _startWorkerLoop();
 	void _checkRunThreads();
 };
