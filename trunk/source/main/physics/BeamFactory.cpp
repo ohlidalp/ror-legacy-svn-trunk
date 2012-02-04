@@ -29,13 +29,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Settings.h"
 #include "BeamEngine.h"
+#include "BeamWorker.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
 #include "gui_menu.h"
 #include "DashBoardManager.h"
 #endif // USE_MYGUI
-#include "BeamWaitAndLock.h"
+//#include "BeamWaitAndLock.h"
 
 using namespace Ogre;
 
@@ -77,6 +78,11 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 
 	if (BSETTING("2DReplay", false))
 		tdr = new TwoDReplay();
+
+
+	// TEST for Beamworker, add two instances
+	//new BeamWorker();
+	//new BeamWorker();
 }
 
 BeamFactory::~BeamFactory()
@@ -342,7 +348,7 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 bool BeamFactory::syncRemoteStreams()
 {
 	// block until all threads done
-	BEAMLOCK();
+	//BEAMLOCK();
 
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
@@ -566,7 +572,7 @@ void BeamFactory::_deleteTruck(Beam *b)
 
 	// block until all threads done
 	{
-		BEAMLOCK();
+		//BEAMLOCK();
 
 		// synced delete
 		trucks[b->trucknum] = 0;
@@ -579,25 +585,6 @@ void BeamFactory::_deleteTruck(Beam *b)
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
 #endif // USE_MYGUI
-}
-
-void BeamFactory::_waitForSyncAndLock()
-{
-	// block until all threads done
-	if (thread_mode > THREAD_SINGLE)
-	{
-		MUTEX_LOCK(&done_count_mutex);
-		while (done_count>0)
-			pthread_cond_wait(&done_count_cv, &done_count_mutex);
-		MUTEX_UNLOCK(&done_count_mutex);
-	}
-
-	MUTEX_LOCK(&vehicles_mutex);
-}
-
-void BeamFactory::_ReleaseLock()
-{
-	MUTEX_UNLOCK(&vehicles_mutex);
 }
 
 void BeamFactory::removeCurrentTruck()
@@ -759,3 +746,86 @@ void BeamFactory::windowResized()
 	}
 #endif // USE_MYGUI
 }
+
+#if 0
+void *threadstart()
+{
+#ifdef USE_CRASHRPT
+	if(BSETTING("NoCrashRpt", true))
+	{
+		// add the crash handler for this thread
+		CrThreadAutoInstallHelper cr_thread_install_helper;
+		MYASSERT(cr_thread_install_helper.m_nInstallStatus==0);
+	}
+#endif //USE_CRASHRPT
+
+	// 64 bit systems does have longer addresses!
+	long int id;
+	id=(long int)vid;
+	Beam *beam=threadbeam[id];
+
+	try
+	{
+		//additional exception handler required, otherwise RoR just crashes upon exception
+		while (1)
+		{
+			// sync threads
+			//beamLock->syncBeamThreads();
+
+			//do work
+			beam->threadentry(id);
+		}
+	} catch(Ogre::Exception& e)
+	{
+		// try to shutdown input system upon an error
+		if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
+			INPUTENGINE.prepareShutdown();
+
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
+		showOgreWebError("An exception has occurred!", e.getFullDescription(), url);
+	}
+
+	//if(beamLock) delete(beamLock);
+	pthread_exit(NULL);
+	return NULL;
+}
+void BeamFactory::_workThread()
+{
+	ttdt=tdt;
+	tdt=dt;
+	float dtperstep=dt/(Real)steps;
+
+	for (int i=0; i<steps; i++)
+	{
+		for (int t=0; t<numtrucks; t++)
+		{
+			if(!trucks[t]) continue;
+
+			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
+		}
+		truckTruckCollisions(dtperstep);
+	}
+
+	for (int t=0; t<numtrucks; t++)
+	{
+		if(!trucks[t]) continue;
+
+		if (trucks[t]->reset_requested)
+			trucks[t]->SyncReset();
+
+		if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+		{
+			trucks[t]->lastlastposition=trucks[t]->lastposition;
+			trucks[t]->lastposition=trucks[t]->position;
+			trucks[t]->updateTruckPosition();
+		}
+		if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+			trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+	}
+
+	ffforce=affforce/steps;
+	ffhydro=affhydro/steps;
+	if (free_hydro) ffhydro=ffhydro/free_hydro;
+}
+#endif // 0

@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamEngine.h"
 #include "BeamFactory.h"
 #include "BeamStats.h"
-#include "BeamWaitAndLock.h"
+//#include "BeamWaitAndLock.h"
 #include "buoyance.h"
 #include "CmdKeyInertia.h"
 #include "collisions.h"
@@ -611,7 +611,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	}
 
 	// wait for the thread(s) to be ready
-	BEAMLOCK();
+	//BEAMLOCK();
 
 	// all finished? so start network stuff
 	if (networked)
@@ -2098,7 +2098,7 @@ bool Beam::frameStep(Real dt)
 		{
 			//block until all threads are done
 			{
-				BEAMLOCK();
+				//BEAMLOCK();
 				for (int t=0; t<numtrucks; t++)
 				{
 					if (!trucks[t]) continue;
@@ -2159,7 +2159,7 @@ bool Beam::frameStep(Real dt)
 
 void Beam::prepareShutdown()
 {
-	BEAMLOCK();
+	//BEAMLOCK();
 }
 
 void Beam::sendStreamSetup()
