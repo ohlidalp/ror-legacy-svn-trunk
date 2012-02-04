@@ -8,6 +8,7 @@
 #include <OgreLogManager.h>
 
 #include "Settings.h"
+#include "utils.h"
 
 using namespace Ogre;
 
@@ -120,12 +121,8 @@ void AppStateManager::start(AppState* state)
 		// no more actual rendering?
 		if(m_bNoRendering)
 		{
-#ifdef WIN32
-			Sleep(100);
-#else
-			sleep(100);
+			sleepMilliSeconds(100);
 			continue;
-#endif // WIN32
 		}
 
 		update(timeSinceLastFrame);
@@ -133,11 +130,7 @@ void AppStateManager::start(AppState* state)
 		if (maxFPS && timeSinceLastFrame < minTimePerFrame)
 		{
 			// Sleep twice as long as we were too fast.
-#ifdef WIN32
-			Sleep((minTimePerFrame - timeSinceLastFrame) << 1);
-#else
-			sleep((minTimePerFrame - timeSinceLastFrame) << 1);
-#endif // WIN32
+			sleepMilliSeconds((minTimePerFrame - timeSinceLastFrame) << 1);
 		}
 
 

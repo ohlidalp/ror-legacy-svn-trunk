@@ -37,6 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "errorutils.h"
 #include "ImprovedConfigFile.h"
+#include "utils.h"
 #include "RoRVersion.h"
 
 using namespace std; // primary for string
@@ -589,21 +590,16 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 	if(eventNum == 433)
 	{
 		// 433 = uername already used, try to take another one
-#ifdef WIN32
-		Sleep(500);
-#else
-		sleep(500);
-#endif // WIN32		irc_ctx_t * ctx = (irc_ctx_t *) irc_get_ctx (session);
+		sleepMilliSeconds(500);
+
+
+		//irc_ctx_t * ctx = (irc_ctx_t *) irc_get_ctx (session);
 		//ctx->retryCounter++;
 		ctx->nick += "_";
 
 		// now change the nick
 		irc_cmd_nick(session, ctx->nick.c_str());
-#ifdef WIN32
-		Sleep(500);
-#else
-		sleep(500);
-#endif // WIN32
+		sleepMilliSeconds(500);
 
 		// and rejoin the channels
 		irc_cmd_join (session, ctx->channel.c_str(), 0);
@@ -728,11 +724,7 @@ void *s_ircthreadstart(void* arg)
 	{
 		// sleep longer the more often we try to connect - security measure
 		// gives the old connection the chance to time-out
-#ifdef WIN32
-		Sleep(2000*ctx->retryCounter);
-#else
-		sleep(2000*ctx->retryCounter);
-#endif // WIN32
+		sleepMilliSeconds(2000*ctx->retryCounter);
 	}
 
 	irc_set_ctx (ctx->irc_session, ctx);
