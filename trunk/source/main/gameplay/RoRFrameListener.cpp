@@ -3524,15 +3524,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (dirty) {mWindow->update();}
 #endif
 		else
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-			Sleep(10);
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		usleep(10000);
-#endif
-#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-		usleep(10000);
-#endif
+			sleepMilliSeconds(10);
 	}
 	// Return true to continue rendering
 	return true;
