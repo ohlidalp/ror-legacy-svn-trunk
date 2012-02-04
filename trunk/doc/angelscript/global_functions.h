@@ -28,3 +28,26 @@ void log(const string message);
  * @see game.log
  */
 void print(const string message);
+
+/**
+ * All the events that can be used by the script.
+ * @remarks This is just a placeholder, please look in the RoR source code for the real scriptEvents enum.
+ * @see game::registerForEvent
+ * @see The scriptEvents enum in the Rigs of Rods source code.
+ */
+enum scriptEvents {}
+
+/**
+ * Different truck states registered with the script.
+ */
+enum truckStates {
+	TS_ACTIVATED,      //!< leading truck
+	TS_DESACTIVATED,   //!< not leading but active
+	TS_MAYSLEEP,       //!< active but wanting to sleep
+	TS_GOSLEEP,        //!< active but ordered to sleep ASAP (synchronously)
+	TS_SLEEPING,       //!< not active, sleeping
+	TS_NETWORKED,      //!< not calculated, gets remote data
+	TS_RECYCLE,        //!< waiting for reusage
+	TS_DELETED,        //!< special used when truck pointer is 0
+};
+

@@ -152,11 +152,21 @@ public:
 
 	/**
 	 * shows a message to the user
+	 * @deprecated Use the game.message function instead.
 	 * @param message The message to be shown
 	 * @param time How long the message should be shown (in seconds)
 	 * @param charHeight The font size to be used (use -1 for the default size)
 	 */
 	void flashMessage(string message, float time, float charHeight);
+
+	/**
+	 * shows a message to the user
+	 * @param txt The message to be shown
+	 * @param icon The filename of the icon to be shown in front of the message.
+	 * @param timeMilliseconds How long the message should be shown (in milliseconds)
+	 * @param forceVisible Set this to true if you want the message to be forced on the user's screen (~it will show, even when the GUI is hidden).
+	 */
+	void message(string txt, string icon, float timeMilliseconds, bool forceVisible);
 
 	/**
 	 * set direction arrow
@@ -169,12 +179,14 @@ public:
 
 	/**
 	 * returns the size of the font used by the chat box
+	 * @deprecated
 	 * @return pixel size of the chat text
 	 */
 	int getChatFontSize();
 
 	/**
 	 * changes the font size of the chat box
+	 * @deprecated
 	 * @param size font size in pixels
 	 */
 	void setChatFontSize(int size);
@@ -235,17 +247,17 @@ public:
 	 * This shows a vehicle chooser
 	 * @param type A string specifying the type of the chooser.
 	 *      You can choose out of the following:
-	 *           - vehicle
-	 *           - truck
-	 *           - car
-	 *           - boat
-	 *           - airplane
-	 *           - heli
-	 *           - trailer
-	 *           - load
-	 *           - extension
-	 * @param instance the instance of the event box in which the truck/load should be spawned
-	 * @param box the box in which the truck will be spawned
+	 *           - "vehicle"
+	 *           - "truck"
+	 *           - "car"
+	 *           - "boat"
+	 *           - "airplane"
+	 *           - "heli"
+	 *           - "trailer"
+	 *           - "load"
+	 *           - "extension"
+	 * @param instance the unique name of the object with the event box in which the truck/load should be spawned
+	 * @param box the name of the box in which the truck will be spawned
 	*/
 	void showChooser(string type, string instance, string box);
 
@@ -321,6 +333,11 @@ public:
 	int setMaterialSpecular(const string materialName, float red, float green, float blue, float alpha);
 	int setMaterialEmissive(const string materialName, float red, float green, float blue);
 	
+	int setMaterialTextureName(const string materialName, int techniqueNum, int passNum, int textureUnitNum, const string textureName);
+	int setMaterialTextureRotate(const string materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation);
+	int setMaterialTextureScroll(const string materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy);
+	int setMaterialTextureScale(const string materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v);
+
 	/**
 	 * Generates a random number between from and to
 	 * @param from The generated number will be higher than this number
@@ -351,4 +368,40 @@ public:
 	 * Clears the event cache
 	 */
 	void clearEventCache();
+	
+	/**
+	 * Gives the currently used truck a boost in RPM.
+	 * @param factor This factor determines by how much that the RPM of the truck will be increased ( rpm += 2000.0f * factor ).
+	 */
+	void boostCurrentTruck(float factor);
+	
+	/**
+	 * Adds a global function to the script.
+	 * @param func the function to be added, e.g.: "void func() { log('works'); }"
+	 */
+	int addScriptFunction(const string func);
+	
+	/**
+	 * Checks if a global function exists
+	 * @param func the declaration of the function that should be checked for existance, e.g.: "void func()"
+	 */
+	int scriptFunctionExists(const string func);
+	
+	/**
+	 * Removes a global function from the script.
+	 * @param func the declaration of the function that should be removed, e.g.: "void func()"
+	 */
+	int deleteScriptFunction(const string func);
+	
+	/**
+	 * Adds a global variable to the script.
+	 * @param var the declaration of the variable that should be added, e.g.: "int missionState;"
+	 */
+	int addScriptVariable(const string var);
+	
+	/**
+	 * Removes a global variable from the script.
+	 * @param var the declaration of the variable that should be removed, e.g.: "int missionState;"
+	 */
+	int deleteScriptVariable(const string var);
 };

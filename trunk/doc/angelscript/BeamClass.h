@@ -166,4 +166,10 @@ public:
 	 * Gets the current wheel speed of the vehicle.
 	 */
 	float getWheelSpeed();
+	
+	/**
+	 * Gets the G-forces that this truck is currently experiencing.
+	 * @return a vector3 representing the G-forces
+	 */
+	vector3 getGForces();
 }
