@@ -32,15 +32,16 @@ class BeamWorker : public BeamThread
 {
 protected:
 	pthread_t thread;
+	bool running;
+
+	float test1;
 public:
 	BeamWorker();
 	~BeamWorker();
 	// called from the new thread, do not execute manually
 	void _startWorkerLoop();
+	void killWorker() { running=false; }
 protected:
-	float tdt;
-	float ttdt;
-
 	// method to work off one beam
 	void _doWork();
 };

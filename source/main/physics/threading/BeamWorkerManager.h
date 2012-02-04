@@ -33,7 +33,6 @@ class BeamWorkerManager : public RoRSingleton<BeamWorkerManager>
 {
 	friend class BeamThread;
 	friend class RoRSingleton<BeamWorkerManager>;
-	static const int MAX_THREADS = 256;
 protected:
 	typedef struct workerData_t
 	{
@@ -46,9 +45,7 @@ protected:
 	typedef std::map <BeamThread*, workerData_t> threadMap;
 	threadMap threads;
 	int threadsSize;
-
-	void *classInstanceData[MAX_THREADS];
-	int instanceSize;
+	int targetThreadSize;
 
 	int done_count;
 	pthread_mutex_t api_mutex;
@@ -65,6 +62,7 @@ protected:
 
 public:
 	void _startWorkerLoop();
+	void _checkRunThreads();
 };
 
 #endif //__BeamWorkerManager_H__
