@@ -41,7 +41,7 @@ void *threadWorkerEntry(void *beamWorkerPtr)
 	return NULL;	
 }
 
-BeamWorker::BeamWorker()
+BeamWorker::BeamWorker() : running(true), test1(0)
 {
 	pthread_create(&thread, NULL, threadWorkerEntry, (void*)this);
 }
@@ -66,7 +66,7 @@ void BeamWorker::_startWorkerLoop()
 	try
 	{
 		// additional exception handler required, otherwise RoR just crashes upon exception
-		while (1)
+		while (running)
 		{
 			// sync threads
 			syncBeamThreads();
@@ -80,14 +80,20 @@ void BeamWorker::_startWorkerLoop()
 		// TODO: error handling
 	}
 	LOG("TR| BeamWorker exiting: " + TOSTRING(ThreadID::getID()));
+	delete(this);
 }
 
 void BeamWorker::_doWork()
 {
-	int seconds = Ogre::Math::RangeRandom(1, 10);
+	float seconds = Ogre::Math::RangeRandom(0.1f, 2.0f);
 	LOG("TR| BeamWorker doing work: " + TOSTRING(ThreadID::getID()) + " sleeping " + TOSTRING(seconds) + " seconds");
 
-	sleep(seconds);
+	test1 += seconds;
+
+	if(test1 > 5)
+		killWorker();
+
+	sleepMilliSeconds(seconds);
 
 #if 0
 	float dtperstep=dt/(Real)steps;
