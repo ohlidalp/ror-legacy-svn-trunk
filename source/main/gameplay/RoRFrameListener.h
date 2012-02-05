@@ -54,6 +54,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "TreeLoader2D.h"
 #endif
 
+#ifdef USE_SKIA
+#include <CanvasTexture.h>
+#endif // USE_SKIA
+
 #include "OgreTerrainGroup.h"
 
 
@@ -441,6 +445,12 @@ protected:
 
 	RenderWindow* renderwin;
 
+#ifdef USE_SKIA
+	Ogre::Canvas::Texture *mCanvasTextureClock1;
+	float rot;
+	int x;
+#endif // USE_SKIA
+
 	char screenshotformat[256];
 	bool useCaelumSky;
 	float farclip;
@@ -451,6 +461,8 @@ protected:
 
 	std::vector<animated_object_t> animatedObjects;
 	bool updateAnimatedObjects(float dt);
+	void initGFXDebugging();
+	void updateGFXDebugging(float dt);
 };
 
 

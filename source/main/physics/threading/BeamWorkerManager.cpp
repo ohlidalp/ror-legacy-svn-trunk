@@ -50,17 +50,12 @@ BeamWorkerManager::BeamWorkerManager() :
 		, done_count(0)
 		, done_count_mutex()
 		, done_count_cv()
-		, mCanvasTextureClock1(0)
-		, rot(0)
-
 {
 	pthread_mutex_init(&api_mutex, NULL);
 	pthread_mutex_init(&done_count_mutex, NULL);
 	pthread_cond_init(&done_count_cv, NULL);
 
 	threads.clear();
-
-	initDebugging();
 }
 
 BeamWorkerManager::~BeamWorkerManager()
@@ -217,69 +212,4 @@ void BeamWorkerManager::syncThreads(BeamThread *bthread)
 	pthread_cond_wait(&wd.work_cv, &wd.work_mutex);
 	MUTEX_UNLOCK(&wd.work_mutex);
 	// return to continue to do work
-}
-
-bool BeamWorkerManager::frameStarted(const FrameEvent& evt)
-{
-#ifdef USE_SKIA
-	if(mCanvasTextureClock1)
-		updateDebugging(evt.timeSinceLastEvent);
-#endif // USE_SKIA
-	return true;
-}
-
-void BeamWorkerManager::updateDebugging(float dt)
-{
-#ifdef USE_SKIA
-	rot += dt;
-
-	// paint
-	Ogre::Canvas::Context* ctx = mCanvasTextureClock1->getContext();
-	ctx->save();		
-	ctx->clearRect(0, 0, 200, 150);
-	ctx->strokeStyle(Ogre::ColourValue::Black);
-	ctx->fillStyle(Ogre::ColourValue::White);
-	ctx->fillRect(0, 0, 200, 150);
-	ctx->translate(75, 75);
-	ctx->scale(0.4f, 0.4f);
-	ctx->rotate(-Ogre::Math::PI/2.0f);
-	ctx->lineWidth(8);
-	ctx->lineCap(Ogre::Canvas::LineCap_Round);
-	// Hour marks
-	//ctx->save();
-	for (float i=0; i<12; i++)
-	{
-		ctx->beginPath();
-		ctx->rotate(Ogre::Math::PI/6.0f  + rot);
-		ctx->moveTo(100, 0);
-		ctx->lineTo(120, 0);
-		ctx->stroke();
-	}
-	ctx->restore();
-
-	ctx->fillText("dt: " + TOSTRING(dt), 10, 10);
-
-	mCanvasTextureClock1->uploadTexture();
-#endif // USE_SKIA
-}
-void BeamWorkerManager::initDebugging()
-{
-#ifdef USE_SKIA
-	// first, create skia texture
-	mCanvasTextureClock1 = new Ogre::Canvas::Texture("CanvasClock1", 600, 150);
-	mCanvasTextureClock1->createMaterial();
-
-	// the ogre overlay
-	Ogre::Overlay* overlay = Ogre::OverlayManager::getSingleton().create("Canvas/Overlay");
-	Ogre::PanelOverlayElement* panel = static_cast<Ogre::PanelOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "CanvasClock1/Panel"));
-	panel->setMetricsMode(Ogre::GMM_PIXELS);
-	panel->setMaterialName("CanvasClock1");
-	panel->setDimensions(600.0f, 150.0f);
-	panel->setPosition(0, 0);
-	overlay->add2D(panel);
-	overlay->show();
-
-	// then add ourself as frame listener
-	Ogre::Root::getSingleton().addFrameListener(this);
-#endif // USE_SKIA
 }
