@@ -27,11 +27,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 #include "utils.h"
 
+#ifdef USE_SKIA
+#include <CanvasTexture.h>
+#endif // USE_SKIA
+
 class BeamThread;
 
 // Manager that manages all threads and the beam locking
 class BeamWorkerManager :
-	  public RoRSingleton<BeamWorkerManager>
+	    public RoRSingleton<BeamWorkerManager>
+	  , Ogre::FrameListener
 {
 	friend class BeamThread;
 	friend class RoRSingleton<BeamWorkerManager>;
@@ -62,7 +67,14 @@ protected:
 	void removeThread(BeamThread *bthread);
 	void syncThreads(BeamThread *bthread);
 	void initDebugging();
+	void updateDebugging(float dt);
 
+#ifdef USE_SKIA
+	Ogre::Canvas::Texture *mCanvasTextureClock1;
+	float rot;
+#endif // USE_SKIA
+
+	bool frameStarted(const FrameEvent& evt);
 public:
 	static void createThread();
 	void _startWorkerLoop();
