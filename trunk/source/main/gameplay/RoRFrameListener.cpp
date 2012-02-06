@@ -5996,8 +5996,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// update GUI
 	INPUTENGINE.Capture();
 
+#ifdef USE_SKIA
 	if(mCanvasTextureClock1)
 		updateGFXDebugging(dt);
+#endif // USE_SKIA
 
 	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
