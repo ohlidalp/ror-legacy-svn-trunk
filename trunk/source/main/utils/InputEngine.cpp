@@ -2486,6 +2486,7 @@ bool InputEngine::processLine(char *line)
 			// separate all keys and construct the key combination
 			//LOG("try to add key: " + String(eventName)+","+ String(evtype)+","+String(keycodes));
 			strncpy(keycodes_work, keycodes, 255);
+			keycodes_work[255] = '\0';
 			char *token = strtok(keycodes_work, delimiters);
 
 			while (token != NULL)
@@ -2567,7 +2568,7 @@ bool InputEngine::processLine(char *line)
 	case ET_JoystickAxisAbs:
 		{
 			int axisNo = 0;
-			char options[250] = {};
+			char options[256] = {};
 			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &axisNo, options);
 			int eventID = resolveEventName(String(eventName));
@@ -2584,8 +2585,8 @@ bool InputEngine::processLine(char *line)
 			//  0 = all
 			// -1 = lower
 			//  1 = upper
-			char tmp[250] = {};
-			strncpy(tmp, options, 250);
+			char tmp[256] = {};
+			strncpy(tmp, options, 255);
 			char *token = strtok(tmp, delimiters);
 			while (token != NULL)
 			{
@@ -2861,8 +2862,8 @@ int InputEngine::getCurrentKeyCombo(Ogre::String *combo)
 Ogre::String InputEngine::getEventGroup(Ogre::String eventName)
 {
 	const char delimiters[] = "_";
-	char tmp[250] = {};
-	strncpy(tmp, eventName.c_str(), 250);
+	char tmp[256] = {};
+	strncpy(tmp, eventName.c_str(), 255);
 	char *token = strtok(tmp, delimiters);
 	while (token != NULL)
 		return Ogre::String(token);

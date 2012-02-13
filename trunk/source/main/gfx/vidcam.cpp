@@ -277,11 +277,12 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 		crole   = PARSEINT (args[16]);
 		cmode   = PARSEINT (args[17]);
 		strncpy(materialname, args[18].c_str(), 255);
+		materialname[255] = '\0';
 		if(n > 19)
 			strncpy(vidCamName, args[19].c_str(), 255);
 		else
 			strncpy(vidCamName, materialname, 255); // fallback, use materialname
-
+		
 		//if (texx <= 0 || !isPowerOfTwo(texx) || texy <= 0 || !isPowerOfTwo(texy))
 		// disabled isPowerOfTwo, as it can be a renderwindow now with custom resolution
 		if (texx <= 0 || texy <= 0)

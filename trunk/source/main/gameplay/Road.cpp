@@ -82,7 +82,7 @@ void Road::addRoadType(const char* name)
 	sprintf(mname,"%s.mesh", name);
 	Entity *te = mSceneMgr->createEntity(oname, mname);
 	te->setCastShadows(false);
-	if(free_rtype == MAX_RTYPES)
+	if(free_rtype >= MAX_RTYPES)
 		return;
 	rtypes[free_rtype].node=mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	(rtypes[free_rtype].node)->attachObject(te);
@@ -96,7 +96,7 @@ void Road::toggleType()
 	Quaternion rot=tenode->getOrientation();
 	Vector3 pos=tenode->getPosition();
 	cur_rtype++;
-	if (cur_rtype==free_rtype) cur_rtype=0;
+	if (cur_rtype>=free_rtype || cur_rtype>= MAX_RTYPES) cur_rtype=0;
 	tenode->setVisible(false);
 	tenode=rtypes[cur_rtype].node;
 	strcpy(curtype, rtypes[cur_rtype].name);
