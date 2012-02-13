@@ -6523,7 +6523,7 @@ Rail* SerializedRig::getRails(const std::vector<int>& nodeids, parsecontext_t c)
 void SerializedRig::addSoundSource(SoundScriptInstance *ssi, int nodenum, int type, parsecontext_t *c)
 {
 	if (!ssi) return; //fizzle
-	if (free_soundsource==MAX_SOUNDSCRIPTS_PER_TRUCK)
+	if (free_soundsource>=MAX_SOUNDSCRIPTS_PER_TRUCK)
 	{
 		parser_warning(c, "Error, too many sound sources per vehicle!", PARSER_ERROR);
 		return;

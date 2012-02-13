@@ -1786,21 +1786,20 @@ void CacheSystem::readCategoryTitles()
 		LOG("error opening file: "+configlocation+"categories.cfg");
 		return;
 	}
-	char line[1024] = {0};
+	char line[1024] = {};
 	while (!feof(fd))
 	{
 		int res = fscanf(fd, " %[^\n\r]", line);
 		if (line[0] == ';')	continue;
-		int number = 0;
-		char title[256] = {0};
+		char title[256] = {};
 		const char delimiters[] = ",";
-		char str_work[1024] = {0};
+		char str_work[1024] = {};
 
-		strncpy(str_work, line, 1024);
-
+		strncpy(str_work, line, 1023);
+		str_work[1023] = '\0';
 		char *token = strtok(str_work, delimiters);
 		if (token == NULL) continue;
-		number = atoi(token);
+		int number = atoi(token);
 		token = strtok(NULL, delimiters);
 		if (token == NULL) continue;
 		//strip spaces at the beginning

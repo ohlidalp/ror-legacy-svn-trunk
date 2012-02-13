@@ -339,7 +339,7 @@ inline Vector3 Road2::baseOf(Vector3 p)
 //the two firsts must be the "high" points
 void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, bool collision, Vector3 pos, Vector3 lastpos, float width, bool flip)
 {
-	if(vertexcount>=MAX_VERTEX || tricount >= MAX_TRIS) return;
+	if(vertexcount+3 >= MAX_VERTEX || tricount*3+3+2 >= MAX_TRIS*3) return;
 	Vector2 texf[4];
 	textureFit(p1, p2, p3, p4, texfit, texf, pos, lastpos, width);
 	//vertexes
