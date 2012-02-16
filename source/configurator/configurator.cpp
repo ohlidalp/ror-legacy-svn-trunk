@@ -37,6 +37,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <iostream>
+#include <memory>
+
 
 mode_t getumask(void)
 {
