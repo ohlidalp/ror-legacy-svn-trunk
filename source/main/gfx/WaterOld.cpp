@@ -93,32 +93,36 @@ WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWind
 	visible=true;
 	haswaves=usewaves;
 	free_wavetrain=0;
-	char line[1024] = {};
-	FILE *fd = fopen((SSETTING("Config Root", "")+"wavefield.cfg").c_str(), "r");
-	if (fd)
+	maxampl=0;
+
+	if(haswaves)
 	{
-		while (!feof(fd))
+		char line[1024] = {};
+		FILE *fd = fopen((SSETTING("Config Root", "")+"wavefield.cfg").c_str(), "r");
+		if (fd)
 		{
-			int res = fscanf(fd," %[^\n\r]",line);
-			if (line[0] == ';') continue;
-			float wl,amp,mx,dir;
-			res = sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
-			if(res < 4) continue;
-			wavetrains[free_wavetrain].wavelength=wl;
-			wavetrains[free_wavetrain].amplitude=amp;
-			wavetrains[free_wavetrain].maxheight=mx;
-			wavetrains[free_wavetrain].direction=dir/57.0;
-			free_wavetrain++;
+			while (!feof(fd))
+			{
+				int res = fscanf(fd," %[^\n\r]",line);
+				if (line[0] == ';') continue;
+				float wl,amp,mx,dir;
+				res = sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
+				if(res < 4) continue;
+				wavetrains[free_wavetrain].wavelength=wl;
+				wavetrains[free_wavetrain].amplitude=amp;
+				wavetrains[free_wavetrain].maxheight=mx;
+				wavetrains[free_wavetrain].direction=dir/57.0;
+				free_wavetrain++;
+			}
+			fclose(fd);
 		}
-		fclose(fd);
+		for (int i=0; i<free_wavetrain; i++)
+		{
+			wavetrains[i].wavespeed=1.25*sqrt(wavetrains[i].wavelength);
+			maxampl+=wavetrains[i].maxheight;
+		}
 	}
 	//theCam=camera;
-	maxampl=0;
-	for (int i=0; i<free_wavetrain; i++)
-	{
-		wavetrains[i].wavespeed=1.25*sqrt(wavetrains[i].wavelength);
-		maxampl+=wavetrains[i].maxheight;
-	}
 	pTestNode=0;
 	waterSceneMgr=mSceneMgr;
 	framecounter=0;
@@ -460,6 +464,8 @@ float WaterOld::getHeightWaves(Vector3 pos)
 
 Vector3 WaterOld::getVelocity(Vector3 pos)
 {
+	if(!haswaves) return Vector3::ZERO;
+
 	if (pos.y>height+maxampl) return Vector3::ZERO;
 	int i;
 	float waveheight=(pos-Vector3((*mapsizex * mScale)/2, height, (*mapsizez * mScale)/2)).squaredLength()/3000000.0;
