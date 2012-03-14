@@ -231,6 +231,7 @@ void GameScript::showChooser(std::string &type, std::string &instance, std::stri
 	if (type == "airplane")  ntype = SelectorWindow::LT_Airplane;
 	if (type == "heli")      ntype = SelectorWindow::LT_Heli;
 	if (type == "trailer")   ntype = SelectorWindow::LT_Trailer;
+	if (type == "train")     ntype = SelectorWindow::LT_Train;
 	if (type == "load")      ntype = SelectorWindow::LT_Load;
 	if (type == "extension") ntype = SelectorWindow::LT_Extension;
 	if (ntype != SelectorWindow::LT_None)
