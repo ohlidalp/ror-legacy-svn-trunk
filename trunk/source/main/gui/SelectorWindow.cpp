@@ -56,6 +56,7 @@ _L("Boats");
 _L("Helicopters");
 _L("Aircraft");
 _L("Trailers");
+_L("Trains");
 _L("Other Loads");
 _L("Addon Terrains");
 _L("Official Terrains");
@@ -326,10 +327,12 @@ void SelectorWindow::getData()
 			add = (mLoaderType == LT_Airplane || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="trailer")
 			add = (mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
+		else if(it->fext=="train")
+			add = (mLoaderType == LT_Train);
 		else if(it->fext=="load")
 			add = (mLoaderType == LT_Load || mLoaderType == LT_Extension);
 
-		if(mLoaderType == LT_AllBeam && (it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
+		if(mLoaderType == LT_AllBeam && (it->fext == "train" || it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
 			add = true;
 
 		if(!add)

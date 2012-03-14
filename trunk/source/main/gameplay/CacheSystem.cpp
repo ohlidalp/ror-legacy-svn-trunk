@@ -57,6 +57,7 @@ CacheSystem::CacheSystem()
 	known_extensions.push_back("airplane");
 	known_extensions.push_back("trailer");
 	known_extensions.push_back("load");
+	known_extensions.push_back("train");
 
 	if(BSETTING("streamCacheGenerationOnly", false))
 	{
