@@ -6590,8 +6590,7 @@ void RoRFrameListener::reloadCurrentTruck()
 void RoRFrameListener::updateGFXDebugging(float dt)
 {
 #ifdef USE_SKIA
-	if(dt == 0) return;
-	rot += dt * 5.0f;
+	rot += dt;
 
 	// paint
 	Ogre::Canvas::Context* ctx = mCanvasTextureClock1->getContext();
@@ -6622,14 +6621,14 @@ void RoRFrameListener::updateGFXDebugging(float dt)
 	}
 	ctx->restore();
 
-	ctx->fillText("dt: " + TOSTRING(dt), 0, 10);
+	ctx->fillText("dt: " + TOSTRING(dt), 10, 10);
 
 	const RenderTarget::FrameStats &stats = Ogre::Root::getSingleton().getAutoCreatedWindow()->getStatistics();
-	ctx->fillText("fps: " + TOSTRING(stats.lastFPS), 0, 20);
+	ctx->fillText("fps: " + TOSTRING(stats.lastFPS), 10, 20);
 
-	ctx->lineWidth(1);
-	ctx->strokeStyle(Ogre::ColourValue::White);
-	ctx->fillStyle(Ogre::ColourValue::White);
+	ctx->lineWidth(2);
+	ctx->strokeStyle(Ogre::ColourValue::Black);
+	ctx->fillStyle(Ogre::ColourValue::Black);
 	ctx->lineCap(Ogre::Canvas::LineCap_Square);
 	ctx->beginPath();
 	ctx->moveTo(x, ctx->height());
