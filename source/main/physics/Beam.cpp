@@ -53,6 +53,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SlideNode.h"
 #include "turboprop.h"
 #include "water.h"
+#include "CameraManager.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -5450,7 +5451,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 void Beam::updateAI(float dt)
 {
-	if(driveable != TRUCK || RoRFrameListener::eflsingleton->cameramode != CAMERA_FREE)
+	if(driveable != TRUCK || CAMERA_MODE != CAMERA_FREE)
 		return;
 
 	// start engine if not running

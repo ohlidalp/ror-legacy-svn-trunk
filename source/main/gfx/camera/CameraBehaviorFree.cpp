@@ -31,24 +31,24 @@ using namespace Ogre;
 void CameraBehaviorFree::activate()
 {
 	// enter free camera mode
-	if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-	storedcameramode = cameramode;
-	cameramode = CAMERA_FREE;
+	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
+	if(dof) dof->setFocusMode(DOFManager::Auto);
+
 	LOG("entering free camera mode");
-#ifdef USE_MYGUI
-	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
-#endif // USE_MYGUI
+
+	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);
 }
 
 void CameraBehaviorFree::deactivate()
 {
 	// change back to normal camera
-	if(mDOF) mDOF->setFocusMode(DOFManager::Manual);
-	cameramode = storedcameramode;
+	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
+	if(dof) dof->setFocusMode(DOFManager::Manual);
+
 	LOG("exiting free camera mode");
-#ifdef USE_MYGUI
-	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000);
-#endif // USE_MYGUI
+
+	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);
+
 }
 
 void CameraBehaviorFree::update(float dt)
@@ -109,15 +109,30 @@ void CameraBehaviorFree::update(float dt)
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
 		mRotX += mRotScale;
 
-	mCamera->yaw(mRotX);
-	mCamera->pitch(mRotY);
+	Camera *cam = CameraManager::getSingleton().getCamera();
 
-	Vector3 trans = mCamera->getOrientation() * mTranslateVector;
-	setCameraPositionWithCollision(mCamera->getPosition() + trans);
+	cam->yaw(mRotX);
+	cam->pitch(mRotY);
+
+	Vector3 trans = cam->getOrientation() * mTranslateVector;
+	cam->setPosition(cam->getPosition() + trans);
 }
 
 bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)
 {
+	const OIS::MouseState ms = _arg.state;
+	Camera *cam = CameraManager::getSingleton().getCamera();
+
+	if(ms.buttonDown(OIS::MB_Right))
+	{
+		cam->yaw(Degree(-(float)ms.X.rel * 0.13f));
+		cam->pitch(Degree(-(float)ms.Y.rel * 0.13f));
+#ifdef USE_MYGUI
+		MyGUI::PointerManager::getInstance().setPointer("hand");
+#endif // USE_MYGUI
+		return true;
+	}
+
 	return false;
 }
 

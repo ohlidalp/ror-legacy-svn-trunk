@@ -434,44 +434,52 @@ void GameScript::clearEventCache()
 
 void GameScript::setCameraPosition(Ogre::Vector3 &pos)
 {
-	mefl->getCamera()->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+	// TODO: TOFIX
+	//mefl->getCamera()->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
 }
 
 void GameScript::setCameraDirection(Ogre::Vector3 &rot)
 {
-	mefl->getCamera()->setDirection(Ogre::Vector3(rot.x, rot.y, rot.z));
+	// TODO: TOFIX
+	//mefl->getCamera()->setDirection(Ogre::Vector3(rot.x, rot.y, rot.z));
 }
 
 void GameScript::setCameraYaw(float rotX)
 {
-	mefl->getCamera()->yaw(Ogre::Degree(rotX));
+	// TODO: TOFIX
+	//mefl->getCamera()->yaw(Ogre::Degree(rotX));
 }
 
 void GameScript::setCameraPitch(float rotY)
 {
-	mefl->getCamera()->pitch(Ogre::Degree(rotY));
+	// TODO: TOFIX
+	//mefl->getCamera()->pitch(Ogre::Degree(rotY));
 }
 
 void GameScript::setCameraRoll(float rotZ)
 {
-	mefl->getCamera()->roll(Ogre::Degree(rotZ));
+	// TODO: TOFIX
+	//mefl->getCamera()->roll(Ogre::Degree(rotZ));
 }
 
 Ogre::Vector3 GameScript::getCameraPosition()
 {
-	Ogre::Vector3 pos = mefl->getCamera()->getPosition();
-	return Ogre::Vector3(pos.x, pos.y, pos.z);
+	// TODO: TOFIX
+	//Ogre::Vector3 pos = mefl->getCamera()->getPosition();
+	return Ogre::Vector3::ZERO; //Vector3(pos.x, pos.y, pos.z);
 }
 
 Ogre::Vector3 GameScript::getCameraDirection()
 {
-	Ogre::Vector3 rot = mefl->getCamera()->getDirection();
-	return Ogre::Vector3(rot.x, rot.y, rot.z);
+	// TODO: TOFIX
+	//Ogre::Vector3 rot = mefl->getCamera()->getDirection();
+	return Ogre::Vector3::ZERO; //(rot.x, rot.y, rot.z);
 }
 
 void GameScript::cameraLookAt(Ogre::Vector3 &pos)
 {
-	mefl->getCamera()->lookAt(Ogre::Vector3(pos.x, pos.y, pos.z));
+	// TODO: TOFIX
+	//mefl->getCamera()->lookAt(Ogre::Vector3(pos.x, pos.y, pos.z));
 }
 
 #ifdef USE_CURL

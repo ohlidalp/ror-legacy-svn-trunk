@@ -761,6 +761,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	net_quality_changed=false;
 	freeTruckPosition=false;
 
+	mCamera = cam;
+	new CameraManager(scm, mCamera);
+
 	terrainHasTruckShop=false;
 
 	terrainName = String();
@@ -990,7 +993,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//joy=new BeamJoystick(mInputManager, deadzone, useforce, &cfg);
 	//useforce=joy->hasForce();
 
-	mCamera = cam;
 	gCamera = cam;
 	mWindow = win;
 	mStatsOn = 0;
@@ -1932,11 +1934,13 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 #endif //USE_MYGUI
 
+	bool cameraAllowsInteraction = CameraManager::getSingleton().allowInteraction();
+
 	// update characters
 	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
 	else if(loading_state==ALL_LOADED && !net)
-		person->update(dt, (CAMERA_MODE == CAMERA_FREE));
+		person->update(dt, cameraAllowsInteraction);
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{

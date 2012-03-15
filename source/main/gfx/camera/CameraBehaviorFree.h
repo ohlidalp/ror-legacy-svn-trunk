@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIOR_H__
-#define CAMERABEHAVIOR_H__
+#ifndef CAMERABEHAVIORFREE_H__
+#define CAMERABEHAVIORFREE_H__
 
 #include "RoRPrerequisites.h"
 #include "CameraBehavior.h"
@@ -34,8 +34,10 @@ public:
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+
+	bool allowInteraction() { return false; };
 };
 
-#endif // CAMERAMANAGER_H__
+#endif // CAMERABEHAVIORFREE_H__
 
 
