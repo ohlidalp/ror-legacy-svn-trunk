@@ -21,11 +21,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define CAMERABEHAVIOR_H__
 
 #include "RoRPrerequisites.h"
-#inlcude "CameraBehavior.h"
+#include "CameraBehavior.h"
 
-class CameraBehaviorClassic : public CameraBehavior
+class CameraBehaviorFree : public CameraBehavior
 {
+public:
+	void activate();
+	void deactivate();
+
 	void update(float dt);
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 };
 
 #endif // CAMERAMANAGER_H__
