@@ -29,6 +29,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OverlayWrapper.h"
 #include "CameraBehaviorFree.h"
+#include "CameraBehaviorOrbit.h"
+#include "CameraBehaviorCharacterOrbit.h"
+
+#include "RoRFrameListener.h"
 
 using namespace Ogre;
 
@@ -48,11 +52,11 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	externalCameraMode = (SSETTING("External Camera Mode", "Pitching") == "Static")? 1 : 0;
 	mMoveScale = 0.0f;
 	mRotScale = 0.0f;
-	camIdealPosition = Vector3::ZERO;
+	//camIdealPosition = Vector3::ZERO;
 	lastPosition = Vector3::ZERO;
-	camRotX=0;
-	camRotY=Degree(12);
-	camDist=20;
+	//camRotX=0;
+	//camRotY=Degree(12);
+	//camDist=20;
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
 	mSceneDetailIndex = 0;
@@ -71,8 +75,8 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 
 	//createGlobalBehaviors();
 
-	currentBehavior = new CameraBehaviorFree(); //globalBehaviors[CAMBEHAVIOR_FREE];
-	currentBehavior->activate();
+	//currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
+	currentBehavior = new CameraBehaviorCharacterOrbit();
 }
 
 CameraManager::~CameraManager()
@@ -87,6 +91,7 @@ void CameraManager::createGlobalBehaviors()
 
 void CameraManager::updateInput()
 {
+#if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	//camera mode
@@ -224,7 +229,7 @@ void CameraManager::updateInput()
 	{
 		currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
 	}
-
+#endif // 0
 }
 
 void CameraManager::update(float dt)
@@ -235,6 +240,10 @@ void CameraManager::update(float dt)
 	{
 		mMoveScale = 1;
 		mRotScale = 0.1;
+
+		// HACKKK
+		if(currentBehavior)
+			currentBehavior->activate();
 	}
 	// Otherwise scale movement units by time passed since last frame
 	else
@@ -250,9 +259,10 @@ void CameraManager::update(float dt)
 #endif //MYGUI
 
 
+
 	// hacky hack
 	if(currentBehavior)
-		currentBehavior->update(dt);
+		((CameraBehaviorCharacterOrbit *)currentBehavior)->update(dt, RoRFrameListener::eflsingleton->person);
 
 
 #if 0

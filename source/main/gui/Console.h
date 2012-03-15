@@ -53,14 +53,14 @@ typedef struct msg_t {
 } msg_t;
 
 class Console :
-	public RoRSingleton<Console>,
+	public RoRSingletonNoCreation<Console>,
 	public Ogre::LogListener,
 	public InterThreadStoreVector<msg_t>
 {
 	friend class RoRSingleton<Console>;
+public:
 	Console();
 	~Console();
-public:
 	void setVisible(bool _visible);
 	bool getVisible();
 
