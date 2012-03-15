@@ -32,6 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "OverlayWrapper.h"
 
+#include "CameraManager.h"
+
 using namespace Ogre;
 
 const char *Savegame::current_version = "ROR_SAVEGAME_v2";
@@ -97,22 +99,23 @@ int Savegame::save(Ogre::String &filename)
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}
 			
-			h.camRotX = RoRFrameListener::eflsingleton->camRotX.valueRadians();
-			h.camRotY = RoRFrameListener::eflsingleton->camRotY.valueRadians();
-			h.camDist = RoRFrameListener::eflsingleton->camDist;
+			// TODO: FIX savegame camera integration
+			//h.camRotX = RoRFrameListener::eflsingleton->camRotX.valueRadians();
+			//h.camRotY = RoRFrameListener::eflsingleton->camRotY.valueRadians();
+			//h.camDist = RoRFrameListener::eflsingleton->camDist;
 
 
-			memcpy(&h.cam_ideal_pos, RoRFrameListener::eflsingleton->camIdealPosition.ptr(), sizeof(float) * 3);
+			//memcpy(&h.cam_ideal_pos, RoRFrameListener::eflsingleton->camIdealPosition.ptr(), sizeof(float) * 3);
 
-			h.pushcamRotX = RoRFrameListener::eflsingleton->pushcamRotX.valueRadians();
-			h.pushcamRotY = RoRFrameListener::eflsingleton->pushcamRotY.valueRadians();
-			h.mMoveScale  = RoRFrameListener::eflsingleton->mMoveScale;
-			h.mRotScale   = RoRFrameListener::eflsingleton->mRotScale.valueRadians();
+			//h.pushcamRotX = RoRFrameListener::eflsingleton->pushcamRotX.valueRadians();
+			//h.pushcamRotY = RoRFrameListener::eflsingleton->pushcamRotY.valueRadians();
+			//h.mMoveScale  = RoRFrameListener::eflsingleton->mMoveScale;
+			//h.mRotScale   = RoRFrameListener::eflsingleton->mRotScale.valueRadians();
 
-			memcpy(&h.lastPosition, RoRFrameListener::eflsingleton->lastPosition.ptr(), sizeof(float) * 3);
+			//memcpy(&h.lastPosition, RoRFrameListener::eflsingleton->lastPosition.ptr(), sizeof(float) * 3);
 
-			h.cameramode     = RoRFrameListener::eflsingleton->cameramode;
-			h.lastcameramode = RoRFrameListener::eflsingleton->lastcameramode;
+			//h.cameramode     = RoRFrameListener::eflsingleton->cameramode;
+			//h.lastcameramode = RoRFrameListener::eflsingleton->lastcameramode;
 		}
 
 		// write header to file
@@ -263,6 +266,9 @@ int Savegame::load(Ogre::String &filename)
 		{
 			RoRFrameListener::eflsingleton->person->setPosition(Vector3(h.player_pos));
 		}
+
+		// TODO: FIX savegame camera integration
+		/*
 		if(RoRFrameListener::eflsingleton->getCamera())
 		{
 			RoRFrameListener::eflsingleton->getCamera()->setPosition(Vector3(h.cam_pos));
@@ -283,6 +289,7 @@ int Savegame::load(Ogre::String &filename)
 
 		RoRFrameListener::eflsingleton->cameramode = h.cameramode;
 		RoRFrameListener::eflsingleton->lastcameramode = h.lastcameramode;
+		*/
 	}
 
 	// iterate the trucks

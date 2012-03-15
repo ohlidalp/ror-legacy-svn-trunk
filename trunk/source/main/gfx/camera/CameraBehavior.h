@@ -24,7 +24,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class CameraBehavior
 {
+public:
 	void update(float dt);
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+
+	void activate();
+	void deactivate();
 };
 
 #endif // CAMERAMANAGER_H__
