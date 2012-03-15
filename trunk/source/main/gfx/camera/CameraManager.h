@@ -56,10 +56,13 @@ protected:
 	Ogre::Degree mRotateSpeed;
 	DOFManager *mDOF;
 	bool enforceCameraFOVUpdate;
+	Ogre::Vector3 cdoppler;
 
 	CameraBehavior *currentBehavior;
 
-	std::map <Ogre::String , CameraBehavior *> globalBehaviors;
+	enum { CAMBEHAVIOR_FREE, CAMBEHAVIOR_TRUCK_EXT };
+
+	std::map <int , CameraBehavior *> globalBehaviors;
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
@@ -87,11 +90,14 @@ public:
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	Ogre::Camera *getCamera() { return mCamera; };
 	int getCameraMode() { return cameramode; };
+	inline DOFManager *getDOFManager() { return mDOF; }
 
 
 
 	void createGlobalBehaviors();
 	void triggerFOVUpdate();
+
+	bool allowInteraction();
 };
 
 #endif // CAMERAMANAGER_H__

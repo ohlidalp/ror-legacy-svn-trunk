@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "BeamFactory.h"
 
+#include "OverlayWrapper.h"
 #include "CameraBehaviorFree.h"
 
 using namespace Ogre;
@@ -36,6 +37,7 @@ using namespace Ogre;
 CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) : 
 	  mSceneMgr(scm)
 	, mCamera(cam)
+	, currentBehavior(0)
 	// TODO: initialize other vars here
 {
 	setSingleton(this);
@@ -67,8 +69,9 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 		mDOF->setEnabled(true);
 	}
 
+	//createGlobalBehaviors();
 
-
+	currentBehavior = new CameraBehaviorFree(); //globalBehaviors[CAMBEHAVIOR_FREE];
 }
 
 CameraManager::~CameraManager()
@@ -78,7 +81,7 @@ CameraManager::~CameraManager()
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors["free"] = new CameraBehaviorFree();
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_FREE, new CameraBehaviorFree()) );
 }
 
 void CameraManager::updateInput()
@@ -115,6 +118,7 @@ void CameraManager::updateInput()
 		}
 		else
 		{
+			OverlayWrapper *ow = OverlayWrapper::getInstancePtrNoCreation();
 			if (cameramode==CAMERA_INT)
 			{
 				//end of internal cam
@@ -217,7 +221,7 @@ void CameraManager::updateInput()
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
 	{
-		currentBehavior = globalBehaviors["free"];
+		currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
 	}
 
 }
@@ -240,15 +244,17 @@ void CameraManager::update(float dt)
 		mRotScale = mRotateSpeed * dt;
 	}
 
-
-
-	if(!hfinder) return;
-	if (loading_state!=ALL_LOADED && loading_state != EDITOR_PAUSE) return;
-
 #ifdef MYGUI
 	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
 #endif //MYGUI
 
+
+	// hacky hack
+	if(currentBehavior)
+		currentBehavior->update(dt);
+
+
+#if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	bool changeCamMode = (lastcameramode != cameramode) || enforceCameraFOVUpdate;
@@ -638,6 +644,7 @@ void CameraManager::update(float dt)
 		else
 			w->moveTo(mCamera, w->getHeight());
 	}
+#endif // 0
 }
 
 
@@ -666,7 +673,13 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 	return currentBehavior->mouseReleased(_arg, _id);
 }
 
-void triggerFOVUpdate()
+void CameraManager::triggerFOVUpdate()
 {
 	enforceCameraFOVUpdate = true;
+}
+
+bool CameraManager::allowInteraction()
+{
+	if(!currentBehavior) return false;
+	return currentBehavior->allowInteraction();
 }

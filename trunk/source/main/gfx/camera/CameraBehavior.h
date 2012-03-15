@@ -21,20 +21,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define CAMERABEHAVIOR_H__
 
 #include "RoRPrerequisites.h"
+#include <OIS.h>
+
 
 class CameraBehavior
 {
 public:
-	void update(float dt);
+	virtual ~CameraBehavior() {};
 
-	bool mouseMoved(const OIS::MouseEvent& _arg);
-	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
-	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	virtual void update(float dt) {};
 
-	void activate();
-	void deactivate();
+	virtual bool mouseMoved(const OIS::MouseEvent& _arg) = 0;
+	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
+	virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
+
+	virtual void activate() = 0;
+	virtual void deactivate() = 0;
+
+	virtual bool allowInteraction() = 0;
 };
 
-#endif // CAMERAMANAGER_H__
-
-
+#endif // CAMERABEHAVIOR_H__

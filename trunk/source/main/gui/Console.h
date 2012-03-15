@@ -17,6 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// this must be outside of the other macro
+#ifdef USE_MYGUI
+# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) Console::getSingleton().putMessage(a,b,c,d,e,f)
+# define CONSOLE_PUTMESSAGE_SHORT(a,b,c) Console::getSingleton().putMessage(a,b,c)
+#else
+# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f)
+# define CONSOLE_PUTMESSAGE_SHORT(a,b,c)
+#endif // USE_MYGUI
+
 #ifdef USE_MYGUI
 
 #ifndef __CONSOLE_H__
@@ -30,7 +40,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreLog.h>
 #include <OgreUTFString.h>
-
 
 typedef struct msg_t {
 	char type;

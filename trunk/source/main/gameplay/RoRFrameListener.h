@@ -340,7 +340,6 @@ protected:
 	//DotSceneLoader* mLoader;
 
 	Camera* mCamera;
-	Vector3 cdoppler;
 	collision_box_t *reload_box;
 	Quaternion reload_dir;
 
