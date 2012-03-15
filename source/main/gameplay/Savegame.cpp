@@ -90,9 +90,9 @@ int Savegame::save(Ogre::String &filename)
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if(RoRFrameListener::eflsingleton->getCamera())
+			if(MAIN_CAMERA)
 			{
-				Vector3 pos = RoRFrameListener::eflsingleton->getCamera()->getPosition();
+				Vector3 pos = MAIN_CAMERA->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}
