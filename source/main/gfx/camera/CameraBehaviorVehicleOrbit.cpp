@@ -50,7 +50,7 @@ void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	else
 		targetPitch = 0;
-	{
+
 	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
 
 	CameraBehaviorOrbit::update(ctx);
