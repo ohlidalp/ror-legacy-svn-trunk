@@ -27,8 +27,8 @@ class CameraBehaviorOrbit : public CameraBehavior
 {
 protected:
 	Ogre::Radian camRotX, camRotY;
-	float camDist;
-	Ogre::Vector3 camIdealPosition, camCenterPoint, lastPosition;
+	float camDist, minCamDist, camRatio;
+	Ogre::Vector3 camIdealPosition, camCenterPoint, lastPosition, camTranslation;
 	float targetDirection, targetPitch;
 
 public:
@@ -38,7 +38,7 @@ public:
 	void activate();
 	void deactivate();
 
-	void update(float dt);
+	void update(cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);

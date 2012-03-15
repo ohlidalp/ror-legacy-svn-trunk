@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorVehicleOrbit.h"
 
 #include <Ogre.h>
 #include "CameraManager.h"
@@ -26,17 +26,32 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "Settings.h"
 
-#include "Character.h"
-#include "RoRFrameListener.h"
+#include "BeamFactory.h"
 
 using namespace Ogre;
 
-void CameraBehaviorCharacterOrbit::update(cameraContext_t &ctx)
+CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
+	  externalCameraMode(0)
 {
-	Character *person = RoRFrameListener::eflsingleton->person;
+	externalCameraMode = (SSETTING("External Camera Mode", "Pitching") == "Static")? 1 : 0;
+}
 
-	targetDirection = -person->getAngle() - Math::HALF_PI;
-	camCenterPoint  =  person->getPosition() + Vector3(0, 1.1f, 0);
+void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
+{
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+	if(!curr_truck) return;
+
+	// Make all the changes to the camera
+	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
+	dir.normalise();
+	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+
+	if(!externalCameraMode)
+		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
+	else
+		targetPitch = 0;
+	{
+	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
 
 	CameraBehaviorOrbit::update(ctx);
 }

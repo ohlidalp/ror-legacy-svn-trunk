@@ -31,12 +31,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorFree.h"
 #include "CameraBehaviorOrbit.h"
 #include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorVehicleOrbit.h"
 
 #include "RoRFrameListener.h"
 
 using namespace Ogre;
 
-#define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
 
 CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) : 
 	  mSceneMgr(scm)
@@ -46,10 +46,8 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 {
 	setSingleton(this);
 
-	externalCameraMode=0;
 	lastcameramode=CAMERA_EXT;
 	cameramode=CAMERA_EXT;
-	externalCameraMode = (SSETTING("External Camera Mode", "Pitching") == "Static")? 1 : 0;
 	mMoveScale = 0.0f;
 	mRotScale = 0.0f;
 	//camIdealPosition = Vector3::ZERO;
@@ -76,7 +74,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	//createGlobalBehaviors();
 
 	//currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
-	currentBehavior = new CameraBehaviorCharacterOrbit();
+	currentBehavior = new CameraBehaviorVehicleOrbit();
 }
 
 CameraManager::~CameraManager()
@@ -258,11 +256,15 @@ void CameraManager::update(float dt)
 	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
 #endif //MYGUI
 
-
+	cameraContext_t ctx;
+	ctx.dt               = dt;
+	ctx.translationScale = mMoveScale;
+	ctx.rotationScale    = Ogre::Degree(mRotScale);
+	ctx.cam              = mCamera;
 
 	// hacky hack
 	if(currentBehavior)
-		((CameraBehaviorCharacterOrbit *)currentBehavior)->update(dt, RoRFrameListener::eflsingleton->person);
+		currentBehavior->update(ctx);
 
 
 #if 0

@@ -32,6 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define MAIN_CAMERA CameraManager::getSingleton().getCamera()
 #define CAMERA_MODE CameraManager::getSingleton().getCameraMode()
+#define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
@@ -43,14 +44,11 @@ protected:
 	bool camCollided;
 	Ogre::Vector3 camPosColl;
 	Ogre::Radian pushcamRotX, pushcamRotY;
-	float mMoveScale;
-	Ogre::Degree mRotScale;
+	float mMoveScale, mRotScale;
 	Ogre::Vector3 lastPosition;
-	int externalCameraMode;
 	int mSceneDetailIndex;
 	//    Real dirSpeed;
-	float mMoveSpeed;
-	Ogre::Degree mRotateSpeed;
+	float mMoveSpeed, mRotateSpeed;
 	DOFManager *mDOF;
 	bool enforceCameraFOVUpdate;
 	Ogre::Vector3 cdoppler;
