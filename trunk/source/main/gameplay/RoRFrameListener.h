@@ -61,15 +61,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgreTerrainGroup.h"
 
 
-#define CAMERA_EXT 0
-#define CAMERA_FIX 1
-#define CAMERA_INT 2
-#define CAMERA_END 3
-// the free modes are on purpose behind end, so they require a special key to be triggered
-#define CAMERA_FREE 4
-#define CAMERA_FREE_FIXED 5
-
-#define CAMERA_EXTERNALCONTROL 9999
 
 
 #define NONE_LOADED 0
@@ -147,15 +138,10 @@ protected:
 	int truck_preload_num;
 	localizer_t localizers[64];
 	int free_localizer;
-	int mSceneDetailIndex;
-	Real mMoveSpeed;
 	bool benchmarking;
-	//    Real dirSpeed;
-	Degree mRotateSpeed;
 
 	MapControl *bigMap;
 	StaticGeometry *bakesg;
-	int externalCameraMode;
 	int netPointToUID;
 
 
@@ -169,7 +155,6 @@ protected:
 	} loadedObject_t;
 
 	std::map< std::string, loadedObject_t> loadedObjects;
-	DOFManager *mDOF;
 	int shaderSchemeMode;
 	int inputGrabMode;
 	int mouseGrabState;
@@ -264,13 +249,11 @@ public:
 	// this needs to be public so we can call it manually in embedded mode
 	void windowResized(Ogre::RenderWindow* rw);
 
-	void moveCamera(float dt);
 	void hideGUI(bool visible);
 	Ogre::String saveTerrainMesh();
 
 	// Override frameStarted event to process that (don't care about frameEnded)
 	bool frameStarted(const FrameEvent& evt);
-	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
 	bool checkForActive(int j, bool *sleepyList);
 	bool frameEnded(const FrameEvent& evt);
 	void showLoad(int type, char* instance, char* box);
@@ -289,7 +272,6 @@ public:
 	Collisions *getCollisions() { return collisions; };
 
 	Water *getWater() { return w; };
-	Camera *getCamera() { return mCamera; };
 	int getLoadingState() { return loading_state; };
 	void setLoadingState(int value);
 	void pauseSim(bool value);
@@ -305,8 +287,6 @@ public:
 	void startTimer();
 	void updateRacingGUI();
 
-	int cameramode, lastcameramode;
-	void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
 
 	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
 	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
@@ -314,7 +294,6 @@ public:
 
 	void hideMap();
 	void setDirectionArrow(char *text, Vector3 position);
-	Ogre::Radian getCameraRotationX() { return camRotX; };
 	void netDisconnectTruck(int number);
 
 	static float getGravity() { return gravity; };
@@ -342,8 +321,6 @@ public:
 	bool getNetQualityChanged();
 	bool enforceCameraFOVUpdate;
 	pthread_mutex_t mutex_data;
-	Radian camRotX, camRotY;
-	Real camDist;
 
 	bool freeTruckPosition;
 	Vector3 reload_pos;
@@ -379,14 +356,6 @@ protected:
 	Real mTimeUntilNextToggle ;
 	bool pressure_pressed;
 
-	//camera
-	Vector3 camIdealPosition;
-	bool camCollided;
-	Vector3 camPosColl;
-	Radian pushcamRotX, pushcamRotY;
-	float mMoveScale;
-	Degree mRotScale;
-	Vector3 lastPosition;
 	//	float lastangle;
 	float clutch;
 	Editor *editor;
