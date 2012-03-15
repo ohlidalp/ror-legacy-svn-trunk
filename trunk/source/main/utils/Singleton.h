@@ -48,7 +48,7 @@ public:
 		if (!_instance) _instance = new T;
 		return _instance;
 	}
-	inline static T* getInstancePtrNoCreation()
+	inline static T* getSingletonPtrNoCreation()
 	{
 		return _instance;
 	}
@@ -83,7 +83,7 @@ public:
 		MYASSERT(_instance);
 		return _instance;
 	}
-	inline static T* getInstancePtrNoCreation()
+	inline static T* getSingletonPtrNoCreation()
 	{
 		return _instance;
 	}

@@ -200,7 +200,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 			Ogre::UTFString username = ChatSystem::getColouredName(*c);
 			Ogre::UTFString message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
 #ifdef USE_MYGUI
-			Console *console = Console::getInstancePtrNoCreation();
+			Console *console = Console::getSingletonPtrNoCreation();
 			if (console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_VEHILCE_ADD, message, "car_add.png");
 #endif // USE_MYGUI
 		}

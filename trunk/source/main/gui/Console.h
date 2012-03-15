@@ -20,8 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // this must be outside of the other macro
 #ifdef USE_MYGUI
-# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) Console::getSingleton().putMessage(a,b,c,d,e,f)
-# define CONSOLE_PUTMESSAGE_SHORT(a,b,c) Console::getSingleton().putMessage(a,b,c)
+# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c,d,e,f); }
+# define CONSOLE_PUTMESSAGE_SHORT(a,b,c) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c); }
 #else
 # define CONSOLE_PUTMESSAGE(a,b,c,d,e,f)
 # define CONSOLE_PUTMESSAGE_SHORT(a,b,c)
