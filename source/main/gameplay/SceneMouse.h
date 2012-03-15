@@ -33,7 +33,7 @@ class SceneMouse : public RoRSingletonNoCreation < SceneMouse >
 {
 	friend class RoRSingletonNoCreation<SceneMouse>;
 public:
-	SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl);
+	SceneMouse(Ogre::SceneManager *scm);
 	~SceneMouse();
 
     bool mouseMoved(const OIS::MouseEvent& _arg);
@@ -48,7 +48,6 @@ public:
 
 protected:
 	Ogre::SceneManager *scm;
-	RoRFrameListener *rfl;
 	Ogre::ManualObject *pickLine;
 	Ogre::SceneNode *pickLineNode;
 	float mouseGrabForce;

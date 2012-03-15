@@ -37,6 +37,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SceneMouse.h"
 #include "DashBoardManager.h"
 
+#include "CameraManager.h"
+
 #include "RigsOfRods.h"
 
 #include "CharacterFactory.h"
@@ -780,7 +782,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_MYGUI
 	// init GUI
-	new SceneMouse(scm, this);
+	new SceneMouse(scm);
 	new GUIManager(root, scm, win);
 	// create console, must be done early
 	Console::getSingleton();
@@ -802,7 +804,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//ScriptEngine::getSingleton().exploreScripts();
 #endif
 
-	enforceCameraFOVUpdate=true;
 	gameStartTime = getTimeStamp();
 	loadedTerrain="none";
 	terrainUID="";
@@ -1935,7 +1936,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	if(loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
 	else if(loading_state==ALL_LOADED && !net)
-		person->update(dt, (cameramode == CAMERA_FREE));
+		person->update(dt, (CAMERA_MODE == CAMERA_FREE));
 
 	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
@@ -1979,7 +1980,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerName", SSETTING("Server name", ""));
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
-			as->addData("Camera_Mode", TOSTRING(cameramode));
+			as->addData("Camera_Mode", TOSTRING(CAMERA_MODE));
 			as->addData("Camera_Position", TOSTRING(mCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
@@ -2101,7 +2102,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	{
 
 		bool enablegrab = true;
-		if (cameramode != CAMERA_FREE)
+		if (CAMERA_MODE != CAMERA_FREE)
 		{
 			if (!curr_truck)
 			{
@@ -2109,26 +2110,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					person->setPhysicsEnabled(true);
 				}
-				//camera mode
-				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
-				{
-					if (cameramode==CAMERA_INT)
-					{
-						//end of internal cam
-						camRotX=pushcamRotX;
-						camRotY=pushcamRotY;
-					}
-					cameramode++;
-					if (cameramode==CAMERA_INT)
-					{
-						//start of internal cam
-						pushcamRotX=camRotX;
-						pushcamRotY=camRotY;
-						camRotX=0;
-						camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-					}
-					if (cameramode==CAMERA_END) cameramode=0;
-				}
+
 			}
 			else //we are in a vehicle
 			{
@@ -2927,52 +2909,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					curr_truck->beaconsToggle();
 				}
-				//camera mode
-				if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
-				{
-					if (cameramode==CAMERA_INT && curr_truck->currentcamera < curr_truck->freecinecamera-1)
-					{
-						curr_truck->currentcamera++;
-						curr_truck->changedCamera();
-					}
-					else
-					{
-						if (cameramode==CAMERA_INT)
-						{
-							//end of internal cam
-							camRotX=pushcamRotX;
-							camRotY=pushcamRotY;
-							curr_truck->prepareInside(false);
-							if(ow) ow->showDashboardOverlays(true, curr_truck);
-							curr_truck->currentcamera=-1;
-							//if(bigMap) bigMap->setVisibility(true);
-							curr_truck->changedCamera();
-						}
-						cameramode++;
-						if (cameramode==CAMERA_INT)
-						{
-							//start of internal cam
-							pushcamRotX=camRotX;
-							pushcamRotY=camRotY;
-							camRotX=0;
-							camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-							curr_truck->prepareInside(true);
-							//if(bigMap) bigMap->setVisibility(false);
-							// airplane dashboard in the plane visible
-							if(ow)
-							{
-								if(curr_truck->driveable == AIRPLANE)
-									ow->showDashboardOverlays(true, curr_truck);
-								else
-									ow->showDashboardOverlays(false, curr_truck);
-							}
-							curr_truck->currentcamera=0;
-							curr_truck->changedCamera();
-						}
 
-						if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
-					}
-				}
 				//camera mode
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_LESS) && curr_truck)
 				{
@@ -3063,7 +3000,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				if(mapMode==0)
 				{
 					bigMap->setVisibility(true);
-					if(cameramode!=CAMERA_INT)
+					if(CAMERA_MODE != CAMERA_INT)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
@@ -5143,9 +5080,9 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
 {
-	if (cameramode==CAMERA_FREE) return;
+	if (CAMERA_MODE == CAMERA_FREE) return;
 
-	enforceCameraFOVUpdate = true;
+	CameraManager::getSingleton().triggerFOVUpdate();
 
 	// hide any old dashes
 	if(previousTruck && previousTruck->dash)
@@ -5226,10 +5163,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		} //make trucks synchronous
 		//lastangle=0;
 
-		camRotX=0;
-		camRotY=Degree(12);
-		camDist=20;
-		
 		TRIGGER_EVENT(SE_TRUCK_EXIT, previousTruck?previousTruck->trucknum:-1);
 	}
 	else
@@ -5308,6 +5241,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		}
 
 		//lastangle=0;
+#if 0
 		camRotX=0;
 		camRotY=Degree(12);
 		camDist=20;
@@ -5318,7 +5252,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 			//if(bigMap) bigMap->setVisibility(false);
 		}
-
+#endif // 0
 		TRIGGER_EVENT(SE_TRUCK_ENTER, currentTruck?currentTruck->trucknum:-1);
 	}
 }
@@ -5426,7 +5360,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	}
 
-	moveCamera(dt); //antishaking
+	CameraManager::getSingleton().update(dt); //antishaking
 
 	// update mirrors after moving the camera as we use the camera position in mirrors
 	updateTruckMirrors(dt);
@@ -5703,7 +5637,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	}
 	else
 	{
-		if(curr_truck && cameramode!=CAMERA_INT)
+		if(curr_truck && CAMERA_MODE != CAMERA_INT)
 		{
 			if(ow) ow->showDashboardOverlays(true, curr_truck);
 			//if(bigMap) bigMap->setVisibility(true);
@@ -5881,8 +5815,8 @@ void RoRFrameListener::reloadCurrentTruck()
 	}
 
 	// store camera settings
-	Radian camRotX_saved = camRotX;
-	Radian camRotY_saved = camRotY;
+	//Radian camRotX_saved = camRotX;
+	//Radian camRotY_saved = camRotY;
 
 	// store current trucks node positions
 	Vector3 *nodeStorage = (Vector3 *)malloc(sizeof(Vector3) * curr_truck->free_node + 10);
@@ -5929,8 +5863,8 @@ void RoRFrameListener::reloadCurrentTruck()
 
 
 	// restore camera position
-	camRotX = camRotX_saved;
-	camRotY = camRotY_saved;
+	//camRotX = camRotX_saved;
+	//camRotY = camRotY_saved;
 }
 
 

@@ -26,11 +26,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OIS.h"
 #include "Singleton.h"
 
+#include <map>
+
+#include "CameraBehavior.h"
+
 #define MAIN_CAMERA CameraManager::getSingleton().getCamera()
 #define CAMERA_MODE CameraManager::getSingleton().getCameraMode()
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
+	friend class SceneMouse;
 protected:
 	Ogre::SceneManager *mSceneMgr;
 	Ogre::Camera *mCamera;
@@ -47,9 +52,18 @@ protected:
 	int externalCameraMode;
 	int mSceneDetailIndex;
 	//    Real dirSpeed;
-	Real mMoveSpeed;
-	Degree mRotateSpeed;
+	float mMoveSpeed;
+	Ogre::Degree mRotateSpeed;
 	DOFManager *mDOF;
+	bool enforceCameraFOVUpdate;
+
+	CameraBehavior *currentBehavior;
+
+	std::map <Ogre::String , CameraBehavior *> globalBehaviors;
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 
 public:
 	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam);
@@ -74,8 +88,10 @@ public:
 	Ogre::Camera *getCamera() { return mCamera; };
 	int getCameraMode() { return cameramode; };
 
-	bool mouseMoved(const OIS::MouseEvent& _arg);
 
+
+	void createGlobalBehaviors();
+	void triggerFOVUpdate();
 };
 
 #endif // CAMERAMANAGER_H__

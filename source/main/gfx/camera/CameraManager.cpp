@@ -25,8 +25,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "Console.h"
 #include "language.h"
+#include "BeamFactory.h"
+
+#include "CameraBehaviorFree.h"
 
 using namespace Ogre;
+
+#define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
 
 CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) : 
 	  mSceneMgr(scm)
@@ -52,6 +57,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	mDOF=0;
 	mRotateSpeed = 100;
 	mMoveSpeed = 50;
+	enforceCameraFOVUpdate=true;
 
 	// DOF?
 	bool useDOF = (BSETTING("DOF", false));
@@ -61,6 +67,8 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 		mDOF->setEnabled(true);
 	}
 
+
+
 }
 
 CameraManager::~CameraManager()
@@ -68,8 +76,81 @@ CameraManager::~CameraManager()
 
 }
 
+void CameraManager::createGlobalBehaviors()
+{
+	globalBehaviors["free"] = new CameraBehaviorFree();
+}
+
 void CameraManager::updateInput()
 {
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+
+	//camera mode
+	if (cameramode != CAMERA_FREE && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE_FIXED)
+	{
+		if (cameramode==CAMERA_INT)
+		{
+			//end of internal cam
+			camRotX=pushcamRotX;
+			camRotY=pushcamRotY;
+		}
+		cameramode++;
+		if (cameramode==CAMERA_INT)
+		{
+			//start of internal cam
+			pushcamRotX=camRotX;
+			pushcamRotY=camRotY;
+			camRotX=0;
+			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
+		}
+		if (cameramode==CAMERA_END) cameramode=0;
+	}
+	//camera mode
+	if (curr_truck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
+	{
+		if (cameramode==CAMERA_INT && curr_truck->currentcamera < curr_truck->freecinecamera-1)
+		{
+			curr_truck->currentcamera++;
+			curr_truck->changedCamera();
+		}
+		else
+		{
+			if (cameramode==CAMERA_INT)
+			{
+				//end of internal cam
+				camRotX=pushcamRotX;
+				camRotY=pushcamRotY;
+				curr_truck->prepareInside(false);
+				if(ow) ow->showDashboardOverlays(true, curr_truck);
+				curr_truck->currentcamera=-1;
+				//if(bigMap) bigMap->setVisibility(true);
+				curr_truck->changedCamera();
+			}
+			cameramode++;
+			if (cameramode==CAMERA_INT)
+			{
+				//start of internal cam
+				pushcamRotX=camRotX;
+				pushcamRotY=camRotY;
+				camRotX=0;
+				camRotY=DEFAULT_INTERNAL_CAM_PITCH;
+				curr_truck->prepareInside(true);
+				//if(bigMap) bigMap->setVisibility(false);
+				// airplane dashboard in the plane visible
+				if(ow)
+				{
+					if(curr_truck->driveable == AIRPLANE)
+						ow->showDashboardOverlays(true, curr_truck);
+					else
+						ow->showDashboardOverlays(false, curr_truck);
+				}
+				curr_truck->currentcamera=0;
+				curr_truck->changedCamera();
+			}
+
+			if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
+		}
+	}
 	// camera FOV settings
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
 	{
@@ -136,27 +217,7 @@ void CameraManager::updateInput()
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
 	{
-		static int storedcameramode = -1;
-		if(cameramode == CAMERA_FREE || cameramode == CAMERA_FREE_FIXED)
-		{
-			// change back to normal camera
-			if(mDOF) mDOF->setFocusMode(DOFManager::Manual);
-			cameramode = storedcameramode;
-			LOG("exiting free camera mode");
-#ifdef USE_MYGUI
-			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000);
-#endif // USE_MYGUI
-		} else if(cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED )
-		{
-			// enter free camera mode
-			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			storedcameramode = cameramode;
-			cameramode = CAMERA_FREE;
-			LOG("entering free camera mode");
-#ifdef USE_MYGUI
-			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
-#endif // USE_MYGUI
-		}
+		currentBehavior = globalBehaviors["free"];
 	}
 
 }
@@ -174,9 +235,9 @@ void CameraManager::update(float dt)
 	else
 	{
 		// Move about 100 units per second,
-		mMoveScale = mMoveSpeed * evt.timeSinceLastFrame;
+		mMoveScale = mMoveSpeed * dt;
 		// Take about 10 seconds for full rotation
-		mRotScale = mRotateSpeed * evt.timeSinceLastFrame;
+		mRotScale = mRotateSpeed * dt;
 	}
 
 
@@ -194,70 +255,6 @@ void CameraManager::update(float dt)
 	enforceCameraFOVUpdate = false;
 	lastcameramode = cameramode;
 
-	if (cameramode==CAMERA_FREE)
-	{
-		// this is a workaround for the free camera mode :)
-		Real mMoveScale = 0.1;
-		Ogre::Degree mRotScale(0.1f);
-		Ogre::Degree mRotX(0);
-		Ogre::Degree mRotY(0);
-		Vector3 mTranslateVector = Vector3::ZERO;
-
-		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-		{
-			mRotScale *= 3;
-			mMoveScale *= 3;
-		}
-
-		if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
-		{
-			mRotScale *= 30;
-			mMoveScale *= 30;
-		}
-
-		if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
-		{
-			mRotScale *= 0.05;
-			mMoveScale *= 0.05;
-		}
-
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
-			mTranslateVector.x = -mMoveScale;	// Move camera left
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT))
-			mTranslateVector.x = mMoveScale;	// Move camera RIGHT
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD))
-			mTranslateVector.z = -mMoveScale;	// Move camera forward
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS))
-			mTranslateVector.z = mMoveScale;	// Move camera backward
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP))
-			mRotY += mRotScale;
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN))
-			mRotY += -mRotScale;
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP))
-			mTranslateVector.y = mMoveScale;	// Move camera up
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN))
-			mTranslateVector.y = -mMoveScale;	// Move camera down
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT))
-			mRotX += -mRotScale;
-
-		if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
-			mRotX += mRotScale;
-
-		mCamera->yaw(mRotX);
-		mCamera->pitch(mRotY);
-
-		Vector3 trans = mCamera->getOrientation() * mTranslateVector;
-		setCameraPositionWithCollision(mCamera->getPosition() + trans);
-	}
 	if (!curr_truck)
 	{
 		//perso mode
@@ -649,4 +646,27 @@ bool CameraManager::setCameraPositionWithCollision(Vector3 newPos)
 	// no collision of camera, normal mode
 	mCamera->setPosition(newPos);
 	return true;
+}
+
+bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
+{
+	if(!currentBehavior) return false;
+	return currentBehavior->mouseMoved(_arg);
+}
+
+bool CameraManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
+{
+	if(!currentBehavior) return false;
+	return currentBehavior->mousePressed(_arg, _id);
+}
+
+bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
+{
+	if(!currentBehavior) return false;
+	return currentBehavior->mouseReleased(_arg, _id);
+}
+
+void triggerFOVUpdate()
+{
+	enforceCameraFOVUpdate = true;
 }

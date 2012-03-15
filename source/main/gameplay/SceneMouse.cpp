@@ -23,15 +23,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include <Ogre.h>
 
+#include "CameraManager.h"
+
 #ifdef USE_MYGUI
 # include <MyGUI.h>
 #endif //USE_MYGUI
 
 using namespace Ogre;
 
-SceneMouse::SceneMouse(Ogre::SceneManager *scm, RoRFrameListener *rfl) :
+SceneMouse::SceneMouse(Ogre::SceneManager *scm) :
 	  scm(scm)
-	, rfl(rfl)
 {
 	setSingleton(this);
 	mouseGrabForce = 30000.0f;
@@ -88,6 +89,10 @@ void SceneMouse::releaseMousePick()
 bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
+
+	// check if handled by the camera
+	if(CameraManager::getSingleton().mouseMoved(_arg))
+		return true;
 
 	// experimental mouse hack
 	if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 0)
@@ -157,7 +162,8 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		// not fixed
 		return false;
 	}
-	
+
+	/*
 	if(ms.buttonDown(OIS::MB_Right))
 	{
 		rfl->camRotX += Degree( (float)ms.X.rel * 0.13f);
@@ -176,6 +182,8 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 #endif // USE_MYGUI
 		return true;
 	}
+	*/
+
 	return false;
 }
 
@@ -225,7 +233,7 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	Camera *cam = rfl->getCamera();
+	Camera *cam = MAIN_CAMERA;//CameraManager::getSingleton()->getCamera();
 	Viewport *vp = cam->getViewport();
 	return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
 }

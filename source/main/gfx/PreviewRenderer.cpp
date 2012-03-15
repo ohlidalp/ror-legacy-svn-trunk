@@ -31,6 +31,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamEngine.h"
 #include "utils.h"
 
+#include "CameraManager.h"
+
 PreviewRenderer::PreviewRenderer()
 {
 	fn = SSETTING("OPT_IMGPATH", "");
@@ -114,7 +116,7 @@ void PreviewRenderer::render()
 
 	SceneNode *camNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
 
-	Camera *cam = RoRFrameListener::eflsingleton->getCamera();
+	Camera *cam = MAIN_CAMERA; //RoRFrameListener::eflsingleton->getCamera();
 	cam->setLodBias(1000.0f);
 	cam->setAspectRatio(1.0f);
 

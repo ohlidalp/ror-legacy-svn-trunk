@@ -78,8 +78,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define EVENT_AIRPLANE 4
 #define EVENT_DELETE 5
 
-#define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
-
 #define MAX_PLAYLIST_ENTRIES 20
 
 #ifdef USE_PAGED
@@ -319,7 +317,6 @@ public:
 	void setNetQuality(int q);
 	int getNetQuality(bool ack=false);
 	bool getNetQualityChanged();
-	bool enforceCameraFOVUpdate;
 	pthread_mutex_t mutex_data;
 
 	bool freeTruckPosition;
