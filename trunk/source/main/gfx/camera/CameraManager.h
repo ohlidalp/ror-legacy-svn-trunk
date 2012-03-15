@@ -40,9 +40,6 @@ protected:
 	Ogre::SceneManager *mSceneMgr;
 	Ogre::Camera *mCamera;
 	int cameramode, lastcameramode;
-	Ogre::Radian camRotX, camRotY;
-	float camDist;
-	Ogre::Vector3 camIdealPosition;
 	bool camCollided;
 	Ogre::Vector3 camPosColl;
 	Ogre::Radian pushcamRotX, pushcamRotY;
@@ -83,8 +80,8 @@ public:
 		CAMERA_EXTERNALCONTROL=9999
 	};
 
-	void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
-	Ogre::Radian getCameraRotationX() { return camRotX; };
+	//void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
+	//Ogre::Radian getCameraRotationX() { return camRotX; };
 
 	void update(float dt);
 	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);

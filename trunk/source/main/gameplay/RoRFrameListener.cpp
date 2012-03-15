@@ -788,7 +788,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new SceneMouse(scm);
 	new GUIManager(root, scm, win);
 	// create console, must be done early
-	Console::getSingleton();
+	new Console();
 #endif //USE_MYGUI
 
 
