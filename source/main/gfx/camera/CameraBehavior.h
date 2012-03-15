@@ -23,13 +23,22 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <OIS.h>
 
+typedef struct cameraContext_t {
+	float dt;
+	Ogre::Degree rotationScale;
+	float translationScale;
+	Ogre::Camera *cam;
+} cameraContext_t;
 
 class CameraBehavior
 {
+protected:
+	float mMoveScale, mRotScale, mMoveSpeed, mRotateSpeed;
+;
 public:
 	virtual ~CameraBehavior() {};
 
-	virtual void update(float dt) {};
+	virtual void update(cameraContext_t &ctx) = 0;
 
 	virtual bool mouseMoved(const OIS::MouseEvent& _arg) = 0;
 	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;

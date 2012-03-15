@@ -29,7 +29,7 @@ public:
 	void activate();
 	void deactivate();
 
-	void update(float dt);
+	void update(cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);

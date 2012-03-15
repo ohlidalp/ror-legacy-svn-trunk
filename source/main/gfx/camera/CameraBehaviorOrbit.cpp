@@ -32,8 +32,11 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 	  camRotX(0)
 	, camRotY(0)
 	, camDist(5)
+	, minCamDist(3)
+	, camRatio(11)
 	, camIdealPosition(Vector3::ZERO)
 	, camCenterPoint(Vector3::ZERO)
+	, camTranslation(Vector3::ZERO)
 	, targetDirection(0)
 	, targetPitch(0)
 {
@@ -62,12 +65,106 @@ void CameraBehaviorOrbit::deactivate()
 {
 }
 
-void CameraBehaviorOrbit::update(float dt)
+void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 {
 	Camera *cam = CameraManager::getSingleton().getCamera();
 
+	/*
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
+		camTranslation.x -= mMoveScale;	// Move camera left
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT))
+		camTranslation.x += mMoveScale;	// Move camera RIGHT
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD))
+		camTranslation.z -= mMoveScale;	// Move camera forward
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS))
+		camTranslation.z += mMoveScale;	// Move camera backward
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP))
+		camTranslation.y += mMoveScale;	// Move camera up
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN))
+		camTranslation.y -= mMoveScale;	// Move camera down
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP))
+		camRotY += mRotScale;
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN))
+		camRotY -= mRotScale;
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT))
+		camRotX -= mRotScale;
+
+	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
+		camRotX += mRotScale;
+*/
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
+	{
+		if(camRotX > Degree(0))
+			camRotX=Degree(0);
+		else
+			camRotX=Degree(180);
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT))
+	{
+		// Move camera left
+		camRotX -= ctx.rotationScale;
+	}
+
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_RIGHT))
+	{
+		// Move camera RIGHT
+		camRotX += ctx.rotationScale;
+	}
+	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_UP)) && camRotY<Degree(88))
+	{
+		// Move camera up
+		camRotY += ctx.rotationScale;
+	}
+
+	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_DOWN)) && camRotY>Degree(-80))
+	{
+		// Move camera down
+		camRotY -= ctx.rotationScale;
+	}
+
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN) && camDist>1)
+	{
+		// Move camera near
+		camDist -= ctx.translationScale;
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN_FAST) && camDist>1)
+	{
+		// Move camera near
+		camDist -= ctx.translationScale * 10;
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT))
+	{
+		// Move camera far
+		camDist += ctx.translationScale;
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT_FAST))
+	{
+		// Move camera far
+		camDist += ctx.translationScale * 10;
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
+	{
+		camRotX=0;
+		//if (cameramode!=CAMERA_INT)
+		//	camRotY=Degree(12);
+		//else
+			camRotY = DEFAULT_INTERNAL_CAM_PITCH;
+		camDist=20;
+	}
+
+
+
 	// set Minimal Cam distance
-	if(camDist < 3) camDist = 3.0f;
+	if(camDist < minCamDist) camDist = minCamDist;
 
 	camIdealPosition = camDist * 0.5f * Vector3( \
 			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
@@ -77,8 +174,8 @@ void CameraBehaviorOrbit::update(float dt)
 
 	float real_camdist = camIdealPosition.length();
 
-	camIdealPosition = camIdealPosition + camCenterPoint;
-	Vector3 newposition = ( camIdealPosition + 10.0f * cam->getPosition() ) / 11.0f;
+	camIdealPosition = camIdealPosition + camCenterPoint + camTranslation;
+	Vector3 newposition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
 
 	/*
 	Real h=hfinder->getHeightAt(newposition.x,newposition.z);
@@ -108,12 +205,14 @@ bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 	Camera *cam = CameraManager::getSingleton().getCamera();
 
-
-	camRotX += Degree( (float)ms.X.rel * 0.13f);
-	camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-	camDist += -(float)ms.Z.rel * 0.02f;
-
-	return true;
+	if(ms.buttonDown(OIS::MB_Right))
+	{
+		camRotX += Degree( (float)ms.X.rel * 0.13f);
+		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
+		camDist += -(float)ms.Z.rel * 0.02f;
+		return true;
+	}
+	return false;
 }
 
 bool CameraBehaviorOrbit::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)

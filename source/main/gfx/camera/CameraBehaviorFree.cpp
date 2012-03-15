@@ -58,62 +58,43 @@ void CameraBehaviorFree::deactivate()
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::update(float dt)
+void CameraBehaviorFree::update(cameraContext_t &ctx)
 {
-	Real mMoveScale = 0.1;
-	Ogre::Degree mRotScale(0.1f);
 	Ogre::Degree mRotX(0);
 	Ogre::Degree mRotY(0);
 	Vector3 mTranslateVector = Vector3::ZERO;
 
-	if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-	{
-		mRotScale *= 3;
-		mMoveScale *= 3;
-	}
-
-	if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
-	{
-		mRotScale *= 30;
-		mMoveScale *= 30;
-	}
-
-	if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
-	{
-		mRotScale *= 0.05;
-		mMoveScale *= 0.05;
-	}
 
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
-		mTranslateVector.x = -mMoveScale;	// Move camera left
+		mTranslateVector.x -= ctx.translationScale;	// Move camera left
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT))
-		mTranslateVector.x = mMoveScale;	// Move camera RIGHT
+		mTranslateVector.x += ctx.translationScale;	// Move camera RIGHT
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD))
-		mTranslateVector.z = -mMoveScale;	// Move camera forward
+		mTranslateVector.z -= ctx.translationScale;	// Move camera forward
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS))
-		mTranslateVector.z = mMoveScale;	// Move camera backward
+		mTranslateVector.z += ctx.translationScale;	// Move camera backward
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP))
-		mRotY += mRotScale;
+		mRotY += ctx.rotationScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN))
-		mRotY += -mRotScale;
+		mRotY -= ctx.rotationScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP))
-		mTranslateVector.y = mMoveScale;	// Move camera up
+		mTranslateVector.y += ctx.translationScale;	// Move camera up
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN))
-		mTranslateVector.y = -mMoveScale;	// Move camera down
+		mTranslateVector.y -= ctx.translationScale;	// Move camera down
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT))
-		mRotX += -mRotScale;
+		mRotX -= ctx.rotationScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
-		mRotX += mRotScale;
+		mRotX += ctx.rotationScale;
 
 	Camera *cam = CameraManager::getSingleton().getCamera();
 

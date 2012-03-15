@@ -17,18 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIORPERSONORBIT_H__
-#define CAMERABEHAVIORPERSONORBIT_H__
+#include "CameraBehavior.h"
 
-#include "RoRPrerequisites.h"
-#include "CameraBehaviorOrbit.h"
+#include <Ogre.h>
+#include "CameraManager.h"
+#include "Console.h"
+#include "InputEngine.h"
+#include "language.h"
+#include "Settings.h"
 
-class CameraBehaviorCharacterOrbit : public CameraBehaviorOrbit
-{
-public:
-	void update(cameraContext_t &ctx);
-};
-
-#endif // CAMERABEHAVIORPERSONORBIT_H__
-
+using namespace Ogre;
 
