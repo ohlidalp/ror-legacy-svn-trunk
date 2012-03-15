@@ -118,7 +118,7 @@ void GUIManager::createGui()
 
 	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
 	MyGUI::PointerManager::getInstance().setVisible(true);
-	Console *c = Console::getInstancePtrNoCreation();
+	Console *c = Console::getSingletonPtrNoCreation();
 	if(c) c->resized();
 }
 
@@ -169,7 +169,7 @@ void GUIManager::windowResized(Ogre::RenderWindow* _rw)
 	BeamFactory *bf = BeamFactory::getSingletonPtr();
 	if(bf) bf->windowResized();
 
-	Console *c = Console::getInstancePtrNoCreation();
+	Console *c = Console::getSingletonPtrNoCreation();
 	if(c) c->resized();
 }
 

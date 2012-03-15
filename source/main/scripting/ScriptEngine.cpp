@@ -121,7 +121,7 @@ void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageL
 #endif // OGRE_VERSION
 {
 #ifdef USE_MYGUI
-	Console *c = Console::getInstancePtrNoCreation();
+	Console *c = Console::getSingletonPtrNoCreation();
 	if(c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_LOGMESSAGE_SCRIPT, message, "page_white_code.png");
 #endif // USE_MYGUI
 }

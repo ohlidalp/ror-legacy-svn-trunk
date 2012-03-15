@@ -439,7 +439,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	if(ds.isNull() || !ds->isReadable())
 	{
 #ifdef USE_MYGUI
-		Console *console = Console::getInstancePtrNoCreation();
+		Console *console = Console::getSingletonPtrNoCreation();
 		if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unable to open file): " + filename + " : " + errorStr, "error.png", 30000, true);
 #endif // USE_MYGUI
 		parser_warning(c, "Can't open truck file '"+filename+"'", PARSER_FATAL_ERROR);
@@ -1383,7 +1383,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (id != free_node)
 				{
 #ifdef USE_MYGUI
-					Console *console = Console::getInstancePtrNoCreation();
+					Console *console = Console::getSingletonPtrNoCreation();
 					if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (lost sync in nodes numbers): " + filename, "error.png", 30000, true);
 #endif // USE_MYGUI
 
@@ -2041,7 +2041,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if ( sin == -1.0f || din == -1.0f || psin == -1.0f || pdin == -1.0f || sout == -1.0f || dout == -1.0f || psout == -1.0f || pdout == -1.0f || sbound == -1.0f || lbound == -1.0f || precomp == -1.0f)
 				{
 #ifdef USE_MYGUI
-					Console *console = Console::getInstancePtrNoCreation();
+					Console *console = Console::getSingletonPtrNoCreation();
 					if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Wrong values in shocks2 section): " + filename, "error.png", 30000, true);
 #endif // USE_MYGUI
 
@@ -2277,7 +2277,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				if (id1>=free_node || id2>=free_node)
 				{
 #ifdef USE_MYGUI
-					Console *console = Console::getInstancePtrNoCreation();
+					Console *console = Console::getSingletonPtrNoCreation();
 					if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (unknown node number in animators section): " + filename, "error.png", 30000, true);
 #endif // USE_MYGUI
 
@@ -2640,7 +2640,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 							{
 
 #ifdef USE_MYGUI
-								Console *console = Console::getInstancePtrNoCreation();
+								Console *console = Console::getSingletonPtrNoCreation();
 								if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Material not found! Try to ensure that tracks/transred exists and retry): " + filename, "error.png", 30000, true);
 #endif // USE_MYGUI
 
@@ -5199,7 +5199,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 		{
 			
 #ifdef USE_MYGUI
-			Console *console = Console::getInstancePtrNoCreation();
+			Console *console = Console::getSingletonPtrNoCreation();
 			if(console) console->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, "unable to load vehicle (Material '"+String(texname)+"' missing!): " + filename, "error.png", 30000, true);
 #endif // USE_MYGUI
 

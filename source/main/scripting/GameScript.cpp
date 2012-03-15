@@ -687,7 +687,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	LOG("online API result: " + result);
 
 #ifdef USE_MYGUI
-	Console *con = Console::getInstancePtrNoCreation();
+	Console *con = Console::getSingletonPtrNoCreation();
 	if(con)
 		con->putMessage(Console::CONSOLE_MSGTYPE_HIGHSCORE, Console::CONSOLE_SYSTEM_NOTICE, ANSI_TO_UTF(result));
 #endif // USE_MYGUI
@@ -717,7 +717,7 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	result           = "asynchronous";
 
 #ifdef USE_MYGUI
-	Console *con = Console::getInstancePtrNoCreation();
+	Console *con = Console::getSingletonPtrNoCreation();
 	if(con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
 #endif // USE_MYGUI
 

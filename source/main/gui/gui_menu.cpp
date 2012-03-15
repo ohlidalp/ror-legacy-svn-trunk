@@ -364,7 +364,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		mefl->shutdown_final();
 	} else if(miname == _L("Show Console"))
 	{
-		Console *c = Console::getInstancePtrNoCreation();
+		Console *c = Console::getSingletonPtrNoCreation();
 		if(c) c->setVisible(!c->getVisible());
 	}
 	// the debug menu

@@ -37,6 +37,10 @@ void CameraBehaviorFree::activate()
 	LOG("entering free camera mode");
 
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);
+
+#ifdef USE_MYGUI
+	MyGUI::PointerManager::getInstance().setVisible(false);
+#endif // USE_MYGUI
 }
 
 void CameraBehaviorFree::deactivate()
@@ -49,11 +53,13 @@ void CameraBehaviorFree::deactivate()
 
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);
 
+#ifdef USE_MYGUI
+	MyGUI::PointerManager::getInstance().setVisible(true);
+#endif // USE_MYGUI
 }
 
 void CameraBehaviorFree::update(float dt)
 {
-	// this is a workaround for the free camera mode :)
 	Real mMoveScale = 0.1;
 	Ogre::Degree mRotScale(0.1f);
 	Ogre::Degree mRotX(0);
@@ -123,17 +129,10 @@ bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 	Camera *cam = CameraManager::getSingleton().getCamera();
 
-	if(ms.buttonDown(OIS::MB_Right))
-	{
-		cam->yaw(Degree(-(float)ms.X.rel * 0.13f));
-		cam->pitch(Degree(-(float)ms.Y.rel * 0.13f));
-#ifdef USE_MYGUI
-		MyGUI::PointerManager::getInstance().setPointer("hand");
-#endif // USE_MYGUI
-		return true;
-	}
+	cam->yaw(Degree(-(float)ms.X.rel * 0.13f));
+	cam->pitch(Degree(-(float)ms.Y.rel * 0.13f));
 
-	return false;
+	return true;
 }
 
 bool CameraBehaviorFree::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)

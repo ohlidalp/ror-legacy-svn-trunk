@@ -72,6 +72,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	//createGlobalBehaviors();
 
 	currentBehavior = new CameraBehaviorFree(); //globalBehaviors[CAMBEHAVIOR_FREE];
+	currentBehavior->activate();
 }
 
 CameraManager::~CameraManager()
@@ -118,7 +119,7 @@ void CameraManager::updateInput()
 		}
 		else
 		{
-			OverlayWrapper *ow = OverlayWrapper::getInstancePtrNoCreation();
+			OverlayWrapper *ow = OverlayWrapper::getSingletonPtrNoCreation();
 			if (cameramode==CAMERA_INT)
 			{
 				//end of internal cam

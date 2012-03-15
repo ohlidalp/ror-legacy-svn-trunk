@@ -1139,7 +1139,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
 
 #ifdef USE_MYGUI
-		Console *c = Console::getInstancePtrNoCreation();
+		Console *c = Console::getSingletonPtrNoCreation();
 		if(c)
 		{
 			c->setVisible(true);
@@ -1924,7 +1924,7 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !hidegui)
 	{
-		Console *c = Console::getInstancePtrNoCreation();
+		Console *c = Console::getSingletonPtrNoCreation();
 		if(c)
 		{
 			INPUTENGINE.resetKeys();
@@ -5623,7 +5623,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	
 #ifdef USE_MYGUI
-	Console *c = Console::getInstancePtrNoCreation();
+	Console *c = Console::getSingletonPtrNoCreation();
 	if(c) c->setVisible(!visible);
 #endif // USE_MYGUI
 
