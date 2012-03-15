@@ -96,13 +96,13 @@ void CameraBehaviorFree::update(cameraContext_t &ctx)
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
 		mRotX += ctx.rotationScale;
 
-	Camera *cam = CameraManager::getSingleton().getCamera();
+	ctx.cam->yaw(mRotX);
+	ctx.cam->pitch(mRotY);
 
-	cam->yaw(mRotX);
-	cam->pitch(mRotY);
+	ctx.cam->setFixedYawAxis(false);
 
-	Vector3 trans = cam->getOrientation() * mTranslateVector;
-	cam->setPosition(cam->getPosition() + trans);
+	Vector3 trans = ctx.cam->getOrientation() * mTranslateVector;
+	ctx.cam->setPosition(ctx.cam->getPosition() + trans);
 }
 
 bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)

@@ -32,6 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorOrbit.h"
 #include "CameraBehaviorCharacterOrbit.h"
 #include "CameraBehaviorVehicleOrbit.h"
+#include "CameraBehaviorWheelChase.h"
 
 #include "RoRFrameListener.h"
 
@@ -74,7 +75,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	//createGlobalBehaviors();
 
 	//currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
-	currentBehavior = new CameraBehaviorVehicleOrbit();
+	currentBehavior = new CameraBehaviorWheelChase();//CameraBehaviorVehicleOrbit();
 }
 
 CameraManager::~CameraManager()
@@ -262,6 +263,26 @@ void CameraManager::update(float dt)
 	ctx.rotationScale    = Ogre::Degree(mRotScale);
 	ctx.cam              = mCamera;
 
+	if(!currentBehavior->allowInteraction())
+	{
+		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+		{
+			ctx.rotationScale *= 3;
+			ctx.translationScale *= 3;
+		}
+
+		if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
+		{
+			ctx.rotationScale *= 30;
+			ctx.translationScale *= 30;
+		}
+		if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+		{
+			ctx.rotationScale *= 0.05;
+			ctx.translationScale *= 0.05;
+		}
+	}
+
 	// hacky hack
 	if(currentBehavior)
 		currentBehavior->update(ctx);
@@ -288,50 +309,6 @@ void CameraManager::update(float dt)
 					mCamera->setFOVy(Degree(fov+20));
 				collisions->forcecam=false;
 				if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			}
-			else
-			{
-				// Make all the changes to the camera
-				//Vector3 delta=lastPosition-personode->getPosition();
-				//delta.y=0.0;
-				float angle=-person->getAngle()-(3.14159/2.0);
-				//			float angle2;
-				//if (delta.length()>0.01) angle=atan2(delta.x,delta.z); else angle=lastangle;
-
-				// fix camera distance a bit
-				if(camDist < 3) camDist = 3.0f;
-
-				camIdealPosition=camDist/2.0*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
-
-				float real_camdist = camIdealPosition.length();
-
-				camIdealPosition=camIdealPosition+person->getPosition();
-				Vector3 newposition=(camIdealPosition+10.0*mCamera->getPosition())/11.0;
-				Real h=hfinder->getHeightAt(newposition.x,newposition.z);
-
-				if (w && !w->allowUnderWater() && w->getHeightWaves(newposition) > h)
-					h=w->getHeightWaves(newposition);
-
-				h+=1.0;
-				if (newposition.y<h) newposition.y=h;
-				setCameraPositionWithCollision(newposition);
-				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.1f,0.0));
-
-				float fov = FSETTING("FOV External", 60);
-
-				if(changeCamMode)
-					mCamera->setFOVy(Degree(fov));
-
-				lastPosition=person->getPosition();
-
-				if(mDOF)
-				{
-					mDOF->setFocusMode(DOFManager::Manual);
-					mDOF->setFocus(real_camdist);
-					mDOF->setLensFOV(Degree(fov));
-				}
-
-				//lastangle=angle;
 			}
 		}
 		else if (cameramode==CAMERA_FIX)
@@ -406,61 +383,6 @@ void CameraManager::update(float dt)
 					mDOF->setFocusMode(DOFManager::Auto);
 					mDOF->setLensFOV(Degree(80));
 				}
-			}
-			else
-			{
-				// Make all the changes to the camera
-				//Vector3 delta=lastPosition-trucks[current_truck]->position;
-				//delta.y=0.0;
-				float angle;
-				//			float angle2;
-				//				if (delta.length()>0.05) angle=atan2(delta.x,delta.z); else angle=lastangle;
-				Vector3 dir=curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos-curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
-				dir.normalise();
-				angle=-atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-
-				if(externalCameraMode==0)
-				{
-					float pitch=-asin(dir.dotProduct(Vector3::UNIT_Y));
-					camIdealPosition=camDist*Vector3(sin(angle+camRotX.valueRadians())*cos(pitch+camRotY.valueRadians()),sin(pitch+camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(pitch+camRotY.valueRadians()));
-				} else if(externalCameraMode==1)
-				{
-					camIdealPosition=camDist*Vector3(sin(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()),sin(camRotY.valueRadians()),cos(angle+camRotX.valueRadians())*cos(camRotY.valueRadians()));
-				}
-
-				float cam_realdist = camIdealPosition.length();
-				camIdealPosition=camIdealPosition+curr_truck->getPosition();
-				Vector3 oldposition=mCamera->getPosition()+curr_truck->nodes[0].Velocity*curr_truck->ttdt;
-				float ratio=1.0/(curr_truck->tdt*4.0);
-				//float ratio=0.001;
-				//Vector3 newposition=(camIdealPosition+ratio*mCamera->getPosition())/(ratio+1.0);
-				//Vector3 newposition=camIdealPosition;
-				Vector3 newposition=(1/(ratio+1.0))*camIdealPosition+(ratio/(ratio+1.0))*oldposition;
-
-				Real h=hfinder->getHeightAt(newposition.x,newposition.z);
-				if (w && !w->allowUnderWater() && w->getHeightWaves(newposition)>h)
-					h=w->getHeightWaves(newposition);
-				h+=1.0;
-				if (newposition.y<h) newposition.y=h;
-				setCameraPositionWithCollision(newposition);
-				mCamera->lookAt(curr_truck->getPosition());
-
-				float fov = FSETTING("FOV External", 60);
-
-				if(changeCamMode)
-					mCamera->setFOVy(Degree(fov));
-
-				lastPosition=curr_truck->getPosition();
-
-				if(mDOF)
-				{
-					mDOF->setFocusMode(DOFManager::Manual);
-					mDOF->setFocus(cam_realdist);
-					mDOF->setLensFOV(Degree(80));
-				}
-
-
-				//lastangle=angle;
 			}
 		}
 		if (cameramode==CAMERA_FIX)

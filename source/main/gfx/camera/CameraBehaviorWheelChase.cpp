@@ -17,43 +17,60 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorVehicleOrbit.h"
+#include "CameraBehaviorWheelChase.h"
 
 #include <Ogre.h>
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
 #include "language.h"
-#include "Settings.h"
 
 #include "BeamFactory.h"
 
 using namespace Ogre;
 
-CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
-	  externalCameraMode(0)
+void CameraBehaviorWheelChase::activate()
 {
-	externalCameraMode = (SSETTING("External Camera Mode", "Pitching") == "Static")? 1 : 0;
 }
 
-void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
+void CameraBehaviorWheelChase::deactivate()
+{
+}
+
+void CameraBehaviorWheelChase::update(cameraContext_t &ctx)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(!curr_truck) return;
 
-	// Make all the changes to the camera
-	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
-	dir.normalise();
-	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+	//ctx.cam->setFixedYawAxis(false);
 
-	if(!externalCameraMode)
-		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
-	else
-		targetPitch = 0;
+	int i = 0;
 
-	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
+	Vector3 axis  = curr_truck->wheels[i].refnode1->smoothpos - curr_truck->wheels[i].refnode0->smoothpos;
+	Vector3 cpos  = curr_truck->wheels[i].refnode0->smoothpos - axis * 3;
+	Vector3 clook = curr_truck->wheels[i].refnode1->smoothpos;
 
-	camCenterPoint = curr_truck->getPosition();
+	//ctx.cam->setFixedYawAxis(false);
 
-	CameraBehaviorOrbit::update(ctx);
+	ctx.cam->lookAt(clook);
+
+	// TODO: FIX
+	//ctx.cam->roll(Ogre::Degree(-curr_truck->wheels[i].speed));
+
+	ctx.cam->setPosition(cpos);
+}
+
+bool CameraBehaviorWheelChase::mouseMoved(const OIS::MouseEvent& _arg)
+{
+	return false;
+}
+
+bool CameraBehaviorWheelChase::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
+{
+	return false;
+}
+
+bool CameraBehaviorWheelChase::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
+{
+	return false;
 }
