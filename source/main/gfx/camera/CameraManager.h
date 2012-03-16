@@ -52,10 +52,16 @@ protected:
 	DOFManager *mDOF;
 	bool enforceCameraFOVUpdate;
 	Ogre::Vector3 cdoppler;
+	cameraContext_t ctx;
 
 	CameraBehavior *currentBehavior;
 
-	enum { CAMBEHAVIOR_FREE, CAMBEHAVIOR_TRUCK_EXT };
+	enum {   CAMBEHAVIOR_FREE
+		   , CAMBEHAVIOR_CHARACTER_ORBIT
+		   , CAMBEHAVIOR_VEHICLE_ORBIT
+		   , CAMBEHAVIOR_VEHICLE_WHEELCHASE
+		   , CAMBEHAVIOR_END
+	};
 
 	std::map <int , CameraBehavior *> globalBehaviors;
 
@@ -68,6 +74,7 @@ public:
 	~CameraManager();
 
 	void updateInput();
+	void switchBehavior(int newBehavior);
 
 	enum { CAMERA_EXT=0,
 		CAMERA_FIX,

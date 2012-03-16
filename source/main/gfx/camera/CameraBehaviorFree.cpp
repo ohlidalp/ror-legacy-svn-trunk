@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 
-void CameraBehaviorFree::activate()
+void CameraBehaviorFree::activate(cameraContext_t &ctx)
 {
 	// enter free camera mode
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
@@ -43,7 +43,7 @@ void CameraBehaviorFree::activate()
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::deactivate()
+void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
 {
 	// change back to normal camera
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();

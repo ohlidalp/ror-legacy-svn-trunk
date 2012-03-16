@@ -44,8 +44,8 @@ public:
 	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 	virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
-	virtual void activate() = 0;
-	virtual void deactivate() = 0;
+	virtual void activate(cameraContext_t &ctx) = 0;
+	virtual void deactivate(cameraContext_t &ctx) = 0;
 
 	virtual bool allowInteraction() = 0;
 };
