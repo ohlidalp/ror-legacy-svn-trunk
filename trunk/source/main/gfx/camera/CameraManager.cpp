@@ -44,14 +44,15 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	  mSceneMgr(scm)
 	, mCamera(cam)
 	, currentBehavior(0)
+	, currentBehaviorID(-1)
 	// TODO: initialize other vars here
 {
 	setSingleton(this);
 
 	lastcameramode=CAMERA_EXT;
 	cameramode=CAMERA_EXT;
-	mMoveScale = 0.0f;
-	mRotScale = 0.0f;
+	mMoveScale = 1.0f;
+	mRotScale = 0.1f;
 	lastPosition = Vector3::ZERO;
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
@@ -236,6 +237,14 @@ void CameraManager::updateInput()
 #endif // 0
 }
 
+void CameraManager::switchToNextBehavior()
+{
+	int i = currentBehaviorID + 1;
+	if(i >= CAMBEHAVIOR_END)
+		i=0;
+	switchBehavior(i);
+}
+
 void CameraManager::switchBehavior(int newBehavior)
 {
 	if(globalBehaviors.find(newBehavior) == globalBehaviors.end()) return;
@@ -246,6 +255,7 @@ void CameraManager::switchBehavior(int newBehavior)
 
 	// set new
 	currentBehavior = globalBehaviors[newBehavior];
+	currentBehaviorID = newBehavior;
 
 	// activate new
 	currentBehavior->activate(ctx);
@@ -253,22 +263,15 @@ void CameraManager::switchBehavior(int newBehavior)
 
 void CameraManager::update(float dt)
 {
+	if (dt == 0) return;
 
-	// If this is the first frame, pick a speed
-	if (dt == 0)
-	{
-		mMoveScale = 1;
-		mRotScale = 0.1;
-	}
-	// Otherwise scale movement units by time passed since last frame
-	else
-	{
-		// Move about 100 units per second,
-		mMoveScale = mMoveSpeed * dt;
-		// Take about 10 seconds for full rotation
-		mRotScale = mRotateSpeed * dt;
-	}
+	mMoveScale = mMoveSpeed   * dt;
+	mRotScale  = mRotateSpeed * dt;
 
+	if(INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
+	{
+		switchToNextBehavior();
+	}
 #ifdef MYGUI
 	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
 #endif //MYGUI
