@@ -74,30 +74,65 @@ void CameraBehaviorVehicleSpline::update(cameraContext_t &ctx)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(!curr_truck) return;
 
-	// create a simple spline
-	float x = curr_truck->minx + (curr_truck->maxx - curr_truck->minx) * 0.5f;
-	float y = curr_truck->miny + (curr_truck->maxy - curr_truck->miny) * 0.5f;
-
-	Vector3 pos1 = Vector3(x, y, curr_truck->minz);
-	Vector3 pos2 = pos1+Vector3(10,0,0); //Vector3(x, y, curr_truck->maxz);
-	Vector3 pos3 = pos2+Vector3(-10,10,0); //Vector3(x, y, curr_truck->maxz);
-
-	spline->clear();
-	spline->addPoint(pos1);
-	spline->addPoint(pos2);
-	spline->addPoint(pos3);
-
-	updateSplineDisplay();
-
-	// Make all the changes to the camera
 	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
 	dir.normalise();
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 	targetPitch = 0;
-
 	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
 
-	camCenterPoint = curr_truck->getPosition();
+	if(curr_truck->free_camerarail > 0)
+	{
+		spline->clear();
+		for(int i = 0; i < curr_truck->free_camerarail; i++)
+		{
+			spline->addPoint(curr_truck->nodes[ curr_truck->cameraRail[i] ].AbsPosition);
+		}
+
+		updateSplineDisplay();
+
+		camCenterPoint = spline->interpolate(splinePos);
+	} else
+	{
+		// fallback :-/
+		camCenterPoint = curr_truck->getPosition();
+	}
 
 	CameraBehaviorOrbit::update(ctx);
 }
+
+bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg)
+{
+	const OIS::MouseState ms = _arg.state;
+	Camera *cam = CameraManager::getSingleton().getCamera();
+	if(ms.buttonDown(OIS::MB_Right))
+	{
+		if(ms.X.rel < 0)
+		{
+			// move left
+			splinePos += (float)ms.X.rel * 0.0005f;
+			if(splinePos < 0)
+			{
+				splinePos = 0;
+				// rotate instead
+				camRotX += Degree( (float)ms.X.rel * 0.13f);
+			}
+			if(splinePos > 1) splinePos = 1;
+		} else if(ms.X.rel > 0)
+		{
+			// move right
+			splinePos += (float)ms.X.rel * 0.0005f;
+			if(splinePos > 1)
+			{
+				splinePos = 1;
+				// rotate instead
+				camRotX += Degree( (float)ms.X.rel * 0.13f);
+			}
+		}
+
+		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
+		camDist += -(float)ms.Z.rel * 0.02f;
+		return true;
+	}
+	return false;
+}
+

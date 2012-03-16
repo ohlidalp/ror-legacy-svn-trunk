@@ -121,6 +121,7 @@ trucksection_t truck_sections[] = {
 	{BTS_VIDCAM, "videocamera", false},
 	{BTS_HOOKS, "hooks", false},
 	{BTS_LOCKGROUPS, "lockgroups", false},
+	{BTS_CAMERARAIL, "camerarail", false},
 	{BTS_END, "end", false},
 };
 
@@ -1498,6 +1499,12 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 						case 'c':	//contactless
 							nodes[id].contactless = 1;
 							break;
+						case 'm':	// not able to mouse grab
+							nodes[id].mouseGrabMode = 1;
+							break;
+						case 'n':	// mouse grab with hilight
+							nodes[id].mouseGrabMode = 2;
+							break;
 						case 'h':	//hook
 							// emulate the old behaviour using new fancy hookgroups
 							//id check, avoid beam n0->n0
@@ -1571,6 +1578,15 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					fuse_y_max = y;
 
 				continue;
+			}
+			else if (c.mode == BTS_CAMERARAIL)
+			{
+				int n = parse_args(c, args, 1);
+				if (n>0 && free_camerarail < MAX_CAMERARAIL)
+				{
+					cameraRail[free_camerarail] = parse_node_number(c, args[0]);
+					free_camerarail++;
+				}
 			}
 			else if (c.mode == BTS_LOCKGROUPS)
 			{
@@ -5491,6 +5507,7 @@ void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m,
 	nodes[pos].isSkin=nodes[pos].iIsSkin;
 	nodes[pos].pos=pos;
 	nodes[pos].mSceneNode = NULL;
+	nodes[pos].mouseGrabMode=0;
 //		nodes[pos].tsmooth=Vector3::ZERO;
 	if (type==NODE_LOADED) masscount++;
 }

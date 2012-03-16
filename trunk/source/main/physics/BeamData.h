@@ -76,7 +76,7 @@ static const int   MAX_SOUNDSCRIPTS_PER_TRUCK = 128;             //!< maximum nu
 static const int   MAX_WINGS                  = 40;              //!< maximum number of wings per truck
 static const int   MAX_CPARTICLES             = 10;              //!< maximum number of custom particles per truck
 static const int   MAX_PRESSURE_BEAMS         = 4000;            //!< maximum number of pressure beams per truck
-
+static const int   MAX_CAMERARAIL             = 50;              //!< maximum number of camera rail points
 
 static const float RAD_PER_SEC_TO_RPM         = 9.54929659643f;  //!< Convert radian/second to RPM (60/2*PI)
 
@@ -157,6 +157,7 @@ enum TRUCK_SECTIONS {
 	BTS_VIDCAM,
 	BTS_HOOKS,
 	BTS_LOCKGROUPS,
+	BTS_CAMERARAIL,
 	BTS_END,
 };
 
@@ -413,6 +414,7 @@ struct node
 	bool iIsSkin;
 	bool isSkin;
 	bool contacter;
+	int mouseGrabMode;
 	int pos;
 	float collRadius;
 	Ogre::SceneNode *mSceneNode; //!< visual
@@ -852,6 +854,9 @@ struct rig
 	std::vector <VideoCamera *> vidcams;
 
 	std::vector<std::string> description;
+
+	int cameraRail[MAX_CAMERARAIL];
+	int free_camerarail;
 
 	char guid[128];
 	int hasfixes;
