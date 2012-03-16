@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
-	  splinePos(0)
+	  splinePos(0.5f)
 	, myManualObject(0)
 	, myManualObjectNode(0)
 	, spline(new SimpleSpline())

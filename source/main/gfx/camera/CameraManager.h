@@ -55,6 +55,7 @@ protected:
 	cameraContext_t ctx;
 
 	CameraBehavior *currentBehavior;
+	int currentBehaviorID;
 
 	enum {   CAMBEHAVIOR_FREE
 		   , CAMBEHAVIOR_CHARACTER_ORBIT
@@ -76,6 +77,7 @@ public:
 
 	void updateInput();
 	void switchBehavior(int newBehavior);
+	void switchToNextBehavior();
 
 	enum { CAMERA_EXT=0,
 		CAMERA_FIX,

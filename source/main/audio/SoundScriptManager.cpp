@@ -44,7 +44,17 @@ SoundScriptManager::SoundScriptManager() : soundsDisabled(false)
 		free_pitches[i]=0;
 		free_gains[i]=0;
 	}
-	
+
+	// TODO: there is a memory corruption going on here, need to fix
+	for(int i=0; i < SS_MAX_TRIG * MAX_INSTANCES_PER_GROUP; i++)
+		trigs[i] = 0;
+
+	for(int i=0; i < SS_MAX_MOD * MAX_INSTANCES_PER_GROUP; i++)
+		pitches[i] = 0;
+
+	for(int i=0; i < SS_MAX_MOD * MAX_INSTANCES_PER_GROUP; i++)
+		gains[i] = 0;
+
 	// reset all states
 	statemap.clear();
 
