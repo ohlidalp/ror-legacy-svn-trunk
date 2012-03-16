@@ -115,6 +115,9 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 				// walk all nodes
 				for (int j = 0; j < trucks[i]->free_node; j++)
 				{
+					// check if the mouse grab mode is ok
+					if(trucks[i]->nodes[j].mouseGrabMode == 1) continue;
+
 					// check if our ray intersects with the node
 					std::pair<bool, Real> pair = mouseRay.intersects(Sphere(trucks[i]->nodes[j].smoothpos, 0.1f));
 					if (pair.first)

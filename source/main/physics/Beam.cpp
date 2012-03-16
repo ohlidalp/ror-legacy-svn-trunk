@@ -437,6 +437,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_shock=0;
 	free_flare=0;
 	free_prop=0;
+	free_camerarail=0;
 	lastwspeed=0.0;
 	stabcommand=0;
 	stabratio=0.0;

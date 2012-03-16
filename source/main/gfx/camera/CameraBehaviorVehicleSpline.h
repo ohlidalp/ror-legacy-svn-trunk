@@ -39,6 +39,8 @@ public:
 	void update(cameraContext_t &ctx);
 
 	void updateSplineDisplay();
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
 };
 
 #endif // CAMERABEHAVIORVEHICLESPLINE_H__
