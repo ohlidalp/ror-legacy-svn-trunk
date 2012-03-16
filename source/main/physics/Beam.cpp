@@ -4947,14 +4947,14 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setTextAlignment(MovableText::H_LEFT, MovableText::V_BELOW);
 			//t.txt->setAdditionalHeight(0);
 			t.txt->showOnTop(true);
-			t.txt->setCharacterHeight(0.2f);
+			t.txt->setCharacterHeight(0.5f);
 			t.txt->setColor(ColourValue::White);
 			t.txt->setRenderingDistance(2);
 
 			t.node = parentNode->createChildSceneNode();
 			t.node->attachObject(t.txt);
 			t.node->setPosition(nodes[i].smoothpos);
-			//t.node->setScale(Vector3(0.1,0.1,0.1));
+			t.node->setScale(Vector3(0.5,0.5,0.5));
 
 			// collision nodes debug, also mimics as node visual
 			SceneNode *s = t.node->createChildSceneNode();
