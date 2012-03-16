@@ -33,6 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorCharacterOrbit.h"
 #include "CameraBehaviorVehicleOrbit.h"
 #include "CameraBehaviorWheelChase.h"
+#include "CameraBehaviorVehicleSpline.h"
 
 #include "RoRFrameListener.h"
 
@@ -69,10 +70,12 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	}
 
 	createGlobalBehaviors();
-	ctx.cam              = mCamera;
+	ctx.cam = mCamera;
+	ctx.scm = mSceneMgr;
 
 
-	switchBehavior(CAMBEHAVIOR_CHARACTER_ORBIT);
+	//switchBehavior(CAMBEHAVIOR_CHARACTER_ORBIT);
+	switchBehavior(CAMBEHAVIOR_VEHICLE_SPLINE);
 }
 
 CameraManager::~CameraManager()
@@ -86,6 +89,8 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
+
 }
 
 void CameraManager::updateInput()

@@ -28,6 +28,7 @@ typedef struct cameraContext_t {
 	Ogre::Degree rotationScale;
 	float translationScale;
 	Ogre::Camera *cam;
+	Ogre::SceneManager *scm;
 } cameraContext_t;
 
 class CameraBehavior
