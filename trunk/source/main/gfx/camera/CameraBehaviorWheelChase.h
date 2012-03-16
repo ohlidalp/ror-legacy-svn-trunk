@@ -26,8 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorWheelChase : public CameraBehavior
 {
 public:
-	void activate();
-	void deactivate();
+	void activate(cameraContext_t &ctx);
+	void deactivate(cameraContext_t &ctx);
 
 	void update(cameraContext_t &ctx);
 

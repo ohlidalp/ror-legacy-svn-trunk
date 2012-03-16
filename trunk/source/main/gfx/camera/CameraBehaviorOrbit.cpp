@@ -44,7 +44,7 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 
 }
 
-void CameraBehaviorOrbit::activate()
+void CameraBehaviorOrbit::activate(cameraContext_t &ctx)
 {
 	float fov = FSETTING("FOV External", 60);
 
@@ -61,7 +61,7 @@ void CameraBehaviorOrbit::activate()
 	cam->setFOVy(Degree(fov));
 }
 
-void CameraBehaviorOrbit::deactivate()
+void CameraBehaviorOrbit::deactivate(cameraContext_t &ctx)
 {
 }
 

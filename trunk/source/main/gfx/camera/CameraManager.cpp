@@ -51,11 +51,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	cameramode=CAMERA_EXT;
 	mMoveScale = 0.0f;
 	mRotScale = 0.0f;
-	//camIdealPosition = Vector3::ZERO;
 	lastPosition = Vector3::ZERO;
-	//camRotX=0;
-	//camRotY=Degree(12);
-	//camDist=20;
 	camCollided=false;
 	camPosColl=Vector3::ZERO;
 	mSceneDetailIndex = 0;
@@ -72,10 +68,11 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 		mDOF->setEnabled(true);
 	}
 
-	//createGlobalBehaviors();
+	createGlobalBehaviors();
+	ctx.cam              = mCamera;
 
-	//currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
-	currentBehavior = new CameraBehaviorWheelChase();//CameraBehaviorVehicleOrbit();
+
+	switchBehavior(CAMBEHAVIOR_FREE);
 }
 
 CameraManager::~CameraManager()
@@ -86,6 +83,9 @@ CameraManager::~CameraManager()
 void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_FREE, new CameraBehaviorFree()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
 }
 
 void CameraManager::updateInput()
@@ -231,6 +231,21 @@ void CameraManager::updateInput()
 #endif // 0
 }
 
+void CameraManager::switchBehavior(int newBehavior)
+{
+	if(globalBehaviors.find(newBehavior) == globalBehaviors.end()) return;
+
+	// deactivate old
+	if(currentBehavior)
+		currentBehavior->deactivate(ctx);
+
+	// set new
+	currentBehavior = globalBehaviors[newBehavior];
+
+	// activate new
+	currentBehavior->activate(ctx);
+}
+
 void CameraManager::update(float dt)
 {
 
@@ -239,10 +254,6 @@ void CameraManager::update(float dt)
 	{
 		mMoveScale = 1;
 		mRotScale = 0.1;
-
-		// HACKKK
-		if(currentBehavior)
-			currentBehavior->activate();
 	}
 	// Otherwise scale movement units by time passed since last frame
 	else
@@ -257,11 +268,9 @@ void CameraManager::update(float dt)
 	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
 #endif //MYGUI
 
-	cameraContext_t ctx;
 	ctx.dt               = dt;
 	ctx.translationScale = mMoveScale;
 	ctx.rotationScale    = Ogre::Degree(mRotScale);
-	ctx.cam              = mCamera;
 
 	if(!currentBehavior->allowInteraction())
 	{
@@ -283,7 +292,7 @@ void CameraManager::update(float dt)
 		}
 	}
 
-	// hacky hack
+	// update current behavior
 	if(currentBehavior)
 		currentBehavior->update(ctx);
 
