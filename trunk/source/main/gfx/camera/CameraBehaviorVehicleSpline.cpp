@@ -62,7 +62,6 @@ void CameraBehaviorVehicleSpline::updateSplineDisplay()
 	{
 		float pos1d = i/(float)splineDrawResolution;
 		Vector3 pos3d = spline->interpolate(pos1d);
-		//printf(">pos3d> %d >%f,%f,%f\n", i, pos3d.x, pos3d.y, pos3d.z);
 		myManualObject->position(pos3d);
 
 	}
@@ -104,31 +103,17 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 	Camera *cam = CameraManager::getSingleton().getCamera();
-	if(ms.buttonDown(OIS::MB_Right))
-	{
-		if(ms.X.rel < 0)
-		{
-			// move left
-			splinePos += (float)ms.X.rel * 0.0005f;
-			if(splinePos < 0)
-			{
-				splinePos = 0;
-				// rotate instead
-				camRotX += Degree( (float)ms.X.rel * 0.13f);
-			}
-			if(splinePos > 1) splinePos = 1;
-		} else if(ms.X.rel > 0)
-		{
-			// move right
-			splinePos += (float)ms.X.rel * 0.0005f;
-			if(splinePos > 1)
-			{
-				splinePos = 1;
-				// rotate instead
-				camRotX += Degree( (float)ms.X.rel * 0.13f);
-			}
-		}
 
+	if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right))
+	{
+		splinePos += (float)ms.X.rel * 0.001f;
+		if(splinePos < 0) splinePos = 0;
+		if(splinePos > 1) splinePos = 1;
+		return true;
+	}
+	else if(ms.buttonDown(OIS::MB_Right))
+	{
+		camRotX += Degree( (float)ms.X.rel * 0.13f);
 		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
 		camDist += -(float)ms.Z.rel * 0.02f;
 		return true;
