@@ -245,6 +245,8 @@ void GUI_MainMenu::vehiclesListUpdate()
 		{
 			if(!trucks[i]) continue;
 
+			if(trucks[i]->hideInChooser) continue;
+
 			char tmp[255] = {};
 			sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
 

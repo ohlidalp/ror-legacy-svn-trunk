@@ -880,6 +880,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				continue;
 			}
 
+			if (c.line == "hideInChooser")
+			{
+				hideInChooser = true;
+				continue;
+			}
+
+
 			if (c.line == "lockgroup_default_nolock")
 			{
 				lockgroup_default = 9999;

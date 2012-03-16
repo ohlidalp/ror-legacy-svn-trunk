@@ -858,6 +858,8 @@ struct rig
 	int cameraRail[MAX_CAMERARAIL];
 	int free_camerarail;
 
+	bool hideInChooser;
+
 	char guid[128];
 	int hasfixes;
 	int wingstart;
