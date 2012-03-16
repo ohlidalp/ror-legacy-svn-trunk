@@ -34,6 +34,8 @@ void CameraBehaviorFree::activate(cameraContext_t &ctx)
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
 	if(dof) dof->setFocusMode(DOFManager::Auto);
 
+	ctx.cam->setFixedYawAxis(true, Vector3::UNIT_Y);
+
 	LOG("entering free camera mode");
 
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);

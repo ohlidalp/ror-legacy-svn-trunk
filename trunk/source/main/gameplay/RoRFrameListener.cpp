@@ -762,7 +762,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	freeTruckPosition=false;
 
 	mCamera = cam;
-	new CameraManager(scm, mCamera);
 
 	terrainHasTruckShop=false;
 
@@ -790,6 +789,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// create console, must be done early
 	new Console();
 #endif //USE_MYGUI
+
+	// init cameramanager after mygui
+	new CameraManager(scm, mCamera);
 
 
 #ifdef USE_OIS_G27

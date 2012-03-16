@@ -72,7 +72,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	ctx.cam              = mCamera;
 
 
-	switchBehavior(CAMBEHAVIOR_FREE);
+	switchBehavior(CAMBEHAVIOR_CHARACTER_ORBIT);
 }
 
 CameraManager::~CameraManager()
