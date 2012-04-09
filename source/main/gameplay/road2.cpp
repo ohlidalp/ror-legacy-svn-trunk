@@ -17,20 +17,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "road2.h"
 #include "ResourceBuffer.h"
 
+using namespace Ogre;
 
-Road2::Road2(SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id)
+Road2::Road2(SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id) :
+	  smanager(manager)
+	, coll(collisions)
+	, first(true)
+	, hfinder(hf)
+	, mid(id)
+	, snode(0)
+	, tricount(0)
+	, vertexcount(0)
 {
-	smanager=manager;
-	hfinder=hf;
-	coll=collisions;
-	vertexcount=0;
-	tricount=0;
-	snode=0;
-	first=true;
-	mid=id;
 	msh.setNull();
 }
 
@@ -47,10 +49,9 @@ Road2::~Road2()
 		MeshManager::getSingleton().remove(msh->getName());
 		msh.setNull();
 	}
-	if(registeredCollTris.size()>0)
+	if(registeredCollTris.size() > 0)
 	{
-		std::vector<int>::iterator it;
-		for(it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
+		for(std::vector<int>::iterator it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
 		{
 			//coll->enableCollisionTri(*it, false);
 			coll->removeCollisionTri(*it);
@@ -77,11 +78,9 @@ void Road2::finish()
 	addBlock(Vector3(1200,60,1717), Quaternion::IDENTITY, ROAD_FLAT, 8, 1.4, 0.2);
 */
 	createMesh();
-	char n1[256];
-	char n2[256];
-	sprintf(n1, "roadsystem_instance-%i", mid);
-	sprintf(n2, "roadsystem-%i", mid);
-	Entity *ec = smanager->createEntity(n1,n2);
+	String entity_name = String("RoadSystem_Instance-").append(StringConverter::toString(mid));
+	String mesh_name = String("RoadSystem-").append(StringConverter::toString(mid));
+	Entity *ec = smanager->createEntity(entity_name, mesh_name);
 	snode = smanager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ec);
 }
@@ -331,12 +330,16 @@ void Road2::computePoints(Vector3 *pts, Vector3 pos, Quaternion rot, int type, f
 
 inline Vector3 Road2::baseOf(Vector3 p)
 {
-	float y=hfinder->getHeightAt(p.x, p.z)-0.01;
-	if (y>p.y) y=p.y-0.01;
+	float y = hfinder->getHeightAt(p.x, p.z) - 0.01;
+
+	if (y > p.y)
+	{
+		y = p.y - 0.01;
+	}
+
 	return Vector3(p.x, y, p.z);
 }
 
-//the two firsts must be the "high" points
 void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, bool collision, Vector3 pos, Vector3 lastpos, float width, bool flip)
 {
 	if(vertexcount+3 >= MAX_VERTEX || tricount*3+3+2 >= MAX_TRIS*3) return;
@@ -541,30 +544,24 @@ void Road2::addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, gro
 void Road2::createMesh()
 {
 	AxisAlignedBox *aab=new AxisAlignedBox();
-	size_t nVertices=vertexcount;
-	size_t nTris=tricount;
 	union
 	{
 		float *vertices;
 		CoVertice_t *covertices;
 	};
 	/// Create the mesh via the MeshManager
-	char n2[256];
-	sprintf(n2, "roadsystem-%i", mid);
-	msh = MeshManager::getSingleton().createManual(n2, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
+	Ogre::String mesh_name = Ogre::String("RoadSystem-").append(Ogre::StringConverter::toString(mid));
+	msh = MeshManager::getSingleton().createManual(mesh_name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, new ResourceBuffer());
 
-	/// Create submeshes
 	mainsub = msh->createSubMesh();
-
-	//materials
 	mainsub->setMaterialName("road2");
 
 	/// Define the vertices
-	size_t vbufCount = (2*3+2)*nVertices;
+	size_t vbufCount = (2*3+2)*vertexcount;
 	vertices=(float*)malloc(vbufCount*sizeof(float));
 	int i;
 	//fill values
-	for (i=0; i<(int)nVertices; i++)
+	for (i=0; i < vertexcount; i++)
 	{
 		covertices[i].texcoord=tex[i];
 		covertices[i].vertex=vertex[i];
@@ -574,14 +571,11 @@ void Road2::createMesh()
 	}
 
 	/// Define triangles
-	/// The values in this table refer to vertices in the above table
-	//nTris=???;
-	size_t ibufCount = 3*nTris;
+	size_t ibufCount = 3*tricount;
 
 	//compute normals
-	for (i=0; i<(int)nTris; i++)
+	for (i=0; i < tricount && i*3+2 < MAX_TRIS*3; i++)
 	{
-		// TODO: fix warning C6011: Dereferencing NULL pointer '$S5.covertices'
 		Vector3 v1, v2;
 		v1=covertices[tris[i*3+1]].vertex-covertices[tris[i*3]].vertex;
 		v2=covertices[tris[i*3+2]].vertex-covertices[tris[i*3]].vertex;
@@ -592,15 +586,14 @@ void Road2::createMesh()
 		covertices[tris[i*3+2]].normal+=v1;
 	}
 	//normalize
-	for (i=0; i<(int)nVertices; i++)
+	for (i=0; i < vertexcount; i++)
 	{
 		covertices[i].normal.normalise();
 	}
 
-
-	/// Create vertex data structure for vertices shared between submeshes
+	/// Create vertex data structure for vertices shared between sub meshes
 	msh->sharedVertexData = new VertexData();
-	msh->sharedVertexData->vertexCount = nVertices;
+	msh->sharedVertexData->vertexCount = vertexcount;
 
 	/// Create declaration (memory format) of vertex data
 	VertexDeclaration* decl = msh->sharedVertexData->vertexDeclaration;
