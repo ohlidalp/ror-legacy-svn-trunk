@@ -17,94 +17,75 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Road2_H__
-#define __Road2_H__
+
+#ifndef __Road2_H_
+#define __Road2_H_
 
 #include "RoRPrerequisites.h"
-#include <stdio.h>
-#include <math.h>
-#include <vector>
-
-#include "Ogre.h"
-using namespace Ogre;
 
 #include "heightfinder.h"
 #include "collisions.h"
-//dynamic roads
 
-#define MAX_VERTEX 50000
-#define MAX_TRIS 50000
-
-#define ROAD_AUTOMATIC 0
-#define ROAD_FLAT 1
-#define ROAD_LEFT 2
-#define ROAD_RIGHT 3
-#define ROAD_BOTH 4
-#define ROAD_BRIDGE 5
-#define ROAD_MONORAIL 6
-
-#define TEXFIT_NONE 0
-#define TEXFIT_BRICKWALL 1
-#define TEXFIT_ROADS1 2
-#define TEXFIT_ROADS2 3
-#define TEXFIT_ROAD 4
-#define TEXFIT_ROADS3 5
-#define TEXFIT_ROADS4 6
-#define TEXFIT_CONCRETEWALL 7
-#define TEXFIT_CONCRETEWALLI 8
-#define TEXFIT_CONCRETETOP 9
-#define TEXFIT_CONCRETEUNDER 10
+// dynamic roads
 
 class Road2
 {
-protected:
+public:
+
+	Road2(Ogre::SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id);
+	~Road2();
+
+	void addBlock(Ogre::Vector3 pos, Quaternion rot, int type, float width, float bwidth, float bheight, int pillartype=1);
+	/**
+	 * @param p1 Top left point.
+	 * @param p2 Top right point.
+	 */
+	void addQuad(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Ogre::Vector3 p4, int texfit, bool collision, Ogre::Vector3 pos, Ogre::Vector3 lastpos, float width, bool flip=false);
+	void addCollisionQuad(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Ogre::Vector3 p4, ground_model_t* gm, bool flip=false);
+	void createMesh();
+	void finish();
+
+	static const unsigned int MAX_VERTEX = 50000;
+	static const unsigned int MAX_TRIS = 50000;
+
+	enum { ROAD_AUTOMATIC, ROAD_FLAT, ROAD_LEFT, ROAD_RIGHT, ROAD_BOTH, ROAD_BRIDGE, ROAD_MONORAIL };
+	enum { TEXFIT_NONE, TEXFIT_BRICKWALL, TEXFIT_ROADS1, TEXFIT_ROADS2, TEXFIT_ROAD, TEXFIT_ROADS3, TEXFIT_ROADS4, TEXFIT_CONCRETEWALL, TEXFIT_CONCRETEWALLI, TEXFIT_CONCRETETOP, TEXFIT_CONCRETEUNDER };
+
+private:
+
+	inline Ogre::Vector3 baseOf(Ogre::Vector3 p);
+	void computePoints(Ogre::Vector3 *pts, Ogre::Vector3 pos, Ogre::Quaternion rot, int type, float width, float bwidth, float bheight);
+	void textureFit(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Ogre::Vector3 p4, int texfit, Vector2 *texc, Ogre::Vector3 pos, Ogre::Vector3 lastpos, float width);
+
 	typedef struct
 	{
-		Vector3 vertex;
-		Vector3 normal;
-		Vector2 texcoord;
+		Ogre::Vector3 vertex;
+		Ogre::Vector3 normal;
+		Ogre::Vector2 texcoord;
 	} CoVertice_t;
 
+	Ogre::MeshPtr msh;
+	Ogre::SubMesh* mainsub;
+	Ogre::SceneManager *smanager;
 
-
-	MeshPtr msh;
-	SubMesh* mainsub;
-	SceneManager *smanager;
-
-
-	Vector3 vertex[MAX_VERTEX];
-	Vector2 tex[MAX_VERTEX];
+	Ogre::Vector2 tex[MAX_VERTEX];
+	Ogre::Vector3 vertex[MAX_VERTEX];
+	int tricount;
 	int vertexcount;
 	short tris[MAX_TRIS*3];
-	int tricount;
 
+	Collisions *coll;
+	HeightFinder* hfinder;
+	Ogre::Quaternion lastrot;
+	Ogre::SceneNode *snode;
+	Ogre::Vector3 lastpos;
 	bool first;
-	Vector3 lastpos;
-	Quaternion lastrot;
-	float lastwidth;
 	float lastbheight;
 	float lastbwidth;
+	float lastwidth;
 	int lasttype;
-	HeightFinder* hfinder;
-	Collisions *coll;
 	int mid;
-	SceneNode *snode;
 	std::vector<int> registeredCollTris;
-public:
-	Road2(SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id);
-	void finish();
-	void addBlock(Vector3 pos, Quaternion rot, int type, float width, float bwidth, float bheight, int pillartype=1);
-	void computePoints(Vector3 *pts, Vector3 pos, Quaternion rot, int type, float width, float bwidth, float bheight);
-
-	inline Vector3 baseOf(Vector3 p);
-	//the two firsts must be the "high" points
-	void addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, bool collision, Vector3 pos, Vector3 lastpos, float width, bool flip=false);
-	void textureFit(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, Vector2 *texc, Vector3 pos, Vector3 lastpos, float width);
-	void addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, ground_model_t* gm, bool flip=false);
-	void createMesh();
-	~Road2();
 };
 
-#endif
-
-
+#endif // __Road2_H_

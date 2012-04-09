@@ -17,69 +17,57 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Road_H__
-#define __Road_H__
+
+#ifndef __Road_H_
+#define __Road_H_
 
 #include "RoRPrerequisites.h"
-#include <stdio.h>
-#include <math.h>
-
-
-#include "Ogre.h"
-using namespace Ogre;
-
-/*typedef struct _RoadElement RoadElement_t;
-
-typedef struct _RoadElement
-{
-	Vector3 pos;
-	Quaternion rot;
-	RoadElement_t *next;
-} RoadElement_t;
-*/
 
 typedef struct _RoadType
 {
 	char name[256];
-	SceneNode *node;
+	Ogre::SceneNode *node;
 } RoadType_t;
 
 class Road
 {
-protected:
-	static const int MAX_RTYPES = 10;
-//	RoadElement_t *roadlink;
-	float ppitch;
-	float pturn;
-	float lastpturn;
-	Vector3 ppos;
-	Vector3 protl;
-	Vector3 protr;
-	SceneManager *mSceneMgr;
-//	Entity *te;
-	SceneNode *tenode;
-	RoadType_t rtypes[MAX_RTYPES];
-	int free_rtype;
-	int cur_rtype;
-
-	void preparePending();
-
-	void updatePending();
+	friend class RoRFrameListener;
 
 public:
-	Road(SceneManager *scm, Vector3 start);
-	void reset(Vector3 start);
+
+	Road(Ogre::SceneManager *scm, Ogre::Vector3 start);
+
+private:
+
 	void addRoadType(const char* name);
-	void toggleType();
+	void append();
 	void dpitch(float v);
 	void dturn(float v);
-	Vector3 rpos;
-	Vector3 rrot;
+	void preparePending();
+	void reset(Ogre::Vector3 start);
+	void toggleType();	
+	void updatePending();
+
+	static const unsigned int MAX_RTYPES = 10;
+	RoadType_t rtypes[MAX_RTYPES];
+
+	Ogre::SceneManager *mSceneMgr;
+	Ogre::SceneNode *tenode;
+
+	Ogre::Vector3 ppos;
+	Ogre::Vector3 protl;
+	Ogre::Vector3 protr;
+	Ogre::Vector3 rpos;
+	Ogre::Vector3 rrot;
+
+	float lastpturn;
+	float ppitch;
+	float pturn;
+
+	int cur_rtype;
+	int free_rtype;
+
 	char curtype[256];
-	void append();
-	~Road();
 };
 
-#endif
-
-
+#endif // __Road_H_

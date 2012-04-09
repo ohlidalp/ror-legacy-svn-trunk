@@ -4704,16 +4704,16 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			r=sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %s",&ox,&oy,&oz, &rx, &ry, &rz, &rwidth, &bwidth, &bheight, oname);
 			Vector3 pos=Vector3(ox, oy, oz);
 			Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-			int roadtype=ROAD_AUTOMATIC;
+			int roadtype=Road2::ROAD_AUTOMATIC;
 			int pillartype = 0;
-			if (!strcmp(oname, "flat")) roadtype=ROAD_FLAT;
-			if (!strcmp(oname, "left")) roadtype=ROAD_LEFT;
-			if (!strcmp(oname, "right")) roadtype=ROAD_RIGHT;
-			if (!strcmp(oname, "both")) roadtype=ROAD_BOTH;
-			if (!strcmp(oname, "bridge")) {roadtype=ROAD_BRIDGE;pillartype=1;}
-			if (!strcmp(oname, "monorail")) {roadtype=ROAD_MONORAIL;pillartype=2;}
-			if (!strcmp(oname, "monorail2")) {roadtype=ROAD_MONORAIL;pillartype=0;}
-			if (!strcmp(oname, "bridge_no_pillars")) {roadtype=ROAD_BRIDGE;pillartype=0;}
+			if (!strcmp(oname, "flat")) roadtype=Road2::ROAD_FLAT;
+			if (!strcmp(oname, "left")) roadtype=Road2::ROAD_LEFT;
+			if (!strcmp(oname, "right")) roadtype=Road2::ROAD_RIGHT;
+			if (!strcmp(oname, "both")) roadtype=Road2::ROAD_BOTH;
+			if (!strcmp(oname, "bridge")) {roadtype=Road2::ROAD_BRIDGE;pillartype=1;}
+			if (!strcmp(oname, "monorail")) {roadtype=Road2::ROAD_MONORAIL;pillartype=2;}
+			if (!strcmp(oname, "monorail2")) {roadtype=Road2::ROAD_MONORAIL;pillartype=0;}
+			if (!strcmp(oname, "bridge_no_pillars")) {roadtype=Road2::ROAD_BRIDGE;pillartype=0;}
 
 			if(r2oldmode)
 			{
@@ -4774,8 +4774,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		{
 			int pillartype = !(strcmp(oname, "roadbridgenopillar") == 0);
 			//okay, this is a job for roads2
-			int roadtype=ROAD_AUTOMATIC;
-			if (!strcmp(oname, "road")) roadtype=ROAD_FLAT;
+			int roadtype=Road2::ROAD_AUTOMATIC;
+			if (!strcmp(oname, "road")) roadtype=Road2::ROAD_FLAT;
 			Vector3 pos=Vector3(ox, oy, oz);
 			Quaternion rotation;
 			rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
@@ -4849,7 +4849,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		pp.pillartype = 1;
 		pp.position = r2lastpos+r2lastrot*Vector3(10.0,0,0);
 		pp.rotation = r2lastrot;
-		pp.type = ROAD_AUTOMATIC;
+		pp.type = Road2::ROAD_AUTOMATIC;
 		pp.width = 8;
 		po.points.push_back(pp);
 
