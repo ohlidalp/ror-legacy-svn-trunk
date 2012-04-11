@@ -25,7 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Sound_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
 #include <AL/al.h>
 
 

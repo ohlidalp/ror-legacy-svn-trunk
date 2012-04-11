@@ -24,14 +24,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define MESHOBJECT_H__
 
 #include "RoRPrerequisites.h"
-
 #include "Ogre.h"
 
 #include "materialFunctionMapper.h"
-#include "skin.h"
 #include "MaterialReplacer.h"
 #include "Settings.h"
-
+#include "skin.h"
 
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
@@ -72,12 +70,12 @@ protected:
 	void postProcess();
 	void loadMesh();
 
-	void operationCompleted(BackgroundProcessTicket ticket, const BackgroundProcessResult& result);
-	void backgroundLoadingComplete(Resource *r);
-	void backgroundPreparingComplete(Resource *r);
-	void loadingComplete(Resource *r);
-	void preparingComplete(Resource *r);
-	void unloadingComplete(Resource *r);
+	void operationCompleted(Ogre::BackgroundProcessTicket ticket, const Ogre::BackgroundProcessResult& result);
+	void backgroundLoadingComplete(Ogre::Resource *r);
+	void backgroundPreparingComplete(Ogre::Resource *r);
+	void loadingComplete(Ogre::Resource *r);
+	void preparingComplete(Ogre::Resource *r);
+	void unloadingComplete(Ogre::Resource *r);
 };
 
 #endif //MESHOBJECT_H__

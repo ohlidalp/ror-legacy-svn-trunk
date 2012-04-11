@@ -17,16 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "materialFunctionMapper.h"
 #include "Settings.h"
 
-MaterialFunctionMapper::MaterialFunctionMapper()
-{
-}
-
-MaterialFunctionMapper::~MaterialFunctionMapper()
-{
-}
+using namespace Ogre;
 
 void MaterialFunctionMapper::addMaterial(int flareid, materialmapping_t t)
 {
