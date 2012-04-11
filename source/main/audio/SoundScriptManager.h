@@ -17,28 +17,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef USE_OPENAL
 
-#ifndef __SoundScriptManager_H__
-#define __SoundScriptManager_H__
+#ifndef __SoundScriptManager_H_
+#define __SoundScriptManager_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include "Beam.h"
+#include "BeamData.h" // for MAX_TRUCKS
 #include "OgreScriptLoader.h"
-#include "OgreResourceGroupManager.h"
-#include "Sound.h"
-#include "SoundManager.h"
 #include "Singleton.h"
 
-// TODO: fix this fugly defines into a proper enum
-#define MAX_SOUNDS_PER_SCRIPT 16
-#define MAX_INSTANCES_PER_GROUP 256
+enum {
+	MAX_SOUNDS_PER_SCRIPT = 16,
+	MAX_INSTANCES_PER_GROUP = 256
+};
 
-#define PITCHDOWN_FADE_FACTOR   3.0
-#define PITCHDOWN_CUTOFF_FACTOR 5.0
-
-//list of sound triggers
+// list of sound triggers
 enum {
 	SS_TRIG_NONE = -1,
 	SS_TRIG_ENGINE = 0,
@@ -106,7 +101,7 @@ enum {
 	SS_MAX_TRIG
 };
 
-//list of modulation sources
+// list of modulation sources
 enum {
 	SS_MOD_NONE,
 	SS_MOD_ENGINE,
@@ -141,7 +136,8 @@ enum {
 	SS_MAX_MOD
 };
 
-enum {SL_DEFAULT,
+enum {
+	SL_DEFAULT,
 	SL_COMMAND, 
 	SL_HYDRO, 
 	SL_COLLISION, 
@@ -155,61 +151,79 @@ enum {SL_DEFAULT,
 	SL_FLEXBODIES, 
 	SL_EXHAUSTS, 
 	SL_VIDEOCAMERA, 
-	SL_MAX};
+	SL_MAX
+};
+
+class Sound;
+class SoundManager;
 
 class SoundScriptTemplate
 {
-public:
-	SoundScriptTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename, bool baseTemplate);
-	bool setParameter(StringVector vec);
-	~SoundScriptTemplate();
+	friend class SoundScriptManager;
+	friend class SoundScriptInstance;
 
-//protected:
+public:
+
+	SoundScriptTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename, bool baseTemplate);
+	
+private:
+
 	int parseModulation(Ogre::String str);
+	bool setParameter(Ogre::StringVector vec);
+
 	Ogre::String name;
-	Ogre::String groupname;
 	Ogre::String filename;
-	int          trigger_source;
-	int          pitch_source;
-	float        pitch_offset;
-	float        pitch_multiplier;
-	float        pitch_square;
-	int          gain_source;
-	float        gain_offset;
-	float        gain_multiplier;
-	float        gain_square;
-	bool         has_start_sound;
-	float        start_sound_pitch;
-	Ogre::String start_sound_name;
-	bool         has_stop_sound;
-	float        stop_sound_pitch;
-	Ogre::String stop_sound_name;
-	bool         unpitchable;
-	int          free_sound;
-	float        sound_pitches[MAX_SOUNDS_PER_SCRIPT];
-	Ogre::String sound_names[MAX_SOUNDS_PER_SCRIPT];
+	Ogre::String groupname;
+
 	bool         baseTemplate;
+	bool         has_start_sound;
+	bool         has_stop_sound;
+	bool         unpitchable;
+
+	float        gain_multiplier;
+	float        gain_offset;
+	float        gain_square;
+	int          gain_source;
+
+	float        pitch_multiplier;
+	float        pitch_offset;
+	float        pitch_square;
+	int          pitch_source;
+
+	Ogre::String sound_names[MAX_SOUNDS_PER_SCRIPT];
+	float        sound_pitches[MAX_SOUNDS_PER_SCRIPT];
+	Ogre::String start_sound_name;
+	float        start_sound_pitch;
+	Ogre::String stop_sound_name;
+	float        stop_sound_pitch;
+
+	int          trigger_source;
+	int          free_sound;
 };
 
 class SoundScriptInstance
 {
+	friend class SoundScriptManager;
+
 public:
+
 	SoundScriptInstance(int truck, SoundScriptTemplate* templ, SoundManager* sm, Ogre::String instancename, int soundLinkType=SL_DEFAULT, int soundLinkItemId=-1);
-	void setPitch(float value);
-	void setGain(float value);
-	void setPosition(Ogre::Vector3 pos, Ogre::Vector3 velocity);
 	void runOnce();
+	void setEnabled(bool e);
+	void setGain(float value);
+	void setPitch(float value);
+	void setPosition(Ogre::Vector3 pos, Ogre::Vector3 velocity);
 	void start();
 	void stop();
-	
-	int truck;  // holds the number of the truck this is for. important
-	int soundLinkType; // holds the SL_ type this is bound to
-	int soundLinkItemId; // holds the item number this is for
 
-	void setEnabled(bool e);
+	static const float PITCHDOWN_FADE_FACTOR;
+	static const float PITCHDOWN_CUTOFF_FACTOR;
+
+private:
+
+	float pitchgain_cutoff(float sourcepitch, float targetpitch);
+
 	SoundScriptTemplate* templ;
-
-protected:
 	SoundManager* sm;
 	Sound *startSound;
 	Sound *stopSound;
@@ -218,26 +232,26 @@ protected:
 	float stopSound_pitchgain;
 	float sounds_pitchgain[MAX_SOUNDS_PER_SCRIPT];
 	float lastgain;
-	float pitchgain_cutoff(float sourcepitch, float targetpitch);
+
+	int truck;				// holds the number of the truck this is for. important
+	int soundLinkType;		// holds the SL_ type this is bound to
+	int soundLinkItemId;	// holds the item number this is for
 };
 
-class SoundScriptManager : public ScriptLoader , public RoRSingleton<SoundScriptManager>
+class SoundScriptManager : public Ogre::ScriptLoader, public RoRSingleton<SoundScriptManager>
 {
 public:
-	const static int TERRAINSOUND = MAX_TRUCKS+1;
 
 	SoundScriptManager();
 
 	// ScriptLoader interface
-    const StringVector& getScriptPatterns(void) const;
-    void parseScript(DataStreamPtr& stream, const Ogre::String& groupName);
-    Real getLoadingOrder(void) const;
+    const Ogre::StringVector& getScriptPatterns(void) const;
+    void parseScript(Ogre::DataStreamPtr& stream, const Ogre::String& groupName);
+    Ogre::Real getLoadingOrder(void) const;
 
-	SoundScriptInstance* createInstance(Ogre::String templatename, int truck, SceneNode *toAttach=NULL, int soundLinkType=SL_DEFAULT, int soundLinkItemId=-1);
+	SoundScriptInstance* createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach=NULL, int soundLinkType=SL_DEFAULT, int soundLinkItemId=-1);
 	void unloadResourceGroup(Ogre::String groupname);
 	void clearNonBaseTemplates();
-
-
 
 	// functions
 	void trigOnce    (int truck, int trig, int linkType = SL_DEFAULT, int linkItemID=-1);
@@ -260,22 +274,25 @@ public:
 
 	inline bool working() { return !soundsDisabled; }
 
-	float maxDistance;
-	float rolloffFactor;
-	float referenceDistance;
-protected:
-    StringVector mScriptPatterns;
+	static const unsigned int TERRAINSOUND = MAX_TRUCKS+1;
+
+private:
+
+	SoundScriptTemplate* createTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename);
+	void skipToNextCloseBrace(Ogre::DataStreamPtr& chunk);
+	void skipToNextOpenBrace(Ogre::DataStreamPtr& chunk);
+
+    Ogre::StringVector mScriptPatterns;
 	int instance_counter;
 	bool loadingBase;
 	bool soundsDisabled;
+	float maxDistance;
+	float rolloffFactor;
+	float referenceDistance;
 
 	std::map <Ogre::String, SoundScriptTemplate*> templates;
 
-	void skipToNextCloseBrace(DataStreamPtr& chunk);
-	void skipToNextOpenBrace(DataStreamPtr& chunk);
-	SoundScriptTemplate* createTemplate(Ogre::String name, Ogre::String groupname, Ogre::String filename);
-
-	//instances lookup tables
+	// instances lookup tables
 	int free_trigs[SS_MAX_TRIG];
 	SoundScriptInstance *trigs[SS_MAX_TRIG * MAX_INSTANCES_PER_GROUP];
 
@@ -285,15 +302,13 @@ protected:
 	int free_gains[SS_MAX_MOD];
 	SoundScriptInstance *gains[SS_MAX_MOD * MAX_INSTANCES_PER_GROUP];
 
-	//state map
-	// TODO: replace with STL container to save memory
+	// state map
 	// soundLinks, soundItems, trucks, triggers
 	std::map <int, std::map <int, std::map <int, std::map <int, bool > > > > statemap;
 
 	SoundManager* sm;
 };
 
-#endif // __SoundScriptManager_H__
+#endif // __SoundScriptManager_H_
 
 #endif // USE_OPENAL
-

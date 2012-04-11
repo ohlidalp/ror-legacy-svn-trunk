@@ -17,11 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef USE_OPENAL
 
-#include "Sound.h"
-#include "SoundScriptManager.h"
+#include "Beam.h"
 #include "Settings.h"
+#include "Sound.h"
+#include "SoundManager.h"
+#include "SoundScriptManager.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -30,16 +33,22 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-SoundScriptManager::SoundScriptManager() : soundsDisabled(false)
+const float SoundScriptInstance::PITCHDOWN_FADE_FACTOR   = 3.0f;
+const float SoundScriptInstance::PITCHDOWN_CUTOFF_FACTOR = 5.0f;
+
+SoundScriptManager::SoundScriptManager() :
+	  soundsDisabled(false)
+	, loadingBase(false)
+	, instance_counter(0)
+	, maxDistance(500.0)
+	, rolloffFactor(1.0)
+	, referenceDistance(7.5)
 {
-	// TODO: init variables in constr.
-	instance_counter=0;
-	maxDistance=500.0;
-	loadingBase=false;
-	rolloffFactor=1.0;
-	referenceDistance=7.5;
-	for (int i=0; i<SS_MAX_TRIG; i++) free_trigs[i]=0;
-	for (int i=0; i<SS_MAX_MOD; i++)
+	for (int i=0; i < SS_MAX_TRIG; i++)
+	{
+		free_trigs[i]=0;
+	}
+	for (int i=0; i < SS_MAX_MOD; i++)
 	{
 		free_pitches[i]=0;
 		free_gains[i]=0;
@@ -58,7 +67,7 @@ SoundScriptManager::SoundScriptManager() : soundsDisabled(false)
 	// reset all states
 	statemap.clear();
 
-	sm=new SoundManager(); //we can give a device name if we want here
+	sm = new SoundManager(); // we can give a device name if we want here
 	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->getNumHardwareSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
@@ -394,10 +403,6 @@ SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String f
 	gain_square=0;
 	gain_offset=0;
 	baseTemplate = _baseTemplate;
-}
-
-SoundScriptTemplate::~SoundScriptTemplate()
-{
 }
 
 bool SoundScriptTemplate::setParameter(Ogre::StringVector vec)
@@ -811,5 +816,5 @@ void SoundScriptInstance::setEnabled(bool e)
 		if(sounds[i]) sounds[i]->setEnabled(e);
 	}
 }
-#endif //OPENAL
 
+#endif // USE_OPENAL

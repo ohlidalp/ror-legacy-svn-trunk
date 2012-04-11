@@ -21,81 +21,77 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Turbojet_H_
 
 #include "RoRPrerequisites.h"
-
 #include "aeroengine.h"
 
 class Turbojet: public AeroEngine
 {
-private:
-	MaterialReplacer *mr;
-	node_t *nodes;
-	int number;
-	bool reverse;
-	bool ignition;
-	float radius;
-	bool failed;
-	float rpm; //in percent!
-	float throtle;
-	float warmupstart;
-	float warmuptime;
-	bool warmup;
-	int nodefront;
-	int nodeback;
-	int noderef;
-	float propwash;
-	Vector3 axis;
-	float reflen;
-	float timer;
-	float lastflip;
-	bool reversable;
-	bool afterburner;
-	float maxdrythrust; //in kN
-	float afterburnthrust; //in kN
-	float exhaust_velocity; //in m/s
-	float area;
-	ParticleSystem* smokePS;
-	ParticleSystem* heathazePS;
-    SceneNode *smokeNode;
-
-	SceneNode *nzsnode;
-	SceneNode *absnode;
-	bool heathaze;
-	int trucknum;
-	int mod_id;
-	int src_id;
-	int thr_id;
-	int ab_id;
-
 public:
-	bool afterburnable;
 
-	Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
-
-	void updateVisuals();
-	void updateForces(float dt, int doUpdate);
-
-	void setThrottle(float val);
-
-	float getThrottle();
-
-	void reset();
-
-	void toggleReverse();
+	Turbojet(Ogre::SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
 
 	void flipStart();
+	void reset();
+	void setRPM(float _rpm);
+	void setThrottle(float val);
+	void toggleReverse();
+	void updateForces(float dt, int doUpdate);
+	void updateVisuals();
 
+	Ogre::Vector3 getAxis() {return axis;};
+
+	bool getIgnition() {return ignition;};
+	bool getWarmup() {return warmup;};
+	bool isFailed() {return failed;};
+	float getAfterburner() {return (float)afterburner;};
 	float getRPM() { return rpm; };
 	float getRPMpc() { return rpm; };
-	void setRPM(float _rpm);
-	float getpropwash() {return propwash;};
-	Vector3 getAxis() {return axis;};
-	bool isFailed() {return failed;};
-	int getType() {return AEROENGINE_TYPE_TURBOJET;};
-	bool getIgnition() {return ignition;};
-	int getNoderef() {return nodeback;};
-	bool getWarmup() {return warmup;};
 	float getRadius() {return radius;};
-	float getAfterburner() {return (float)afterburner;};
+	float getThrottle();
+	float getpropwash() {return propwash;};
+	int getNoderef() {return nodeback;};
+	int getType() {return AEROENGINE_TYPE_TURBOJET;};
+
+	bool afterburnable;
+
+private:
+
+	MaterialReplacer *mr;
+	Ogre::ParticleSystem* heathazePS;
+	Ogre::ParticleSystem* smokePS;
+	Ogre::SceneNode *absnode;
+	Ogre::SceneNode *nzsnode;
+	Ogre::Vector3 axis;
+	bool afterburner;
+	bool failed;
+	bool heathaze;
+	bool ignition;
+	bool reversable;
+	bool reverse;
+	bool warmup;
+	float afterburnthrust; //in kN
+	float area;
+	float exhaust_velocity; //in m/s
+	float lastflip;
+	float maxdrythrust; //in kN
+	float propwash;
+	float radius;
+	float reflen;
+	float rpm; //in percent!
+	float throtle;
+	float timer;
+	float warmupstart;
+	float warmuptime;
+	int ab_id;
+	int mod_id;
+	int nodeback;
+	int nodefront;
+	int noderef;
+	int number;
+	int src_id;
+	int thr_id;
+	int trucknum;
+	node_t *nodes;
+	Ogre::SceneNode *smokeNode;
 };
 
 #endif // __Turbojet_H_

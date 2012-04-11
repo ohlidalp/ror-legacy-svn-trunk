@@ -18,38 +18,34 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MATERIALTRUCKMAPPING_H_
-#define MATERIALTRUCKMAPPING_H_
+#ifndef __MATERIALTRUCKMAPPING_H_
+#define __MATERIALTRUCKMAPPING_H_
 
 #include "RoRPrerequisites.h"
 
-#include "Ogre.h"
-using namespace Ogre;
-
-
 typedef struct
 {
-	int type;
-	Ogre::String originalmaterial;
-	Ogre::String material;
 	Ogre::ColourValue emissiveColour;
+	Ogre::String material;
+	Ogre::String originalmaterial;
 	bool laststate;
+	int type;
 } materialmapping_t;
 
 class MaterialFunctionMapper
 {
 public:
-	MaterialFunctionMapper();
-	~MaterialFunctionMapper();
+
 	void addMaterial(int flareid, materialmapping_t t);
 	void toggleFunction(int flareid, bool enabled);
-	// this function searchs and replaces materials in meshes
+	// this function searches and replaces materials in meshes
 	void replaceMeshMaterials(Ogre::Entity *e);
 	static void replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c = Ogre::ColourValue::White);
 
-protected:
+private:
+
 	static int simpleMaterialCounter;
 	std::map <int, std::vector<materialmapping_t> > materialBindings;
 };
 
-#endif
+#endif // __MATERIALTRUCKMAPPING_H_

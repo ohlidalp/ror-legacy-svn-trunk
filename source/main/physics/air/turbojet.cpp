@@ -17,11 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "materialFunctionMapper.h"
+#include "MaterialReplacer.h"
+#include "Ogre.h"
 #include "skin.h"
 #include "SoundScriptManager.h"
 #include "turbojet.h"
-#include "materialFunctionMapper.h"
-#include "MaterialReplacer.h"
+
+using namespace Ogre;
 
 Turbojet::Turbojet(SceneManager *manager, char* propname, int tnumber, int trucknum, node_t *nd, int tnodefront, int tnodeback, int tnoderef, float tmaxdrythrust, bool treversable, bool tafterburnable, float tafterburnthrust, float diskdiam, float nozdiam, float nozlength, bool disable_smoke, bool _heathaze, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) : mr(mr)
 {
