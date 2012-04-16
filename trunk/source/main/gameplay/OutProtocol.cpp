@@ -1,10 +1,29 @@
-#include "OutProtocol.h"
+/*
+This source file is part of Rigs of Rods
+Copyright 2005-2012 Pierre-Michel Ricordel
+Copyright 2007-2012 Thomas Fischer
 
-#include "Settings.h"
-#include "BeamFactory.h"
-#include "Beam.h"
+For more information, see http://www.rigsofrods.com/
+
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "BeamEngine.h"
+#include "BeamFactory.h"
+#include "OutProtocol.h"
 #include "RoRVersion.h"
+#include "Settings.h"
+
 
 #ifdef WIN32
 #include <Ws2tcpip.h>
@@ -16,12 +35,14 @@
 using namespace std;
 
 // from LFS/doc/insim.txt
-#define OG_SHIFT		1		// key
-#define OG_CTRL			2		// key
-
-#define OG_TURBO		8192	// show turbo gauge
-#define OG_KM			16384	// if not set - user prefers MILES
-#define OG_BAR			32768	// if not set - user prefers PSI
+enum
+{
+	OG_SHIFT      = 1,           // key
+	OG_CTRL       = 2,           // key
+	OG_TURBO      = 8192,        // show turbo gauge
+	OG_KM         = 16384,       // if not set - user prefers MILES
+	OG_BAR        = 32768,       // if not set - user prefers PSI
+};
 
 enum
 {
@@ -42,45 +63,58 @@ enum
 
 PACK (struct OutGaugePack
 {
-	unsigned int Time;			// time in milliseconds (to check order)
-	char         Car[4];		// Car name
-	unsigned short Flags;			// Info (see OG_x below)
-	unsigned char Gear;			// Reverse:0, Neutral:1, First:2...
-	unsigned char PLID;			// Unique ID of viewed player (0 = none)
-	float		 Speed;			// M/S
-	float		 RPM;			// RPM
-	float		 Turbo;			// BAR
-	float		 EngTemp;		// C
-	float		 Fuel;			// 0 to 1
-	float		 OilPressure;	// BAR
-	float		 OilTemp;		// C
-	unsigned int DashLights;	// Dash lights available (see DL_x below)
-	unsigned int ShowLights;	// Dash lights currently switched on
-	float		 Throttle;		// 0 to 1
-	float		 Brake;			// 0 to 1
-	float		 Clutch;		// 0 to 1
-	char         Display1[16];	// Usually Fuel
-	char         Display2[16];	// Usually Settings
-	int			ID;				// optional - only if OutGauge ID is specified
+	unsigned int   Time;         // time in milliseconds (to check order)
+	char           Car[4];       // Car name
+	unsigned short Flags;        // Info (see OG_x below)
+	unsigned char  Gear;         // Reverse:0, Neutral:1, First:2...
+	unsigned char  PLID;         // Unique ID of viewed player (0 = none)
+	float		   Speed;		 // M/S
+	float		   RPM;		     // RPM
+	float		   Turbo;		 // BAR
+	float		   EngTemp;		 // C
+	float		   Fuel;		 // 0 to 1
+	float		   OilPressure;  // BAR
+	float		   OilTemp;		 // C
+	unsigned int   DashLights;   // Dash lights available (see DL_x below)
+	unsigned int   ShowLights;   // Dash lights currently switched on
+	float		   Throttle;     // 0 to 1
+	float		   Brake;        // 0 to 1
+	float		   Clutch;       // 0 to 1
+	char           Display1[16]; // Usually Fuel
+	char           Display2[16]; // Usually Settings
+	int			   ID;           // optional - only if OutGauge ID is specified
 });
 
-OutProtocol::OutProtocol(void) : sockfd(-1), delay(0.1), timer(0), mode(0), id(0), working(false), counter(0)
+OutProtocol::OutProtocol(void) : 
+	  counter(0)
+	, delay(0.1)
+	, id(0)
+	, mode(0)
+	, sockfd(-1)
+	, timer(0)
+	, working(false)
 {
 	delay = FSETTING("OutGauge Delay", 10) * 0.1f;
 	mode  = ISETTING("OutGauge Mode", 0);
 	id    = ISETTING("OutGauge ID", 0);
 
-	if(mode > 0)
+	if ( mode > 0 )
+	{
 		startup();
+	}
 }
 
 OutProtocol::~OutProtocol(void)
 {
-#ifdef WIN32
-	// and close the socket again
-	if(sockfd>0)
-		closesocket(sockfd);
-#endif // WIN32
+	if ( sockfd != 0 )
+	{
+#if WIN32
+		closesocket( sockfd );
+#else
+		close( sockfd );
+#endif
+		sockfd = 0;
+	}
 }
 
 void OutProtocol::startup()
@@ -94,18 +128,16 @@ void OutProtocol::startup()
 	
 	// startup winsock
 	WSADATA wsd;
-	if (WSAStartup(MAKEWORD(2, 2), &wsd) != 0)
+	if ( WSAStartup(MAKEWORD(2, 2), &wsd) != 0 )
 	{
 		LOG("error starting up winsock");
 		return;
 	}
 
 	// open a new socket
-	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 )
 	{
-		char tmp[9047];
-		sprintf(tmp, "error creating socket for OutGauge: %s", strerror(errno));
-		LOG(tmp);
+		LOG(String("error creating socket for OutGauge: ").append(strerror(errno)));
 		return;
 	}
 
@@ -121,11 +153,9 @@ void OutProtocol::startup()
 	sendaddr.sin_port        = htons(port);
 
 	// then connect
-	if(connect(sockfd, (struct sockaddr *) &sendaddr, sizeof(sendaddr)) == SOCKET_ERROR)
+	if( connect(sockfd, (struct sockaddr *) &sendaddr, sizeof(sendaddr)) == SOCKET_ERROR )
 	{
-		char tmp[9047];
-		sprintf(tmp, "error connecting socket for OutGauge: %s", strerror(errno));
-		LOG(tmp);
+		LOG(String("error connecting socket for OutGauge: ").append(strerror(errno)));
 		return;
 	}
 
@@ -137,12 +167,17 @@ void OutProtocol::startup()
 bool OutProtocol::update(float dt)
 {
 #ifdef WIN32
-	if(!working) return false;
+	if ( !working )
+	{
+		return false;
+	}
 
 	// below the set delay?
-	timer+=dt;
-	if(timer < delay)
+	timer += dt;
+	if( timer < delay )
+	{
 		return true;
+	}
 	timer = 0;
 
 	// send a package
@@ -154,25 +189,29 @@ bool OutProtocol::update(float dt)
 	sprintf(gd.Display1, "RoR v %s", ROR_VERSION_STRING);
 	gd.ID = id;
 	sprintf(gd.Car, "RoR");
-	gd.Flags = 0;
-	gd.Flags |= OG_KM;
+	gd.Flags = 0 | OG_KM;
 
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(!truck)
+	if ( !truck )
 	{
 		// not in a truck?
 		sprintf(gd.Display2, "not in vehicle");
-	} else if(truck && !truck->engine)
+	} else if ( truck && !truck->engine )
 	{
 		// no engine?
 		sprintf(gd.Display2, "no engine");
-	} else if(truck && truck->engine)
+	} else if( truck && truck->engine )
 	{
 		// truck and engine valid
-		if(truck->engine->hasturbo) gd.Flags |= OG_TURBO;
+		if ( truck->engine->hasturbo )
+		{
+			gd.Flags |= OG_TURBO;
+		}
 		gd.Gear    = truck->engine->getGear() + 1;
-		if(truck->engine->getGear() + 1 < 0) gd.Gear = 0; // we only support one reverse gear :\
-
+		if ( gd.Gear < 0 )
+		{
+			gd.Gear = 0; // we only support one reverse gear
+		}
 		gd.PLID    = 0;
 		gd.Speed   = fabs(truck->WheelSpeed);
 		gd.RPM     = truck->engine->getRPM();
@@ -193,18 +232,17 @@ bool OutProtocol::update(float dt)
 
 		gd.ShowLights = 0;
 		if(truck->parkingbrake)   gd.ShowLights |= DL_HANDBRAKE;
-		if(truck->tc_mode)        gd.ShowLights |= DL_TC;
 		if(truck->lights)         gd.ShowLights |= DL_FULLBEAM;
 		if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
 		if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
 		if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
 		if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
-		if(truck->tc_mode)       gd.DashLights |= DL_TC;
-		if(truck->alb_mode)      gd.DashLights |= DL_ABS;
+		if(truck->tc_mode)        gd.ShowLights |= DL_TC;
+		if(truck->alb_mode)       gd.ShowLights |= DL_ABS;
 
-		gd.Throttle   = truck->engine->getAcc();
-		gd.Brake      = truck->brake / truck->brakeforce;
-		gd.Clutch     = truck->engine->getClutch(); // 0-1
+		gd.Throttle = truck->engine->getAcc();
+		gd.Brake    = truck->brake / truck->brakeforce;
+		gd.Clutch   = truck->engine->getClutch(); // 0-1
 
 		strncpy(gd.Display2, truck->realtruckname.c_str(), 15);
 	}
