@@ -20,17 +20,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "SelectorWindow.h"
-#include "LoadingWindow.h"
 
-#include "gui_manager.h"
-
-#include "Settings.h"
-#include "language.h"
 #include "CacheSystem.h"
-#include "skin.h"
+#include "LoadingWindow.h"
+#include "Settings.h"
+#include "gui_manager.h"
+#include "language.h"
 #include "utils.h"
 #include "skinmanager.h"
-#include "BeamData.h"
 #include "InputEngine.h"
 
 #if 0
@@ -67,17 +64,17 @@ _L("Fresh");
 _L("Hidden");
 #endif // 0
 
-SelectorWindow::SelectorWindow() : mSelectedTruck(0)
+SelectorWindow::SelectorWindow() :
+	  mSelectedTruck(0)
+	, mSelectedSkin(0)
+	, visibleCounter(0)
 {
 	initialiseByAttributes(this);
-
-	visibleCounter=0;
 	mMainWidget->setVisible(false);
 	((MyGUI::Window*)mMainWidget)->setCaption(_L("Loader"));
 	mSearchLineEdit->setCaption(_L("Search ..."));
 	mOkButton->setCaption(_L("OK"));
 	mCancelButton->setCaption(_L("Cancel"));
-	
 
 	// setup controls
 	mConfigComboBox->addItem("Default", Ogre::String("Default"));
@@ -107,8 +104,6 @@ SelectorWindow::SelectorWindow() : mSelectedTruck(0)
 	mSearchLineEdit->eventMouseSetFocus     += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
 	mSearchLineEdit->eventKeySetFocus       += MyGUI::newDelegate(this, &SelectorWindow::eventSearchTextGotFocus);
 	mSearchLineEdit->eventKeyButtonPressed  += MyGUI::newDelegate(this, &SelectorWindow::eventKeyButtonPressed_Main);
-
-	mSelectedSkin=0;
 }
 
 SelectorWindow::~SelectorWindow()
@@ -276,11 +271,11 @@ void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, 
 
 void SelectorWindow::getData()
 {
+	std::map<int, int> mCategoryUsage;
 	mTypeComboBox->removeAllItems();
-	if(mModelList->getItemCount() != 0) mModelList->setIndexSelected(0);
 	mModelList->removeAllItems();
 	mEntries.clear();
-	mCategoryUsage.clear();
+
 	if(mLoaderType == LT_SKIN)
 	{
 		// skin specific stuff
@@ -289,12 +284,13 @@ void SelectorWindow::getData()
 		mCancelButton->setEnabled(false);
 		mConfigComboBox->setVisible(false);
 
-		mModelList->removeAllItems();
 		mModelList->addItem(_L("Default Skin"), 0);
-		int i=1;
-		for(std::vector<Skin *>::iterator it=mCurrentSkins.begin(); it!=mCurrentSkins.end(); it++, i++)
 		{
-			mModelList->addItem((*it)->getName(), i);
+			int i = 1;
+			for(std::vector<Skin *>::iterator it = mCurrentSkins.begin(); it != mCurrentSkins.end(); it++, i++)
+			{
+				mModelList->addItem((*it)->getName(), i);
+			}
 		}
 		mModelList->setIndexSelected(0);
 		onEntrySelected(0);
@@ -307,86 +303,76 @@ void SelectorWindow::getData()
 
 	int ts = getTimeStamp();
 	std::vector<Cache_Entry> *entries = CACHE.getEntries();
-	std::vector<Cache_Entry>::iterator it;
-	for(it = entries->begin(); it!=entries->end(); it++)
+	for(std::vector<Cache_Entry>::iterator it = entries->begin(); it!=entries->end(); it++)
 	{
-		// hidden category
-		if(it->categoryid == 9993) continue;
+		// category hidden
+		if(it->categoryid == CacheSystem::CID_Unsorted)
+			continue;
 
 		//printf("category: %d\n", it->categoryid);
-		bool add =false;
+		bool add = false;
 		if(it->fext=="terrn")
 			add = (mLoaderType == LT_Terrain);
 		else if(it->fext=="truck")
-			add = (mLoaderType == LT_Vehicle || mLoaderType == LT_Truck || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Truck || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="car")
-			add = (mLoaderType == LT_Vehicle || mLoaderType == LT_Car || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Car || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="boat")
-			add = (mLoaderType == LT_Boat || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Boat || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="airplane")
-			add = (mLoaderType == LT_Airplane || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Airplane || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="trailer")
-			add = (mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
 		else if(it->fext=="train")
-			add = (mLoaderType == LT_Train);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Train);
 		else if(it->fext=="load")
-			add = (mLoaderType == LT_Load || mLoaderType == LT_Extension);
-
-		if(mLoaderType == LT_AllBeam && (it->fext == "train" || it->fext == "truck" || it->fext == "car" ||  it->fext == "airplane" ||  it->fext == "trailer" ||  it->fext == "boat" || it->fext == "load"))
-			add = true;
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Load || mLoaderType == LT_Extension);
 
 		if(!add)
 			continue;
 
-		// remove invalid ID's
-		if(it->categoryid >= 9000)
+		// remove invalid category ID's
+		if(it->categoryid >= CacheSystem::CID_MAX)
 			it->categoryid = -1;
 
-		// unsorted
+		// category unsorted
 		if(it->categoryid == -1)
-			it->categoryid = 9990;
+			it->categoryid = CacheSystem::CID_Unsorted;
 
-		mCategoryUsage[it->categoryid] = mCategoryUsage[it->categoryid] + 1;
+		mCategoryUsage[it->categoryid]++;
 
-		// all
-		mCategoryUsage[9991] = mCategoryUsage[9991] + 1;
+		// category all
+		mCategoryUsage[CacheSystem::CID_All]++;
 
-		// fresh, 24 hours = 86400
+		// category fresh, 24 hours = 86400
 		if(ts - it->addtimestamp < 86400)
-			mCategoryUsage[9992] = mCategoryUsage[9992] + 1;
-
-		// hidden
-		//mCategoryUsage[9993] = 0;
-		// search results
-		mCategoryUsage[9994] = 0;
-
+			mCategoryUsage[CacheSystem::CID_Fresh]++;
 
 		mEntries.push_back(*it);
 	}
-	int counter=0, counter2=0;
+	int tally_categories = 0, current_category = 0;
 	std::map<int, Category_Entry> *cats = CACHE.getCategories();
-	std::map<int, Category_Entry>::iterator itc;
-	for(itc = cats->begin(); itc!=cats->end(); itc++)
+	for(std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
 	{
-		if(mCategoryUsage[itc->second.number]>0)
-			counter++;
+		if(mCategoryUsage[itc->second.number] > 0)
+			tally_categories++;
 	}
-	for(itc = cats->begin(); itc!=cats->end(); itc++)
+	for(std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
 	{
 		int usage = mCategoryUsage[itc->second.number];
-		if(usage == 0)
-			continue;
-		counter2++;
+		if(usage == 0) continue;
+
+		current_category++;
 
 		UTFString title = _L(itc->second.title.c_str());
 		if(title.empty())
 			title = _L("unknown");
-		UTFString txt = U("[") + TOUTFSTRING(counter2) + U("/") + TOUTFSTRING(counter) + U("] (") + TOUTFSTRING(usage) + U(") ") + title;
+		UTFString txt = U("[") + TOUTFSTRING(current_category) + U("/") + TOUTFSTRING(tally_categories) + U("] (") + TOUTFSTRING(usage) + U(") ") + title;
 
 		mTypeComboBox->addItem(convertToMyGUIString(txt), itc->second.number);
 	}
 	if(mTypeComboBox->getItemCount() != 0) mTypeComboBox->setIndexSelected(0);
-	if(counter2 > 0)
+	if(tally_categories > 0)
 	{
 		try
 		{
@@ -402,7 +388,7 @@ void SelectorWindow::getData()
 
 bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 {
-	if(searchString.find(":") == searchString.npos)
+	if(searchString.find(":") == String::npos)
 	{
 		// normal search
 
@@ -502,7 +488,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 	if(mLoaderType == LT_SKIN) return;
 
 	String search_cmd = mSearchLineEdit->getCaption();
-	Ogre::StringUtil::toLowerCase(search_cmd);
+	StringUtil::toLowerCase(search_cmd);
 
 	int ts = getTimeStamp();
 	mModelList->removeAllItems();
@@ -671,37 +657,28 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 		String configstr = *mConfigComboBox->getItemDataAt<String>(0);
 		mTruckConfigs.push_back(configstr);
 	} else
-		mConfigComboBox->setVisible(false);
-
-	UTFString authorstxt;
-	std::vector<String> authornames;
-	if(entry->authors.size() > 0)
 	{
-		std::vector<authorinfo_t>::iterator it;
-		for(it=entry->authors.begin(); it!=entry->authors.end(); it++)
-			if(!it->type.empty() && !it->name.empty())
-			{
-				String name = it->name;
-				Ogre::StringUtil::trim(name);
-
-				// check if already used
-				bool found = false;
-				std::vector<String>::iterator its;
-				for(its=authornames.begin(); its!=authornames.end(); its++)
-				{
-					if(*its == name)
-					{
-						found = true;
-						break;
-					}
-				}
-				if(found)
-					continue;
-				authornames.push_back(name);
-				authorstxt = authorstxt + U(" ") + name;
-			}
-	} else
-		authorstxt = _L("no author information available");
+		mConfigComboBox->setVisible(false);
+	}
+	UTFString authors = "";
+	std::set<String> author_names;
+	for(std::vector<authorinfo_t>::iterator it = entry->authors.begin(); it != entry->authors.end(); it++)
+	{
+		if(!it->type.empty() && !it->name.empty())
+		{
+			String name = it->name;
+			StringUtil::trim(name);
+			author_names.insert(name);
+		}
+	}
+	for(std::set<String>::iterator it = author_names.begin(); it != author_names.end(); it++)
+	{
+		authors.append(U(" ") + *it);
+	}
+	if(authors.length() == 0)
+	{
+		authors = _L("no author information available");
+	}
 
 	try
 	{
@@ -716,7 +693,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	UTFString newline = U("\n");
 
 	UTFString descriptiontxt = U("#003dae") + ANSI_TO_UTF(entry->description) + nc + newline;
-	descriptiontxt = descriptiontxt +_L("Author(s): ") + c + authorstxt + nc +newline;
+	descriptiontxt = descriptiontxt +_L("Author(s): ") + c + authors + nc +newline;
 
 	
 	if(entry->version > 0) descriptiontxt                = descriptiontxt + _L("Version: ")   + c + TOUTFSTRING(entry->version) + nc + newline;
