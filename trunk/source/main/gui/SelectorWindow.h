@@ -25,9 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
-#include <Ogre.h>
-#include "skin.h"
-
 
 ATTRIBUTE_CLASS_LAYOUT(SelectorWindow, "SelectorWindow.layout");
 
@@ -53,13 +50,13 @@ public:
 	void setEnableCancel(bool enabled);
 private:
 	// gui events
-	void eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
+	void eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
 	void eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
+	void eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char);
 	void eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index);
 	void eventListChangePositionModelListAccept(MyGUI::ListPtr _sender, size_t _index);
-	void eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index);
-	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender);
+	void eventMouseButtonClickOkButton(MyGUI::WidgetPtr _sender);
 	void eventSearchTextChange(MyGUI::EditBox *_sender);
 	void eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget);
 	void notifyWindowChangeCoord(MyGUI::Window* _sender);
@@ -75,18 +72,17 @@ private:
 	void updateControls(Cache_Entry *entry);
 	void setPreviewImage(Ogre::String texture);
 
-	std::vector<Cache_Entry> mEntries;
-	std::map<int, int> mCategoryUsage;
-	std::vector<Skin *> mCurrentSkins;
-	LoaderType mLoaderType;
-	bool mSelectionDone;
-	std::vector<Ogre::String> mTruckConfigs;
-	Ogre::Camera *mCamera;
 	Cache_Entry *mSelectedTruck;
-	int visibleCounter;
-	Skin *mSelectedSkin;
+	LoaderType mLoaderType;
+	Ogre::Camera *mCamera;
 	Ogre::String lastImageTextureName;
-private:
+	Skin *mSelectedSkin;
+	bool mSelectionDone;
+	int visibleCounter;
+	std::vector<Cache_Entry> mEntries;
+	std::vector<Ogre::String> mTruckConfigs;
+	std::vector<Skin *> mCurrentSkins;
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mTypeComboBox, "Type");
 	MyGUI::ComboBox* mTypeComboBox;
 	ATTRIBUTE_FIELD_WIDGET_NAME(SelectorWindow, mModelList, "Model");

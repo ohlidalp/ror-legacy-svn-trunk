@@ -222,6 +222,9 @@ public:
 	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);
 
 	static bool resourceExistsInAllGroups(Ogre::String filename);
+
+	// see: https://code.google.com/p/rigsofrods-streams/source/browse/trunk/0.39/win32-skeleton/config/categories.cfg
+	enum CategoryID {CID_MAX=9000, CID_Unsorted=9990, CID_All, CID_Fresh, CID_Hidden};
 protected:
 	CacheSystem();
 	~CacheSystem();
