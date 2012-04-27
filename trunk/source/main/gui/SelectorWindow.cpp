@@ -673,11 +673,8 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	}
 	for(std::set<String>::iterator it = author_names.begin(); it != author_names.end(); it++)
 	{
-		// TODO: Find a better solution to solve "exception: Ogre::UTFString::invalid_data"
-		try
-		{
-			authors.append(U(" ") + *it);
-		} catch(...) {}
+		UTFString name = ANSI_TO_UTF(*it);
+		authors.append(U(" ") + name);
 	}
 	if(authors.length() == 0)
 	{
