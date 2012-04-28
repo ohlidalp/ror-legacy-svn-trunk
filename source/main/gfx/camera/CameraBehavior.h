@@ -35,7 +35,7 @@ class CameraBehavior
 {
 protected:
 	float mMoveScale, mRotScale, mMoveSpeed, mRotateSpeed;
-;
+
 public:
 	virtual ~CameraBehavior() {};
 

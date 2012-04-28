@@ -19,14 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorFree.h"
 
-#include <Ogre.h>
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
 #include "language.h"
+#include <Ogre.h>
 
 using namespace Ogre;
-
 
 void CameraBehaviorFree::activate(cameraContext_t &ctx)
 {
@@ -62,11 +61,9 @@ void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
 
 void CameraBehaviorFree::update(cameraContext_t &ctx)
 {
-	Ogre::Degree mRotX(0);
-	Ogre::Degree mRotY(0);
+	Degree mRotX(0.0f);
+	Degree mRotY(0.0f);
 	Vector3 mTranslateVector = Vector3::ZERO;
-
-
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
 		mTranslateVector.x -= ctx.translationScale;	// Move camera left

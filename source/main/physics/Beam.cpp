@@ -1099,11 +1099,11 @@ void Beam::calcNetwork()
 	if (engine)
 	{
 		int automode = -1;
-		if ((flagmask&NETMASK_ENGINE_MODE_AUTOMATIC)!=0)          automode = AUTOMATIC;
-		else if ((flagmask&NETMASK_ENGINE_MODE_SEMIAUTO)!=0)      automode = SEMIAUTO;
-		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL)!=0)        automode = MANUAL;
-		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_STICK)!=0)  automode = MANUAL_STICK;
-		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_RANGES)!=0) automode = MANUAL_RANGES;
+		if ((flagmask&NETMASK_ENGINE_MODE_AUTOMATIC)!=0)          automode = BeamEngine::AUTOMATIC;
+		else if ((flagmask&NETMASK_ENGINE_MODE_SEMIAUTO)!=0)      automode = BeamEngine::SEMIAUTO;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL)!=0)        automode = BeamEngine::MANUAL;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_STICK)!=0)  automode = BeamEngine::MANUAL_STICK;
+		else if ((flagmask&NETMASK_ENGINE_MODE_MANUAL_RANGES)!=0) automode = BeamEngine::MANUAL_RANGES;
 
 		bool contact = ((flagmask&NETMASK_ENGINE_CONT) != 0);
 		bool running = ((flagmask&NETMASK_ENGINE_RUN)  != 0);
@@ -2229,11 +2229,11 @@ void Beam::sendStreamData()
 			if (engine->contact) send_oob->flagmask += NETMASK_ENGINE_CONT;
 			if (engine->running) send_oob->flagmask += NETMASK_ENGINE_RUN;
 
-			if      (engine->getAutoMode() == AUTOMATIC)     send_oob->flagmask += NETMASK_ENGINE_MODE_AUTOMATIC;
-			else if (engine->getAutoMode() == SEMIAUTO)      send_oob->flagmask += NETMASK_ENGINE_MODE_SEMIAUTO;
-			else if (engine->getAutoMode() == MANUAL)        send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL;
-			else if (engine->getAutoMode() == MANUAL_STICK)  send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_STICK;
-			else if (engine->getAutoMode() == MANUAL_RANGES) send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_RANGES;
+			if      (engine->getAutoMode() == BeamEngine::AUTOMATIC)     send_oob->flagmask += NETMASK_ENGINE_MODE_AUTOMATIC;
+			else if (engine->getAutoMode() == BeamEngine::SEMIAUTO)      send_oob->flagmask += NETMASK_ENGINE_MODE_SEMIAUTO;
+			else if (engine->getAutoMode() == BeamEngine::MANUAL)        send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL;
+			else if (engine->getAutoMode() == BeamEngine::MANUAL_STICK)  send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_STICK;
+			else if (engine->getAutoMode() == BeamEngine::MANUAL_RANGES) send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_RANGES;
 
 		}
 		if(free_aeroengine>0)
@@ -5453,7 +5453,7 @@ int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::S
 
 void Beam::updateAI(float dt)
 {
-	if(driveable != TRUCK || CAMERA_MODE != CAMERA_FREE)
+	if(driveable != TRUCK || CAMERA_MODE != CameraManager::CAMERA_FREE)
 		return;
 
 	// start engine if not running

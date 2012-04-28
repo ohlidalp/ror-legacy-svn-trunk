@@ -19,13 +19,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "CameraManager.h"
-#include "Ogre.h"
 
-#include "InputEngine.h"
-#include "Settings.h"
-#include "Console.h"
-#include "language.h"
 #include "BeamFactory.h"
+#include "Console.h"
+#include "InputEngine.h"
+#include "Ogre.h"
+#include "Settings.h"
+#include "SoundScriptManager.h"
+#include "language.h"
 
 #include "OverlayWrapper.h"
 #include "CameraBehaviorFree.h"
@@ -39,32 +40,21 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-
 CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) : 
-	  mSceneMgr(scm)
-	, mCamera(cam)
-	, currentBehavior(0)
+	  currentBehavior(0)
 	, currentBehaviorID(-1)
-	// TODO: initialize other vars here
+	, mCamera(cam)
+	, mDOF(0)
+	, mLastPosition(Vector3::ZERO)
+	, mMoveScale(1.0f)
+	, mMoveSpeed(50)
+	, mRotScale(0.1f)
+	, mRotateSpeed(100)
+	, mSceneMgr(scm)
 {
 	setSingleton(this);
 
-	lastcameramode=CAMERA_EXT;
-	cameramode=CAMERA_EXT;
-	mMoveScale = 1.0f;
-	mRotScale = 0.1f;
-	lastPosition = Vector3::ZERO;
-	camCollided=false;
-	camPosColl=Vector3::ZERO;
-	mSceneDetailIndex = 0;
-	mDOF=0;
-	mRotateSpeed = 100;
-	mMoveSpeed = 50;
-	enforceCameraFOVUpdate=true;
-
-	// DOF?
-	bool useDOF = (BSETTING("DOF", false));
-	if(useDOF)
+	if ( BSETTING("DOF", false) )
 	{
 		mDOF = new DOFManager(mSceneMgr, mCamera->getViewport(), Ogre::Root::getSingletonPtr(), mCamera);
 		mDOF->setEnabled(true);
@@ -73,10 +63,10 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	createGlobalBehaviors();
 	ctx.cam = mCamera;
 	ctx.scm = mSceneMgr;
-
-
-	//switchBehavior(CAMBEHAVIOR_CHARACTER_ORBIT);
-	switchBehavior(CAMBEHAVIOR_VEHICLE_SPLINE);
+	
+	switchBehavior(CAMERA_CHARACTER_ORBIT);
+	switchBehavior(CAMERA_VEHICLE_ORBIT);
+	//switchBehavior(CAMERA_VEHICLE_SPLINE);
 }
 
 CameraManager::~CameraManager()
@@ -86,30 +76,37 @@ CameraManager::~CameraManager()
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_FREE, new CameraBehaviorFree()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMBEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
 
+	// TODO: Create a CameraBehavior for internal camera perspectives (e.g. cockpit, rear seats, ...)
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorCharacterOrbit()) );
+
+	// TODO: Think about this. Do we really need this CameraBehavior? Or can it be part of the CAMERA_VEHICLE_INTERNAL behavior?
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
+	
+	// TODO: Create a CameraBehavior for a fixed camera perspective
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIX, new CameraBehaviorFree()) );
 }
 
+#if 0
 void CameraManager::updateInput()
 {
-#if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	//camera mode
 	if (cameramode != CAMERA_FREE && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE_FIXED)
 	{
-		if (cameramode==CAMERA_INT)
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			//end of internal cam
 			camRotX=pushcamRotX;
 			camRotY=pushcamRotY;
 		}
 		cameramode++;
-		if (cameramode==CAMERA_INT)
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			//start of internal cam
 			pushcamRotX=camRotX;
@@ -122,7 +119,7 @@ void CameraManager::updateInput()
 	//camera mode
 	if (curr_truck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
 	{
-		if (cameramode==CAMERA_INT && curr_truck->currentcamera < curr_truck->freecinecamera-1)
+		if (cameramode==CAMERA_VEHICLE_INTERNAL && curr_truck->currentcamera < curr_truck->freecinecamera-1)
 		{
 			curr_truck->currentcamera++;
 			curr_truck->changedCamera();
@@ -130,7 +127,7 @@ void CameraManager::updateInput()
 		else
 		{
 			OverlayWrapper *ow = OverlayWrapper::getSingletonPtrNoCreation();
-			if (cameramode==CAMERA_INT)
+			if (cameramode==CAMERA_VEHICLE_INTERNAL)
 			{
 				//end of internal cam
 				camRotX=pushcamRotX;
@@ -142,7 +139,7 @@ void CameraManager::updateInput()
 				curr_truck->changedCamera();
 			}
 			cameramode++;
-			if (cameramode==CAMERA_INT)
+			if (cameramode==CAMERA_VEHICLE_INTERNAL)
 			{
 				//start of internal cam
 				pushcamRotX=camRotX;
@@ -177,7 +174,7 @@ void CameraManager::updateInput()
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 	#endif // USE_MYGUI
 		// save the settings
-		if (cameramode == CAMERA_INT)
+		if (cameramode == CAMERA_VEHICLE_INTERNAL)
 			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
 		else if (cameramode == CAMERA_EXT)
 			SETTINGS.setSetting("FOV External", TOSTRING(fov));
@@ -193,7 +190,7 @@ void CameraManager::updateInput()
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 	#endif // USE_MYGUI
 		// save the settings
-		if (cameramode == CAMERA_INT)
+		if (cameramode == CAMERA_VEHICLE_INTERNAL)
 			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
 		else if (cameramode == CAMERA_EXT)
 			SETTINGS.setSetting("FOV External", TOSTRING(fov));
@@ -201,12 +198,7 @@ void CameraManager::updateInput()
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
 	{
-		mSceneDetailIndex = (mSceneDetailIndex+1)%3 ;
-		switch(mSceneDetailIndex) {
-		case 0 : mCamera->setPolygonMode(Ogre::PM_SOLID) ; break ;
-		case 1 : mCamera->setPolygonMode(Ogre::PM_WIREFRAME) ; break ;
-		case 2 : mCamera->setPolygonMode(Ogre::PM_POINTS) ; break ;
-		}
+		mCamera->setPolygonMode( (mCamera->getPolygonMode() + 1) % 3 );
 	}
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX))
 	{
@@ -232,16 +224,14 @@ void CameraManager::updateInput()
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
 	{
-		currentBehavior = globalBehaviors[CAMBEHAVIOR_FREE];
+		currentBehavior = globalBehaviors[CAMERA_FREE];
 	}
-#endif // 0
 }
+#endif // 0
 
 void CameraManager::switchToNextBehavior()
 {
-	int i = currentBehaviorID + 1;
-	if(i >= CAMBEHAVIOR_END)
-		i=0;
+	int i = (currentBehaviorID + 1) % CAMERA_END;
 	switchBehavior(i);
 }
 
@@ -273,7 +263,7 @@ void CameraManager::update(float dt)
 		switchToNextBehavior();
 	}
 #ifdef MYGUI
-	if (SceneMouse::getSingleton().isMouseGrabbed()) return; //freeze camera
+	if (SceneMouse::getSingleton().isMouseGrabbed()) return; // freeze camera
 #endif //MYGUI
 
 	ctx.dt               = dt;
@@ -302,8 +292,17 @@ void CameraManager::update(float dt)
 
 	// update current behavior
 	if(currentBehavior)
+	{
 		currentBehavior->update(ctx);
+	}
 
+#ifdef USE_OPENAL
+	// update audio listener position
+	Vector3 cameraSpeed = (mCamera->getPosition() - mLastPosition) / dt;
+	mLastPosition = mCamera->getPosition();
+
+	SoundScriptManager::getSingleton().setCamera(mCamera->getPosition(), mCamera->getDirection(), mCamera->getUp(), cameraSpeed);
+#endif //USE_OPENAL
 
 #if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -358,7 +357,7 @@ void CameraManager::update(float dt)
 			}
 
 		}
-		else if (cameramode==CAMERA_INT)
+		else if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			float fov = FSETTING("FOV Internal", 75);
 			if(changeCamMode)
@@ -460,7 +459,7 @@ void CameraManager::update(float dt)
 				}
 			}
 		}
-		if (cameramode==CAMERA_INT)
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			int currentcamera=curr_truck->currentcamera;
 
@@ -575,19 +574,6 @@ void CameraManager::update(float dt)
 #endif // USE_CAELUM
 		}
 	}
-
-	//position audio listener
-	Vector3 cpos=mCamera->getPosition();
-	Vector3 cdir=mCamera->getDirection();
-	Vector3 cup=mCamera->getUp();
-	Vector3 cspeed=(cpos-cdoppler)/dt;
-	cdoppler=cpos;
-	// XXX maybe thats the source of sound destorsion: runtime order???
-#ifdef USE_OPENAL
-	SoundScriptManager::getSingleton().setCamera(cpos, cdir, cup, cspeed);
-#endif // OPENAL
-	//if (cspeed.length()>50.0) {cspeed.normalise(); cspeed=50.0*cspeed;};
-	//if (audioManager) audioManager->setListenerPosition(cpos.x, cpos.y, cpos.z, cspeed.x, cspeed.y, cspeed.z, cdir.x, cdir.y, cdir.z, cup.x, cup.y, cup.z);
 	//water
 	if (w)
 	{
@@ -597,14 +583,6 @@ void CameraManager::update(float dt)
 			w->moveTo(mCamera, w->getHeight());
 	}
 #endif // 0
-}
-
-
-bool CameraManager::setCameraPositionWithCollision(Vector3 newPos)
-{
-	// no collision of camera, normal mode
-	mCamera->setPosition(newPos);
-	return true;
 }
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
@@ -623,11 +601,6 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 {
 	if(!currentBehavior) return false;
 	return currentBehavior->mouseReleased(_arg, _id);
-}
-
-void CameraManager::triggerFOVUpdate()
-{
-	enforceCameraFOVUpdate = true;
 }
 
 bool CameraManager::allowInteraction()
