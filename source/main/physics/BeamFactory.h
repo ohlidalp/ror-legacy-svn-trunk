@@ -32,8 +32,6 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
 	friend class Network;
 	friend class RoRFrameListener;
-	friend class BeamWaitAndLock;
-	friend class BeamWaitNoLock;
 public:
 	BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
 	~BeamFactory();

@@ -23,7 +23,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Savegame.h"
 
 #include "BeamFactory.h"
-//#include "BeamWaitAndLock.h"
 #include "RoRVersion.h"
 #include <Ogre.h>
 

@@ -17,7 +17,6 @@ set(ROR_BUILD_SIM       ON)
 
 # set some defaults
 IF(WIN32)
-	set(ROR_USE_SKIA         "FALSE" CACHE BOOL "EXPERIMENTAL: use skia, the google 2D vector drawing lib")
 macro(importLib libName dirName)
 	message(STATUS "adding imported lib: ${libName} : ${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/${dirName}/Release/${libName}.lib")
 	add_library(${libName} STATIC IMPORTED)
@@ -58,11 +57,7 @@ endmacro(importLib)
 		
 	set(ROR_USE_OIS_G27      "FALSE" CACHE BOOL "use OIS With G27 patches")
 	set(ROR_USE_MOFILEREADER "TRUE" CACHE BOOL "use mofilereader")
-	set(ROR_USE_SKIA         "FALSE" CACHE BOOL "EXPERIMENTAL: use skia, the google 2D vector drawing lib")
 	
-	#TODO: fix skia paths and finding
-
-
 	set(ROR_USE_CRASHRPT "FALSE" CACHE BOOL "use crash report tool")
 	# check if dependencies dir is in here
 	set(DEPENDENCIES_DIR_CHECK "${RoR_SOURCE_DIR}/dependencies")
@@ -106,13 +101,6 @@ endmacro(importLib)
 		set(CURL_LIBRARIES "libcurl_imp" CACHE STRING "The curl lib to link against")
 		importLib(libcurl_imp curl)
 	endif(ROR_USE_CURL)
-
-	if(ROR_USE_SKIA)
-		set(SKIA_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/Skia;${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/Skia/config;${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/Skia/core;${RoR_SOURCE_DIR}/source/OgreCanvas" CACHE PATH "The Skia include path to use")
-		set(SKIA_LIBRARY_DIRS "${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/Skia/Release" CACHE PATH "The Skia lib path to use")
-		set(SKIA_LIBRARIES "core;animator;gr;effects;views;utils;svg;pdf;images;skgr;ports;xps;opts;xml;experimental;libtess;zlib;usp10;windowscodecs" CACHE STRING "The skia libs to link against")
-		importLib(core Skia)
-	endif(ROR_USE_SKIA)
 	
 	set(PThread_INCLUDE_DIRS "${ROR_DEPENDENCIES_DIR}/includes/${ARCH_DIR}/pthread" CACHE PATH "The pthread include path to use")
 	set(PThread_LIBRARIES "optimized;${ROR_DEPENDENCIES_DIR}/libs/${ARCH_DIR}/pthread/Release/pthreadVC2.lib" CACHE STRING "The pthread lib to link against")

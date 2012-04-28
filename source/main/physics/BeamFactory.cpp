@@ -35,7 +35,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 #include "DashBoardManager.h"
 #endif // USE_MYGUI
-//#include "BeamWaitAndLock.h"
 
 using namespace Ogre;
 
@@ -767,7 +766,7 @@ void *threadstart()
 			//beamLock->syncBeamThreads();
 
 			//do work
-			beam->threadentry(id);
+			beam->threadentryMulti(id);
 		}
 	} catch(Ogre::Exception& e)
 	{
