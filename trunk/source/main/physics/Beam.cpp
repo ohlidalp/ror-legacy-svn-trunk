@@ -26,7 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamEngine.h"
 #include "BeamFactory.h"
 #include "BeamStats.h"
-//#include "BeamWaitAndLock.h"
 #include "buoyance.h"
 #include "CmdKeyInertia.h"
 #include "collisions.h"
@@ -1905,32 +1904,29 @@ void Beam::SyncReset()
 }
 
 //this is called by the threads
-void Beam::threadentry(int id)
+void Beam::threadentryMulti(int id)
 {
-	if (thread_mode == THREAD_MULTI)
+	Beam **trucks=ttrucks;
+	int steps=tsteps;
+	int numtrucks=tnumtrucks;
+	float dt=tdt;
+	float dtperstep = dt / (Real)steps;
+
+	for (int i=0; i<steps; i++)
 	{
-		Beam **trucks=ttrucks;
-		int steps=tsteps;
-		int numtrucks=tnumtrucks;
-		float dt=tdt;
-		float dtperstep = dt / (Real)steps;
-
-		for (int i=0; i<steps; i++)
+		for (int t=0; t<numtrucks; t++)
 		{
-			for (int t=0; t<numtrucks; t++)
-			{
-				if(!trucks[t]) continue;
+			if(!trucks[t]) continue;
 
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
-			}
-			truckTruckCollisions(dtperstep);
+			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 		}
-
-		ffforce = affforce / steps;
-		ffhydro = affhydro / steps;
-		if (free_hydro) ffhydro = ffhydro / free_hydro;
+		truckTruckCollisions(dtperstep);
 	}
+
+	ffforce = affforce / steps;
+	ffhydro = affhydro / steps;
+	if (free_hydro) ffhydro = ffhydro / free_hydro;
 }
 
 //integration loop
@@ -5239,7 +5235,7 @@ void *threadstart(void* vid)
 			pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
 			MUTEX_UNLOCK(&beam->work_mutex);
 			//do work
-			beam->threadentry(id);
+			beam->threadentryMulti(id);
 		}
 	} catch(Ogre::Exception& e)
 	{
@@ -5248,7 +5244,7 @@ void *threadstart(void* vid)
 			INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
-		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
+		showOgreWebError("An exception has occurred!", e.getFullDescription(), url);
 	}
 	pthread_exit(NULL);
 	return NULL;

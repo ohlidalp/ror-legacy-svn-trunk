@@ -106,8 +106,6 @@ class AppState;
 class Axle;
 class Beam;
 class BeamEngine;
-class BeamWaitAndLock;
-class BeamWaitNoLock;
 class BeamThreadStats;
 class Buoyance;
 class ChatSystem;

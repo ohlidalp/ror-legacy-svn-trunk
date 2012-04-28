@@ -94,7 +94,7 @@ public:
 	void reset(bool keepPosition = false); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
 	//this is called by the threads
-	void threadentry(int id);
+	void threadentryMulti(int id);
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
