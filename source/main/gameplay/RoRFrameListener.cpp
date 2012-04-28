@@ -1264,8 +1264,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif // MYGUI
 	}
 
-	initGFXDebugging();
-
 	initialized=true;
 }
 
@@ -5306,11 +5304,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// update GUI
 	INPUTENGINE.Capture();
 
-#ifdef USE_SKIA
-	if(mCanvasTextureClock1)
-		updateGFXDebugging(dt);
-#endif // USE_SKIA
-
 	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
@@ -5871,78 +5864,4 @@ void RoRFrameListener::reloadCurrentTruck()
 	// restore camera position
 	//camRotX = camRotX_saved;
 	//camRotY = camRotY_saved;
-}
-
-
-
-void RoRFrameListener::updateGFXDebugging(float dt)
-{
-#ifdef USE_SKIA
-	rot += dt;
-
-	// paint
-	Ogre::Canvas::Context* ctx = mCanvasTextureClock1->getContext();
-
-	x--;
-	if(x<0)
-		x = ctx->width();
-
-	ctx->save();
-	ctx->clearRect(0, 0, 200, 150);
-	ctx->strokeStyle(Ogre::ColourValue::Black);
-	ctx->fillStyle(Ogre::ColourValue::White);
-	ctx->fillRect(0, 0, 200, 150);
-	ctx->translate(75, 75);
-	ctx->scale(0.4f, 0.4f);
-	ctx->rotate(-Ogre::Math::PI/2.0f + rot);
-	ctx->lineWidth(8);
-	ctx->lineCap(Ogre::Canvas::LineCap_Round);
-	// Hour marks
-	//ctx->save();
-	for (float i=0; i<12; i++)
-	{
-		ctx->beginPath();
-		ctx->rotate(Ogre::Math::PI/6.0f);
-		ctx->moveTo(100, 0);
-		ctx->lineTo(120, 0);
-		ctx->stroke();
-	}
-	ctx->restore();
-
-	ctx->fillText("dt: " + TOSTRING(dt), 10, 10);
-
-	const RenderTarget::FrameStats &stats = Ogre::Root::getSingleton().getAutoCreatedWindow()->getStatistics();
-	ctx->fillText("fps: " + TOSTRING(stats.lastFPS), 10, 20);
-
-	ctx->lineWidth(2);
-	ctx->strokeStyle(Ogre::ColourValue::Black);
-	ctx->fillStyle(Ogre::ColourValue::Black);
-	ctx->lineCap(Ogre::Canvas::LineCap_Square);
-	ctx->beginPath();
-	ctx->moveTo(x, ctx->height());
-	int h = ctx->height() - (ctx->height() / 120.0f) * (float)stats.lastFPS;
-	ctx->lineTo(x, h);
-	ctx->stroke();
-
-	mCanvasTextureClock1->uploadTexture();
-#endif // USE_SKIA
-}
-
-void RoRFrameListener::initGFXDebugging()
-{
-#ifdef USE_SKIA
-	// first, create skia texture
-	mCanvasTextureClock1 = new Ogre::Canvas::Texture("CanvasClock1", 600, 150);
-	mCanvasTextureClock1->createMaterial();
-
-	// the ogre overlay
-	Ogre::Overlay* overlay = Ogre::OverlayManager::getSingleton().create("Canvas/Overlay");
-	Ogre::PanelOverlayElement* panel = static_cast<Ogre::PanelOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "CanvasClock1/Panel"));
-	panel->setMetricsMode(Ogre::GMM_PIXELS);
-	panel->setMaterialName("CanvasClock1");
-	panel->setDimensions(600.0f, 150.0f);
-	panel->setPosition(0, 0);
-	overlay->add2D(panel);
-	overlay->show();
-#endif // USE_SKIA
 }

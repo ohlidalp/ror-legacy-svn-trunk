@@ -29,7 +29,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Settings.h"
 #include "BeamEngine.h"
-#include "BeamWorker.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -78,10 +77,6 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 
 	if (BSETTING("2DReplay", false))
 		tdr = new TwoDReplay();
-
-
-	// TEST for Beamworker
-	//BeamWorkerManager::createThread();
 }
 
 BeamFactory::~BeamFactory()

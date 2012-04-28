@@ -48,13 +48,6 @@ macro(add_ror_project BINNAME folder useWxWidgets)
   setup_lib(PAGED)
   setup_lib(CAELUM)
   setup_lib(ANGELSCRIPT)
-  
-  if(ROR_USE_SKIA)
-	setup_lib(SKIA)
-	add_definitions("-DOGRE_CANVAS_LIB")
-	set(optional_libs ${optional_libs};${SKIA_LIBRARIES};OgreCanvas)
-  endif()
-
 
   if(ROR_USE_ANGELSCRIPT)
     # CLEAR_FPU_STACK prevents angelscript from breaking our physics engine
