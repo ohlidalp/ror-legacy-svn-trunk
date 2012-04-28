@@ -19,24 +19,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorCharacterOrbit.h"
 
-#include <Ogre.h>
-#include "CameraManager.h"
-#include "Console.h"
-#include "InputEngine.h"
-#include "language.h"
-#include "Settings.h"
-
-#include "Character.h"
 #include "RoRFrameListener.h"
-
-using namespace Ogre;
 
 void CameraBehaviorCharacterOrbit::update(cameraContext_t &ctx)
 {
 	Character *person = RoRFrameListener::eflsingleton->person;
 
 	targetDirection = -person->getAngle() - Math::HALF_PI;
-	camCenterPoint  =  person->getPosition() + Vector3(0, 1.1f, 0);
+	camCenterPoint  =  person->getPosition() + Vector3(0.0f, 1.1f, 0.0f);
 
 	CameraBehaviorOrbit::update(ctx);
 }

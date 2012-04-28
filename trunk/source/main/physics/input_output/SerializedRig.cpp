@@ -2731,13 +2731,13 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				// are there any startup shifter settings?
 				Ogre::String gearboxMode = SSETTING("GearboxMode", "Automatic shift");
 				if (gearboxMode == "Manual shift - Auto clutch")
-					engine->setAutoMode(SEMIAUTO);
+					engine->setAutoMode(BeamEngine::SEMIAUTO);
 				else if (gearboxMode == "Fully Manual: sequential shift")
-					engine->setAutoMode(MANUAL);
+					engine->setAutoMode(BeamEngine::MANUAL);
 				else if (gearboxMode == "Fully Manual: stick shift")
-					engine->setAutoMode(MANUAL_STICK);
+					engine->setAutoMode(BeamEngine::MANUAL_STICK);
 				else if (gearboxMode == "Fully Manual: stick shift with ranges")
-					engine->setAutoMode(MANUAL_RANGES);
+					engine->setAutoMode(BeamEngine::MANUAL_RANGES);
 
 				//engine->start();
 				continue;

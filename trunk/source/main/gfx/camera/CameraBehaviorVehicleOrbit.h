@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorVehicleOrbit : public CameraBehaviorOrbit
 {
 protected:
-	int externalCameraMode;
+	bool externalCameraMode;
 public:
 	CameraBehaviorVehicleOrbit();
 	void update(cameraContext_t &ctx);

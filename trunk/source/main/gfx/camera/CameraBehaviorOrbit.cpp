@@ -19,29 +19,27 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorOrbit.h"
 
-#include <Ogre.h>
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
-#include "language.h"
 #include "Settings.h"
+#include "language.h"
+#include <Ogre.h>
 
 using namespace Ogre;
 
 CameraBehaviorOrbit::CameraBehaviorOrbit() :
-	  camRotX(0)
-	, camRotY(0)
-	, camDist(5)
-	, minCamDist(3)
-	, camRatio(11)
+	  camRotX(0.0f)
+	, camRotY(0.35f)
+	, camDist(5.0f)
+	, minCamDist(3.0f)
+	, camRatio(11.0f)
 	, camIdealPosition(Vector3::ZERO)
 	, camCenterPoint(Vector3::ZERO)
 	, camTranslation(Vector3::ZERO)
-	, targetDirection(0)
-	, targetPitch(0)
+	, targetDirection(0.0f)
+	, targetPitch(0.0f)
 {
-
-
 }
 
 void CameraBehaviorOrbit::activate(cameraContext_t &ctx)
@@ -69,44 +67,12 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 {
 	Camera *cam = CameraManager::getSingleton().getCamera();
 
-	/*
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
-		camTranslation.x -= mMoveScale;	// Move camera left
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT))
-		camTranslation.x += mMoveScale;	// Move camera RIGHT
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD))
-		camTranslation.z -= mMoveScale;	// Move camera forward
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS))
-		camTranslation.z += mMoveScale;	// Move camera backward
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP))
-		camTranslation.y += mMoveScale;	// Move camera up
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN))
-		camTranslation.y -= mMoveScale;	// Move camera down
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP))
-		camRotY += mRotScale;
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN))
-		camRotY -= mRotScale;
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT))
-		camRotX -= mRotScale;
-
-	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
-		camRotX += mRotScale;
-*/
-
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 	{
 		if(camRotX > Degree(0))
-			camRotX=Degree(0);
+			camRotX = Degree(0);
 		else
-			camRotX=Degree(180);
+			camRotX = Degree(180);
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT))
 	{
@@ -153,19 +119,14 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
 	{
-		camRotX=0;
-		//if (cameramode!=CAMERA_INT)
-		//	camRotY=Degree(12);
-		//else
-			camRotY = DEFAULT_INTERNAL_CAM_PITCH;
-		camDist=20;
+		camRotX = 0;
+		camRotY = DEFAULT_INTERNAL_CAM_PITCH;
+		camDist = 20;
 	}
 
-
-
-	// set Minimal Cam distance
-	if(camDist < minCamDist) camDist = minCamDist;
-
+	// set minimum distance
+	camDist = std::max(camDist, minCamDist);
+	
 	camIdealPosition = camDist * 0.5f * Vector3( \
 			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
 			, sin(targetPitch     + camRotY.valueRadians()) \
@@ -175,7 +136,7 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 	float real_camdist = camIdealPosition.length();
 
 	camIdealPosition = camIdealPosition + camCenterPoint + camTranslation;
-	Vector3 newposition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
+	Vector3 newPosition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
 
 	/*
 	Real h=hfinder->getHeightAt(newposition.x,newposition.z);
@@ -187,10 +148,8 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 	if (newposition.y<h) newposition.y=h;
 	*/
 
-	cam->setPosition(newposition);
+	cam->setPosition(newPosition);
 	cam->lookAt(camCenterPoint);
-
-	lastPosition = camCenterPoint;
 
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
 	if(dof)

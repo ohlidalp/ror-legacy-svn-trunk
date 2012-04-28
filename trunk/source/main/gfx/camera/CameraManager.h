@@ -24,87 +24,68 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "DepthOfFieldEffect.h"
 #include "OIS.h"
+#include "Ogre.h"
 #include "Singleton.h"
-
-#include <map>
 
 #include "CameraBehavior.h"
 
 #define MAIN_CAMERA CameraManager::getSingleton().getCamera()
 #define CAMERA_MODE CameraManager::getSingleton().getCameraMode()
-#define DEFAULT_INTERNAL_CAM_PITCH Degree(-15)
+#define DEFAULT_INTERNAL_CAM_PITCH Ogre::Degree(-15)
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
 	friend class SceneMouse;
+
 protected:
-	Ogre::SceneManager *mSceneMgr;
-	Ogre::Camera *mCamera;
-	int cameramode, lastcameramode;
-	bool camCollided;
-	Ogre::Vector3 camPosColl;
-	Ogre::Radian pushcamRotX, pushcamRotY;
-	float mMoveScale, mRotScale;
-	Ogre::Vector3 lastPosition;
-	int mSceneDetailIndex;
-	//    Real dirSpeed;
-	float mMoveSpeed, mRotateSpeed;
+
 	DOFManager *mDOF;
-	bool enforceCameraFOVUpdate;
-	Ogre::Vector3 cdoppler;
+	Ogre::Camera *mCamera;
+	Ogre::Radian pushcamRotX, pushcamRotY;
+	Ogre::SceneManager *mSceneMgr;
+	Ogre::Vector3 mLastPosition;
 	cameraContext_t ctx;
+	float mMoveScale, mRotScale;
+	float mMoveSpeed, mRotateSpeed;
 
 	CameraBehavior *currentBehavior;
 	int currentBehaviorID;
 
-	enum {   CAMBEHAVIOR_FREE
-		   , CAMBEHAVIOR_CHARACTER_ORBIT
-		   , CAMBEHAVIOR_VEHICLE_ORBIT
-		   , CAMBEHAVIOR_VEHICLE_WHEELCHASE
-		   , CAMBEHAVIOR_VEHICLE_SPLINE
-		   , CAMBEHAVIOR_END
-	};
-
 	std::map <int , CameraBehavior *> globalBehaviors;
+
+	void switchBehavior(int newBehavior);
+	void switchToNextBehavior();
+	void createGlobalBehaviors();
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 
 public:
+
 	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam);
 	~CameraManager();
 
-	void updateInput();
-	void switchBehavior(int newBehavior);
-	void switchToNextBehavior();
-
-	enum { CAMERA_EXT=0,
-		CAMERA_FIX,
-		CAMERA_INT,
-		CAMERA_END,
-		CAMERA_FREE,
-		CAMERA_FREE_FIXED,
-		CAMERA_EXTERNALCONTROL=9999
+	enum
+	{
+		CAMERA_CHARACTER_ORBIT=0
+	  , CAMERA_VEHICLE_INTERNAL
+	  , CAMERA_VEHICLE_ORBIT
+	  , CAMERA_VEHICLE_WHEELCHASE
+	  , CAMERA_VEHICLE_SPLINE
+	  , CAMERA_END
+	  , CAMERA_FREE
+	  , CAMERA_FIX
 	};
-
-	//void setCameraRotation(Ogre::Radian x, Ogre::Radian y, Ogre::Real distance) { camRotX=x; camRotY=y; camDist=distance;};
-	//Ogre::Radian getCameraRotationX() { return camRotX; };
-
+	
+	void triggerFOVUpdate() { /*TODO: Think about this*/ };
 	void update(float dt);
-	bool setCameraPositionWithCollision(Ogre::Vector3 newPos);
-	Ogre::Camera *getCamera() { return mCamera; };
-	int getCameraMode() { return cameramode; };
-	inline DOFManager *getDOFManager() { return mDOF; }
-
-
-
-	void createGlobalBehaviors();
-	void triggerFOVUpdate();
 
 	bool allowInteraction();
+
+	Ogre::Camera *getCamera() { return mCamera; };
+	int getCameraMode() { return mCamera->getPolygonMode(); };
+	inline DOFManager *getDOFManager() { return mDOF; }
 };
 
 #endif // CAMERAMANAGER_H__
-
-

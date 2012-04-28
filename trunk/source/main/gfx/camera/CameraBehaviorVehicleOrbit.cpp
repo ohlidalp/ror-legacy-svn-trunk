@@ -19,21 +19,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorVehicleOrbit.h"
 
-#include <Ogre.h>
-#include "CameraManager.h"
-#include "Console.h"
-#include "InputEngine.h"
-#include "language.h"
+#include "BeamFactory.h"
 #include "Settings.h"
 
-#include "BeamFactory.h"
-
-using namespace Ogre;
-
 CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
-	  externalCameraMode(0)
+	  externalCameraMode(false)
 {
-	externalCameraMode = (SSETTING("External Camera Mode", "Pitching") == "Static")? 1 : 0;
+	minCamDist = 8.0f;
+
+	if (SSETTING("External Camera Mode", "Pitching") == "Static")
+		externalCameraMode = true;
 }
 
 void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
@@ -41,15 +36,16 @@ void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(!curr_truck) return;
 
-	// Make all the changes to the camera
 	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
 	dir.normalise();
+
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+	targetPitch     = 0.0f;
 
 	if(!externalCameraMode)
+	{
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
-	else
-		targetPitch = 0;
+	}
 
 	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
 

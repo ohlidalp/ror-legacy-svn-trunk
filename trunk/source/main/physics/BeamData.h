@@ -170,16 +170,6 @@ enum event_types {
 	EVENT_DELETE
 };
 
-enum camera_modes {
-	CAMERA_EXT=0,
-	CAMERA_FIX,
-	CAMERA_INT,
-	CAMERA_END,
-	// the free modes are on purpose behind end, so they require a special key to be triggered
-	CAMERA_FREE,
-	CAMERA_FREE_FIXED
-};
-
 enum game_states {
 	NONE_LOADED=0,
 	TERRAIN_LOADED,

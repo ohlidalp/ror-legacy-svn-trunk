@@ -2106,7 +2106,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	{
 
 		bool enablegrab = true;
-		if (CAMERA_MODE != CAMERA_FREE)
+		if (CAMERA_MODE != CameraManager::CAMERA_FREE)
 		{
 			if (!curr_truck)
 			{
@@ -2364,17 +2364,17 @@ bool RoRFrameListener::updateEvents(float dt)
 
 							// when in automatic mode: shift as well
 							// only when the truck really is not moving anymore
-							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f && curr_truck->engine && curr_truck->engine->getAutoMode() == AUTOMATIC)
+							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f && curr_truck->engine && curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 							{
 								// switching point, does the user want to drive forward from backward or the other way round? change gears?
 								if(brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)
 								{
 									// we are on the brake, jump to reverse gear
-									curr_truck->engine->autoShiftSet(REAR);
+									curr_truck->engine->autoShiftSet(BeamEngine::REAR);
 								} else if(brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
 								{
 									// we are on the gas pedal, jump to first gear when we were in rear gear
-									curr_truck->engine->autoShiftSet(DRIVE);
+									curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
 								}
 							}
 						}
@@ -2417,19 +2417,19 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 										switch(curr_truck->engine->getAutoMode())
 										{
-											case AUTOMATIC:
+											case BeamEngine::AUTOMATIC:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
 												break;
-											case SEMIAUTO:
+											case BeamEngine::SEMIAUTO:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
 												break;
-											case MANUAL:
+											case BeamEngine::MANUAL:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
 												break;
-											case MANUAL_STICK:
+											case BeamEngine::MANUAL_STICK:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
 												break;
-											case MANUAL_RANGES:
+											case BeamEngine::MANUAL_RANGES:
 												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
 												break;
 										}
@@ -2444,7 +2444,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								int shiftmode = curr_truck->engine->getAutoMode();
 
 //								if (shiftmode==SEMIAUTO || shiftmode==MANUAL) // manual sequencial shifting
-								if (shiftmode<=MANUAL) // manual sequencial shifting, semi auto shifting, auto shifting
+								if (shiftmode<=BeamEngine::MANUAL) // manual sequencial shifting, semi auto shifting, auto shifting
 									{
 										if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
 											{
@@ -2470,7 +2470,7 @@ bool RoRFrameListener::updateEvents(float dt)
 										int gearoffset  = curgear-curgearrange*6;
 										if (gearoffset<0) gearoffset = 0;
 										// one can select range only if in natural
-										if(shiftmode==MANUAL_RANGES && curgear == 0)
+										if(shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
 											{
 												//  maybe this should not be here, but should experiment
 												if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE) && curgearrange!=0)
@@ -2506,7 +2506,7 @@ bool RoRFrameListener::updateEvents(float dt)
 											}
 										else if(curgear > 0 && curgear < 19)
 											{
-												if (shiftmode==MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+												if (shiftmode==BeamEngine::MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
 												else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
 											}
 
@@ -2524,7 +2524,7 @@ bool RoRFrameListener::updateEvents(float dt)
 													}
 												else
 													{
-														if (shiftmode==MANUAL_STICK)
+														if (shiftmode==BeamEngine::MANUAL_STICK)
 															{
 																for (int i=1;i<19 && !found;i++)
 																	{
@@ -3004,7 +3004,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				if(mapMode==0)
 				{
 					bigMap->setVisibility(true);
-					if(CAMERA_MODE != CAMERA_INT)
+					if(CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
@@ -4981,7 +4981,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig, skin);
 			if (b && enterTruck)
 			{
-					//cameramode = CAMERA_INT;
+					//cameramode = CAMERA_VEHICLE_INTERNAL;
 					BeamFactory::getSingleton().setCurrentTruck(b->trucknum);
 			} else if(!b && enterTruck)
 				BeamFactory::getSingleton().setCurrentTruck(-1);
@@ -5050,7 +5050,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	if (persostart!=Vector3(0,0,0)) person->setPosition(persostart);
 	//bigMap->getEntityByName("person")->onTop();
 
-	/*cameramode=CAMERA_INT;
+	/*cameramode=CAMERA_VEHICLE_INTERNAL;
 	pushcamRotX=camRotX;
 	pushcamRotY=camRotY;
 	camRotX=0;
@@ -5084,7 +5084,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
 {
-	if (CAMERA_MODE == CAMERA_FREE) return;
+	if (CAMERA_MODE == CameraManager::CAMERA_FREE) return;
 
 	CameraManager::getSingleton().triggerFOVUpdate();
 
@@ -5249,7 +5249,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		camRotX=0;
 		camRotY=Degree(12);
 		camDist=20;
-		if (cameramode==CAMERA_INT)
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			currentTruck->prepareInside(true);
 			if(ow) ow->showDashboardOverlays(false, currentTruck);
@@ -5636,7 +5636,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	}
 	else
 	{
-		if(curr_truck && CAMERA_MODE != CAMERA_INT)
+		if(curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
 		{
 			if(ow) ow->showDashboardOverlays(true, curr_truck);
 			//if(bigMap) bigMap->setVisibility(true);

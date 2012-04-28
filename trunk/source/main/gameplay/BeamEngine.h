@@ -17,62 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Engine_H__
-#define __Engine_H__
+#ifndef _Engine_H__
+#define _Engine_H__
 
 #include "RoRPrerequisites.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-
-
-#define AUTOMATIC 0
-#define SEMIAUTO 1
-#define MANUAL 2
-#define MANUAL_STICK 3
-#define MANUAL_RANGES 4
-
-enum autoswitch {REAR=0, NEUTRAL=1, DRIVE=2, TWO=3, ONE=4, MANUALMODE=5};
-
 class BeamEngine
 {
-protected:
-	float clutch_time;
-	float shift_time;
-	float post_shift_time;
-
-	int numGears;
-	std::vector<float> gearsRatio;
-	float inertia;
-	float clutchForce;
-
-	int curGear;
-	int curGearRange;
-	float curEngineRPM;
-	float curGearboxRPM;
-	float curClutch;
-	float curAcc;
-	float curClutchTorque;
-	//shifting
-	int shifting;
-	int shiftval;
-	float shiftclock;
-	int postshifting;
-	float postshiftclock;
-	//auto
-	float autocurAcc;
-	int starter;
-	autoswitch autoselect;
-	//turbo
-	float curTurboRPM;
-	//air pressure
-	float apressure;
-	int automode;
-	int trucknum;
-	TorqueCurve *torqueCurve;
-
 public:
+
+	enum shiftmodes {AUTOMATIC, SEMIAUTO, MANUAL, MANUAL_STICK, MANUAL_RANGES};
+	enum autoswitch {REAR, NEUTRAL, DRIVE, TWO, ONE, MANUALMODE};
+
 	float iddleRPM;
 	float maxRPM;
 	float stallRPM;
@@ -89,6 +45,7 @@ public:
 	int prime;
 
 	BeamEngine(float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum);
+	~BeamEngine();
 	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
 	void update(float dt, int doUpdate);
 	void updateAudio(int doUpdate);
@@ -140,8 +97,42 @@ public:
 	char getType() { return type; };
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	float getEngineTorque() { return engineTorque; };
-	~BeamEngine();
+
+protected:
+
+	float clutch_time;
+	float shift_time;
+	float post_shift_time;
+
+	int numGears;
+	std::vector<float> gearsRatio;
+	float inertia;
+	float clutchForce;
+
+	int curGear;
+	int curGearRange;
+	float curEngineRPM;
+	float curGearboxRPM;
+	float curClutch;
+	float curAcc;
+	float curClutchTorque;
+	//shifting
+	int shifting;
+	int shiftval;
+	float shiftclock;
+	int postshifting;
+	float postshiftclock;
+	//auto
+	float autocurAcc;
+	int starter;
+	autoswitch autoselect;
+	//turbo
+	float curTurboRPM;
+	//air pressure
+	float apressure;
+	int automode;
+	int trucknum;
+	TorqueCurve *torqueCurve;
 };
 
-
-#endif
+#endif // _Engine_H__

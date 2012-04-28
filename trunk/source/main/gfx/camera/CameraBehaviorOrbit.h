@@ -28,7 +28,7 @@ class CameraBehaviorOrbit : public CameraBehavior
 protected:
 	Ogre::Radian camRotX, camRotY;
 	float camDist, minCamDist, camRatio;
-	Ogre::Vector3 camIdealPosition, camCenterPoint, lastPosition, camTranslation;
+	Ogre::Vector3 camIdealPosition, camCenterPoint, camTranslation;
 	float targetDirection, targetPitch;
 
 public:
