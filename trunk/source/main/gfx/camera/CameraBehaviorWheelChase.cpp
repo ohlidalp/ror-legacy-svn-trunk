@@ -19,18 +19,29 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorWheelChase.h"
 
-#include <Ogre.h>
+#include "BeamFactory.h"
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
+#include "Settings.h"
 #include "language.h"
-
-#include "BeamFactory.h"
+#include <Ogre.h>
 
 using namespace Ogre;
 
 void CameraBehaviorWheelChase::activate(cameraContext_t &ctx)
 {
+	float fov = FSETTING("FOV External", 60);
+
+	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
+	if ( dof )
+	{
+		dof->setFocusMode(DOFManager::Manual);
+		dof->setLensFOV(Degree(fov));
+	}
+
+	Camera *cam = CameraManager::getSingleton().getCamera();
+	cam->setFOVy(Degree(fov));
 }
 
 void CameraBehaviorWheelChase::deactivate(cameraContext_t &ctx)

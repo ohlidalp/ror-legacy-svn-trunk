@@ -17,13 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_WHEELCHASE_H_
-#define __CAMERA_BEHAVIOR_WHEELCHASE_H_
+#ifndef __CAMERA_BEHAVIOR_FIXEd_H_
+#define __CAMERA_BEHAVIOR_FIXEd_H_
 
 #include "RoRPrerequisites.h"
 #include "CameraBehavior.h"
 
-class CameraBehaviorWheelChase : public CameraBehavior
+class CameraBehaviorFixed : public CameraBehavior
 {
 public:
 
@@ -32,11 +32,11 @@ public:
 
 	void update(cameraContext_t &ctx);
 
-	bool mouseMoved(const OIS::MouseEvent& _arg);
-	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
-	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mouseMoved(const OIS::MouseEvent& _arg) { return false; };
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 	bool allowInteraction() { return false; };
 };
 
-#endif // __CAMERA_BEHAVIOR_WHEELCHASE_H_
+#endif // __CAMERA_BEHAVIOR_FIXEd_H_

@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIORVEHICLESPLINE_H__
-#define CAMERABEHAVIORVEHICLESPLINE_H__
+#ifndef __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_
+#define __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_
 
 #include "RoRPrerequisites.h"
 #include "CameraBehaviorOrbit.h"
@@ -26,13 +26,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorVehicleSpline : public CameraBehaviorOrbit
 {
 protected:
-	float splinePos;
+
 	Ogre::ManualObject *myManualObject;
 	Ogre::SceneNode* myManualObjectNode;
 	Ogre::SimpleSpline *spline;
+	float splinePos;
 	static const int splineDrawResolution = 20;
 
 public:
+
 	CameraBehaviorVehicleSpline();
 
 	void activate(cameraContext_t &ctx);
@@ -43,6 +45,4 @@ public:
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 };
 
-#endif // CAMERABEHAVIORVEHICLESPLINE_H__
-
-
+#endif // __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_

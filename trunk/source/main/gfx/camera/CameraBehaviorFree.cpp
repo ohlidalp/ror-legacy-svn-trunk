@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
+#include "Settings.h"
 #include "language.h"
 #include <Ogre.h>
 
@@ -29,9 +30,11 @@ using namespace Ogre;
 
 void CameraBehaviorFree::activate(cameraContext_t &ctx)
 {
-	// enter free camera mode
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if(dof) dof->setFocusMode(DOFManager::Auto);
+	if ( dof )
+	{
+		dof->setFocusMode(DOFManager::Auto);
+	}
 
 	ctx.cam->setFixedYawAxis(true, Vector3::UNIT_Y);
 
@@ -46,9 +49,11 @@ void CameraBehaviorFree::activate(cameraContext_t &ctx)
 
 void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
 {
-	// change back to normal camera
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if(dof) dof->setFocusMode(DOFManager::Manual);
+	if ( dof )
+	{
+		dof->setFocusMode(DOFManager::Manual);
+	}
 
 	LOG("exiting free camera mode");
 
@@ -61,9 +66,9 @@ void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
 
 void CameraBehaviorFree::update(cameraContext_t &ctx)
 {
+	Vector3 mTranslateVector = Vector3::ZERO;
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
-	Vector3 mTranslateVector = Vector3::ZERO;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
 		mTranslateVector.x -= ctx.translationScale;	// Move camera left
@@ -113,14 +118,4 @@ bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)
 	cam->pitch(Degree(-(float)ms.Y.rel * 0.13f));
 
 	return true;
-}
-
-bool CameraBehaviorFree::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
-{
-	return false;
-}
-
-bool CameraBehaviorFree::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
-{
-	return false;
 }

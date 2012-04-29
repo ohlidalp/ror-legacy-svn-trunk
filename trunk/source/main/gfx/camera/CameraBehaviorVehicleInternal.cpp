@@ -17,22 +17,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
-#define __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#include "CameraBehaviorVehicleInternal.h"
 
-#include "RoRPrerequisites.h"
-#include "CameraBehaviorOrbit.h"
+#include "CameraManager.h"
+#include "Settings.h"
 
-class CameraBehaviorVehicleOrbit : public CameraBehaviorOrbit
+using namespace Ogre;
+
+void CameraBehaviorVehicleInternal::activate(cameraContext_t &ctx)
 {
-protected:
+	float fov = FSETTING("FOV Internal", 75);
 
-	bool externalCameraMode;
+	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
+	if ( dof )
+	{
+		dof->setFocusMode(DOFManager::Manual);
+		dof->setLensFOV(Degree(fov));
+	}
 
-public:
+	Camera *cam = CameraManager::getSingleton().getCamera();
+	cam->setFOVy(Degree(fov));
+}
 
-	CameraBehaviorVehicleOrbit();
-	void update(cameraContext_t &ctx);
-};
+void CameraBehaviorVehicleInternal::deactivate(cameraContext_t &ctx)
+{
+}
 
-#endif // __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+void CameraBehaviorVehicleInternal::update(cameraContext_t &ctx)
+{
+}

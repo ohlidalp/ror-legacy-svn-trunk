@@ -5243,20 +5243,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			else
 				OverlayManager::getSingleton().getOverlayElement("tracks/tacho")->setMaterialName("tracks/Tacho");
 		}
-
-		//lastangle=0;
-#if 0
-		camRotX=0;
-		camRotY=Degree(12);
-		camDist=20;
-		if (cameramode==CAMERA_VEHICLE_INTERNAL)
-		{
-			currentTruck->prepareInside(true);
-			if(ow) ow->showDashboardOverlays(false, currentTruck);
-			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-			//if(bigMap) bigMap->setVisibility(false);
-		}
-#endif // 0
+		
 		TRIGGER_EVENT(SE_TRUCK_ENTER, currentTruck?currentTruck->trucknum:-1);
 	}
 }

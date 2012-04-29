@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIORORBIT_H__
-#define CAMERABEHAVIORORBIT_H__
+#ifndef __CAMERA_BEHAVIOR_ORBIT_H_
+#define __CAMERA_BEHAVIOR_ORBIT_H_
 
 #include "RoRPrerequisites.h"
 #include "CameraBehavior.h"
@@ -26,9 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorOrbit : public CameraBehavior
 {
 protected:
+
 	Ogre::Radian camRotX, camRotY;
+	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
 	float camDist, minCamDist, camRatio;
-	Ogre::Vector3 camIdealPosition, camCenterPoint, camTranslation;
 	float targetDirection, targetPitch;
 
 public:
@@ -41,12 +42,10 @@ public:
 	void update(cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
-	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
-	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 	bool allowInteraction() { return false; };
 };
 
-#endif // CAMERABEHAVIORORBIT_H__
-
-
+#endif // __CAMERA_BEHAVIOR_ORBIT_H_

@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIORFREE_H__
-#define CAMERABEHAVIORFREE_H__
+#ifndef __CAMERA_BEHAVIOR_FREE_H_
+#define __CAMERA_BEHAVIOR_FREE_H_
 
 #include "RoRPrerequisites.h"
 #include "CameraBehavior.h"
@@ -26,18 +26,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorFree : public CameraBehavior
 {
 public:
+
 	void activate(cameraContext_t &ctx);
 	void deactivate(cameraContext_t &ctx);
 
 	void update(cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
-	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
-	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 	bool allowInteraction() { return false; };
 };
 
-#endif // CAMERABEHAVIORFREE_H__
-
-
+#endif // __CAMERA_BEHAVIOR_FREE_H_

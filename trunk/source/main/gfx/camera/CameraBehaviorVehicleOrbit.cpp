@@ -49,7 +49,7 @@ void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
 
 	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
 
-	camCenterPoint = curr_truck->getPosition();
+	camCenterPosition = curr_truck->getPosition();
 
 	CameraBehaviorOrbit::update(ctx);
 }

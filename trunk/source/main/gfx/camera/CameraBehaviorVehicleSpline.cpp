@@ -31,15 +31,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
-	  splinePos(0.5f)
-	, myManualObject(0)
+	  myManualObject(0)
 	, myManualObjectNode(0)
 	, spline(new SimpleSpline())
+	, splinePos(0.5f)
 {
 }
 
 void CameraBehaviorVehicleSpline::activate(cameraContext_t &ctx)
 {
+	CameraBehaviorOrbit::activate(ctx);
+
 	if(!myManualObject)
 	{
 		myManualObject =  ctx.scm->createManualObject();
@@ -52,7 +54,6 @@ void CameraBehaviorVehicleSpline::activate(cameraContext_t &ctx)
 
 		myManualObjectNode->attachObject(myManualObject);
 	}
-
 }
 
 void CameraBehaviorVehicleSpline::updateSplineDisplay()
@@ -89,11 +90,11 @@ void CameraBehaviorVehicleSpline::update(cameraContext_t &ctx)
 
 		updateSplineDisplay();
 
-		camCenterPoint = spline->interpolate(splinePos);
+		camCenterPosition = spline->interpolate(splinePos);
 	} else
 	{
 		// fallback :-/
-		camCenterPoint = curr_truck->getPosition();
+		camCenterPosition = curr_truck->getPosition();
 	}
 
 	CameraBehaviorOrbit::update(ctx);
@@ -120,4 +121,3 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg)
 	}
 	return false;
 }
-
