@@ -17,22 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
-#define __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#include "CameraBehaviorFixed.h"
 
-#include "RoRPrerequisites.h"
-#include "CameraBehaviorOrbit.h"
-
-class CameraBehaviorVehicleOrbit : public CameraBehaviorOrbit
+void CameraBehaviorFixed::activate(cameraContext_t &ctx)
 {
-protected:
+}
 
-	bool externalCameraMode;
+void CameraBehaviorFixed::deactivate(cameraContext_t &ctx)
+{
+}
 
-public:
-
-	CameraBehaviorVehicleOrbit();
-	void update(cameraContext_t &ctx);
-};
-
-#endif // __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+void CameraBehaviorFixed::update(cameraContext_t &ctx)
+{
+}

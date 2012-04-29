@@ -30,12 +30,12 @@ using namespace Ogre;
 
 CameraBehaviorOrbit::CameraBehaviorOrbit() :
 	  camRotX(0.0f)
-	, camRotY(0.35f)
+	, camRotY(0.4f)
 	, camDist(5.0f)
 	, minCamDist(3.0f)
 	, camRatio(11.0f)
 	, camIdealPosition(Vector3::ZERO)
-	, camCenterPoint(Vector3::ZERO)
+	, camCenterPosition(Vector3::ZERO)
 	, camTranslation(Vector3::ZERO)
 	, targetDirection(0.0f)
 	, targetPitch(0.0f)
@@ -47,16 +47,16 @@ void CameraBehaviorOrbit::activate(cameraContext_t &ctx)
 	float fov = FSETTING("FOV External", 60);
 
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if(dof)
+	if ( dof )
 	{
 		dof->setFocusMode(DOFManager::Manual);
 		dof->setLensFOV(Degree(fov));
 	}
 
-	camCenterPoint = Vector3(0, 3, 0);
-
 	Camera *cam = CameraManager::getSingleton().getCamera();
 	cam->setFOVy(Degree(fov));
+
+	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
 }
 
 void CameraBehaviorOrbit::deactivate(cameraContext_t &ctx)
@@ -82,7 +82,7 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_RIGHT))
 	{
-		// Move camera RIGHT
+		// Move camera right
 		camRotX += ctx.rotationScale;
 	}
 	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_UP)) && camRotY<Degree(88))
@@ -135,7 +135,7 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 
 	float real_camdist = camIdealPosition.length();
 
-	camIdealPosition = camIdealPosition + camCenterPoint + camTranslation;
+	camIdealPosition = camIdealPosition + camCenterPosition + camTranslation;
 	Vector3 newPosition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
 
 	/*
@@ -149,7 +149,7 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 	*/
 
 	cam->setPosition(newPosition);
-	cam->lookAt(camCenterPoint);
+	cam->lookAt(camCenterPosition);
 
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
 	if(dof)
@@ -171,15 +171,5 @@ bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
 		camDist += -(float)ms.Z.rel * 0.02f;
 		return true;
 	}
-	return false;
-}
-
-bool CameraBehaviorOrbit::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
-{
-	return false;
-}
-
-bool CameraBehaviorOrbit::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
-{
 	return false;
 }

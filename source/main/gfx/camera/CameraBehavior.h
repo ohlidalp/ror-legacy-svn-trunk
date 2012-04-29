@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERABEHAVIOR_H__
-#define CAMERABEHAVIOR_H__
+#ifndef __CAMERA_BEHAVIOR_H_
+#define __CAMERA_BEHAVIOR_H_
 
 #include "RoRPrerequisites.h"
 #include <OIS.h>
@@ -34,9 +34,11 @@ typedef struct cameraContext_t {
 class CameraBehavior
 {
 protected:
+
 	float mMoveScale, mRotScale, mMoveSpeed, mRotateSpeed;
 
 public:
+
 	virtual ~CameraBehavior() {};
 
 	virtual void update(cameraContext_t &ctx) = 0;
@@ -51,4 +53,4 @@ public:
 	virtual bool allowInteraction() = 0;
 };
 
-#endif // CAMERABEHAVIOR_H__
+#endif // __CAMERA_BEHAVIOR_H_

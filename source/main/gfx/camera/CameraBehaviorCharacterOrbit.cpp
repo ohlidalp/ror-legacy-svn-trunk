@@ -26,7 +26,7 @@ void CameraBehaviorCharacterOrbit::update(cameraContext_t &ctx)
 	Character *person = RoRFrameListener::eflsingleton->person;
 
 	targetDirection = -person->getAngle() - Math::HALF_PI;
-	camCenterPoint  =  person->getPosition() + Vector3(0.0f, 1.1f, 0.0f);
+	camCenterPosition  =  person->getPosition() + Vector3(0.0f, 1.1f, 0.0f);
 
 	CameraBehaviorOrbit::update(ctx);
 }

@@ -24,19 +24,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Console.h"
 #include "InputEngine.h"
 #include "Ogre.h"
+#include "RoRFrameListener.h"
 #include "Settings.h"
 #include "SoundScriptManager.h"
 #include "language.h"
 
-#include "OverlayWrapper.h"
+#include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorFixed.h"
 #include "CameraBehaviorFree.h"
 #include "CameraBehaviorOrbit.h"
-#include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorVehicleInternal.h"
 #include "CameraBehaviorVehicleOrbit.h"
-#include "CameraBehaviorWheelChase.h"
 #include "CameraBehaviorVehicleSpline.h"
-
-#include "RoRFrameListener.h"
+#include "CameraBehaviorWheelChase.h"
+#include "OverlayWrapper.h"
 
 using namespace Ogre;
 
@@ -77,18 +78,15 @@ CameraManager::~CameraManager()
 void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleInternal()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
 
-	// TODO: Create a CameraBehavior for internal camera perspectives (e.g. cockpit, rear seats, ...)
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorCharacterOrbit()) );
-
-	// TODO: Think about this. Do we really need this CameraBehavior? Or can it be part of the CAMERA_VEHICLE_INTERNAL behavior?
+	// TODO: Think about this. Do we really need this CameraBehavior, or could it be part of the CAMERA_VEHICLE_INTERNAL behavior?
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
 	
-	// TODO: Create a CameraBehavior for a fixed camera perspective
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIX, new CameraBehaviorFree()) );
 }
 
 #if 0

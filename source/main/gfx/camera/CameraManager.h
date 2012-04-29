@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef CAMERAMANAGER_H__
-#define CAMERAMANAGER_H__
+#ifndef __CAMERA_MANAGER_H_
+#define __CAMERA_MANAGER_H_
 
 #include "RoRPrerequisites.h"
 
@@ -75,7 +75,7 @@ public:
 	  , CAMERA_VEHICLE_SPLINE
 	  , CAMERA_END
 	  , CAMERA_FREE
-	  , CAMERA_FIX
+	  , CAMERA_FIXED
 	};
 	
 	void triggerFOVUpdate() { /*TODO: Think about this*/ };
@@ -88,4 +88,4 @@ public:
 	inline DOFManager *getDOFManager() { return mDOF; }
 };
 
-#endif // CAMERAMANAGER_H__
+#endif // __CAMERA_MANAGER_H_
