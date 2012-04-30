@@ -332,7 +332,7 @@ void SelectorWindow::getData()
 			continue;
 
 		// remove invalid category ID's
-		if(it->categoryid >= CacheSystem::CID_MAX)
+		if(it->categoryid >= CacheSystem::CID_Max)
 			it->categoryid = -1;
 
 		// category unsorted
@@ -359,19 +359,18 @@ void SelectorWindow::getData()
 	}
 	for(std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
 	{
-		int usage = mCategoryUsage[itc->second.number];
-		if(usage == 0) continue;
-
-		current_category++;
-
-		UTFString title = _L(itc->second.title.c_str());
-		if(title.empty())
-			title = _L("unknown");
-		UTFString txt = U("[") + TOUTFSTRING(current_category) + U("/") + TOUTFSTRING(tally_categories) + U("] (") + TOUTFSTRING(usage) + U(") ") + title;
-
-		mTypeComboBox->addItem(convertToMyGUIString(txt), itc->second.number);
+		int num_elements = mCategoryUsage[itc->second.number];
+		if(num_elements > 0)
+		{
+			UTFString title = _L("unknown");
+			if(!itc->second.title.empty())
+			{
+				title = _L(itc->second.title.c_str());
+			}
+			UTFString txt = U("[") + TOUTFSTRING(++current_category) + U("/") + TOUTFSTRING(tally_categories) + U("] (") + TOUTFSTRING(num_elements) + U(") ") + title;
+			mTypeComboBox->addItem(convertToMyGUIString(txt), itc->second.number);
+		}
 	}
-	if(mTypeComboBox->getItemCount() != 0) mTypeComboBox->setIndexSelected(0);
 	if(tally_categories > 0)
 	{
 		try
@@ -490,43 +489,19 @@ void SelectorWindow::onCategorySelected(int categoryID)
 	String search_cmd = mSearchLineEdit->getCaption();
 	StringUtil::toLowerCase(search_cmd);
 
-	int ts = getTimeStamp();
+	int counter = 0;
+	int ts      = getTimeStamp();
+
 	mModelList->removeAllItems();
-	std::vector<Cache_Entry>::iterator it;
-	int counter=0, counter2=0;
-	// re-test too see how much matches
-	for(it = mEntries.begin(); it != mEntries.end(); it++)
+	
+	for(std::vector<Cache_Entry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
 	{
-		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)))
-			counter++;
-
-		// search results
-		if(categoryID == 9994 && searchCompare(search_cmd, &(*it)))
+		if(it->categoryid == categoryID || categoryID == CacheSystem::CID_All
+										|| categoryID == CacheSystem::CID_Fresh && (ts - it->addtimestamp < 86400)
+										|| categoryID == CacheSystem::CID_SearchResults && searchCompare(search_cmd, &(*it)))
 		{
 			counter++;
-		}
-	}
-
-	for(it = mEntries.begin(); it != mEntries.end(); it++)
-	{
-		if(it->categoryid == categoryID || (categoryID == 9991) || (categoryID == 9992 && (ts - it->addtimestamp < 86400)) )
-		{
-			counter2++;
-			//printf("adding item %d\n", counter2);
-			String txt = TOSTRING(counter2)+". " + it->dname;
-
-			try
-			{
-				mModelList->addItem(txt, it->number);
-			} catch(...)
-			{
-				mModelList->addItem("ENCODING ERROR", it->number);
-			}
-		} else if(categoryID == 9994 && searchCompare(search_cmd, &(*it)))
-		{
-			counter2++;
-			//printf("adding item %d\n", counter2);
-			String txt = TOSTRING(counter2)+". " + it->dname;
+			String txt = TOSTRING(counter)+". " + it->dname;
 			try
 			{
 				mModelList->addItem(txt, it->number);
@@ -535,9 +510,9 @@ void SelectorWindow::onCategorySelected(int categoryID)
 				mModelList->addItem("ENCODING ERROR", it->number);
 			}
 		}
-
 	}
-	if(counter2 > 0)
+
+	if(counter > 0)
 	{
 		try
 		{
@@ -879,7 +854,7 @@ void SelectorWindow::setEnableCancel(bool enabled)
 void SelectorWindow::eventSearchTextChange(MyGUI::EditBox *_sender)
 {
 	if(!mMainWidget->getVisible()) return;
-	onCategorySelected(9994);
+	onCategorySelected(CacheSystem::CID_SearchResults);
 	mTypeComboBox->setCaption(_L("Search Results"));
 }
 
