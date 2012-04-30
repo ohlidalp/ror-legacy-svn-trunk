@@ -224,7 +224,7 @@ public:
 	static bool resourceExistsInAllGroups(Ogre::String filename);
 
 	// see: https://code.google.com/p/rigsofrods-streams/source/browse/trunk/0.39/win32-skeleton/config/categories.cfg
-	enum CategoryID {CID_MAX=9000, CID_Unsorted=9990, CID_All, CID_Fresh, CID_Hidden};
+	enum CategoryID {CID_Max=9000, CID_Unsorted=9990, CID_All=9991, CID_Fresh=9992, CID_Hidden=9993, CID_SearchResults=9994};
 protected:
 	CacheSystem();
 	~CacheSystem();
