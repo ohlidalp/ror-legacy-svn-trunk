@@ -207,10 +207,11 @@ void SoundScriptManager::modulate(Beam *truck, int mod, float value, int linkTyp
 	}
 }
 
-// TODO: Fix this! Produces crash on trainvalley with henschel train.
 void SoundScriptManager::modulate(int truck, int mod, float value, int linkType, int linkItemID)
 {
 	if (soundsDisabled) return;
+
+	if (mod >= SS_MAX_MOD) return;
 
 	for (int i=0; i < free_gains[mod]; i++)
 	{

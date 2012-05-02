@@ -2055,7 +2055,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							} else if (vst == 0)
 							{
 								// already running, modulate
-								SoundScriptManager::getSingleton().modulate(trucknum, SS_TRIG_LINKED_COMMAND, v, SL_COMMAND, -i);
+								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_LINKED_COMMANDRATE, v, SL_COMMAND, -i);
 							}
 #endif // USE_OPENAL
 							beams[bbeam].L *= (1.0 - beams[bbeam].commandRatioShort * v * crankfactor * dt / beams[bbeam].L);
