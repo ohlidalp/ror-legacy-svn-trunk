@@ -33,8 +33,7 @@ enum {
 	MAX_INSTANCES_PER_GROUP = 256
 };
 
-// list of sound triggers
-enum {
+enum SoundTriggers {
 	SS_TRIG_NONE = -1,
 	SS_TRIG_ENGINE = 0,
 	SS_TRIG_AEROENGINE1,
@@ -97,12 +96,11 @@ enum {
 	SS_TRIG_AVICHAT11,
 	SS_TRIG_AVICHAT12,
 	SS_TRIG_AVICHAT13,
-	SS_LINKED_COMMAND,
+	SS_TRIG_LINKED_COMMAND,
 	SS_MAX_TRIG
 };
 
-// list of modulation sources
-enum {
+enum ModulationSources {
 	SS_MOD_NONE,
 	SS_MOD_ENGINE,
 	SS_MOD_TURBO,
@@ -136,7 +134,7 @@ enum {
 	SS_MAX_MOD
 };
 
-enum {
+enum SoundLinkTypes {
 	SL_DEFAULT,
 	SL_COMMAND, 
 	SL_HYDRO, 
@@ -250,8 +248,8 @@ public:
     Ogre::Real getLoadingOrder(void) const;
 
 	SoundScriptInstance* createInstance(Ogre::String templatename, int truck, Ogre::SceneNode *toAttach=NULL, int soundLinkType=SL_DEFAULT, int soundLinkItemId=-1);
-	void unloadResourceGroup(Ogre::String groupname);
 	void clearNonBaseTemplates();
+	void unloadResourceGroup(Ogre::String groupname);
 
 	// functions
 	void trigOnce    (int truck, int trig, int linkType = SL_DEFAULT, int linkItemID=-1);
