@@ -344,8 +344,8 @@ void SelectorWindow::getData()
 		// category all
 		mCategoryUsage[CacheSystem::CID_All]++;
 
-		// category fresh, 24 hours = 86400
-		if(ts - it->addtimestamp < 86400)
+		// category fresh
+		if(ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
 			mCategoryUsage[CacheSystem::CID_Fresh]++;
 
 		mEntries.push_back(*it);
@@ -497,7 +497,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 	for(std::vector<Cache_Entry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
 	{
 		if(it->categoryid == categoryID || categoryID == CacheSystem::CID_All
-										|| categoryID == CacheSystem::CID_Fresh && (ts - it->addtimestamp < 86400)
+										|| categoryID == CacheSystem::CID_Fresh && (ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
 										|| categoryID == CacheSystem::CID_SearchResults && searchCompare(search_cmd, &(*it)))
 		{
 			counter++;

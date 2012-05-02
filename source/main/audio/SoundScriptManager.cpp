@@ -40,9 +40,9 @@ SoundScriptManager::SoundScriptManager() :
 	  soundsDisabled(false)
 	, loadingBase(false)
 	, instance_counter(0)
-	, maxDistance(500.0)
-	, rolloffFactor(1.0)
-	, referenceDistance(7.5)
+	, maxDistance(500.0f)
+	, rolloffFactor(1.0f)
+	, referenceDistance(7.5f)
 {
 	for (int i=0; i < SS_MAX_TRIG; i++)
 	{
@@ -417,7 +417,6 @@ void SoundScriptManager::parseScript(DataStreamPtr& stream, const String& groupN
 	}
 }
 
-
 void SoundScriptManager::skipToNextCloseBrace(DataStreamPtr& stream)
 {
 	String line = "";
@@ -448,8 +447,8 @@ void SoundScriptManager::soundEnable(bool state)
 
 //=====================================================================
 
-SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String filename, bool _baseTemplate) :
-	  baseTemplate(_baseTemplate)
+SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String filename, bool baseTemplate) :
+	  baseTemplate(baseTemplate)
 	, filename(filename)
 	, free_sound(0)
 	, gain_multiplier(1.0f)

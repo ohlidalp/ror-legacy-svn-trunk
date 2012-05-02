@@ -25,8 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Sound::Sound(ALuint _buffer, SoundManager *soundManager, int sourceIndex) :
-	  buffer(_buffer)
+Sound::Sound(ALuint buffer, SoundManager *soundManager, int sourceIndex) :
+	  buffer(buffer)
 	, soundManager(soundManager)
 	, sourceIndex(sourceIndex)
 	, audibility(0.0f)
@@ -51,7 +51,7 @@ void Sound::computeAudibility(Vector3 pos)
 	}
 
 	// First check if the sound is finished!
-	if (!loop && should_play && hardware_index!=-1)
+	if (!loop && should_play && hardware_index != -1)
 	{
 		int value = 0;
 		alGetSourcei((ALuint)soundManager->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
@@ -96,7 +96,7 @@ bool Sound::isPlaying()
 void Sound::setEnabled(bool e)
 {
 	enabled = e;
-	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0.0f, NULL);
 }
 
 bool Sound::getEnabled()
@@ -107,13 +107,13 @@ bool Sound::getEnabled()
 void Sound::play()
 {
 	should_play = true;
-	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_PLAY, 0.0f, NULL);
 }
 
 void Sound::stop()
 {
 	should_play = false;
-	soundManager->recomputeSource(sourceIndex, REASON_STOP, 0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_STOP, 0.0f, NULL);
 }
 
 void Sound::setGain(float gain)
@@ -137,13 +137,13 @@ void Sound::setPitch(float pitch)
 void Sound::setPosition(Ogre::Vector3 pos)
 {
 	this->position = pos;
-	soundManager->recomputeSource(sourceIndex, REASON_POSN, 0, &pos);
+	soundManager->recomputeSource(sourceIndex, REASON_POSN, 0.0f, &pos);
 }
 
 void Sound::setVelocity(Ogre::Vector3 vel)
 {
 	this->velocity = vel;
-	soundManager->recomputeSource(sourceIndex, REASON_VLCT, 0, &vel);
+	soundManager->recomputeSource(sourceIndex, REASON_VLCT, 0.0f, &vel);
 }
 
 #endif // USE_OPENAL

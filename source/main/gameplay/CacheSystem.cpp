@@ -38,14 +38,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace RoR; // CSHA1
 
-CacheSystem::CacheSystem()
+CacheSystem::CacheSystem() :
+	  changedFiles(0)
+	, deletedFiles(0)
+	, newFiles(0)
+	, rgcounter(0)
+	, smgr(0)
 {
-	rgcounter = 0;
-	changedFiles = 0;
-	newFiles = 0;
-	deletedFiles = 0;
-	smgr = 0;
-
 	// register the extensions
 	known_extensions.push_back("machine");
 	known_extensions.push_back("fixed");
