@@ -30,7 +30,7 @@ using namespace Ogre;
 
 CameraBehaviorOrbit::CameraBehaviorOrbit() :
 	  camRotX(0.0f)
-	, camRotY(0.4f)
+	, camRotY(0.06f)
 	, camDist(5.0f)
 	, minCamDist(3.0f)
 	, camRatio(11.0f)

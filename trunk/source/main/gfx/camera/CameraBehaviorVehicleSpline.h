@@ -25,14 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class CameraBehaviorVehicleSpline : public CameraBehaviorOrbit
 {
-protected:
-
-	Ogre::ManualObject *myManualObject;
-	Ogre::SceneNode* myManualObjectNode;
-	Ogre::SimpleSpline *spline;
-	float splinePos;
-	static const int splineDrawResolution = 20;
-
 public:
 
 	CameraBehaviorVehicleSpline();
@@ -43,6 +35,14 @@ public:
 	void updateSplineDisplay();
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
+
+protected:
+
+	Ogre::ManualObject *myManualObject;
+	Ogre::SceneNode* myManualObjectNode;
+	Ogre::SimpleSpline *spline;
+	float splinePos;
+	static const int splineDrawResolution = 20;
 };
 
 #endif // __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_

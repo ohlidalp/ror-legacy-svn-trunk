@@ -5086,8 +5086,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 {
 	if (CAMERA_MODE == CameraManager::CAMERA_FREE) return;
 
-	CameraManager::getSingleton().triggerFOVUpdate();
-
 	// hide any old dashes
 	if(previousTruck && previousTruck->dash)
 		previousTruck->dash->setVisible3d(false);

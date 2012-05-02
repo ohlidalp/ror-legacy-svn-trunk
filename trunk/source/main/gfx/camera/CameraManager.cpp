@@ -29,11 +29,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "language.h"
 
-#include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFixed.h"
 #include "CameraBehaviorFree.h"
 #include "CameraBehaviorOrbit.h"
-#include "CameraBehaviorVehicleInternal.h"
+#include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleOrbit.h"
 #include "CameraBehaviorVehicleSpline.h"
 #include "OverlayWrapper.h"
@@ -47,9 +47,9 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	, mDOF(0)
 	, mLastPosition(Vector3::ZERO)
 	, mMoveScale(1.0f)
-	, mMoveSpeed(50)
+	, mMoveSpeed(50.0f)
 	, mRotScale(0.1f)
-	, mRotateSpeed(100)
+	, mRotateSpeed(100.0f)
 	, mSceneMgr(scm)
 {
 	setSingleton(this);
@@ -64,7 +64,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 	ctx.cam = mCamera;
 	ctx.scm = mSceneMgr;
 	
-	switchBehavior(CAMERA_CHARACTER_ORBIT);
+	switchBehavior(CAMERA_CHARACTER);
 	switchBehavior(CAMERA_VEHICLE_ORBIT);
 	//switchBehavior(CAMERA_VEHICLE_SPLINE);
 }
@@ -76,8 +76,8 @@ CameraManager::~CameraManager()
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_CHARACTER_ORBIT, new CameraBehaviorCharacterOrbit()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleInternal()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleCineCam()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
@@ -230,11 +230,16 @@ void CameraManager::switchToNextBehavior()
 
 void CameraManager::switchBehavior(int newBehavior)
 {
-	if(globalBehaviors.find(newBehavior) == globalBehaviors.end()) return;
+	if ( globalBehaviors.find(newBehavior) == globalBehaviors.end() )
+	{
+		return;
+	}
 
 	// deactivate old
-	if(currentBehavior)
+	if ( currentBehavior )
+	{
 		currentBehavior->deactivate(ctx);
+	}
 
 	// set new
 	currentBehavior = globalBehaviors[newBehavior];
@@ -580,24 +585,24 @@ void CameraManager::update(float dt)
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
-	if(!currentBehavior) return false;
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mouseMoved(_arg);
 }
 
 bool CameraManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
-	if(!currentBehavior) return false;
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mousePressed(_arg, _id);
 }
 
 bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
-	if(!currentBehavior) return false;
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mouseReleased(_arg, _id);
 }
 
 bool CameraManager::allowInteraction()
 {
-	if(!currentBehavior) return false;
+	if ( !currentBehavior ) return false;
 	return currentBehavior->allowInteraction();
 }
