@@ -572,6 +572,9 @@ void SelectorWindow::selectionDone()
 	if(!mSelectedTruck || mSelectionDone)
 		return;
 	
+	mSelectedTruck->usagecounter++;
+	// TODO: Save the modified value of the usagecounter
+
 	if(mLoaderType != LT_SKIN)
 	{
 		// we show the normal loader
@@ -672,29 +675,29 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	descriptiontxt = descriptiontxt +_L("Author(s): ") + c + authors + nc +newline;
 
 	
-	if(entry->version > 0) descriptiontxt                = descriptiontxt + _L("Version: ")   + c + TOUTFSTRING(entry->version) + nc + newline;
-	if(entry->wheelcount > 0) descriptiontxt             = descriptiontxt + _L("Wheels: ")    + c + TOUTFSTRING(entry->wheelcount) + U("x") + TOUTFSTRING(entry->propwheelcount) + nc + newline;
-	if(entry->truckmass > 0) descriptiontxt              = descriptiontxt + _L("Mass: ")      + c + TOUTFSTRING((int)(entry->truckmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
-	if(entry->loadmass > 0) descriptiontxt               = descriptiontxt + _L("Load Mass: ") + c + TOUTFSTRING((int)(entry->loadmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
-	if(entry->nodecount > 0) descriptiontxt              = descriptiontxt + _L("Nodes: ")     + c + TOUTFSTRING(entry->nodecount) + nc + newline;
-	if(entry->beamcount > 0) descriptiontxt              = descriptiontxt + _L("Beams: ")     + c + TOUTFSTRING(entry->beamcount) + nc + newline;
-	if(entry->shockcount > 0) descriptiontxt             = descriptiontxt + _L("Shocks: ")    + c + TOUTFSTRING(entry->shockcount) + nc + newline;
-	if(entry->hydroscount > 0) descriptiontxt            = descriptiontxt + _L("Hydros: ")    + c + TOUTFSTRING(entry->hydroscount) + nc + newline;
-	if(entry->soundsourcescount > 0) descriptiontxt      = descriptiontxt + _L("SoundSources: ") + c + TOUTFSTRING(entry->soundsourcescount) + nc + newline;
-	if(entry->commandscount > 0) descriptiontxt          = descriptiontxt + _L("Commands: ")  + c + TOUTFSTRING(entry->commandscount) + nc + newline;
-	if(entry->rotatorscount > 0) descriptiontxt          = descriptiontxt + _L("Rotators: ")  + c + TOUTFSTRING(entry->rotatorscount) + nc + newline;
-	if(entry->exhaustscount > 0) descriptiontxt          = descriptiontxt + _L("Exhausts: ")  + c + TOUTFSTRING(entry->exhaustscount) + nc + newline;
-	if(entry->flarescount > 0) descriptiontxt            = descriptiontxt + _L("Flares: ")    + c + TOUTFSTRING(entry->flarescount) + nc + newline;
-	if(entry->torque > 0) descriptiontxt                 = descriptiontxt + _L("Torque: ")    + c + TOUTFSTRING(entry->torque) + nc + newline;
-	if(entry->flexbodiescount > 0) descriptiontxt        = descriptiontxt + _L("Flexbodies: ") + c + TOUTFSTRING(entry->flexbodiescount) + nc + newline;
-	if(entry->propscount > 0) descriptiontxt             = descriptiontxt + _L("Props: ")     + c + TOUTFSTRING(entry->propscount) + nc + newline;
-	if(entry->wingscount > 0) descriptiontxt             = descriptiontxt + _L("Wings: ")     + c + TOUTFSTRING(entry->wingscount) + nc + newline;
-	if(entry->hasSubmeshs) descriptiontxt                = descriptiontxt + _L("Using Submeshs: ") + c + TOUTFSTRING(entry->hasSubmeshs) + nc + newline;
-	if(entry->numgears > 0) descriptiontxt               = descriptiontxt + _L("Transmission Gear Count: ") + c + TOUTFSTRING(entry->numgears) + nc + newline;
-	if(entry->minrpm > 0) descriptiontxt                 = descriptiontxt + _L("Engine RPM: ") + c + TOUTFSTRING(entry->minrpm) + U(" - ") + TOUTFSTRING(entry->maxrpm) + nc + newline;
+	if(entry->version > 0)           descriptiontxt = descriptiontxt + _L("Version: ")      + c + TOUTFSTRING(entry->version) + nc + newline;
+	if(entry->wheelcount > 0)        descriptiontxt = descriptiontxt + _L("Wheels: ")       + c + TOUTFSTRING(entry->wheelcount) + U("x") + TOUTFSTRING(entry->propwheelcount) + nc + newline;
+	if(entry->truckmass > 0)         descriptiontxt = descriptiontxt + _L("Mass: ")         + c + TOUTFSTRING((int)(entry->truckmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if(entry->loadmass > 0)          descriptiontxt = descriptiontxt + _L("Load Mass: ")    + c + TOUTFSTRING((int)(entry->loadmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if(entry->nodecount > 0)         descriptiontxt = descriptiontxt + _L("Nodes: ")        + c + TOUTFSTRING(entry->nodecount) + nc + newline;
+	if(entry->beamcount > 0)         descriptiontxt = descriptiontxt + _L("Beams: ")        + c + TOUTFSTRING(entry->beamcount) + nc + newline;
+	if(entry->shockcount > 0)        descriptiontxt = descriptiontxt + _L("Shocks: ")       + c + TOUTFSTRING(entry->shockcount) + nc + newline;
+	if(entry->hydroscount > 0)       descriptiontxt = descriptiontxt + _L("Hydros: ")       + c + TOUTFSTRING(entry->hydroscount) + nc + newline;
+	if(entry->soundsourcescount > 0) descriptiontxt = descriptiontxt + _L("SoundSources: ") + c + TOUTFSTRING(entry->soundsourcescount) + nc + newline;
+	if(entry->commandscount > 0)     descriptiontxt = descriptiontxt + _L("Commands: ")     + c + TOUTFSTRING(entry->commandscount) + nc + newline;
+	if(entry->rotatorscount > 0)     descriptiontxt = descriptiontxt + _L("Rotators: ")     + c + TOUTFSTRING(entry->rotatorscount) + nc + newline;
+	if(entry->exhaustscount > 0)     descriptiontxt = descriptiontxt + _L("Exhausts: ")     + c + TOUTFSTRING(entry->exhaustscount) + nc + newline;
+	if(entry->flarescount > 0)       descriptiontxt = descriptiontxt + _L("Flares: ")       + c + TOUTFSTRING(entry->flarescount) + nc + newline;
+	if(entry->torque > 0)            descriptiontxt = descriptiontxt + _L("Torque: ")       + c + TOUTFSTRING(entry->torque) + nc + newline;
+	if(entry->flexbodiescount > 0)   descriptiontxt = descriptiontxt + _L("Flexbodies: ")   + c + TOUTFSTRING(entry->flexbodiescount) + nc + newline;
+	if(entry->propscount > 0)        descriptiontxt = descriptiontxt + _L("Props: ")        + c + TOUTFSTRING(entry->propscount) + nc + newline;
+	if(entry->wingscount > 0)        descriptiontxt = descriptiontxt + _L("Wings: ")        + c + TOUTFSTRING(entry->wingscount) + nc + newline;
+	if(entry->hasSubmeshs)           descriptiontxt = descriptiontxt + _L("Using Submeshs: ")          + c + TOUTFSTRING(entry->hasSubmeshs) + nc + newline;
+	if(entry->numgears > 0)          descriptiontxt = descriptiontxt + _L("Transmission Gear Count: ") + c + TOUTFSTRING(entry->numgears) + nc + newline;
+	if(entry->minrpm > 0)            descriptiontxt = descriptiontxt + _L("Engine RPM: ")   + c + TOUTFSTRING(entry->minrpm) + U(" - ") + TOUTFSTRING(entry->maxrpm) + nc + newline;
 	if(!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt = descriptiontxt + _L("Unique ID: ") + c + entry->uniqueid + nc + newline;
-	if(!entry->guid.empty() && entry->guid != "no-guid") descriptiontxt = descriptiontxt + _L("GUID: ") + c + entry->guid + nc + newline;
-	if(entry->usagecounter > 0) descriptiontxt           = descriptiontxt + _L("Times used: ") + c + TOUTFSTRING(entry->usagecounter) + nc + newline;
+	if(!entry->guid.empty() && entry->guid != "no-guid")		descriptiontxt = descriptiontxt + _L("GUID: ") + c + entry->guid + nc + newline;
+	if(entry->usagecounter > 0)      descriptiontxt = descriptiontxt + _L("Times used: ")   + c + TOUTFSTRING(entry->usagecounter) + nc + newline;
 
 	if(entry->addtimestamp > 0)
 	{

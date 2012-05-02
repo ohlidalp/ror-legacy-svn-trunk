@@ -1949,14 +1949,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if(vst == 1)
 							{
 								// just started
-								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
-								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
+								SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
 								vst = 0;
 
 							} else if(vst == -1)
 							{
 								// just stopped
-								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
 								vst = 0;
 							} else if (vst == 0)
 							{
@@ -2038,28 +2038,26 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 							if(!canwork)
 								continue;
-
 #ifdef USE_OPENAL
 							// command sounds
 							if(vst == 1)
 							{
 								// just started
-								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, i);
-								SoundScriptManager::getSingleton().trigStart(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
+								SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
 								vst = 0;
 
 							} else if(vst == -1)
 							{
 								// just stopped
-								SoundScriptManager::getSingleton().trigStop(trucknum, SS_LINKED_COMMAND, SL_COMMAND, -i);
+								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
 								vst = 0;
 							} else if (vst == 0)
 							{
 								// already running, modulate
-								SoundScriptManager::getSingleton().modulate(trucknum, SS_LINKED_COMMAND, v, SL_COMMAND, -i);
+								SoundScriptManager::getSingleton().modulate(trucknum, SS_TRIG_LINKED_COMMAND, v, SL_COMMAND, -i);
 							}
 #endif // USE_OPENAL
-
 							beams[bbeam].L *= (1.0 - beams[bbeam].commandRatioShort * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
 							if(v>0.5)
