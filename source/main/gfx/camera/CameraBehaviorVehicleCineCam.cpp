@@ -17,14 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorVehicleInternal.h"
+#include "CameraBehaviorVehicleCineCam.h"
 
+#include "BeamFactory.h"
 #include "CameraManager.h"
 #include "Settings.h"
 
 using namespace Ogre;
 
-void CameraBehaviorVehicleInternal::activate(cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::activate(cameraContext_t &ctx)
 {
 	float fov = FSETTING("FOV Internal", 75);
 
@@ -39,10 +40,10 @@ void CameraBehaviorVehicleInternal::activate(cameraContext_t &ctx)
 	cam->setFOVy(Degree(fov));
 }
 
-void CameraBehaviorVehicleInternal::deactivate(cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::deactivate(cameraContext_t &ctx)
 {
 }
 
-void CameraBehaviorVehicleInternal::update(cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::update(cameraContext_t &ctx)
 {
 }

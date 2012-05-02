@@ -33,10 +33,6 @@ typedef struct cameraContext_t {
 
 class CameraBehavior
 {
-protected:
-
-	float mMoveScale, mRotScale, mMoveSpeed, mRotateSpeed;
-
 public:
 
 	virtual ~CameraBehavior() {};
@@ -51,6 +47,10 @@ public:
 	virtual void deactivate(cameraContext_t &ctx) = 0;
 
 	virtual bool allowInteraction() = 0;
+
+protected:
+
+	float mMoveScale, mRotScale, mMoveSpeed, mRotateSpeed;
 };
 
 #endif // __CAMERA_BEHAVIOR_H_

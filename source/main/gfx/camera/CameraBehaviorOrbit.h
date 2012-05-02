@@ -25,13 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class CameraBehaviorOrbit : public CameraBehavior
 {
-protected:
-
-	Ogre::Radian camRotX, camRotY;
-	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
-	float camDist, minCamDist, camRatio;
-	float targetDirection, targetPitch;
-
 public:
 
 	CameraBehaviorOrbit();
@@ -46,6 +39,13 @@ public:
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 	bool allowInteraction() { return false; };
+
+protected:
+
+	Ogre::Radian camRotX, camRotY;
+	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
+	float camDist, minCamDist, camRatio;
+	float targetDirection, targetPitch;
 };
 
 #endif // __CAMERA_BEHAVIOR_ORBIT_H_

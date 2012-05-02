@@ -37,6 +37,32 @@ class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
 	friend class SceneMouse;
 
+public:
+
+	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam);
+	~CameraManager();
+
+	enum CameraBehaviors
+	{
+		CAMERA_CHARACTER=0
+	  , CAMERA_VEHICLE_INTERNAL
+	  , CAMERA_VEHICLE_ORBIT
+	  , CAMERA_VEHICLE_SPLINE
+	  , CAMERA_FIXED
+	  , CAMERA_END
+	  , CAMERA_FREE
+	};
+	
+	void switchBehavior(int newBehavior);
+	void switchToNextBehavior();
+	void update(float dt);
+
+	bool allowInteraction();
+
+	Ogre::Camera *getCamera() { return mCamera; };
+	int getCameraMode() { return mCamera->getPolygonMode(); };
+	inline DOFManager *getDOFManager() { return mDOF; }
+
 protected:
 
 	DOFManager *mDOF;
@@ -53,38 +79,11 @@ protected:
 
 	std::map <int , CameraBehavior *> globalBehaviors;
 
-	void switchBehavior(int newBehavior);
-	void switchToNextBehavior();
 	void createGlobalBehaviors();
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
-
-public:
-
-	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam);
-	~CameraManager();
-
-	enum
-	{
-		CAMERA_CHARACTER_ORBIT=0
-	  , CAMERA_VEHICLE_INTERNAL
-	  , CAMERA_VEHICLE_ORBIT
-	  , CAMERA_VEHICLE_SPLINE
-	  , CAMERA_FIXED
-	  , CAMERA_END
-	  , CAMERA_FREE
-	};
-	
-	void triggerFOVUpdate() { /*TODO: Think about this*/ };
-	void update(float dt);
-
-	bool allowInteraction();
-
-	Ogre::Camera *getCamera() { return mCamera; };
-	int getCameraMode() { return mCamera->getPolygonMode(); };
-	inline DOFManager *getDOFManager() { return mDOF; }
 };
 
 #endif // __CAMERA_MANAGER_H_

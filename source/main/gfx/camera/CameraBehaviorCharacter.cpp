@@ -17,11 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorCharacterOrbit.h"
+#include "CameraBehaviorCharacter.h"
 
 #include "RoRFrameListener.h"
 
-void CameraBehaviorCharacterOrbit::update(cameraContext_t &ctx)
+void CameraBehaviorCharacter::update(cameraContext_t &ctx)
 {
 	Character *person = RoRFrameListener::eflsingleton->person;
 
