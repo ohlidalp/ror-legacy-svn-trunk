@@ -36,7 +36,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicleInternal.h"
 #include "CameraBehaviorVehicleOrbit.h"
 #include "CameraBehaviorVehicleSpline.h"
-#include "CameraBehaviorWheelChase.h"
 #include "OverlayWrapper.h"
 
 using namespace Ogre;
@@ -81,12 +80,8 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleInternal()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
-
-	// TODO: Think about this. Do we really need this CameraBehavior, or could it be part of the CAMERA_VEHICLE_INTERNAL behavior?
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_WHEELCHASE, new CameraBehaviorWheelChase()) );
-	
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
 }
 
 #if 0

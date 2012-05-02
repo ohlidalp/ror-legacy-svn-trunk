@@ -212,7 +212,7 @@ public:
 
 	int getTimeStamp();
 
-	//these location MUST include a path separator at the end!
+	// this location MUST include a path separator at the end!
 	void setLocation(String cachepath, String configpath);
 	
 	// this is for stats only, maybe protect it by getter later
@@ -238,7 +238,7 @@ protected:
 
 	Ogre::String currentSHA1;	// stores sha1 over the content
 	int rgcounter;				// resource group counter, used to track the resource groups created
-	int modcounter;	// counter the number of mods
+	int modcounter;				// counter the number of mods
 
 
 
@@ -261,16 +261,16 @@ protected:
 	void addFile(Ogre::FileInfo f, String ext);	// adds a file to entries
 	void addFile(Ogre::String filename, Ogre::String archiveType, Ogre::String archiveDirectory, Ogre::String ext);
 
-	// reads all advanced infromation out of the entry's file
+	// reads all advanced information out of the entry's file
 	void fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
 	void fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
 
-	int isCacheValid();			// validate cache
-	void unloadUselessResourceGroups();		// unload unused resources afer cache generation
-	Ogre::String filenamesSHA1();	// generates the hash over the whole content
-	bool loadCache();			// loads cache config file, new format
-	String getCacheConfigFilename(bool full);	// returns filename of the cache file
-	int incrementalCacheUpdate();	// tries to update parts of the Cache only
+	int isCacheValid();                       // validate cache
+	void unloadUselessResourceGroups();       // unload unused resources after cache generation
+	Ogre::String filenamesSHA1();             // generates the hash over the whole content
+	bool loadCache();			              // loads cache config file, new format
+	String getCacheConfigFilename(bool full); // returns filename of the cache file
+	int incrementalCacheUpdate();             // tries to update parts of the Cache only
 
 	void generateFileCache(Cache_Entry &entry, Ogre::String directory=Ogre::String());	// generates a new cache
 	void deleteFileCache(char *filename); // removed files from cache

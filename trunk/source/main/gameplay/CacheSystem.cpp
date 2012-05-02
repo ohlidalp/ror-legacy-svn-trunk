@@ -26,7 +26,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "ImprovedConfigFile.h"
 #include "language.h"
-#include "ScopeLog.h"
 #include "SerializedRig.h"
 #include "Settings.h"
 #include "sha1.h"
@@ -545,13 +544,12 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 
 bool CacheSystem::loadCache()
 {
-	// clear possible generated entries
+	// Clear existing entries
 	entries.clear();
 
 	String cfgfilename = getCacheConfigFilename(false);
-	ImprovedConfigFile cfg;
 
-	if(!resourceExistsInAllGroups(cfgfilename))
+	if ( !resourceExistsInAllGroups(cfgfilename) )
 	{
 		LOG("unable to load config file: "+cfgfilename);
 		return false;
@@ -560,52 +558,55 @@ bool CacheSystem::loadCache()
 	String group = ResourceGroupManager::getSingleton().findGroupContainingResource(String(cfgfilename));
 	DataStreamPtr stream=ResourceGroupManager::getSingleton().openResource(cfgfilename, group);
 
-	String line;
-	LOG("CacheSystem::loadCache2");
+	LOG("CacheSystem::loadCache");
 
 	Cache_Entry t;
+	String line = "";
 	int mode = 0;
+
 	while( !stream->eof() )
 	{
 		line = stream->getLine();
-		if(StringUtil::startsWith(line, "shaone=") || StringUtil::startsWith(line, "modcount=") || StringUtil::startsWith(line, "cacheformat="))
-			// ignore here
-			continue;
 
 		// Ignore blanks & comments
-		if( !line.length() || line.substr( 0, 2 ) == "//" )
+		if ( line.empty() || line.substr( 0, 2 ) == "//" )
 		{
 			continue;
 		}
-		else
+
+		// Skip these
+		if ( StringUtil::startsWith(line, "shaone=") || StringUtil::startsWith(line, "modcount=") || StringUtil::startsWith(line, "cacheformat=") )
 		{
-			if (!mode)
+			continue;
+		}
+
+		if ( mode == 0 )
+		{
+			// No current entry
+			if ( line == "mod" )
 			{
-				// No current entry
-				if(line == "mod")
-				{
-					mode = 1;
-					t = Cache_Entry();
-					t.resourceLoaded=false;
-					t.deleted=false;
-					t.changedornew=false; // default upon loading
-					// Skip to and over next {
-					stream->skipLine("{");
-				}
-			} else if(mode == 1)
+				mode = 1;
+				t = Cache_Entry();
+				t.resourceLoaded = false;
+				t.deleted        = false;
+				t.changedornew   = false; // default upon loading
+				// Skip to and over next {
+				stream->skipLine("{");
+			}
+		} else if ( mode == 1 )
+		{
+			// Already in mod
+			if ( line == "}" )
 			{
-				// Already in mod
-				if (line == "}")
+				// Finished
+				if( !t.deleted )
 				{
-					// Finished
-					if(mode == 1 && !t.deleted)
-						entries.push_back(t);
-					mode = 0;
+					entries.push_back(t);
 				}
-				else
-				{
-					parseModAttribute(line, t);
-				}
+				mode = 0;
+			} else
+			{
+				parseModAttribute(line, t);
 			}
 		}
 	}
