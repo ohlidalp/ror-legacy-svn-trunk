@@ -52,8 +52,7 @@ public:
 	static const float ROLLOFF_FACTOR;
 	static const float REFERENCE_DISTANCE;
 	static const unsigned int MAX_HARDWARE_SOURCES = 32;
-	static const unsigned int MAX_AUDIO_SOURCES = 8192;
-	static const unsigned int MAX_AUDIO_BUFFERS = 2048;
+	static const unsigned int MAX_AUDIO_BUFFERS = 8192;
 
 private:
 	void recomputeAllSources();
@@ -73,18 +72,18 @@ private:
 
 	// Audio sources
 	int		m_audio_sources_in_use_count;
-	Sound*	m_audio_sources[MAX_AUDIO_SOURCES];
+	Sound*	m_audio_sources[MAX_AUDIO_BUFFERS];
 	// Helper for calculating the most audible sources
-	std::pair<int, float> m_audio_sources_most_audible[MAX_AUDIO_SOURCES];
+	std::pair<int, float> m_audio_sources_most_audible[MAX_AUDIO_BUFFERS];
 	
 	// Audio buffers: Array of AL buffers and filenames
-	int		m_audio_buffers_in_use_count;
-	ALuint	m_audio_buffers[MAX_AUDIO_BUFFERS];
+	int				m_audio_buffers_in_use_count;
+	ALuint			m_audio_buffers[MAX_AUDIO_BUFFERS];
 	Ogre::String	m_audio_buffer_file_name[MAX_AUDIO_BUFFERS];
 
-	Ogre::Vector3 camera_position;
-	ALCdevice *m_sound_device;
-	ALCcontext *m_sound_context;
+	Ogre::Vector3	camera_position;
+	ALCdevice		*m_sound_device;
+	ALCcontext		*m_sound_context;
 
 	float master_volume;
 };

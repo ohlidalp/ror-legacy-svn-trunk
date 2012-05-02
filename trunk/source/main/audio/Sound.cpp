@@ -18,24 +18,25 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef USE_OPENAL
+
 #include "Sound.h"
 #include "SoundManager.h"
 
 using namespace Ogre;
 
-#ifdef USE_OPENAL
-
-Sound::Sound(ALuint _buffer, SoundManager *_soundManager, int _sourceIndex) :
+Sound::Sound(ALuint _buffer, SoundManager *soundManager, int sourceIndex) :
 	  buffer(_buffer)
-	, soundManager(_soundManager)
-	, sourceIndex(_sourceIndex)
-	, hardware_index(-1)
-	, gain(1)
-	, pitch(1)
-	, loop(false)
+	, soundManager(soundManager)
+	, sourceIndex(sourceIndex)
+	, audibility(0.0f)
 	, enabled(true)
-	, should_play(false)
+	, gain(0.0f)
+	, hardware_index(-1)
+	, loop(false)
+	, pitch(1.0f)
 	, position(Vector3::ZERO)
+	, should_play(false)
 	, velocity(Vector3::ZERO)
 {
 }
@@ -45,23 +46,25 @@ void Sound::computeAudibility(Vector3 pos)
 	// Disable sound?
 	if (!enabled)
 	{
-		audibility = 0.0;
+		audibility = 0.0f;
 		return;
 	}
 
 	// First check if the sound is finished!
 	if (!loop && should_play && hardware_index!=-1)
 	{
-		int value;
+		int value = 0;
 		alGetSourcei((ALuint)soundManager->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
 		if (value != AL_PLAYING)
+		{
 			should_play = false;
+		}
 	}
 	
 	// Should it play at all?
-	if (!should_play || gain == 0.0)
+	if (!should_play || gain == 0.0f)
 	{
-		audibility = 0.0;
+		audibility = 0.0f;
 		return;
 	}
 
@@ -69,7 +72,7 @@ void Sound::computeAudibility(Vector3 pos)
 	
 	if (distance > soundManager->MAX_DISTANCE)
 	{
-		audibility = 0.0;
+		audibility = 0.0f;
 	} else if (distance < soundManager->REFERENCE_DISTANCE)
 	{
 		audibility = gain;
@@ -83,9 +86,9 @@ bool Sound::isPlaying()
 {
 	if (hardware_index != -1)
 	{
-		int value;
+		int value = 0;
 		alGetSourcei((ALuint)soundManager->getHardwareSource(hardware_index), AL_SOURCE_STATE, &value);
-		return (value==AL_PLAYING);
+		return (value == AL_PLAYING);
 	}
 	return false;
 }
@@ -122,7 +125,7 @@ void Sound::setGain(float gain)
 void Sound::setLoop(bool loop)
 {
 	this->loop = loop;
-	soundManager->recomputeSource(sourceIndex, REASON_LOOP, (loop)?1.0:0.0, NULL);
+	soundManager->recomputeSource(sourceIndex, REASON_LOOP, (loop) ? 1.0f : 0.0f, NULL);
 }
 
 void Sound::setPitch(float pitch)

@@ -27,7 +27,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include <AL/al.h>
 
-
 class Sound
 {
 	friend class SoundManager;
@@ -47,7 +46,7 @@ public:
 	bool getEnabled();
 	bool isPlaying();
 
-	enum { REASON_PLAY, REASON_STOP, REASON_GAIN, REASON_LOOP, REASON_PTCH, REASON_POSN, REASON_VLCT };
+	enum RecomputeSource { REASON_PLAY, REASON_STOP, REASON_GAIN, REASON_LOOP, REASON_PTCH, REASON_POSN, REASON_VLCT };
 
 private:
 	void computeAudibility(Ogre::Vector3 pos);
