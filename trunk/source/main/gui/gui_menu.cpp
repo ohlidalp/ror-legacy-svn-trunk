@@ -22,19 +22,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "gui_menu.h"
+
+#include "BeamFactory.h"
+#include "ChatSystem.h"
+#include "Ogre.h"
+#include "RoRFrameListener.h"
+#include "Savegame.h"
+#include "SelectorWindow.h"
+#include "Settings.h"
+#include "TextureToolWindow.h"
 #include "gui_friction.h"
 #include "gui_manager.h"
-#include "SelectorWindow.h"
-#include "RoRFrameListener.h"
-#include "Ogre.h"
-#include "Settings.h"
-#include "BeamFactory.h"
-#include "Savegame.h"
+#include "language.h"
 #include "network.h"
 #include "utils.h"
-#include "TextureToolWindow.h"
-
-#include "language.h"
 
 using namespace Ogre;
 

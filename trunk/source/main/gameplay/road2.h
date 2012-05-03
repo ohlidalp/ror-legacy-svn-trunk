@@ -35,7 +35,7 @@ public:
 	Road2(Ogre::SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id);
 	~Road2();
 
-	void addBlock(Ogre::Vector3 pos, Quaternion rot, int type, float width, float bwidth, float bheight, int pillartype=1);
+	void addBlock(Ogre::Vector3 pos, Ogre::Quaternion rot, int type, float width, float bwidth, float bheight, int pillartype=1);
 	/**
 	 * @param p1 Top left point.
 	 * @param p2 Top right point.
@@ -55,7 +55,7 @@ private:
 
 	inline Ogre::Vector3 baseOf(Ogre::Vector3 p);
 	void computePoints(Ogre::Vector3 *pts, Ogre::Vector3 pos, Ogre::Quaternion rot, int type, float width, float bwidth, float bheight);
-	void textureFit(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Ogre::Vector3 p4, int texfit, Vector2 *texc, Ogre::Vector3 pos, Ogre::Vector3 lastpos, float width);
+	void textureFit(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, Ogre::Vector3 p4, int texfit, Ogre::Vector2 *texc, Ogre::Vector3 pos, Ogre::Vector3 lastpos, float width);
 
 	typedef struct
 	{

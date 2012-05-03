@@ -18,20 +18,18 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "PreviewRenderer.h"
-#include "Ogre.h"
-#include "Settings.h"
 
-#include "RoRFrameListener.h"
 #include "AdvancedOgreFramework.h"
-
-#include "SkyManager.h"
-
 #include "Beam.h"
 #include "BeamFactory.h"
-#include "BeamEngine.h"
+#include "CameraManager.h"
+#include "RoRFrameListener.h"
+#include "RoRWindowEventUtilities.h"
+#include "Settings.h"
+#include "SkyManager.h"
 #include "utils.h"
 
-#include "CameraManager.h"
+using namespace Ogre;
 
 PreviewRenderer::PreviewRenderer()
 {
@@ -48,8 +46,8 @@ void PreviewRenderer::render()
 {
 	LOG("starting previewRenderer...");
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	Ogre::SceneManager *sceneMgr = RoRFrameListener::eflsingleton->getSceneMgr();
-	Ogre::Viewport *vp = RoRFrameListener::eflsingleton->getRenderWindow()->getViewport(0);
+	SceneManager *sceneMgr = RoRFrameListener::eflsingleton->getSceneMgr();
+	Viewport *vp = RoRFrameListener::eflsingleton->getRenderWindow()->getViewport(0);
 
 	// disable skybox
 	//sceneMgr->setSkyBox(false, "");
@@ -58,7 +56,7 @@ void PreviewRenderer::render()
 	// disable shadows
 	//vp->setShadowsEnabled(false);
 	// white background
-	//vp->setBackgroundColour(Ogre::ColourValue::White);
+	//vp->setBackgroundColour(ColourValue::White);
 	vp->setClearEveryFrame(true);
 
 	// better mipmapping
@@ -128,8 +126,8 @@ void PreviewRenderer::render()
 	AxisAlignedBox truckaab = AxisAlignedBox(truck->minx, truck->miny, truck->minz, truck->maxx, truck->maxy, truck->maxz);
 	aab.merge(truckaab);
 
-	Ogre::Vector3 maxVector = aab.getMaximum();
-	Ogre::Vector3 minVector = aab.getMinimum();
+	Vector3 maxVector = aab.getMaximum();
+	Vector3 minVector = aab.getMinimum();
 	LOG("Object bounds: "+TOSTRING(minVector)+" - "+TOSTRING(maxVector));
 
 	int z1 = (maxVector.z-minVector.z)/2 + (((maxVector.x-minVector.x)/2) / tan(fov / 2));
@@ -139,17 +137,17 @@ void PreviewRenderer::render()
 	camNode->setPosition(aab.getCenter());
 	camNode->attachObject(cam);
 
-	cam->setFOVy(Ogre::Angle(fov));
+	cam->setFOVy(Angle(fov));
 	cam->setNearClipDistance(1.0f);
-	cam->setPosition(Ogre::Vector3(0,12,std::max(z1, z2)+1));
+	cam->setPosition(Vector3(0,12,std::max(z1, z2)+1));
 
-	Ogre::Real radius = cam->getPosition().length();
+	Real radius = cam->getPosition().length();
 	cam->setPosition(0.0,0.0,0.0);
-	cam->setOrientation(Ogre::Quaternion::IDENTITY);
-	cam->yaw(Ogre::Degree(0));
-	cam->pitch(Ogre::Degree(-45));
+	cam->setOrientation(Quaternion::IDENTITY);
+	cam->yaw(Degree(0));
+	cam->pitch(Degree(-45));
 	
-	cam->moveRelative(Ogre::Vector3(0.0,0.0,radius));
+	cam->moveRelative(Vector3(0.0,0.0,radius));
 
 	cam->setAspectRatio(1.0f);
 
@@ -171,13 +169,13 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 		String oext = "ortho.";
 		if     (o == 0)
 		{
-			cam->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
+			cam->setProjectionType(PT_ORTHOGRAPHIC);
 			minCameraRadius = ominCameraRadius * 2.1f;
 		}
 		else if(o == 1)
 		{
 			oext = "3d.";
-			cam->setProjectionType(Ogre::PT_PERSPECTIVE);
+			cam->setProjectionType(PT_PERSPECTIVE);
 			minCameraRadius = ominCameraRadius * 2.4f;
 		}
 
@@ -286,12 +284,12 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 			{
 				Radian yaw = Degree(-10); //Degree((20.0f * i) * yDivFactor - 10); //0, 45, 90, 135, 180, 225, 270, 315
 
-				Ogre::Real radius = minCameraRadius; //renderCamera->getPosition().length();
+				Real radius = minCameraRadius; //renderCamera->getPosition().length();
 				renderCamera->setPosition(Vector3::ZERO);
-				renderCamera->setOrientation(Ogre::Quaternion::IDENTITY);
-				renderCamera->yaw(Ogre::Degree(pitch));
-				renderCamera->pitch(Ogre::Degree(yaw));
-				renderCamera->moveRelative(Ogre::Vector3(0.0, 0.0, radius));
+				renderCamera->setOrientation(Quaternion::IDENTITY);
+				renderCamera->yaw(Degree(pitch));
+				renderCamera->pitch(Degree(yaw));
+				renderCamera->moveRelative(Vector3(0.0, 0.0, radius));
 
  				char tmp[56];
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy
@@ -308,7 +306,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				//renderViewport->setDimensions((float)(o) * xDivFactor, (float)(i) * yDivFactor, xDivFactor, yDivFactor);
 
 				RoRWindowEventUtilities::messagePump();
-				Ogre::Root::getSingleton().renderOneFrame();
+				Root::getSingleton().renderOneFrame();
 				renderTarget->update();
 #ifdef USE_CAELUM
 				if(SkyManager::getSingletonPtr())
@@ -330,11 +328,11 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 }
 
 
-void PreviewRenderer::render(Ogre::String ext)
+void PreviewRenderer::render(String ext)
 {
 	// create some screenshot
 	RoRWindowEventUtilities::messagePump();
-	Ogre::Root::getSingleton().renderOneFrame();
+	Root::getSingleton().renderOneFrame();
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->update();
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->writeContentsToFile(fn+"."+ext+".jpg");
 }

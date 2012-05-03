@@ -21,6 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRFrameListener.h"
 
+using namespace Ogre;
+
 void CameraBehaviorCharacter::update(cameraContext_t &ctx)
 {
 	Character *person = RoRFrameListener::eflsingleton->person;

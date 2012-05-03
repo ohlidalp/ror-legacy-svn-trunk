@@ -19,9 +19,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 24th of February 2009 by Thomas Fischer
 #include "ScriptEngine.h"
-#include "Ogre.h"
-#include "RoRFrameListener.h"
-#include "BeamFactory.h"
 
 // AS addons start
 #include "scriptstdstring/scriptstdstring.h"
@@ -41,31 +38,21 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <curl/easy.h>
 #endif //USE_CURL
 
-#include "rornet.h"
-#include "water.h"
-#include "Beam.h"
-#include "Settings.h"
-#include "Console.h"
-#include "OverlayWrapper.h"
-#include "SkyManager.h"
-#include "CacheSystem.h"
+#include "AdvancedOgreFramework.h"
 #include "as_ogre.h"
+#include "Beam.h"
+#include "Console.h"
 #include "LocalStorage.h"
-#include "SelectorWindow.h"
-#include "sha1.h"
-#include "collisions.h"
+#include "Settings.h"
 
 #include "GameScript.h"
 #include "OgreScriptBuilder.h"
 #include "CBytecodeStream.h"
 #include "ScriptEvents.h"
 
-//using namespace Ogre;
-//using namespace std;
-//using namespace AngelScript;
-
 const char *ScriptEngine::moduleName = "RoRScript";
 
+using namespace Ogre;
 
 // some hacky functions
 
@@ -76,19 +63,19 @@ void logString(const std::string &str)
 
 // the class implementation
 
-ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *_coll) :
+ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *coll) :
 	  mefl(efl)
-	, coll(_coll)
-	, engine(0)
+	, coll(coll)
 	, context(0)
-	, frameStepFunctionPtr(-1)
-	, wheelEventFunctionPtr(-1)
-	, eventCallbackFunctionPtr(-1)
 	, defaultEventCallbackFunctionPtr(-1)
+	, engine(0)
+	, eventCallbackFunctionPtr(-1)
 	, eventMask(0)
-	, scriptName()
+	, frameStepFunctionPtr(-1)
 	, scriptHash()
 	, scriptLog(0)
+	, scriptName()
+	, wheelEventFunctionPtr(-1)
 {
 	setSingleton(this);
 	callbacks["on_terrain_loading"] = std::vector<int>();
@@ -115,9 +102,9 @@ ScriptEngine::~ScriptEngine()
 
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
-void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+void ScriptEngine::messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName)
 #else
-void ScriptEngine::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
+void ScriptEngine::messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName, bool& skipThisMessage)
 #endif // OGRE_VERSION
 {
 #ifdef USE_MYGUI
@@ -531,7 +518,7 @@ void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 	SLOG(tmp);
 }
 
-int ScriptEngine::framestep(Ogre::Real dt)
+int ScriptEngine::framestep(Real dt)
 {
 
 #if 0
@@ -597,9 +584,9 @@ int ScriptEngine::framestep(Ogre::Real dt)
 #endif // 0
 
 	// Check if we need to execute any strings
-	std::vector<Ogre::String> tmpQueue;
+	std::vector<String> tmpQueue;
 	stringExecutionQueue.pull(tmpQueue);
-	std::vector<Ogre::String>::iterator it;
+	std::vector<String>::iterator it;
 	for(it=tmpQueue.begin(); it!=tmpQueue.end();it++)
 	{
 		executeString(*it);
@@ -687,12 +674,12 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	return 0;
 }
 
-void ScriptEngine::queueStringForExecution(const Ogre::String command)
+void ScriptEngine::queueStringForExecution(const String command)
 {
 	stringExecutionQueue.push(command);
 }
 
-int ScriptEngine::executeString(Ogre::String command)
+int ScriptEngine::executeString(String command)
 {
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
@@ -705,7 +692,7 @@ int ScriptEngine::executeString(Ogre::String command)
 	return result;
 }
 
-int ScriptEngine::addFunction(const Ogre::String &arg)
+int ScriptEngine::addFunction(const String &arg)
 {
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
@@ -762,7 +749,7 @@ int ScriptEngine::addFunction(const Ogre::String &arg)
 	return r;
 }
 
-int ScriptEngine::functionExists(const Ogre::String &arg)
+int ScriptEngine::functionExists(const String &arg)
 {
 	if(!engine) return -1;
 	if(!context) context = engine->CreateContext();
@@ -772,7 +759,7 @@ int ScriptEngine::functionExists(const Ogre::String &arg)
 	else return mod->GetFunctionIdByDecl(arg.c_str());
 }
 
-int ScriptEngine::deleteFunction(const Ogre::String &arg)
+int ScriptEngine::deleteFunction(const String &arg)
 {
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
@@ -822,7 +809,7 @@ int ScriptEngine::deleteFunction(const Ogre::String &arg)
 	return id;
 }
 
-int ScriptEngine::addVariable(const Ogre::String &arg)
+int ScriptEngine::addVariable(const String &arg)
 {
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
@@ -839,7 +826,7 @@ int ScriptEngine::addVariable(const Ogre::String &arg)
 	return r;
 }
 
-int ScriptEngine::deleteVariable(const Ogre::String &arg)
+int ScriptEngine::deleteVariable(const String &arg)
 {
 	if(!engine) return 1;
 	if(!context) context = engine->CreateContext();
@@ -892,7 +879,7 @@ void ScriptEngine::triggerEvent(int eventnum, int value)
 	}
 }
 
-int ScriptEngine::loadScript(Ogre::String _scriptName)
+int ScriptEngine::loadScript(String _scriptName)
 {
 	scriptName = _scriptName;
 
@@ -1059,9 +1046,9 @@ int ScriptEngine::loadScript(Ogre::String _scriptName)
 }
 
 
-Ogre::StringVector ScriptEngine::getAutoComplete(Ogre::String command)
+StringVector ScriptEngine::getAutoComplete(String command)
 {
-	Ogre::StringVector result;
+	StringVector result;
 	if(!engine) return result;
 	if(!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);

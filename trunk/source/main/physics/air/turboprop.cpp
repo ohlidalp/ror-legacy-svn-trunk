@@ -17,10 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "turboprop.h"
+
 #include "Airfoil.h"
 #include "Scripting.h"
 #include "SoundScriptManager.h"
-#include "turboprop.h"
+
+using namespace Ogre;
 
 Turboprop::Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, int nb, int np1, int np2, int np3, int np4, int tqn, float power, char* propfoilname, int mnumber, int trucknum, bool disable_smoke, bool ispiston, float fpitch, bool _heathaze)
 {

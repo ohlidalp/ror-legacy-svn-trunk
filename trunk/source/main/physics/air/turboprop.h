@@ -46,12 +46,12 @@ private:
 	float pitchspeed;
 	float maxrevpitch;
 	float regspeed;
-	SceneNode* vspinner;
-	SceneNode* vpales[4];
+	Ogre::SceneNode* vspinner;
+	Ogre::SceneNode* vpales[4];
 	int free_vpale;
-	ParticleSystem* smokePS;
-	ParticleSystem* heathazePS;
-    SceneNode *smokeNode;
+	Ogre::ParticleSystem* smokePS;
+	Ogre::ParticleSystem* heathazePS;
+    Ogre::SceneNode *smokeNode;
 	float twistmap[5];
 	double rotenergy;
 	float fixed_pitch;
@@ -67,7 +67,7 @@ private:
 	int noderef;
 	char debug[256];
 	float propwash;
-	Vector3 axis;
+	Ogre::Vector3 axis;
 	bool heathaze;
 	int trucknum;
 	int mod_id;
@@ -79,7 +79,7 @@ public:
 	float indicated_torque;
 	float max_torque;
 
-	Turboprop(SceneManager *manager, char* propname, node_t *nd, int nr, int nb, int np1, int np2, int np3, int np4, int tqn, float power, char* propfoilname, int mnumber, int trucknum, bool disable_smoke, bool ispiston, float fpitch, bool heathaze);
+	Turboprop(Ogre::SceneManager *manager, char* propname, node_t *nd, int nr, int nb, int np1, int np2, int np3, int np4, int tqn, float power, char* propfoilname, int mnumber, int trucknum, bool disable_smoke, bool ispiston, float fpitch, bool heathaze);
 
 	void updateVisuals();
 	void updateForces(float dt, int doUpdate);
@@ -94,21 +94,21 @@ public:
 
 	void flipStart();
 
-	void addPale(SceneNode* sn);
+	void addPale(Ogre::SceneNode* sn);
 
-	void addSpinner(SceneNode* sn);
+	void addSpinner(Ogre::SceneNode* sn);
 
 	float getRPM() { return rpm; };
-	float getRPMpc() { return rpm/10.0; };
+	float getRPMpc() { return rpm / 10.0f; };
 	void setRPM(float _rpm);
-	float getpropwash() {return propwash;};
-	Vector3 getAxis() {return axis;};
-	bool isFailed() {return failed;};
-	int getType() {return AEROENGINE_TYPE_TURBOPROP;};
-	bool getIgnition() {return ignition;};
-	int getNoderef() {return noderef;};
-	bool getWarmup() {return warmup;};
-	float getRadius() {return radius;};
+	float getpropwash() { return propwash; };
+	Ogre::Vector3 getAxis() { return axis; };
+	bool isFailed() { return failed; };
+	int getType() { return AEROENGINE_TYPE_TURBOPROP; };
+	bool getIgnition() { return ignition; };
+	int getNoderef() { return noderef; };
+	bool getWarmup() { return warmup; };
+	float getRadius() { return radius; };
 };
 
 #endif // __Turboprop_H_

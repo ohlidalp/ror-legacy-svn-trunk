@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "airbrake.h"
 #include "approxmath.h"
 #include "Beam.h"
@@ -29,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "Differentials.h"
 #include "FlexAirfoil.h"
+#include "InputEngine.h"
 #include "Replay.h"
 #include "screwprop.h"
 #include "SoundScriptManager.h"
@@ -41,10 +41,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	Beam** trucks = BeamFactory::getSingleton().getTrucks();
 	int numtrucks = BeamFactory::getSingleton().getTruckCount();
 
-	// do not calc anything if we are going to get deleted
-	if(deleting) return;
+	// do not calculate anything if we are going to get deleted
+	if (deleting) return;
 
-	int i,j;
 	if (dt==0.0) return;
 	if (reset_requested) return;
 
@@ -70,7 +69,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	//springs
 	Vector3 dis;
 	Vector3 v;
-	for (i=0; i<free_beam; i++)
+	for (int i=0; i<free_beam; i++)
 	{
 		//trick for exploding stuff
 		if (!beams[i].disabled)
@@ -347,7 +346,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		//we need to do this here to avoid countdown speedup by triggers
 		it->timer -= dt;
 		if (it->timer < 0)
+		{
 			it->timer = 0.0f;
+		}
 	}
 	if(doUpdate)
 	{
@@ -650,7 +651,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	//skeleton colouring
 	if (((skeleton && doUpdate) || replay) )
 	{
-		for (i=0; i<free_beam; i++)
+		for (int i=0; i<free_beam; i++)
 		{
 			if (!beams[i].disabled)
 			{
@@ -681,7 +682,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_Rigidifiers);
 
 	//the rigidifiers
-	for (i=0; i<free_rigidifier; i++)
+	for (int i=0; i<free_rigidifier; i++)
 	{
 		//failsafe
 		if ((rigidifiers[i].beama && rigidifiers[i].beama->broken) || (rigidifiers[i].beamc && rigidifiers[i].beamc->broken)) continue;
@@ -840,7 +841,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	float tmaxy=tminy;
 	float tminz=nodes[0].AbsPosition.z;
 	float tmaxz=tminz;
-	for (i=0; i<free_node; i++)
+	for (int i=0; i<free_node; i++)
 	{
 		//if (_isnan(nodes[i].Position.length())) LOG("Node is NaN "+TOSTRING(i));
 
@@ -892,7 +893,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 #ifdef USE_OPENAL
 								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
 								SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_SCREETCH);
-#endif // USE_OPENAL
+#endif //USE_OPENAL
 							}
 
 							//sparks
@@ -1059,21 +1060,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_Turboprop);
 
 	//turboprop forces
-	for (i=0; i<free_aeroengine; i++)
+	for (int i=0; i<free_aeroengine; i++)
 		if(aeroengines[i]) aeroengines[i]->updateForces(dt, doUpdate);
 
 	BES_STOP(BES_CORE_Turboprop);
 	BES_START(BES_CORE_Screwprop);
 
 	//screwprop forces
-	for (i=0; i<free_screwprop; i++)
+	for (int i=0; i<free_screwprop; i++)
 		if(screwprops[i]) screwprops[i]->updateForces(doUpdate);
 
 	BES_STOP(BES_CORE_Screwprop);
 	BES_START(BES_CORE_Wing);
 
 	//wing forces
-	for (i=0; i<free_wing; i++)
+	for (int i=0; i<free_wing; i++)
 		if(wings[i].fa) wings[i].fa->updateForces();
 
 	BES_STOP(BES_CORE_Wing);
@@ -1127,7 +1128,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if (!(step%20))
 		{
 			//clear forces
-			for (i=0; i<free_buoycab; i++)
+			for (int i=0; i<free_buoycab; i++)
 			{
 				int tmpv=buoycabs[i]*3;
 				nodes[cabs[tmpv]].buoyanceForce=0;
@@ -1135,14 +1136,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				nodes[cabs[tmpv+2]].buoyanceForce=0;
 			}
 			//add forces
-			for (i=0; i<free_buoycab; i++)
+			for (int i=0; i<free_buoycab; i++)
 			{
 				int tmpv=buoycabs[i]*3;
 				buoyance->computeNodeForce(&nodes[cabs[tmpv]], &nodes[cabs[tmpv+1]], &nodes[cabs[tmpv+2]], doUpdate, buoycabtypes[i]);
 			}
 		}
 		//apply forces
-		for (i=0; i<free_node; i++)
+		for (int i=0; i<free_node; i++)
 		{
 			nodes[i].Forces+=nodes[i].buoyanceForce;
 		}
@@ -1170,7 +1171,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	if( free_axle == 0)
 	{
 		//first, evaluate torque from inter-differential locking
-		for (i=0; i<proped_wheels/2-1; i++)
+		for (int i=0; i<proped_wheels/2-1; i++)
 		{
 			float speed1=(wheels[proppairs[i*2]].speed+wheels[proppairs[i*2+1]].speed)*0.5f;
 			float speed2=(wheels[proppairs[i*2+2]].speed+wheels[proppairs[i*2+3]].speed)*0.5f;
@@ -1183,9 +1184,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	}
 
 	// new-style Axles
-	// loop through all axles for interaxle torque, this is the torsion to keep
+	// loop through all axles for inter axle torque, this is the torsion to keep
 	// the axles aligned with each other as if they connected by a shaft
-	for (i = 1; i < free_axle; ++i)
+	for (int i=1; i<free_axle; i++)
 	{
 		if(!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
@@ -1219,7 +1220,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	}
 
 	// loop through all the wheels (new style again)
-	for (i = 0; i < free_axle; ++i)
+	for (int i=0; i<free_axle; i++)
 	{
 		if(!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
@@ -1278,7 +1279,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	if(driveable == TRUCK && engine)
 		currentAcc = engine->getAcc();
 
-	for (i=0; i<free_wheel; i++)
+	for (int i=0; i<free_wheel; i++)
 	{
 		Real speedacc=0.0;
 
@@ -1430,7 +1431,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		float axis_precalc=total_torque/(Real)(wheels[i].nbnodes);
 		axis=fast_normalise(axis);
 
-		for (j=0; j<wheels[i].nbnodes; j++)
+		for (int j=0; j<wheels[i].nbnodes; j++)
 		{
 			Vector3 radius;
 			if (j%2)
@@ -1505,7 +1506,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	}
 
 	//LOG("torque "+TOSTRING(torques[0])+" "+TOSTRING(torques[1])+" "+TOSTRING(torques[2])+" "+TOSTRING(torques[3])+" speed "+TOSTRING(newspeeds[0])+" "+TOSTRING(newspeeds[1])+" "+TOSTRING(newspeeds[2])+" "+TOSTRING(newspeeds[3]));
-	for (i=0; i<free_wheel; i++) wheels[i].speed=newspeeds[i];
+	for (int i=0; i<free_wheel; i++) wheels[i].speed=newspeeds[i];
 	//wheel speed
 	if (proped_wheels) wspeed/=(float)proped_wheels;
 	lastwspeed=wspeed;
@@ -1542,7 +1543,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	{
 		if ((stabcommand==1 && stabratio<0.1) || (stabcommand==-1 && stabratio>-0.1))
 			stabratio=stabratio+(float)stabcommand*dt*STAB_RATE;
-		for (i=0; i<free_shock; i++)
+		for (int i=0; i<free_shock; i++)
 		{
 			// active shocks now
 			if (shocks[i].flags & SHOCK_FLAG_RACTIVE)
@@ -1719,14 +1720,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	// forward things to trailers
 	if (state==ACTIVATED && forwardcommands)
 	{
-		int i,j;
-		for (i=0; i<numtrucks; i++)
+		for (int i=0; i<numtrucks; i++)
 		{
 			if(!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
 			{
 				// forward commands
-				for (j=1; j<MAX_COMMANDS; j++)
+				for (int j=1; j<MAX_COMMANDS; j++)
 					trucks[i]->commandkey[j].commandValue = commandkey[j].commandValue;
 
 				// just send brake and lights to the connected truck, and no one else :)
@@ -1766,7 +1766,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if(driveable==MACHINE)
 			crankfactor = 2;
 
-		for (i=0; i<=MAX_COMMANDS; i++)
+		for (int i=0; i<=MAX_COMMANDS; i++)
 		{
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 			{
@@ -1776,7 +1776,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			}
 		}
 
-		for (i=0; i<=MAX_COMMANDS; i++)
+		for (int i=0; i<=MAX_COMMANDS; i++)
 		{
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 			{
@@ -1826,12 +1826,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		}
 
 		// now process normal commands
-		for (i=0; i<=MAX_COMMANDS; i++)
+		for (int i=0; i<=MAX_COMMANDS; i++)
 		{
-			int j;
-
 			bool requestpower = false;
-			for (j=0; j < (int)commandkey[i].beams.size(); j++)
+			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 			{
 				int bbeam=commandkey[i].beams[j];
 				int bbeam_abs=abs(bbeam);
@@ -1963,7 +1961,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 								// already running, modulate
 								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_LINKED_COMMANDRATE, v, SL_COMMAND, i);
 							}
-#endif // USE_OPENAL
+#endif //USE_OPENAL
 
 							beams[bbeam].L *= (1.0 + beams[bbeam].commandRatioLong * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
@@ -2057,7 +2055,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 								// already running, modulate
 								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_LINKED_COMMANDRATE, v, SL_COMMAND, -i);
 							}
-#endif // USE_OPENAL
+#endif //USE_OPENAL
 							beams[bbeam].L *= (1.0 - beams[bbeam].commandRatioShort * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
 							if(v>0.5)
@@ -2078,8 +2076,8 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					};
 				}
 			}
-			//also for rotators
-			for (j=0; j < (int)commandkey[i].rotators.size(); j++)
+			// also for rotators
+			for (int j=0; j < (int)commandkey[i].rotators.size(); j++)
 			{
 				if ((commandkey[i].rotators[j])>0)
 				{
@@ -2121,34 +2119,35 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			if (active)
 			{
 				SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_PUMP);
-				float pump_rpm=660.0*(1.0-(work/(float)active)/100.0);
+				float pump_rpm=660.0f*(1.0f-(work/(float)active)/100.0f);
 				SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_PUMP, pump_rpm);
 			} else
+			{
 				SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_PUMP);
-#endif //OPENAL
+			}
+#endif //USE_OPENAL
 		}
-		//rotators
-		for (i=0; i<free_rotator; i++)
+		// rotators
+		for (int i=0; i<free_rotator; i++)
 		{
-			//compute rotation axis
+			// compute rotation axis
 			Vector3 axis=nodes[rotators[i].axis1].RelPosition-nodes[rotators[i].axis2].RelPosition;
 			//axis.normalise();
 			axis=fast_normalise(axis);
-			//find the reference plane
+			// find the reference plane
 			Plane pl=Plane(axis, 0);
-			//for each pair
-			int k;
-			for (k=0; k<2; k++)
+			// for each pair
+			for (int k=0; k<2; k++)
 			{
-				//find the reference vectors
+				// find the reference vectors
 				Vector3 ref1=pl.projectVector(nodes[rotators[i].axis2].RelPosition-nodes[rotators[i].nodes1[k]].RelPosition);
 				Vector3 ref2=pl.projectVector(nodes[rotators[i].axis2].RelPosition-nodes[rotators[i].nodes2[k]].RelPosition);
-				//theory vector
+				// theory vector
 				Vector3 th1=Quaternion(Radian(rotators[i].angle+3.14159/2.0), axis)*ref1;
-				//find the angle error
+				// find the angle error
 				float aerror=asin((th1.normalisedCopy()).dotProduct(ref2.normalisedCopy()));
-				//			mWindow->setDebugText("Error:"+ TOSTRING(aerror));
-				//exert forces
+				//mWindow->setDebugText("Error:"+ TOSTRING(aerror));
+				// exert forces
 				float rigidity=rotators[i].force;
 				Vector3 dir1=ref1.crossProduct(axis);
 				//dir1.normalise();
@@ -2159,13 +2158,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				float ref1len=ref1.length();
 				float ref2len=ref2.length();
 
-				//simple jitter fix
+				// simple jitter fix
 				if (ref1len <= rotators[i].tolerance) ref1len = 0.0f;
 				if (ref2len <= rotators[i].tolerance) ref2len = 0.0f;
 
 				nodes[rotators[i].nodes1[k]].Forces+=(aerror*ref1len*rigidity)*dir1;
 				nodes[rotators[i].nodes2[k]].Forces-=(aerror*ref2len*rigidity)*dir2;
-				//symmetric
+				// symmetric
 				nodes[rotators[i].nodes1[k+2]].Forces-=(aerror*ref1len*rigidity)*dir1;
 				nodes[rotators[i].nodes2[k+2]].Forces+=(aerror*ref2len*rigidity)*dir2;
 			}
@@ -2175,7 +2174,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_STOP(BES_CORE_Commands);
 	BES_START(BES_CORE_Replay);
 
-	//we also store a new replay frame
+	// we also store a new replay frame
 	if(replay && replay->isValid())
 	{
 		replayTimer += dt;
@@ -2185,12 +2184,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);
 			if(nbuff)
 			{
-				for (i=0; i<free_node; i++)
+				for (int i=0; i<free_node; i++)
 					nbuff[i].pos = nodes[i].AbsPosition;
 
 				// store beams
 				beam_simple_t *bbuff = (beam_simple_t *)replay->getWriteBuffer(1);
-				for (i=0; i<free_beam; i++)
+				for (int i=0; i<free_beam; i++)
 				{
 					bbuff[i].scale = beams[i].scale;
 					bbuff[i].broken = beams[i].broken;

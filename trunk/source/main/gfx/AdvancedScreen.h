@@ -20,12 +20,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // create by thomas fischer, 6th of februray 2011
 
-#ifndef AdvancedScreen_H__
-#define AdvancedScreen_H__
+#ifndef __AdvancedScreen_H_
+#define __AdvancedScreen_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include <map>
 
 #define SET_BIT(var, pos)   ((var) |= (1<<(pos)))
 #define CLEAR_BIT(var, pos) ((var) &= ~(1<<(pos)))
@@ -37,12 +35,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class AdvancedScreen
 {
-protected:
-	Ogre::RenderWindow *win;
-	Ogre::String filename;
-	std::map<Ogre::String, Ogre::String> map;
 public:
-	AdvancedScreen(Ogre::RenderWindow *win, Ogre::String filename) : win(win), filename(filename)
+
+	AdvancedScreen(Ogre::RenderWindow *win, Ogre::String filename) :
+		  win(win)
+		, filename(filename)
 	{
 	}
 	
@@ -52,7 +49,7 @@ public:
 
 	void addData(Ogre::String name, Ogre::String value)
 	{
-		if(value.empty()) return;
+		if ( value.empty() ) return;
 		map[name] = value;
 	}
 
@@ -67,43 +64,43 @@ public:
 
 		// grab the image data
 		Ogre::PixelFormat pf = Ogre::PF_B8G8R8; //win->suggestPixelFormat();
-		long isize = mWidth * mHeight * (long)PixelUtil::getNumElemBytes(pf);
-		uchar *data = OGRE_ALLOC_T(uchar, isize, MEMCATEGORY_RENDERSYS);
+		long isize = mWidth * mHeight * (long)Ogre::PixelUtil::getNumElemBytes(pf);
+		Ogre::uchar *data = OGRE_ALLOC_T(Ogre::uchar, isize, Ogre::MEMCATEGORY_RENDERSYS);
 		Ogre::PixelBox pb(mWidth, mHeight, 1, pf, data);
 		win->copyContentsToMemory(pb);
 		
 		// now do the fancy stuff ;)
 
 		// 0. allocate enough buffer
-		uchar *databuf = OGRE_ALLOC_T(uchar, 32768, MEMCATEGORY_RENDERSYS);
+		Ogre::uchar *databuf = OGRE_ALLOC_T(Ogre::uchar, 32768, Ogre::MEMCATEGORY_RENDERSYS);
 		char *ptr = (char *)databuf;
 		// header
 		long dsize = 0;
-		int w = sprintf(ptr, "RORED\n");
-		ptr += w;
+		int w  = sprintf(ptr, "RORED\n");
+		ptr   += w;
 		dsize += w;
 
 		// 1. convert the std::map to something properly
-		for(std::map<Ogre::String, Ogre::String>::iterator it = map.begin(); it != map.end(); it++)
+		for (std::map<Ogre::String, Ogre::String>::iterator it = map.begin(); it != map.end(); it++)
 		{
 			int w2 = sprintf(ptr, "%s:%s\n", it->first.c_str(), it->second.c_str());
-			ptr += w2;
+			ptr   += w2;
 			dsize += w2;
 		}
 
 		// now buffer ready, put it into the image
-		uchar *ptri = data;
+		Ogre::uchar *ptri = data;
 		// set data pointer to the start again
 		ptr = (char *)databuf;
 		int bc = 7;
-		for(long b = 0; b < isize && b < dsize * 8 + 40; b++, ptri++) // 40 = 5 zero bytes
+		for (long b = 0; b < isize && b < dsize * 8 + 40; b++, ptri++) // 40 = 5 zero bytes
 		{
-			if(CHECK_BIT(*ptr, bc))
+			if ( CHECK_BIT(*ptr, bc) )
 				SET_LSB(*ptri);
 			else
 				CLEAR_LSB(*ptri);
 			bc--;
-			if(bc<0)
+			if ( bc < 0 )
 			{
 				bc=7;
 				ptr++;
@@ -117,8 +114,15 @@ public:
 		img.loadDynamicImage(data, mWidth, mHeight, 1, pf, false, 1, 0);
 		img.save(filename);
 
-		OGRE_FREE(data, MEMCATEGORY_RENDERSYS);
-		OGRE_FREE(databuf, MEMCATEGORY_RENDERSYS);
+		OGRE_FREE(data, Ogre::MEMCATEGORY_RENDERSYS);
+		OGRE_FREE(databuf, Ogre::MEMCATEGORY_RENDERSYS);
 	}
+
+protected:
+
+	Ogre::RenderWindow *win;
+	Ogre::String filename;
+	std::map<Ogre::String, Ogre::String> map;
 };
-#endif //AdvancedScreen_H__
+
+#endif // __AdvancedScreen_H_

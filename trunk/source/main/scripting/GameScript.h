@@ -23,19 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include <string>
-#include <angelscript.h>
-#include <Ogre.h>
-#include <OgreLogManager.h>
-
-#include "scriptdictionary/scriptdictionary.h"
-#include "scriptbuilder/scriptbuilder.h"
-
-#include "collisions.h"
-
 #include "ScriptEngine.h"
 
-#include "ImprovedConfigFile.h"
+#include <angelscript.h>
 
 struct curlMemoryStruct {
   char *memory;
@@ -299,7 +289,7 @@ public:
 	int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
 	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
 	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
-	int getSafeTextureUnitState(TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum);
+	int getSafeTextureUnitState(Ogre::TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum);
 	int setMaterialTextureName(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, const std::string &textureName);
 	int setMaterialTextureRotate(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation);
 	int setMaterialTextureScroll(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy);

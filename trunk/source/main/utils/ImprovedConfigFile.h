@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef IMPROVEDCONFIGFILE_H_
-#define IMPROVEDCONFIGFILE_H_
+#ifndef __IMPROVEDCONFIGFILE_H_
+#define __IMPROVEDCONFIGFILE_H_
 
 #include "RoRPrerequisites.h"
 #include <Ogre.h>
@@ -164,4 +164,5 @@ protected:
 };
 
 };
-#endif
+
+#endif // __IMPROVEDCONFIGFILE_H_

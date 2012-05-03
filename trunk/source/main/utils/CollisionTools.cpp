@@ -542,7 +542,7 @@ void CollisionTools::getStaticGeometry(
 		const Ogre::Quaternion &orient,
 		const Ogre::Vector3 &scale)
 {
-	//  iterate regions
+	// iterate regions
 	std::vector<Ogre::Vector3> vertices;
 	std::vector<unsigned int> indices;
 	size_t next_offset = 0;
@@ -550,7 +550,7 @@ void CollisionTools::getStaticGeometry(
 	Ogre::Vector3 center = rg->getCentre();
 	Ogre::StaticGeometry::Region::LODIterator lit(rg->getLODIterator());
 
-	//  use the closest LOD of each block
+	// use the closest LOD of each block
 	float sqdist = 1e24;
 	Ogre::StaticGeometry::LODBucket *theBucket = 0;
 
@@ -571,7 +571,6 @@ void CollisionTools::getStaticGeometry(
 
 	while (mit.hasMoreElements())
 	{
-
 		Ogre::StaticGeometry::MaterialBucket *mb = mit.getNext();
 		Ogre::StaticGeometry::MaterialBucket::GeometryIterator git(mb->getGeometryIterator());
 		while (git.hasMoreElements())

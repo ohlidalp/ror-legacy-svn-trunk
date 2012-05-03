@@ -24,15 +24,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif //OGRE_PLATFORM_LINUX
 
-
 #include <Ogre.h>
 #include <OgreStringConverter.h>
 #include <OgreException.h>
-#include "RoRWindowEventUtilities.h"
-#include "Settings.h"
 
 #include "AdvancedOgreFramework.h"
 #include "errorutils.h"
+#include "RoRWindowEventUtilities.h"
+#include "Settings.h"
 
 #ifndef NOOGRE
 #include "Console.h"
@@ -2537,9 +2536,8 @@ bool InputEngine::processLine(char *line)
 		}
 	case ET_JoystickButton:
 		{
-			int buttonNo=0;
-			char tmp2[256];
-			memset(tmp2, 0 ,255);
+			int buttonNo = 0;
+			char tmp2[256] = {};
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &buttonNo, tmp2);
 			event_trigger_t t_joy = newEvent();
 			//memset(&t_joy, 0, sizeof(event_trigger_t));
@@ -2553,7 +2551,7 @@ bool InputEngine::processLine(char *line)
 				strncpy(t_joy.configline, tmp2, 128);
 			} else
 			{
-				char tmp[256];
+				char tmp[256] = {};
 				sprintf(tmp, "%d", buttonNo);
 				strncpy(t_joy.configline, tmp, 128);
 			}
@@ -2569,7 +2567,6 @@ bool InputEngine::processLine(char *line)
 		{
 			int axisNo = 0;
 			char options[256] = {};
-			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &axisNo, options);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
@@ -2586,7 +2583,8 @@ bool InputEngine::processLine(char *line)
 			// -1 = lower
 			//  1 = upper
 			char tmp[256] = {};
-			strncpy(tmp, options, 255);
+			strcpy(tmp, options);
+			tmp[255] = '\0';
 			char *token = strtok(tmp, delimiters);
 			while (token != NULL)
 			{
@@ -2665,9 +2663,8 @@ bool InputEngine::processLine(char *line)
 		return false;
 	case ET_JoystickPov:
 		{
-			int povNumber=0;
-			char dir[250];
-			memset(dir, 0, 250);
+			int povNumber = 0;
+			char dir[256] = {};
 			sscanf(line, "%s %s %d %d %s", eventName, evtype, &joyNo, &povNumber, dir);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
@@ -2699,17 +2696,17 @@ bool InputEngine::processLine(char *line)
 	case ET_JoystickSliderX:
 	case ET_JoystickSliderY:
 		{
-			int sliderNumber=0;
-			char options[250];
+			int sliderNumber = 0;
+			char options[256] = {};
 			char type;
-			memset(options, 0, 250);
 			sscanf(line, "%s %s %d %c %d %s", eventName, evtype, &joyNo, &type, &sliderNumber, options);
 			int eventID = resolveEventName(String(eventName));
 			if(eventID == -1) return false;
 
 			bool reverse=false;
-			char tmp[250] = "";
-			strncpy(tmp, options, 250);
+			char tmp[256] = {};
+			strncpy(tmp, options, 255);
+			tmp[255] = '\0';
 			char *token = strtok(tmp, delimiters);
 			while (token != NULL)
 			{
@@ -2864,9 +2861,12 @@ Ogre::String InputEngine::getEventGroup(Ogre::String eventName)
 	const char delimiters[] = "_";
 	char tmp[256] = {};
 	strncpy(tmp, eventName.c_str(), 255);
+	tmp[255] = '\0';
 	char *token = strtok(tmp, delimiters);
 	while (token != NULL)
+	{
 		return Ogre::String(token);
+	}
 	return "";
 }
 
@@ -2931,8 +2931,7 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 
 	if(fabs(t->joystickAxisDeadzone-0.1) > 0.0001f)
 	{
-		char tmp[256]="";
-		memset(tmp, 0, 255);
+		char tmp[256] = {};
 		sprintf(tmp, "DEADZONE=%0.2f", t->joystickAxisDeadzone);
 		if(strlen(t->configline))
 		{
@@ -2944,8 +2943,7 @@ bool InputEngine::updateConfigline(event_trigger_t *t)
 	}
 	if(fabs(1.0f - t->joystickAxisLinearity) > 0.01f)
 	{
-		char tmp[256]="";
-		memset(tmp, 0, 255);
+		char tmp[256] = {};
 		sprintf(tmp, "LINEARITY=%0.2f", t->joystickAxisLinearity);
 		if(strlen(t->configline))
 		{

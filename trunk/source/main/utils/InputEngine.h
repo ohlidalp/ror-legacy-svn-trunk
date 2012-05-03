@@ -23,18 +23,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "OISEvents.h"
-#include "OISInputManager.h"
-#include "OISMouse.h"
-#include "OISKeyboard.h"
-
-#include "OISJoyStick.h"
-#include "OISForceFeedback.h"
-//#include <OgreFrameListener.h>
-#include "RoRWindowEventUtilities.h"
 #include <OgrePrerequisites.h>
 #include <OgreUTFString.h>
-#include <map>
+
+#include "OISEvents.h"
+#include "OISForceFeedback.h"
+#include "OISInputManager.h"
+#include "OISJoyStick.h"
+#include "OISKeyboard.h"
+#include "OISMouse.h"
+
+#include "RoRWindowEventUtilities.h"
 #include "Singleton.h"
 
 #ifdef USE_OIS_G27

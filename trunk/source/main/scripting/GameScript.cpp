@@ -1,8 +1,23 @@
+/*
+This source file is part of Rigs of Rods
+Copyright 2005-2012 Pierre-Michel Ricordel
+Copyright 2007-2012 Thomas Fischer
+
+For more information, see http://www.rigsofrods.com/
+
+Rigs of Rods is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, as
+published by the Free Software Foundation.
+
+Rigs of Rods is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #include "GameScript.h"
-#include "Ogre.h"
-#include "RoRFrameListener.h"
-#include "BeamFactory.h"
-#include "ScriptEngine.h"
 
 // AS addons start
 #include "scriptstdstring/scriptstdstring.h"
@@ -22,23 +37,21 @@
 #include <curl/easy.h>
 #endif //USE_CURL
 
-#include "rornet.h"
-#include "water.h"
 #include "Beam.h"
-#include "Settings.h"
+#include "BeamFactory.h"
 #include "Console.h"
-#include "OverlayWrapper.h"
-#include "SkyManager.h"
-#include "CacheSystem.h"
-#include "as_ogre.h"
-#include "language.h"
-#include "SelectorWindow.h"
-#include "sha1.h"
-#include "collisions.h"
+#include "heightfinder.h"
+#include "RoRFrameListener.h"
 #include "RoRVersion.h"
-#include "BeamEngine.h"
-#include "utils.h"
+#include "SelectorWindow.h"
+#include "Settings.h"
+#include "SkyManager.h"
+#include "language.h"
 #include "network.h"
+#include "utils.h"
+#include "water.h"
+
+using namespace Ogre;
 
 /* class that implements the interface for the scripts */
 GameScript::GameScript(ScriptEngine *se, RoRFrameListener *efl) : mse(se), mefl(efl), apiThread()
@@ -59,9 +72,9 @@ double GameScript::getTime()
 	return this->mefl->getTime();
 }
 
-void GameScript::setPersonPosition(Ogre::Vector3 &vec)
+void GameScript::setPersonPosition(Vector3 &vec)
 {
-	if(mefl && mefl->person) mefl->person->setPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
+	if(mefl && mefl->person) mefl->person->setPosition(Vector3(vec.x, vec.y, vec.z));
 }
 
 void GameScript::loadTerrain(std::string &terrain)
@@ -69,19 +82,19 @@ void GameScript::loadTerrain(std::string &terrain)
 	if(mefl) mefl->loadTerrain(terrain);
 }
 
-Ogre::Vector3 GameScript::getPersonPosition()
+Vector3 GameScript::getPersonPosition()
 {
 	if(mefl && mefl->person)
 	{
-		Ogre::Vector3 ov = mefl->person->getPosition();
-		return Ogre::Vector3(ov.x, ov.y, ov.z);
+		Vector3 ov = mefl->person->getPosition();
+		return Vector3(ov.x, ov.y, ov.z);
 	}
-	return Ogre::Vector3::ZERO;
+	return Vector3::ZERO;
 }
 
-void GameScript::movePerson(Ogre::Vector3 vec)
+void GameScript::movePerson(Vector3 vec)
 {
-	if(mefl && mefl->person) mefl->person->move(Ogre::Vector3(vec.x, vec.y, vec.z));
+	if(mefl && mefl->person) mefl->person->move(Vector3(vec.x, vec.y, vec.z));
 }
 
 std::string GameScript::getCaelumTime()
@@ -125,7 +138,7 @@ void GameScript::setWaterHeight(float value)
 	if(mefl && mefl->w) mefl->w->setHeight(value);
 }
 
-float GameScript::getGroundHeight(Ogre::Vector3 &v)
+float GameScript::getGroundHeight(Vector3 &v)
 {
 	if(RoRFrameListener::hfinder)
 		return RoRFrameListener::hfinder->getHeightAt(v.x, v.z);
@@ -205,9 +218,9 @@ void GameScript::message(std::string &txt, std::string &icon, float timeMillisec
 #endif // USE_MYGUI
 }
 
-void GameScript::setDirectionArrow(std::string &text, Ogre::Vector3 &vec)
+void GameScript::setDirectionArrow(std::string &text, Vector3 &vec)
 {
-	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Ogre::Vector3(vec.x, vec.y, vec.z));
+	if(mefl) mefl->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(vec.x, vec.y, vec.z));
 }
 
 int GameScript::getChatFontSize()
@@ -255,7 +268,7 @@ void GameScript::destroyObject(const std::string &instanceName)
 	mefl->unloadObject(const_cast<char*>(instanceName.c_str()));
 }
 
-void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 &pos, Ogre::Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials)
+void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Vector3 &pos, Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials)
 {
 	AngelScript::asIScriptModule *mod=0;
 	try
@@ -276,7 +289,7 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 
 void GameScript::hideDirectionArrow()
 {
-	if(mefl) mefl->setDirectionArrow(0, Ogre::Vector3::ZERO);
+	if(mefl) mefl->setDirectionArrow(0, Vector3::ZERO);
 }
 
 int GameScript::setMaterialAmbient(const std::string &materialName, float red, float green, float blue)
@@ -418,7 +431,7 @@ int GameScript::setMaterialTextureScale(const std::string &materialName, int tec
 
 float GameScript::rangeRandom(float from, float to)
 {
-	return Ogre::Math::RangeRandom(from, to);
+	return Math::RangeRandom(from, to);
 }
 
 int GameScript::getLoadedTerrain(std::string &result)
@@ -432,54 +445,54 @@ void GameScript::clearEventCache()
 	mefl->getCollisions()->clearEventCache();
 }
 
-void GameScript::setCameraPosition(Ogre::Vector3 &pos)
+void GameScript::setCameraPosition(Vector3 &pos)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->setPosition(Ogre::Vector3(pos.x, pos.y, pos.z));
+	//mefl->getCamera()->setPosition(Vector3(pos.x, pos.y, pos.z));
 }
 
-void GameScript::setCameraDirection(Ogre::Vector3 &rot)
+void GameScript::setCameraDirection(Vector3 &rot)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->setDirection(Ogre::Vector3(rot.x, rot.y, rot.z));
+	//mefl->getCamera()->setDirection(Vector3(rot.x, rot.y, rot.z));
 }
 
 void GameScript::setCameraYaw(float rotX)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->yaw(Ogre::Degree(rotX));
+	//mefl->getCamera()->yaw(Degree(rotX));
 }
 
 void GameScript::setCameraPitch(float rotY)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->pitch(Ogre::Degree(rotY));
+	//mefl->getCamera()->pitch(Degree(rotY));
 }
 
 void GameScript::setCameraRoll(float rotZ)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->roll(Ogre::Degree(rotZ));
+	//mefl->getCamera()->roll(Degree(rotZ));
 }
 
-Ogre::Vector3 GameScript::getCameraPosition()
+Vector3 GameScript::getCameraPosition()
 {
 	// TODO: TOFIX
-	//Ogre::Vector3 pos = mefl->getCamera()->getPosition();
-	return Ogre::Vector3::ZERO; //Vector3(pos.x, pos.y, pos.z);
+	//Vector3 pos = mefl->getCamera()->getPosition();
+	return Vector3::ZERO; //Vector3(pos.x, pos.y, pos.z);
 }
 
-Ogre::Vector3 GameScript::getCameraDirection()
+Vector3 GameScript::getCameraDirection()
 {
 	// TODO: TOFIX
-	//Ogre::Vector3 rot = mefl->getCamera()->getDirection();
-	return Ogre::Vector3::ZERO; //(rot.x, rot.y, rot.z);
+	//Vector3 rot = mefl->getCamera()->getDirection();
+	return Vector3::ZERO; //(rot.x, rot.y, rot.z);
 }
 
-void GameScript::cameraLookAt(Ogre::Vector3 &pos)
+void GameScript::cameraLookAt(Vector3 &pos)
 {
 	// TODO: TOFIX
-	//mefl->getCamera()->lookAt(Ogre::Vector3(pos.x, pos.y, pos.z));
+	//mefl->getCamera()->lookAt(Vector3(pos.x, pos.y, pos.z));
 }
 
 #ifdef USE_CURL

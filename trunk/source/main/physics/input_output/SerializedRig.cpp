@@ -25,13 +25,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamEngine.h"
 #include "buoyance.h"
 #include "CmdKeyInertia.h"
+#include "Console.h"
 #include "Differentials.h"
 #include "FlexAirfoil.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
+#include "InputEngine.h"
 #include "JSON.h"
 #include "MeshObject.h"
+#include "RoRFrameListener.h"
 #include "RoRVersion.h"
 #include "ScopeLog.h"
 #include "screwprop.h"
@@ -39,11 +42,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
 #include "turboprop.h"
+#include "turbojet.h"
 #include "utils.h"
 #include "vidcam.h"
 
 // TODO: Not really needed for truck loading, or used very rarely
-#include "collisions.h"
 #include "FlexBody.h"
 
 using namespace Ogre;

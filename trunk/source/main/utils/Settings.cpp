@@ -350,11 +350,11 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 
 bool Settings::setupPaths()
 {
-	char program_path[1024]="";
-	char resources_path[1024]="";
-	char streams_path[1024]="";
-	char user_path[1024]="";
-	char config_root[1024]="";
+	char program_path[1024] = {};
+	char resources_path[1024] = {};
+	char streams_path[1024] = {};
+	char user_path[1024] = {};
+	char config_root[1024] = {};
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	const char *dsStr = "\\";
 #else
@@ -392,7 +392,7 @@ bool Settings::setupPaths()
 #endif //WIN32
 
 	//setup config files names
-	char plugins_fname[1024];
+	char plugins_fname[1024] = {};
 	strcpy(plugins_fname, program_path);
 #ifdef _DEBUG
 	strcat(plugins_fname, "plugins_d.cfg");
@@ -400,17 +400,17 @@ bool Settings::setupPaths()
 	strcat(plugins_fname, "plugins.cfg");
 #endif
 
-	char ogreconf_fname[1024];
+	char ogreconf_fname[1024] = {};
 	strcpy(ogreconf_fname, user_path);
 	path_add(ogreconf_fname, "config");
 	strcpy(config_root, ogreconf_fname); //setting the config root here
 	strcat(ogreconf_fname, "ogre.cfg");
 
-	char ogrelog_fname[1024];
+	char ogrelog_fname[1024] = {};
 	strcpy(ogrelog_fname, user_path);
 	path_add(ogrelog_fname, "logs");
 
-	char ogrelog_path[1024];
+	char ogrelog_path[1024] = {};
 	strcpy(ogrelog_path, ogrelog_fname);
 	strcat(ogrelog_fname, "RoR.log");
 
