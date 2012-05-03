@@ -113,7 +113,6 @@ Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode)
 	, collision_count(0)
 	, collision_tris(0)
 	, forcecam(false)
-	, free_cell(0)
 	, free_collision_box(0)
 	, free_collision_tri(0)
 	, free_eventsource(0)
@@ -123,26 +122,26 @@ Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode)
 	, largest_cellcount(0)
 	, last_called_cbox(0)
 	, last_used_ground_model(0)
-	, max_col_tris(DEFAULT_MAX_COLLISION_TRIS)
+	, max_col_tris(MAX_COLLISION_TRIS)
 {
-	for (int i=0; i < HASH_SIZE; i++)
+	for (int i=0; i < HASH_POWER; i++)
 	{
 		hashmask = hashmask << 1;
 		hashmask++;
 	}
 
-	for (int i=0; i < (1 << HASH_SIZE); i++)
+	for (int i=0; i < HASH_SIZE; i++)
 	{
 		hashtable[i].cellid = UNUSED_CELLID;
 	}
 
-	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * DEFAULT_MAX_COLLISION_TRIS);
+	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * MAX_COLLISION_TRIS);
 
 	loadDefaultModels();
 	defaultgm = getGroundModelByString("concrete");
 	defaultgroundgm = getGroundModelByString("gravel");
 
-	if ( debugMode )
+	if (debugMode)
 	{
 		debugmo = smgr->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
@@ -151,7 +150,7 @@ Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode)
 
 void Collisions::resizeMemory(long newSize)
 {
-	if(collision_tris)
+	if (collision_tris)
 	{
 		free(collision_tris);
 		collision_tris = 0;
@@ -161,7 +160,6 @@ void Collisions::resizeMemory(long newSize)
 	free_collision_tri = 0;
 	max_col_tris = newSize;
 	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * newSize);
-
 }
 
 int Collisions::loadDefaultModels()
@@ -214,10 +212,10 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 		parseGroundConfig(&cfg, it->first);
 	}
 	// check the version
-	if(this->collisionVersion != LATEST_GROUND_MODEL_VERSION)
+	if(this->collision_version != LATEST_GROUND_MODEL_VERSION)
 	{
 		// message box
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+TOSTRING(this->collisionVersion)+"to"+TOSTRING(LATEST_GROUND_MODEL_VERSION);
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+TOSTRING(this->collision_version)+"to"+TOSTRING(LATEST_GROUND_MODEL_VERSION);
 		showOgreWebError(_L("Configuration error"), _L("Your ground configuration is too old, please copy skeleton/config/ground_models.cfg to My Documents/Rigs of Rods/config"), url);
 		exit(124);
 	}
@@ -246,7 +244,7 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 			if(secName == "general" || secName == "config")
 			{
 				// set some class properties accoring to the information in this section
-				if(kname == "version") this->collisionVersion = StringConverter::parseInt(kvalue);
+				if(kname == "version") this->collision_version = StringConverter::parseInt(kvalue);
 			} else
 			{
 				// we assume that all other sections are separate ground types!
@@ -352,8 +350,6 @@ Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vecto
 	return newPos;
 }
 
-
-
 void Collisions::setupLandUse(const char *configfile)
 {
 #ifdef USE_PAGED
@@ -380,31 +376,28 @@ void Collisions::setHfinder(HeightFinder *hfi)
 unsigned int Collisions::hashfunc(unsigned int cellid)
 {
 	unsigned int hash = 0;
-	for (int i=0; i<4; i++)
+	for (int i=0; i < 4; i++)
 	{
-		hash^=sbox[((unsigned char*)&cellid)[i]];
-		hash*=3;
+		hash ^= sbox[((unsigned char*)&cellid)[i]];
+		hash *= 3;
 	}
 	return hash&hashmask;
 }
 
 int Collisions::removeCollisionTri(int number)
 {
-	if(number>free_collision_tri)
-		return -1;
+	if (number > free_collision_tri) return -1;
 
 	Vector3 p1 = collision_tris[number].a;
 	Vector3 p2 = collision_tris[number].b;
 	Vector3 p3 = collision_tris[number].c;
-	// TODO: Unused Variable
-	//ground_model_t* gm = collision_tris[number].gm;
 
-	//compute tri AAB
+	// compute tri AAB
 	AxisAlignedBox aab;
 	aab.merge(p1);
 	aab.merge(p2);
 	aab.merge(p3);
-	//register this collision tri in the index
+	// register this collision tri in the index
 	int ilox, ihix, iloz, ihiz;
 	ilox=(int)(aab.getMinimum().x/(float)CELL_SIZE);
 	if (ilox<0) ilox=0; if (ilox>MAXIMUM_CELL) ilox=MAXIMUM_CELL;
@@ -414,10 +407,9 @@ int Collisions::removeCollisionTri(int number)
 	if (iloz<0) iloz=0; if (iloz>MAXIMUM_CELL) iloz=MAXIMUM_CELL;
 	ihiz=(int)(aab.getMaximum().z/(float)CELL_SIZE);
 	if (ihiz<0) ihiz=0; if (ihiz>MAXIMUM_CELL) ihiz=MAXIMUM_CELL;
-	int i,j;
-	for (i=ilox; i<=ihix; i++)
+	for (int i=ilox; i <= ihix; i++)
 	{
-		for (j=iloz; j<=ihiz; j++)
+		for (int j=iloz; j <= ihiz; j++)
 		{
 			hash_free(i,j,number+MAX_COLLISION_BOXES);
 		}
@@ -427,17 +419,17 @@ int Collisions::removeCollisionTri(int number)
 
 void Collisions::hash_free(int cell_x, int cell_z, int value)
 {
-	unsigned int cellid=(cell_x<<16)+cell_z;
-	unsigned int pos=hashfunc(cellid);
+	unsigned int cellid = (cell_x << 16) + cell_z;
+	unsigned int pos    = hashfunc(cellid);
 
 	// set cell to free state
-	if(hashtable[pos].cellid != UNUSED_CELLID)
+	if (hashtable[pos].cellid != UNUSED_CELLID)
 	{
 		cell_t *cell = hashtable[pos].cell;
 		// cell has content, search it
-		for(unsigned int i=0;i<cell->size();i++)
+		for (unsigned int i=0; i < cell->size(); i++)
 		{
-			if((*cell)[i] == value)
+			if ((*cell)[i] == value)
 			{
 				// remove that element
 				cell->erase(cell->begin() + i);
@@ -449,64 +441,66 @@ void Collisions::hash_free(int cell_x, int cell_z, int value)
 
 void Collisions::hash_add(int cell_x, int cell_z, int value)
 {
-	unsigned int cellid=(cell_x<<16)+cell_z;
-	unsigned int hash=hashfunc(cellid);
-	//search the spot
-	unsigned int pos=hash;
-	unsigned int stop=hash-1;
-	if (hash==0) stop=(1<<HASH_SIZE)-1;
-//LOG("COLL: adding "+TOSTRING(cell_x)+", "+TOSTRING(cell_z)+" hash="+TOSTRING(hash));
+	unsigned int cellid = (cell_x << 16) + cell_z;
+	unsigned int pos    = hashfunc(cellid);
 
-	while (pos!=stop && hashtable[pos].cellid!=UNUSED_CELLID && hashtable[pos].cellid!=cellid)
+	// Cycle through hashtable: start at pos
+	for (unsigned int i=0; i < HASH_SIZE; i++)
 	{
+		if (hashtable[pos].cellid == UNUSED_CELLID || hashtable[pos].cellid == cellid)
+			break;
+
 		pos++;
-		if (pos==(1<<HASH_SIZE)) pos=0;
+		if (pos >= HASH_SIZE) pos = 0;
 	}
 
-	if (hashtable[pos].cellid==UNUSED_CELLID)
+	if (hashtable[pos].cellid == UNUSED_CELLID)
 	{
-		//create a new cell
+		// create a new cell
 		cell_t* newcell = new cell_t;
 		
-		hashtable[pos].cellid=cellid;
-		hashtable[pos].cell=newcell;
+		hashtable[pos].cellid = cellid;
+		hashtable[pos].cell = newcell;
 		newcell->push_back(value);
 		cells.push_back(newcell);
-		if (pos!=hashfunc(cellid)) collision_count++;
-		if ((int)newcell->size()>largest_cellcount) largest_cellcount=(int)newcell->size();
+		if (pos != hashfunc(cellid))
+		{
+			collision_count++;
+		}
+		largest_cellcount = std::max(largest_cellcount, (int)newcell->size());
 	}
-	else if (hashtable[pos].cellid==cellid)
+	else if (hashtable[pos].cellid == cellid)
 	{
-		//there is already a cell ready
-		cell_t *cell=hashtable[pos].cell;
-		cell->push_back(value);
-		if ((int)cell->size()>largest_cellcount) largest_cellcount=(int)cell->size();
+		// there is already a cell ready
+		hashtable[pos].cell->push_back(value);
+		largest_cellcount = std::max(largest_cellcount, (int)hashtable[pos].cell->size());
 	}
 	else
 	{
-		//the hash table is full!!!
-		LOG("COLL: the hashtable is full!!!");
+		LOG("COLL: The hashtable is full.");
 	}
 }
 
 cell_t *Collisions::hash_find(int cell_x, int cell_z)
 {
-	unsigned int cellid=(cell_x<<16)+cell_z;
-	unsigned int hash=hashfunc(cellid);
-	//search the spot
-	unsigned int pos=hash;
-	unsigned int stop=hash-1;
-	if (hash==0) stop=(1<<HASH_SIZE)-1;
+	unsigned int cellid = (cell_x << 16) + cell_z;
+	unsigned int pos    = hashfunc(cellid);
 
-	while (pos!=stop && hashtable[pos].cellid!=UNUSED_CELLID && hashtable[pos].cellid!=cellid)
+	// Cycle through hashtable: start at pos
+	for (unsigned int i=0; i < HASH_SIZE; i++)
 	{
+		if (hashtable[pos].cellid == UNUSED_CELLID)
+			return NULL;
+
+		if (hashtable[pos].cellid == cellid)
+			return hashtable[pos].cell;
+
 		pos++;
-		if (pos==(1<<HASH_SIZE)) pos=0;
+		if (pos >= HASH_SIZE) pos = 0;
 	}
-	if (hashtable[pos].cellid==cellid) return hashtable[pos].cell;
+
 	return NULL;
 }
-
 
 int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int scripthandler)
 {
@@ -518,30 +512,30 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	Ogre::Vector3 sc(scx, scy, scz);
 	collision_box_t& coll_box = collision_boxes[free_collision_box];
 	coll_box.enabled = true;
-	//set refined box anyway
+	// set refined box anyway
 	coll_box.relo = l*sc;
 	coll_box.rehi = h*sc;
-	//calculate selfcenter anyway
+	// calculate selfcenter anyway
 	coll_box.selfcenter = coll_box.relo;
 	coll_box.selfcenter += coll_box.rehi;
 	coll_box.selfcenter *= 0.5;
 	
-	//and center too (we need it)
+	// and center too (we need it)
 	coll_box.center = p;
 	coll_box.virt=virt;
 
 	coll_box.event_filter=event_filter;
-	//camera stuff
+	// camera stuff
 	coll_box.camforced=forcecam;
 	if (forcecam)
 	{
 		coll_box.campos=coll_box.center+rotation*campos;
 	}
 
-	//first, selfrotate
+	// first, self-rotate
 	if (rotating)
 	{
-		//we have a self-rotated block
+		// we have a self-rotated block
 		coll_box.selfrotated=true;
 		coll_box.selfrot=Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
 		coll_box.selfunrot=coll_box.selfrot.Inverse();
@@ -552,7 +546,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	if (strlen(eventname)>0)
 	{
 //LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
-		//this is envent-generating
+		// this is event-generating
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
 		eventsources[free_eventsource].scripthandler = scripthandler;
@@ -564,16 +558,16 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		free_eventsource++;
 	}
 
-	//next, global rotate
+	// next, global rotate
 	if (fabs(rx)<0.0001f && fabs(ry)<0.0001f && fabs(rz)<0.0001f)
 	{
-		//unrefined box
+		// unrefined box
 		coll_box.refined=false;
 	} else
 	{
-		//refined box
+		// refined box
 		coll_box.refined=true;
-		//build rotation
+		// build rotation
 		coll_box.rot=rotation;
 		coll_box.unrot=rotation.Inverse();
 	}
@@ -582,7 +576,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	if(debugMode) debugsn = smgr->getRootSceneNode()->createChildSceneNode();
 
 
-	//set raw box
+	// set raw box
 	// 8 points of a cube
 	Vector3 cube_points[8];
 	if (coll_box.selfrotated || coll_box.refined)
@@ -596,7 +590,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		cube_points[6] = Ogre::Vector3(lx, hy, hz) * sc;
 		cube_points[7] = Ogre::Vector3(hx, hy, hz) * sc;
 		int i;
-		//rotate box
+		// rotate box
 		if (coll_box.selfrotated)
 			for (i=0; i<8; i++)
 			{
@@ -604,12 +598,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 				cube_points[i]=coll_box.selfrot*cube_points[i];
 				cube_points[i]=cube_points[i]+coll_box.selfcenter;
 			}
-			if (coll_box.refined)
-			{
-				for (i=0; i<8; i++) cube_points[i]=coll_box.rot*cube_points[i];
-//					if (coll_box.camerabox) coll_box.camerapos=coll_box.rot*coll_box.camerapos;
-			}
-			//find min/max
+			// find min/max
 			coll_box.lo = cube_points[0];
 			coll_box.hi = cube_points[0];
 			for (i=1; i<8; i++)
@@ -617,13 +606,13 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 				coll_box.lo.makeFloor(cube_points[i]);
 				coll_box.hi.makeCeil(cube_points[i]);
 			}
-			//set absolute coords
+			// set absolute coords
 			coll_box.lo += p;
 			coll_box.hi += p;
 	}
 	else
 	{
-		//unrefined box
+		// unrefined box
 		coll_box.lo = p + coll_box.relo;
 		coll_box.hi = p + coll_box.rehi;
 		Vector3 d = (coll_box.rehi - coll_box.relo);
@@ -734,7 +723,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 	}
 
-	//register this collision box in the index
+	// register this collision box in the index
 	coll_box.ilo = Ogre::Vector3(coll_box.lo / Ogre::Real(CELL_SIZE));
 	coll_box.ihi = Ogre::Vector3(coll_box.hi / Ogre::Real(CELL_SIZE));
 	
@@ -793,31 +782,31 @@ int Collisions::removeCollisionBox(int num)
 
 int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm)
 {
-	if(free_collision_tri >= max_col_tris) return -1;
+	if (free_collision_tri >= max_col_tris) return -1;
 	collision_tris[free_collision_tri].a=p1;
 	collision_tris[free_collision_tri].b=p2;
 	collision_tris[free_collision_tri].c=p3;
 	collision_tris[free_collision_tri].gm=gm;
 	collision_tris[free_collision_tri].enabled=true;
-	//compute transformations
-	//base construction
+	// compute transformations
+	// base construction
 	Vector3 bx=p2-p1;
 	Vector3 by=p3-p1;
 	Vector3 bz=bx.crossProduct(by);
 	bz.normalise();
-	//coordinates change matrix
+	// coordinates change matrix
 	collision_tris[free_collision_tri].reverse.SetColumn(0, bx);
 	collision_tris[free_collision_tri].reverse.SetColumn(1, by);
 	collision_tris[free_collision_tri].reverse.SetColumn(2, bz);
 	collision_tris[free_collision_tri].forward=collision_tris[free_collision_tri].reverse.Inverse();
 
-	//compute tri AAB
+	// compute tri AAB
 	AxisAlignedBox aab;
 	aab.merge(p1);
 	aab.merge(p2);
 	aab.merge(p3);
 	
-	//register this collision tri in the index
+	// register this collision tri in the index
 	Ogre::Vector3 ilo(aab.getMinimum() / Ogre::Real(CELL_SIZE));
 	Ogre::Vector3 ihi(aab.getMaximum() / Ogre::Real(CELL_SIZE));
 	
@@ -852,7 +841,6 @@ void Collisions::printStats()
 	LOG("COLL: Hashtable occupation: "+TOSTRING(cells.size()));
 	LOG("COLL: Hashtable collisions: "+TOSTRING(collision_count));
 	LOG("COLL: Largest cell: "+TOSTRING(largest_cellcount));
-
 }
 
 bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
@@ -885,7 +873,7 @@ void Collisions::clearEventCache()
 
 bool Collisions::collisionCorrect(Vector3 *refpos)
 {
-	//find the correct cell
+	// find the correct cell
 	bool contacted=false;
 	int refx, refz;
 	unsigned int k;
@@ -910,7 +898,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 
 			if (cbox->refined || cbox->selfrotated)
 			{
-				//we may have a collision, do a change of repere
+				// we may have a collision, do a change of repere
 				Vector3 Pos=*refpos-cbox->center;
 				if (cbox->refined) Pos=cbox->unrot*Pos;
 				if (cbox->selfrotated)
@@ -919,7 +907,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 					Pos=cbox->selfunrot*Pos;
 					Pos=Pos+cbox->selfcenter;
 				}
-				//now test with the inner box
+				// now test with the inner box
 				if (Pos > cbox->relo && Pos < cbox->rehi)
 				{
 					if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
@@ -933,13 +921,13 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 					}
 					if (!cbox->virt)
 					{
-						//collision, process as usual
-						//we have a collision
+						// collision, process as usual
+						// we have a collision
 						contacted = true;
-						//determine which side collided
+						// determine which side collided
 						Pos = calcCollidedSide(Pos, cbox->relo, cbox->rehi);
 						
-						//resume repere
+						// resume repere
 						if (cbox->selfrotated)
 						{
 							Pos=Pos-cbox->selfcenter;
@@ -964,9 +952,9 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 				}
 				if (!cbox->virt)
 				{
-					//we have a collision
+					// we have a collision
 					contacted=true;
-					//determine which side collided
+					// determine which side collided
 					(*refpos) = calcCollidedSide((*refpos), cbox->lo, cbox->hi);
 				}
 			}
@@ -976,10 +964,10 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 			collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
 			if(!ctri->enabled)
 				continue;
-			//check if this tri is minimal
-			//transform
+			// check if this tri is minimal
+			// transform
 			Vector3 point=ctri->forward*(*refpos-ctri->a);
-			//test if within tri collision volume (potential cause of bug!)
+			// test if within tri collision volume (potential cause of bug!)
 			if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
 			{
 				if (-point.z<minctridist)
@@ -992,14 +980,14 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 		}
 	}
 		
-	//process minctri collision
+	// process minctri collision
 	if (minctri)
 	{
-		//we have a contact
+		// we have a contact
 		contacted=true;
-		//correct point
+		// correct point
 		minctripoint.z=0;
-		//reverse transform
+		// reverse transform
 		*refpos=(minctri->reverse*minctripoint)+minctri->a;
 	}
 	return contacted;
@@ -1023,8 +1011,7 @@ bool Collisions::permitEvent(int filter)
 
 int Collisions::enableCollisionTri(int number, bool enable)
 {
-	if(number>free_collision_tri)
-		return -1;
+	if (number > free_collision_tri) return -1;
 	collision_tris[number].enabled=enable;
 	return 0;
 }
@@ -1032,13 +1019,13 @@ int Collisions::enableCollisionTri(int number, bool enable)
 bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm, int *handlernum)
 {
 	bool smoky=false;
-	//float corrf=1.0;
+	// float corrf=1.0;
 	Vector3 oripos=node->AbsPosition;
 	unsigned int k;
-	//find the correct cell
+	// find the correct cell
 	int refx, refz;
-	refx=(int)(node->AbsPosition.x*inverse_CELL_SIZE);
-	refz=(int)(node->AbsPosition.z*inverse_CELL_SIZE);
+	refx=(int)(node->AbsPosition.x/CELL_SIZE);
+	refz=(int)(node->AbsPosition.z/CELL_SIZE);
 	cell_t *cell=hash_find(refx, refz);
 	//LOG("Checking cell "+TOSTRING(refx)+" "+TOSTRING(refz)+" total indexes: "+TOSTRING(num_cboxes_index[refp]));
 
@@ -1050,14 +1037,14 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 	{
 		for (k=0; k<cell->size(); k++)
 		{
-			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
+			if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k] < MAX_COLLISION_BOXES)
 			{
 				collision_box_t *cbox = &collision_boxes[(*cell)[k]];
 				if (node->AbsPosition > cbox->lo - node->collRadius && node->AbsPosition < cbox->hi + node->collRadius)
 				{
 					if (cbox->refined || cbox->selfrotated)
 					{
-						//we may have a collision, do a change of repere
+						// we may have a collision, do a change of repere
 						Vector3 Pos=node->AbsPosition-cbox->center;
 						if (cbox->refined) Pos=cbox->unrot*Pos;
 						if (cbox->selfrotated)
@@ -1066,7 +1053,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							Pos=cbox->selfunrot*Pos;
 							Pos=Pos+cbox->selfcenter;
 						}
-						//now test with the inner box
+						// now test with the inner box
 						if (Pos > cbox->relo - node->collRadius && Pos < cbox->rehi + node->collRadius)
 						{
 							if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
@@ -1080,14 +1067,14 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							}
 							if (!cbox->virt)
 							{
-								//collision, process as usual
-								//we have a collision
+								// collision, process as usual
+								// we have a collision
 								contacted++;
-								//setup smoke
+								// setup smoke
 								//float ns=node->Velocity.length();
 								smoky=true;
 								//*nso=ns;
-								//determine which side collided
+								// determine which side collided
 								float min=Pos.z-(cbox->relo - node->collRadius).z;
 								Vector3 normal=Vector3(0,0,-1);
 								float t=(cbox->rehi + node->collRadius).z-Pos.z;
@@ -1101,8 +1088,8 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 								t=(cbox->rehi + node->collRadius).y-Pos.y;
 								if (t<min) {min=t; normal=Vector3(0,1,0);}; //up
 
-								//we need the normal, and the depth
-								//resume repere for the normal
+								// we need the normal, and the depth
+								// resume repere for the normal
 								if (cbox->selfrotated) normal=cbox->selfrot*normal;
 								if (cbox->refined) normal=cbox->rot*normal;
 
@@ -1125,13 +1112,13 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 						}
 						if (!cbox->virt)
 						{
-							//we have a collision
+							// we have a collision
 							contacted++;
-							//setup smoke
+							// setup smoke
 							//float ns=node->Velocity.length();
 							smoky=true;
 							//*nso=ns;
-							//determine which side collided
+							// determine which side collided
 							float min=node->AbsPosition.z-cbox->lo.z;
 							Vector3 normal=Vector3(0,0,-1);
 							float t=cbox->hi.z-node->AbsPosition.z;
@@ -1144,8 +1131,8 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 							if (t<min) {min=t; normal=Vector3(0,-1,0);}; //down
 							t=cbox->hi.y-node->AbsPosition.y;
 							if (t<min) {min=t; normal=Vector3(0,1,0);}; //up
-							//we need the normal
-							//resume repere for the normal
+							// we need the normal
+							// resume repere for the normal
 							if (cbox->selfrotated) normal=cbox->selfrot*normal;
 							if (cbox->refined) normal=cbox->rot*normal;
 							primitiveCollision(node, node->Forces, node->Velocity, normal, dt, defaultgm, nso);
@@ -1156,12 +1143,12 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 			}
 			else
 			{
-				//tri collision
+				// tri collision
 				collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
-				//check if this tri is minimal
-				//transform
+				// check if this tri is minimal
+				// transform
 				Vector3 point=ctri->forward*(node->AbsPosition-ctri->a);
-				//test if within tri collision volume (potential cause of bug!)
+				// test if within tri collision volume (potential cause of bug!)
 				if (point.x>=0 && point.y>=0 && (point.x+point.y)<=1.0 && point.z<0 && point.z>-0.1)
 				{
 					if (-point.z<minctridist)
@@ -1174,26 +1161,26 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 			}
 		}
 	}
-	//process minctri collision
+	// process minctri collision
 	if (minctri)
 	{
-		//we have a contact
+		// we have a contact
 		contacted++;
-		//setup smoke
+		// setup smoke
 		//float ns=node->Velocity.length();
 		smoky=true;
 		//*nso=ns;
 
-		//we need the normal
-		//resume repere for the normal
+		// we need the normal
+		// resume repere for the normal
 		Vector3 normal=minctri->reverse*Vector3::UNIT_Z;
 		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, minctri->gm, nso);
 		if (ogm) *ogm=minctri->gm;
-		/*
+#if 0
 		float depth=-minctripoint.z;
-		//compute slip velocity vector
+		// compute slip velocity vector
 		Vector3 slip=node->Velocity-node->Velocity.dotProduct(normal)*normal;
-		//remove the normal speed component
+		// remove the normal speed component
 		node->Velocity=slip;
 		float slipl=slip.length();
 		if (slipl<0.5) node->Velocity=Vector3::ZERO;
@@ -1205,15 +1192,15 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 			if (slipfactor>1) slipfactor=1;
 			node->Velocity*=loadfactor*slipfactor;
 		}
-		//correct point
+		// correct point
 		minctripoint.z=0;
-		//reverse transform
+		// reverse transform
 		node->AbsPosition=(minctri->reverse*minctripoint)+minctri->a;
-		//grip
+		// grip
 		//node->Velocity=Vector3::ZERO;
-		*/
+#endif
 	}
-	//correct relative position too
+	// correct relative position too
 	if (contacted) node->RelPosition=node->RelPosition+(node->AbsPosition-oripos);
 	node->contacted=contacted;
 	return smoky;
@@ -1304,7 +1291,7 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 	{
 		if (cbox->refined || cbox->selfrotated)
 		{
-			//we may have a collision, do a change of repere
+			// we may have a collision, do a change of repere
 			Vector3 rpos=pos-cbox->center;
 			if (cbox->refined) rpos=cbox->unrot*rpos;
 			if (cbox->selfrotated)
@@ -1314,7 +1301,7 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 				rpos=rpos+cbox->selfcenter;
 			}
 			
-			//now test with the inner box
+			// now test with the inner box
 			if (rpos >cbox->relo
 			&& rpos < cbox->rehi)
 			{
@@ -1334,12 +1321,12 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 	if(!*ogm) *ogm = defaultgroundgm;
 	last_used_ground_model = *ogm;
 
-	//new ground collision code
+	// new ground collision code
 	Real v=hfinder->getHeightAt(node->AbsPosition.x, node->AbsPosition.z);
 	if (v>node->AbsPosition.y)
 	{
 
-		//collision!
+		// collision!
 		Ogre::Vector3 normal = hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z);
 		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, *ogm, nso, v-node->AbsPosition.y);
 		return true;
@@ -1349,7 +1336,7 @@ bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, f
 
 void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &velocity, Vector3 &normal, float dt, ground_model_t* gm, float* nso, float penetration, float reaction)
 {
-	//normal velocity
+	// normal velocity
 
 	float Vnormal = velocity.dotProduct(normal);
 
@@ -1362,11 +1349,11 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 		// First of all calculate power law fluid viscosity
 		float m = gm->flow_consistency_index * approx_pow(Vsquared, (gm->flow_behavior_index - 1.0f)*0.5f);
 
-		//Then calculate drag based on above. We'are using a simplified Stokes' drag.
+		// Then calculate drag based on above. We'are using a simplified Stokes' drag.
 		// Per node fluid drag surface coefficient set by node property applies here
 		Vector3 Fdrag = velocity * (-m * node->surface_coef);
 
-		//If we have anisotropic drag
+		// If we have anisotropic drag
 		if (gm->drag_anisotropy < 1.0f && Vnormal > 0)
 		{
 			float da_factor;
@@ -1378,9 +1365,9 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 		}
 		force += Fdrag;
 
-		//Now calculate upwards force based on a simplified boyancy equation;
-		//If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
-		//Buoyancy per node volume coefficient set by node property applies here
+		// Now calculate upwards force based on a simplified boyancy equation;
+		// If the fluid is pseudoplastic then boyancy is constrained to only "stopping" a node from going downwards
+		// Buoyancy per node volume coefficient set by node property applies here
 		float Fboyancy = gm->fluid_density * penetration * (-DEFAULT_GRAVITY) * node->volume_coef;
 		if (gm->flow_behavior_index < 1.0f && Vnormal >= 0.0f)
 		{
@@ -1419,14 +1406,14 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 		Fnormal = force.dotProduct(normal);
 		Fdnormal = Fnormal;
 
-		//steady force
+		// steady force
 		if (reaction < 0)
 		{
 			Freaction = -Fnormal;
-			//impact force
+			// impact force
 			if (Vnormal < 0)
 			{
-				Freaction += -Vnormal * node->mass / dt; //Newton's second law
+				Freaction += -Vnormal * node->mass / dt; // Newton's second law
 			}
 			if (Freaction < 0) Freaction = 0.0f;
 		}
@@ -1450,7 +1437,7 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 		}
 		else
 		{
-			//Stribek model. It also comes directly from textbooks.
+			// Stribek model. It also comes directly from textbooks.
 			float g = gm->mc + (gm->ms - gm->mc) * std::min(1.0f, approx_exp(-approx_pow(slipv / gm->vs, gm->alpha)));
 			ff = -(g + gm->t2 * slipv) * Greaction;
 			force += Freaction * normal + ff*slip;
@@ -1463,15 +1450,14 @@ int Collisions::createCollisionDebugVisualization()
 	return 0;
 	static int loaded = 0;
 	// prevent double calling
-	if(loaded != 0)
-		return -1;
+	if (loaded != 0) return -1;
 
 	// create materials
 	int i = 0;
 	char bname[256];
 	for(i=0;i<=100;i++)
 	{
-		//register a material for skeleton view
+		// register a material for skeleton view
 		sprintf(bname, "mat-coll-dbg-%d", i);
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 		float f = fabs(((float)i)/100);
@@ -1565,7 +1551,7 @@ int Collisions::createCollisionDebugVisualization()
 				mo_node->attachObject(mo);
 
 
-				/*
+#if 0
 				// setup the label
 				String labelName = "label_"+cell_name;
 				String labelCaption = cell_name+" "+TOSTRING(percent*100,2) + "% usage ("+TOSTRING(cc)+"/"+TOSTRING(CELL_BLOCKSIZE)+") DEEP: " + TOSTRING(deep);
@@ -1577,7 +1563,7 @@ int Collisions::createCollisionDebugVisualization()
 				mt->setCharacterHeight(0.3);
 				mt->setColor(ColourValue::Black);
 				mo_node->attachObject(mt);
-				*/
+#endif
 
 				mo_node->setVisible(true);
 				mo_node->setPosition(Vector3(x+CELL_SIZE/(float)2.0, groundheight, z+CELL_SIZE/(float)2.0));
@@ -1691,7 +1677,7 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 
 	added_shared = false;
 
-	// Run through the submeshes again, adding the data into the arrays
+	// Run through the sub-meshes again, adding the data into the arrays
 	for(int i = 0;i < mesh->getNumSubMeshes();i++)
 	{
 		SubMesh* submesh = mesh->getSubMesh(i);
