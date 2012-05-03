@@ -4326,7 +4326,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 		if (!strncmp(line,"collision-tris", 14))
 		{
-			long amount = DEFAULT_MAX_COLLISION_TRIS;
+			long amount = Collisions::MAX_COLLISION_TRIS;
 			int res = sscanf(line, "collision-tris %ld", &amount);
 			collisions->resizeMemory(amount);
 		}

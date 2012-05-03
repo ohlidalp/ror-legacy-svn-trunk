@@ -880,10 +880,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					//FX
 					if (gm && doUpdate && dustp)
 					{
-						if (gm->fx_type==FX_DUSTY && !nodes[i].disable_particles)
+						if (gm->fx_type==Collisions::FX_DUSTY && !nodes[i].disable_particles)
 						{
 							if(dustp) dustp->malloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
-						}else if (gm->fx_type==FX_HARD && !nodes[i].disable_particles)
+						}else if (gm->fx_type==Collisions::FX_HARD && !nodes[i].disable_particles)
 						{
 							float thresold=10.0;
 							//smokey
@@ -902,7 +902,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 								// friction < 10 will remove the 'f' nodes from the spark generation nodes
 								if(sparksp) sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
 							}
-						} else if (gm->fx_type==FX_CLUMPY && !nodes[i].disable_particles)
+						} else if (gm->fx_type==Collisions::FX_CLUMPY && !nodes[i].disable_particles)
 						{
 							if (clumpp && nodes[i].Velocity.squaredLength()>1.0) clumpp->allocClump(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}
