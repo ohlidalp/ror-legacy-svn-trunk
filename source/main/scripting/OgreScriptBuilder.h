@@ -24,11 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include <string>
-#include <angelscript.h>
-#include <Ogre.h>
-
 #include "scriptbuilder/scriptbuilder.h"
+
+#include <angelscript.h>
 
 // our own class that wraps the CScriptBuilder and just overwrites the file loading parts
 // to use the ogre resource system

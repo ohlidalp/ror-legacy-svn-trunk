@@ -24,16 +24,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include <string>
-#include <angelscript.h>
-#include <Ogre.h>
-#include <OgreLogManager.h>
-
+#include "Singleton.h"
+#include "collisions.h"
+#include "InterThreadStoreVector.h"
+#include "Ogre.h"
 
 #include "scriptdictionary/scriptdictionary.h"
 #include "scriptbuilder/scriptbuilder.h"
-
-#include "collisions.h"
 
 #define AS_INTERFACE_VERSION "0.2.0" //!< versioning for the scripting interface
 
@@ -47,14 +44,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 class GameScript;
-
 /**
  *  @brief This class represents the angelscript scripting interface. It can load and execute scripts.
  */
 class ScriptEngine : public RoRSingletonNoCreation<ScriptEngine>, public Ogre::LogListener
 {
 	friend class GameScript;
+
 public:
+
 	ScriptEngine(RoRFrameListener *efl, Collisions *_coll);
 	~ScriptEngine();
 
@@ -152,15 +150,17 @@ public:
 	Ogre::Log *scriptLog;
 
 protected:
-    RoRFrameListener *mefl;             //!< local RoRFrameListener instance, used as proxy for many functions
+
+    RoRFrameListener *mefl;                 //!< local RoRFrameListener instance, used as proxy for many functions
 	Collisions *coll;
-    AngelScript::asIScriptEngine *engine;                //!< instance of the scripting engine
-	AngelScript::asIScriptContext *context;              //!< context in which all scripting happens
+    AngelScript::asIScriptEngine *engine;   //!< instance of the scripting engine
+	AngelScript::asIScriptContext *context; //!< context in which all scripting happens
 	int frameStepFunctionPtr;               //!< script function pointer to the frameStep function
-	int wheelEventFunctionPtr;               //!< script function pointer
+	int wheelEventFunctionPtr;              //!< script function pointer
 	int eventCallbackFunctionPtr;           //!< script function pointer to the event callback function
 	int defaultEventCallbackFunctionPtr;    //!< script function pointer for spawner events
-	Ogre::String scriptName, scriptHash;
+	Ogre::String scriptName;
+	Ogre::String scriptHash;
 	std::map <std::string , std::vector<int> > callbacks;
 	
 	InterThreadStoreVector< Ogre::String > stringExecutionQueue;     //!< The string execution queue \see queueStringForExecution

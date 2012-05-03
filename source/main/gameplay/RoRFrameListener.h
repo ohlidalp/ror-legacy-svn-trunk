@@ -17,176 +17,256 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __RoRFrameListener_H__
-#define __RoRFrameListener_H__
+#ifndef __RoRFrameListener_H_
+#define __RoRFrameListener_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#include <windows.h>
-#endif
 
-#ifdef USE_MPLATFORM
-#include "mplatform_base.h"
-#endif
-
-#include "OgreStringConverter.h"
-#include "OgreException.h"
-//#include "OgreTerrainSceneManager.h"
-#include "OgrePixelFormat.h"
-#include "CollisionTools.h"
-#include <string.h>
-#include <stdio.h>
-#include "SkyManager.h"
-#include "Beam.h"
-#include "InputEngine.h"
-#include "turbojet.h"
+#include "BeamData.h" // for localizer_t
 #include "Character.h"
-#include "CacheSystem.h"
-#include "ChatSystem.h"
-#include "envmap.h"
 #include "ForceFeedback.h"
-#include "AppState.h"
+
+// Forward declarations
+class Envmap;
+
+namespace MOC
+{
+	class CollisionTools;
+}
+
+namespace Ogre
+{
+	class TerrainGroup;
+}
 
 #ifdef USE_PAGED
-# include "PagedGeometry.h"
-# include "GrassLoader.h"
-# include "TreeLoader2D.h"
-#endif
-
-#include "OgreTerrainGroup.h"
-
-
-
-
-#define NONE_LOADED 0
-#define TERRAIN_LOADED 1
-#define ALL_LOADED 2
-#define EXITING 3
-#define EDITING 4
-#define RELOADING 5
-#define EDITOR_PAUSE 6
-
-#define EVENT_NONE 0
-#define EVENT_ALL 1
-#define EVENT_AVATAR 2
-#define EVENT_TRUCK 3
-#define EVENT_AIRPLANE 4
-#define EVENT_DELETE 5
-
-#define MAX_PLAYLIST_ENTRIES 20
-
-#ifdef USE_PAGED
-using namespace Forests;
-#endif
-
-enum QueryFlags
+namespace Forests
 {
-   OBJECTS_MASK = 1<<7,
-   TRUCKS_MASK  = 1<<8,
-};
+	class PagedGeometry;
+	class TreeLoader2D;
+}
+#endif //USE_PAGED
 
-typedef struct
+class RoRFrameListener: public Ogre::FrameListener, public Ogre::WindowEventListener
 {
-	float px;
-	float py;
-	float pz;
-//	float ry;
-	Quaternion rotation;
-	char name[256];
-	bool ismachine;
-	bool freePosition;
-} truck_prepare_t;
+public:
+	// Constructor takes a RenderWindow because it uses that to determine input context
+	RoRFrameListener(AppState *parent, Ogre::RenderWindow* win, Ogre::Camera* cam, Ogre::SceneManager* scm, Ogre::Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
+	virtual ~RoRFrameListener();
 
-typedef struct
-{
-	Vector3 pos;
-	Quaternion rot;
-} spawn_location_t;
+	static HeightFinder *hfinder;
+	static RoRFrameListener *eflsingleton;
 
-#ifdef USE_PAGED
-typedef struct
-{
-	PagedGeometry *geom;
-	void *loader;
-} paged_geometry_t;
-#endif //PAGED
+	Character *person;
+	ChatSystem *netChat;
 
-typedef struct
-{
-	Ogre::Entity *ent;
-	Ogre::SceneNode *node;
-	Ogre::AnimationState *anim;
-	float speedfactor;
-} animated_object_t;
+	Ogre::String loadedTerrain;
+	Ogre::String terrainFileHash;
+	Ogre::String terrainFileName;
+	Ogre::String terrainModHash;
+	Ogre::String terrainName;
+	Ogre::Vector3 reload_pos;
 
-class RoRFrameListener: public FrameListener, public Ogre::WindowEventListener
-{
-	friend class BeamFactory;
-	friend class Savegame;
+	Water *w;
+
+	bool freeTruckPosition;
+	bool terrainHasTruckShop;
+
+	float mapsizex, mapsizez;
+	float netcheckGUITimer;
+
+	int loading_state;
+
+	enum { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, EDITOR_PAUSE };
+	enum { EVENT_NONE, EVENT_ALL, EVENT_AVATAR, EVENT_TRUCK, EVENT_AIRPLANE, EVENT_DELETE };
+
 protected:
-	void initializeCompontents();
-	OverlayWrapper *ow;
-	int setupBenchmark();
-	truck_prepare_t truck_preload[100];
-	int truck_preload_num;
-	localizer_t localizers[64];
-	int free_localizer;
-	bool benchmarking;
 
-	MapControl *bigMap;
-	StaticGeometry *bakesg;
-	int netPointToUID;
+	typedef struct
+	{
+		float px;
+		float py;
+		float pz;
+		//	float ry;
+		Ogre::Quaternion rotation;
+		char name[256];
+		bool ismachine;
+		bool freePosition;
+	} truck_prepare_t;
 
+	typedef struct
+	{
+		Ogre::Vector3 pos;
+		Ogre::Quaternion rot;
+	} spawn_location_t;
 
-	typedef struct loadedObject_t {
+	typedef struct {
 		bool enabled;
 		int loadType;
 		Ogre::String instanceName;
 		Ogre::SceneNode *sceneNode;
 		std::vector <int> collTris;
 		std::vector <int> collBoxes;
-	} loadedObject_t;
+	} loaded_object_t;
 
-	std::map< std::string, loadedObject_t> loadedObjects;
-	int shaderSchemeMode;
-	int inputGrabMode;
-	int mouseGrabState;
-	int screenWidth;
-	int screenHeight;
-	int truckgrabbed;
-	int nodegrabbed;
-	Real distgrabbed;
+	typedef struct
+	{
+		Ogre::Entity *ent;
+		Ogre::SceneNode *node;
+		Ogre::AnimationState *anim;
+		float speedfactor;
+	} animated_object_t;
+
+#ifdef USE_PAGED
+	typedef struct
+	{
+		Forests::PagedGeometry *geom;
+		void *loader;
+	} paged_geometry_t;
+
+	std::vector<paged_geometry_t> pagedGeometry;
+	Forests::TreeLoader2D *treeLoader;
+#endif //USE_PAGED
+
+#ifdef HAS_EDITOR
+	TruckEditor *trucked;
+#endif //HAS_EDITOR
+
+#ifdef USE_MPLATFORM
+	MPlatform_Base *mplatform;
+#endif //USE_MPLATFORM
+
+#ifdef USE_OIS_G27
+	OIS::Win32LogitechLEDs *leds;
+#endif //USE_OIS_G27
+
+	AppState *parentState;
+	Collisions *collisions;
+	Dashboard *dashboard;
+	Editor *editor;
+	Envmap *envmap;
+	FILE *editorfd;
+	ForceFeedback *forcefeedback;
+	HDRListener *hdrListener;
+	HeatHaze *heathaze;
+	MOC::CollisionTools *mCollisionTools;
+	MapControl *bigMap;
+	MapTextureCreator *mtc;
+	Network *net;
+
+	Ogre::Camera* mCamera;
+	Ogre::ColourValue fadeColour;
+	Ogre::Quaternion reload_dir;
+	Ogre::Real distgrabbed;
+	Ogre::Real mTimeUntilNextToggle; // just to stop toggles flipping too fast
+	Ogre::RenderWindow* mWindow;
+	Ogre::RenderWindow* renderwin;
+	Ogre::Root *mRoot;
+	Ogre::SceneManager *mSceneMgr;
+	Ogre::SceneNode *dirArrowNode;
+	Ogre::SceneNode *pointerDestination;
+	Ogre::StaticGeometry *bakesg;
+	Ogre::String grassdensityTextureFilename;
+	Ogre::String inputhwnd;
+	Ogre::String terrainUID;
+	Ogre::TerrainGroup* mTerrainGroup;
+	Ogre::Vector3 dirArrowPointed;
+	Ogre::Vector3 persostart;
+
+	OverlayWrapper *ow;
+	ProceduralManager *proceduralManager;
+
+	Road *road;
+	bool benchmarking;
+	bool chatlock;
+	bool debugCollisions;
+	bool dirvisible;
 	bool enablePosStor;
+	bool flipflop;
+	bool hidegui;
+	bool initialized;
+	bool isEmbedded;
+	bool mTruckInfoOn;
+	bool netmode;
+	bool pressure_pressed;
+	bool useCaelumSky;
 
-	//GUI_Progress *gui_progress;
-	TerrainGroup* mTerrainGroup;
+	char screenshotformat[256];
+	char terrainmap[1024];
 
-	std::map<String, spawn_location_t> netSpawnPos;
+	collision_box_t *reload_box;
+	double rtime;
+
+	float clutch;
+	float farclip;
+	float mouseGrabForce;
+	float terrainxsize;
+	float terrainzsize;
 	float truckx, trucky, truckz;
-	//	SceneNode *speed_node;
-	//	SceneNode *tach_node;
-	//	SceneNode *roll_node;
-	//	SceneNode *pitch_node;
-	//	SceneNode *rollcorr_node;
 
-	SceneManager *mSceneMgr;
-	Root *mRoot;
-	//	bool usejoy;
+	int flaresMode;
+	int free_localizer;
+	int gameStartTime;
+	int inputGrabMode;
+	int joyshiftlock;
+	int mStatsOn;
+	int mapMode;
+	int mouseGrabState;
+	int netPointToUID;
+	int nodegrabbed;
+	int objcounter;
+	int objectCounter;
+	int raceStartTime;
+	int screenHeight;
+	int screenWidth;
+	int shaderSchemeMode;
+	int thread_mode;
+	int truck_preload_num;
+	int truckgrabbed;
+	
+	static float gravity;
+
+	std::map< std::string, loaded_object_t >  loadedObjects;
+	std::map< std::string, spawn_location_t > netSpawnPos;
+	std::vector< animated_object_t >          animatedObjects;
+
+	localizer_t localizers[64];
+	truck_prepare_t truck_preload[100];
+
+	unsigned int mNumScreenShots;
+	
+	bool updateAnimatedObjects(float dt);
+	bool updateTruckMirrors(float dt);
+
+	int setupBenchmark();
+
+	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
+	void initDust();
+	void initHDR();
+	void initSoftShadows();
+	void initializeCompontents();
+	void updateGUI(float dt); // update engine panel
+	void updateIO(float dt);
+	void updateStats(void);
+
+	// WindowEventListener
+	void windowMoved(Ogre::RenderWindow* rw);
+	void windowClosed(Ogre::RenderWindow* rw);
+	void windowFocusChange(Ogre::RenderWindow* rw);
+
+	//GUI_TruckTool *truckToolGUI;
+	//GUI_MainMenu *mainmenu;
+	//GUI_Progress *gui_progress;
+
+	//SceneNode *speed_node;
+	//SceneNode *tach_node;
+	//SceneNode *roll_node;
+	//SceneNode *pitch_node;
+	//SceneNode *rollcorr_node;
+
+	//bool usejoy;
 	//bool useforce;
 	//BeamJoystick *joy;
-	ForceFeedback *forcefeedback;
-
-	bool flipflop;
-	HDRListener *hdrListener;
-
-	bool dirvisible;
-	SceneNode *dirArrowNode;
-	Vector3 dirArrowPointed;
-	int objectCounter;
-	float mouseGrabForce;
-
-	SceneNode *pointerDestination;
 
 	//SceneNode *personode;
 	//AnimationState *persoanim;
@@ -196,227 +276,68 @@ protected:
 	//bool perso_canjump;
 	//Vector3 lastpersopos;
 
-	void updateStats(void);
-	//update engine panel
-	void updateGUI(float dt);
-	void updateIO(float dt);
+private:
 
-#ifdef USE_PAGED
-	std::vector<paged_geometry_t> pagedGeometry;
-#endif
-	String grassdensityTextureFilename;
-	void initSoftShadows();
-	void initHDR();
+	int net_quality;
+	bool net_quality_changed;
 
-	// WindowEventListener
-	void windowMoved(Ogre::RenderWindow* rw);
-	void windowClosed(Ogre::RenderWindow* rw);
-	void windowFocusChange(Ogre::RenderWindow* rw);
-	int flaresMode;
-	MapTextureCreator *mtc;
-	bool updateTruckMirrors(float dt);
-	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
-	void initDust();
-	Ogre::String inputhwnd;
-	AppState *parentState;
-public:
-	// Constructor takes a RenderWindow because it uses that to determine input context
-	RoRFrameListener(AppState *parent, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
-	virtual ~RoRFrameListener();
-
-	int loading_state;
-
-	Ogre::String terrainName;
-	Ogre::String terrainFileName;
-	Ogre::String terrainFileHash;
-	Ogre::String terrainModHash;
-
-	static RoRFrameListener *eflsingleton;
-	void removeBeam(Beam *);
-	
-	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
-	void unloadObject(const char* name);
-	bool updateEvents(float dt);
-	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false, Skin *skin=NULL);
-	
-
-	// this needs to be public so we can call it manually in embedded mode
-	void windowResized(Ogre::RenderWindow* rw);
-
-	void hideGUI(bool visible);
-	Ogre::String saveTerrainMesh();
-
-	// Override frameStarted event to process that (don't care about frameEnded)
-	bool frameStarted(const FrameEvent& evt);
-	bool checkForActive(int j, bool *sleepyList);
-	bool frameEnded(const FrameEvent& evt);
-	void showLoad(int type, char* instance, char* box);
-	void showspray(bool s);
-	int getNetPointToUID() { return netPointToUID; };
-	void setNetPointToUID(int uid);
-	void checkRemoteStreamResultsChanged();
-	float netcheckGUITimer;
-
-	Character *person;
-	ChatSystem *netChat;
-	static HeightFinder *hfinder;
-	double getTime() {return rtime;};
-	SceneManager *getSceneMgr() { return mSceneMgr; };
-	RenderWindow *getRenderWindow() { return mWindow; };
-	Collisions *getCollisions() { return collisions; };
-
-	Water *getWater() { return w; };
-	int getLoadingState() { return loading_state; };
-	void setLoadingState(int value);
-	void pauseSim(bool value);
-	void loadNetTerrain(char *preselected_map);
-	float mapsizex, mapsizez;
-	bool terrainHasTruckShop;
-
-	void changedCurrentTruck(Beam *previousTruck, Beam *currentTruck);
-
-	Network *getNetwork() { return net; };
-
-	float stopTimer();
-	void startTimer();
-	void updateRacingGUI();
-
-
-	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
-	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
-
-
-	void hideMap();
-	void setDirectionArrow(char *text, Vector3 position);
-	void netDisconnectTruck(int number);
+public: // public methods
 
 	static float getGravity() { return gravity; };
 	static void setGravity(float value);
 
-	void loadTerrain(Ogre::String terrainfile);
-	void loadClassicTerrain(Ogre::String terrainfile);
+	Collisions *getCollisions() { return collisions; };
+	Network *getNetwork() { return net; };
+
+	Ogre::RenderWindow *getRenderWindow() { return mWindow; };
+	Ogre::SceneManager *getSceneMgr() { return mSceneMgr; };
+	Ogre::String saveTerrainMesh();
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
+	Water *getWater() { return w; };
 
-	Water *w;
-	Ogre::String loadedTerrain;
+	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
+	bool checkForActive(int j, bool *sleepyList);
+	bool frameEnded(const Ogre::FrameEvent& evt);
+	bool frameStarted(const Ogre::FrameEvent& evt); // Override frameStarted event to process that (don't care about frameEnded)
 
-#ifdef USE_OIS_G27
-	OIS::Win32LogitechLEDs *leds;
-#endif // USE_OIS_G27
+	bool updateEvents(float dt);
+	double getTime() { return rtime; };
+	float stopTimer();
 
-public:
+	int getLoadingState() { return loading_state; };
+	int getNetPointToUID() { return netPointToUID; };
 
+	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
+	void changedCurrentTruck(Beam *previousTruck, Beam *currentTruck);
+	void checkRemoteStreamResultsChanged();
+	void hideGUI(bool visible);
+	void hideMap();
+	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false, Skin *skin=NULL);
+	void loadClassicTerrain(Ogre::String terrainfile);
+	void loadNetTerrain(char *preselected_map);
+	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
+	void loadTerrain(Ogre::String terrainfile);
+	void netDisconnectTruck(int number);
+	void pauseSim(bool value);
+	void reloadCurrentTruck();
+	void removeBeam(Beam *);
+	void setDirectionArrow(char *text, Ogre::Vector3 position);
+	void setLoadingState(int value);
+	void setNetPointToUID(int uid);
+	void showLoad(int type, char* instance, char* box);
+	void showspray(bool s);
 	void shutdown_final();
+	void startTimer();
+	void unloadObject(const char* name);
+	void updateRacingGUI();
+	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
 
 	// mutex'ed data
 	void setNetQuality(int q);
 	int getNetQuality(bool ack=false);
 	bool getNetQualityChanged();
 	pthread_mutex_t mutex_data;
-
-	bool freeTruckPosition;
-	Vector3 reload_pos;
-
-	void reloadCurrentTruck();
-
-private:
-	int net_quality;
-	bool net_quality_changed;
-
-
-protected:
-
-	HeatHaze *heathaze;
-	bool chatlock;
-	double rtime;
-	float terrainxsize;
-	float terrainzsize;
-
-	//DotSceneLoader* mLoader;
-
-	Camera* mCamera;
-	collision_box_t *reload_box;
-	Quaternion reload_dir;
-
-	RenderWindow* mWindow;
-	int mStatsOn;
-	bool mTruckInfoOn;
-	int mapMode;
-	unsigned int mNumScreenShots;
-	// just to stop toggles flipping too fast
-	Real mTimeUntilNextToggle ;
-	bool pressure_pressed;
-
-	//	float lastangle;
-	float clutch;
-	Editor *editor;
-
-	static float gravity;
-
-	bool netmode;
-	bool initialized;
-	bool isEmbedded;
-
-	bool hidegui;
-	bool debugCollisions;
-
-	Collisions *collisions;
-	MOC::CollisionTools* mCollisionTools;
-
-	int raceStartTime;
-
-	int objcounter;
-	char terrainmap[1024];
-
-	Ogre::String terrainUID;
-	Road *road;
-	Dashboard *dashboard;
-	FILE *editorfd;
-	//	Dirt *dirt;
-#ifdef HAS_EDITOR
-	TruckEditor *trucked;
-#endif
-	int thread_mode;
-
-	/** adds a truck to the main array
-	  */
-	
-
-	Vector3 persostart;
-	int joyshiftlock;
-
-	Envmap *envmap;
-
-	Network *net;
-	ProceduralManager *proceduralManager;
-	int gameStartTime;
-
-#ifdef USE_PAGED
-	Forests::TreeLoader2D *treeLoader;
-#endif
-
-//	char *preselected_map;
-//	char *preselected_truck;
-
-#ifdef USE_MPLATFORM
-	MPlatform_Base *mplatform;
-#endif
-
-
-	RenderWindow* renderwin;
-
-	char screenshotformat[256];
-	bool useCaelumSky;
-	float farclip;
-	ColourValue fadeColour;
-
-//	GUI_TruckTool *truckToolGUI;
-//	GUI_MainMenu *mainmenu;
-
-	std::vector<animated_object_t> animatedObjects;
-	bool updateAnimatedObjects(float dt);
 };
 
-
-#endif // __RoRFrameListener_H__
+#endif // __RoRFrameListener_H_

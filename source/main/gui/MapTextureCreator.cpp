@@ -23,30 +23,47 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "water.h"
 
-int MapTextureCreator::mCounter=0;
-MapTextureCreator::MapTextureCreator(Ogre::SceneManager *mgr, Ogre::Camera *maincam, RoRFrameListener *efl)
+using namespace Ogre;
+
+int MapTextureCreator::mCounter = 0;
+
+MapTextureCreator::MapTextureCreator(SceneManager *mgr, Camera *maincam, RoRFrameListener *efl) :
+	  mSceneManager(mgr)
+	, mMainCam(mMainCam)
+	, mEfl(efl)
+	, mCamdir(Quaternion::ZERO)
+	, mCamera(NULL)
+	, mCampos(Vector3::ZERO)
+	, mMaterial(NULL)
+	, mRttTex(NULL)
+	, mStatics(NULL)
+	, mTextureUnitState(NULL)
+	, mViewport(NULL)
 {
-	mEfl=efl;
-	mMainCam = maincam;
 	mCounter++;
-	mSceneManager=mgr;
-	mStatics=0;
-	mCamdir=Ogre::Quaternion::ZERO;
-	init();
 }
 
-void MapTextureCreator::init()
+bool MapTextureCreator::init()
 {
-	Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual("MapRttTex"+TOSTRING(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 1024, 1024, 0, Ogre::PF_R8G8B8, Ogre::TU_RENDERTARGET, new ResourceBuffer());
+	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	
+	if ( TexturePtr(texture).isNull() ) return false;;
+
 	mRttTex = texture->getBuffer()->getRenderTarget();
+
+	if ( !mRttTex ) return false;;
+
 	mRttTex->setAutoUpdated(true);
+
 	mCamera = mSceneManager->createCamera("MapRenderCam");
 
 	mViewport = mRttTex->addViewport(mCamera);
-	mViewport->setBackgroundColour(Ogre::ColourValue::White);
+	mViewport->setBackgroundColour(ColourValue::White);
 	mViewport->setOverlaysEnabled(false);
 
-	mMaterial = Ogre::MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	mMaterial = MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+	if ( MaterialPtr(mMaterial).isNull() ) return false;
 
 	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+TOSTRING(mCounter));
 
@@ -55,18 +72,31 @@ void MapTextureCreator::init()
 	mCamera->setFarClipDistance(0);
 	mCamera->setAspectRatio(1.0);
 	mCamera->setFixedYawAxis(false);
-	mCamera->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
-	//mCamera->setFOVy(Ogre::Radian(Ogre::Math::HALF_PI));
+	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
+	//mCamera->setFOVy(Radian(Math::HALF_PI));
+
+	return true;
 }
 
 
-void MapTextureCreator::setStaticGeometry(Ogre::StaticGeometry *geo)
+void MapTextureCreator::setStaticGeometry(StaticGeometry *geo)
 {
 	mStatics = geo;
 }
 
 void MapTextureCreator::update()
 {
+	if ( !mRttTex && !init() ) return;
+
+	float width = mEfl->mapsizex;
+	float height = mEfl->mapsizez;
+	
+	mCamera->setOrthoWindow(1024, 1024);
+	mCamera->setPosition(width*0.5f, 100.0f, height*0.5f);
+	mCamera->lookAt(width*0.5f + 0.0001f, 0.0f, height*0.5f);
+
+	mRttTex->update();
+#if 0
 	// 1 = max out = total overview
 
 	float width = mEfl->mapsizex;
@@ -88,8 +118,10 @@ void MapTextureCreator::update()
 		mEfl->getTruck(i)->preMapLabelRenderUpdate(true, f);
 	*/
 
-	if(mStatics)
+	if (mStatics)
+	{
 		mStatics->setRenderingDistance(0);
+	}
 	// thats a huge workaround to be able to not use the normal LOD
 
 	setFogVisible(false);
@@ -97,19 +129,25 @@ void MapTextureCreator::update()
 	mRttTex->update();
 
 	setFogVisible(true);
-	if(mEfl->getWater())
-		mEfl->getWater()->setVisible(false);
-	if(mStatics)
-		mStatics->setRenderingDistance(1000);
-	if(mEfl->getWater())
-		mEfl->getWater()->setVisible(true);
 
+	if (mEfl->getWater())
+	{
+		mEfl->getWater()->setVisible(false);
+	}
+	if (mStatics)
+	{
+		mStatics->setRenderingDistance(1000);
+	}
+	if (mEfl->getWater())
+	{
+		mEfl->getWater()->setVisible(true);
+	}
 	/*
 	// deactivated for the moment
 	for (int i=0; i<mEfl->getTruckCount(); i++)
 		mEfl->getTruck(i)->preMapLabelRenderUpdate(false);
 	*/
-
+#endif
 }
 
 void MapTextureCreator::setFogVisible(bool value)
@@ -140,20 +178,20 @@ void MapTextureCreator::setFogVisible(bool value)
 	else if(fogmode == 3)
 	{
 		if(value)
-			mSceneManager->setFog(Ogre::FOG_LINEAR, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
+			mSceneManager->setFog(FOG_LINEAR, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
 		else
-			mSceneManager->setFog(Ogre::FOG_NONE, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
+			mSceneManager->setFog(FOG_NONE, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
 	}
 
 #endif //0
 }
 
-Ogre::String MapTextureCreator::getMaterialName()
+String MapTextureCreator::getMaterialName()
 {
 	return "MapRttMat"+TOSTRING(mCounter);
 }
 
-Ogre::String MapTextureCreator::getRTName()
+String MapTextureCreator::getRTName()
 {
 	return "MapRttTex"+TOSTRING(mCounter);
 }
@@ -161,12 +199,16 @@ Ogre::String MapTextureCreator::getRTName()
 void MapTextureCreator::preRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	Water *w = mEfl->getWater();
-	if(w)
+	if ( w )
+	{
 		w->setVisible(false);
+	}
 }
 void MapTextureCreator::postRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	Water *w = mEfl->getWater();
-	if(w)
+	if ( w )
+	{
 		w->setVisible(true);
+	}
 }

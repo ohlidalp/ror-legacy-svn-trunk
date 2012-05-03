@@ -19,73 +19,62 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "RoRFrameListener.h"
 
+#include <OgreFontManager.h>
 #include <OgrePrerequisites.h>
+#include <OgreRTShaderSystem.h>
 #include <OgreTerrain.h>
-#include <OgreTerrainQuadTreeNode.h>
 #include <OgreTerrainMaterialGeneratorA.h>
 #include <OgreTerrainPaging.h>
+#include <OgreTerrainQuadTreeNode.h>
 
-#include "ProceduralManager.h"
-#include "hdrlistener.h"
-#include "utils.h"
-#include "ScopeLog.h"
-#include "DepthOfFieldEffect.h"
-#include "Lens.h"
-#include "ChatSystem.h"
-#include "GlowMaterialListener.h"
-#include "MeshObject.h"
-#include "SceneMouse.h"
-#include "DashBoardManager.h"
-
-#include "CameraManager.h"
-
-#include "RigsOfRods.h"
-
-#include "CharacterFactory.h"
-#include "BeamFactory.h"
-
-#include "autopilot.h"
-
-#include "PlayerColours.h"
-#include "OverlayWrapper.h"
-#include "ShadowManager.h"
-#include "TruckHUD.h"
-//#include "DotSceneLoader.h"
 #include "AdvancedScreen.h"
-#include "vidcam.h"
-#include "RoRVersion.h"
-
+#include "autopilot.h"
+#include "BeamFactory.h"
+#include "CameraManager.h"
+#include "CacheSystem.h"
+#include "CharacterFactory.h"
+#include "ChatSystem.h"
+#include "CollisionTools.h"
+#include "dashboard.h"
+#include "DashBoardManager.h"
+#include "DustManager.h"
+#include "editor.h"
+#include "envmap.h"
+#include "errorutils.h"
+#include "ExtinguishableFireAffector.h"
+#include "FlexAirfoil.h"
+#include "GlowMaterialListener.h"
+#include "hdrlistener.h"
+#include "Heathaze.h"
+#include "InputEngine.h"
+#include "language.h"
+#include "MeshObject.h"
 #include "MumbleIntegration.h"
+#include "network.h"
 #include "OutProtocol.h"
-
-#ifdef USE_MPLATFORM
-#include "mplatform_fd.h"
-#endif
-
-#include "Scripting.h"
-
+#include "OverlayWrapper.h"
+#include "PlayerColours.h"
+#include "PreviewRenderer.h"
+#include "ProceduralManager.h"
+#include "Replay.h"
+#include "RigsOfRods.h"
 #include "Road.h"
 #include "road2.h"
-#include "editor.h"
+#include "RoRVersion.h"
+#include "SceneMouse.h"
+#include "ScopeLog.h"
+#include "screwprop.h"
+#include "Scripting.h"
+#include "Settings.h"
+#include "ShadowManager.h"
+#include "SkyManager.h"
+#include "TruckHUD.h"
+#include "turboprop.h"
+#include "utils.h"
+#include "vidcam.h"
 #include "water.h"
 #include "WaterOld.h"
-#include "Replay.h"
-
-#include "Settings.h"
-
-#include "dashboard.h"
-#include "Heathaze.h"
-#ifdef HAS_EDITOR
-#include "truckeditor.h"
-#endif
-#include "network.h"
-#include "NetworkStreamManager.h"
-#include "BeamEngine.h"
-#include "turboprop.h"
-#include "screwprop.h"
-#include "FlexAirfoil.h"
-#include "PreviewRenderer.h"
-#include "ExtinguishableFireAffector.h"
+#include "writeTextToTexture.h"
 
 #ifdef USE_MYGUI
 #include "gui_manager.h"
@@ -95,47 +84,43 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
 #include "Console.h"
-#endif //MYGUI
-
-#include "autopilot.h"
-#include "ResourceBuffer.h"
-#include "CacheSystem.h"
-
-#ifdef USE_PAGED
-# include "PagedGeometry.h"
-# include "ImpostorPage.h"
-# include "BatchPage.h"
-#endif
-
-#include "MovableText.h"
-#ifdef FEAT_TIMING
-	#include "BeamStats.h"
-#endif
-
-#ifdef USE_PAGED
-# include "TreeLoader2D.h"
-# include "TreeLoader3D.h"
-# include "GrassLoader.h"
-#endif
-
-#ifdef USE_MYGUI
 #include "MapControl.h"
 #include "MapTextureCreator.h"
 #include "MapEntity.h"
-#endif // MYGUI
-#include <OgreFontManager.h>
-#include "language.h"
-#include "errorutils.h"
-#include "DustManager.h"
+#endif //USE_MYGUI
 
-#include <OgreHeaderPrefix.h>
-#include <OgreRTShaderSystem.h>
+#include "ResourceBuffer.h"
+
+#ifdef USE_PAGED
+#include "BatchPage.h"
+#include "GrassLoader.h"
+#include "ImpostorPage.h"
+#include "PagedGeometry.h"
+#include "TreeLoader2D.h"
+#include "TreeLoader3D.h"
+#endif //USE_PAGED
+
+#ifdef USE_MPLATFORM
+#include "mplatform_fd.h"
+#endif //USE_MPLATFORM
+
+#ifdef HAS_EDITOR
+#include "truckeditor.h"
+#endif //HAS_EDITOR
+
+#ifdef FEAT_TIMING
+#include "BeamStats.h"
+#endif //FEAT_TIMING
+
+#ifdef USE_OIS_G27
+#include "win32/Win32LogitechLEDs.h"
+#endif //USE_OIS_G27
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#include <Windows.h>
+#include <Windows.h>
 #else
-	#include <stdio.h>
-	#include <wchar.h>
+#include <stdio.h>
+#include <wchar.h>
 #endif
 
 // some gcc fixes
@@ -143,23 +128,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif //OGRE_PLATFORM_LINUX
 
-#include "OISKeyboard.h"
-
-#ifdef USE_OIS_G27
-#include "win32/Win32LogitechLEDs.h"
-#endif
-
-//#include "OgreTerrainSceneManager.h" // = ILLEGAL to link to a plugin!
-
-#include "writeTextToTexture.h"
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
 #endif
 
-using namespace std;
-
-Camera *gCamera;
+#ifdef USE_PAGED
+using namespace Forests;
+#endif //USE_PAGED
 
 float RoRFrameListener::gravity = DEFAULT_GRAVITY;
 
@@ -826,7 +801,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	person=0;
 	netChat=0;
 	reload_pos=Vector3::ZERO;
-	//dirt=0;
 	editorfd=0;
 #ifdef HAS_EDITOR
 	trucked=0;
@@ -995,13 +969,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//joy=new BeamJoystick(mInputManager, deadzone, useforce, &cfg);
 	//useforce=joy->hasForce();
 
-	gCamera = cam;
 	mWindow = win;
 	mStatsOn = 0;
 	mTruckInfoOn = false;
 	mapMode=0;
 	mTimeUntilNextToggle = 0;
-	//lastangle=0;
 	clutch=0;
 	road=0;
 
@@ -1350,7 +1322,7 @@ void RoRFrameListener::unloadObject(const char* instancename)
 		return;
 	}
 
-	loadedObject_t obj = loadedObjects[std::string(instancename)];
+	loaded_object_t obj = loadedObjects[std::string(instancename)];
 
 	// check if it was already deleted
 	if(!obj.enabled)
@@ -1484,7 +1456,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	tenode->setVisible(true);
 
 	// register in map
-	loadedObject_t *obj = &loadedObjects[std::string(instancename)];
+	loaded_object_t *obj = &loadedObjects[std::string(instancename)];
 	obj->instanceName = std::string(instancename);
 	obj->loadType     = 0;
 	obj->enabled      = true;
@@ -2320,7 +2292,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						float tmp_left_analog   = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,  false, InputEngine::ET_ANALOG);
 						float tmp_right_analog  = INPUTENGINE.getEventValue(EV_TRUCK_STEER_RIGHT, false, InputEngine::ET_ANALOG);
 
-						float sum = -max(tmp_left_digital,tmp_left_analog)+ max(tmp_right_digital,tmp_right_analog);
+						float sum = -std::max(tmp_left_digital,tmp_left_analog)+ std::max(tmp_right_digital,tmp_right_analog);
 
 						if(sum < -1) sum = -1;
 						if(sum > 1) sum = 1;
@@ -3523,7 +3495,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// now generate the hash of it
 	{
 		// copy whole file into a string
-		string code;
+		String code = "";
 		ds->seek(0); // from start
 		code.resize(ds->size());
 		ds->read(&code[0], ds->size());
@@ -4939,7 +4911,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	collisions->finishLoadingTerrain();
 
 	//okay, taking a picture of the scene for the envmap
-	// SAY CHEESE!
+	//SAY CHEESE!
 	//no, not yet, Caelum is not ready!
 	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
 
@@ -4948,20 +4920,22 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck, Skin *skin)
 {
 	//we load truck
-	char *selectedchr = const_cast<char *>(selected.c_str());
+	char *selectedchr = const_cast< char *> (selected.c_str());
+
 	if (loadmanual)
 	{
-		Beam *b=0;
-		if(net)
+		Beam *b = 0;
+		Vector3 spawnpos = Vector3(truckx, trucky, truckz);
+		Quaternion spawnrot = Quaternion::ZERO;
+
+		if (net)
 		{
-			Vector3 spawnpos = Vector3(truckx, trucky, truckz);
-			Quaternion spawnrot = Quaternion::ZERO;
-			if(selectedExtension.size() > 0)
+			if (selectedExtension.size() > 0)
 			{
 				String nsp = SSETTING("net spawn location", "");
-				if(!nsp.empty())
+				if (!nsp.empty())
 				{
-					// override-able by cmdline
+					// override-able by cmd line
 					spawnpos = Ogre::StringConverter::parseVector3(nsp);
 					spawnrot = Quaternion::ZERO;
 				} else
@@ -4978,30 +4952,26 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 					}
 				}
 			}
+		}
+
+		if (net)
 			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig, skin);
-			if (b && enterTruck)
-			{
-					//cameramode = CAMERA_VEHICLE_INTERNAL;
-					BeamFactory::getSingleton().setCurrentTruck(b->trucknum);
-			} else if(!b && enterTruck)
-				BeamFactory::getSingleton().setCurrentTruck(-1);
+		else
+			b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig, skin);
 
-		} else
+		if (enterTruck)
 		{
-			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig, skin);
-
-			if(b && enterTruck)
-			{
+			if (b)
 				BeamFactory::getSingleton().setCurrentTruck(b->trucknum);
-			} else if(!b && enterTruck)
+			else
 				BeamFactory::getSingleton().setCurrentTruck(-1);
 		}
 
 #ifdef USE_MYGUI
-		if(b && bigMap)
+		if (b && bigMap)
 		{
 			MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
-			if(e)
+			if (e)
 			{
 				e->setState(DESACTIVATED);
 				e->setVisibility(true);
@@ -5009,24 +4979,26 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 				e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 			}
 		}
-#endif // MYGUI
+#endif //USE_MYGUI
 
-		if (b && b->engine) b->engine->start();
+		if (b && b->engine)
+		{
+			b->engine->start();
+		}
 	}
-
-
+	
 	// load the rest in SP
-	// in netmode, dont load other trucks!
+	// in netmode, don't load other trucks!
 	if (!netmode)
 	{
 		for (int i=0; i<truck_preload_num; i++)
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, 0, truck_preload[i].freePosition);
 #ifdef USE_MYGUI
-			if(b && bigMap)
+			if (b && bigMap)
 			{
 				MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
-				if(e)
+				if (e)
 				{
 					e->setState(DESACTIVATED);
 					e->setVisibility(true);
@@ -5040,46 +5012,49 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	}
 	LOG("EFL: beam instanciated");
 
-	if(!enterTruck) BeamFactory::getSingleton().setCurrentTruck(-1);
+	if (!enterTruck)
+	{
+		BeamFactory::getSingleton().setCurrentTruck(-1);
+	}
 
 	// fix for problem on loading
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(enterTruck && curr_truck && curr_truck->free_node == 0) BeamFactory::getSingleton().setCurrentTruck(-1);
+
+	if (enterTruck && curr_truck && curr_truck->free_node == 0)
+	{
+		BeamFactory::getSingleton().setCurrentTruck(-1);
+	}
 
 	//force perso start
-	if (persostart!=Vector3(0,0,0)) person->setPosition(persostart);
-	//bigMap->getEntityByName("person")->onTop();
+	if (persostart != Vector3(0,0,0))
+	{
+		person->setPosition(persostart);
+	}
 
-	/*cameramode=CAMERA_VEHICLE_INTERNAL;
-	pushcamRotX=camRotX;
-	pushcamRotY=camRotY;
-	camRotX=0;
-	camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-	*/
-	loading_state=ALL_LOADED;
+	loading_state = ALL_LOADED;
 
-	if(ISETTING("OutGauge Mode", 0) > 0)
+	if (ISETTING("OutGauge Mode", 0) > 0)
+	{
 		new OutProtocol();
+	}
 
-	//uiloader->hide();
 	LOG("initTrucks done");
 
 #ifdef USE_MYGUI
-
 	GUIManager::getSingleton().unfocus();
-
-	if(mtc)
+	
+	if (mtc)
+	{
 		mtc->update();
-#endif // MYGUI
+	}
+#endif //USE_MYGUI
 		
-
-	if(BSETTING("REPO_MODE", false))
+	if (BSETTING("REPO_MODE", false))
 	{
 		PreviewRenderer r;
 		r.render();
 		exit(0);
 	}
-
 }
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
@@ -5163,7 +5138,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			if(!trucks[t]) continue;
 			trucks[t]->sleepcount=9;
 		} //make trucks synchronous
-		//lastangle=0;
 
 		TRIGGER_EVENT(SE_TRUCK_EXIT, previousTruck?previousTruck->trucknum:-1);
 	}
@@ -5397,10 +5371,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 			if(it->geom) it->geom->update();
 		}
 #endif //USE_PAGED
-
-		//the dirt
-		//if (dirt) dirt->update(dt);
-
+		
 		BeamFactory::getSingleton().checkSleepingState();
 
 		//we simulate one truck, it will take care of the others (except networked ones)

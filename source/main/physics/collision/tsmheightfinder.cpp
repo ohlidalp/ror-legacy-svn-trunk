@@ -33,7 +33,8 @@ TSMHeightFinder::TSMHeightFinder(char *_cfgfilename, char *fname, float defaulth
 {
 	flipped=false;
 	//cfgfilename = _cfgfilename; this is a bug
-	strcpy(cfgfilename, _cfgfilename);
+	strncpy(cfgfilename, _cfgfilename, 255);
+	cfgfilename[255] = '\0';
 	defaulth=defaultheight;
 //	scale=tsm->getScale();
 	//this is not correct, but it works

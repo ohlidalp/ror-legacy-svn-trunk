@@ -112,9 +112,9 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		return;
 	}
 	// build new unique mesh name
-	char uname_mesh[256];
-	memset(uname_mesh, 0, 254);
-	strcpy(uname_mesh, uname);
+	char uname_mesh[256] = {};
+	strncpy(uname_mesh, uname, 250);
+	uname_mesh[250] = '\0';
 	strcat(uname_mesh, "_mesh");
 	MeshPtr mesh = Ogre::MeshManager::getSingleton().load(meshname, groupname);
 	MeshPtr newmesh = mesh->clone(uname_mesh);

@@ -19,6 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorFixed.h"
 
+using namespace Ogre;
+
 void CameraBehaviorFixed::activate(cameraContext_t &ctx)
 {
 }

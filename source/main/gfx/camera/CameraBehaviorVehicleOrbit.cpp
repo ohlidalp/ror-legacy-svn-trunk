@@ -22,6 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "Settings.h"
 
+using namespace Ogre;
+
 CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
 	  externalCameraMode(false)
 {

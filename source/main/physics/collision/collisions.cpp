@@ -18,13 +18,16 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "collisions.h"
-#include "Settings.h"
-#include "Landusemap.h"
+
 #include "approxmath.h"
-#include "errorutils.h"
-#include "language.h"
-#include "Scripting.h"
 #include "BeamFactory.h"
+#include "errorutils.h"
+#include "heightfinder.h"
+#include "Landusemap.h"
+#include "language.h"
+#include "RoRFrameListener.h"
+#include "Scripting.h"
+#include "Settings.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -101,39 +104,49 @@ unsigned int sbox[] =
 	0x3C034CBA, 0xACDA62FC, 0x11923B8B, 0x45EF170A,
 };
 
-Collisions::Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool _debugMode) : smgr(mgr)
+using namespace Ogre;
+
+Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode) :
+	  mefl(efl)
+	, smgr(mgr)
+	, debugMode(debugMode)
+	, collision_count(0)
+	, collision_tris(0)
+	, forcecam(false)
+	, free_cell(0)
 	, free_collision_box(0)
 	, free_collision_tri(0)
-	, free_cell(0)
 	, free_eventsource(0)
-	, mefl(efl)
 	, hashmask(0)
 	, hfinder(0)
-	, collision_count(0)
-	, largest_cellcount(0)
-	, debugMode(_debugMode)
 	, landuse(0)
-	, forcecam(false)
-	, last_used_ground_model(0)
+	, largest_cellcount(0)
 	, last_called_cbox(0)
-	, collision_tris(0)
+	, last_used_ground_model(0)
 	, max_col_tris(DEFAULT_MAX_COLLISION_TRIS)
 {
-	for (int i=0; i<HASH_SIZE; i++) {hashmask=hashmask<<1; hashmask++;};
-	for (int i=0; i<(1<<HASH_SIZE); i++) hashtable[i].cellid=UNUSED_CELLID;
-	
+	for (int i=0; i < HASH_SIZE; i++)
+	{
+		hashmask = hashmask << 1;
+		hashmask++;
+	}
+
+	for (int i=0; i < (1 << HASH_SIZE); i++)
+	{
+		hashtable[i].cellid = UNUSED_CELLID;
+	}
+
 	collision_tris = (collision_tri_t*)malloc(sizeof(collision_tri_t) * DEFAULT_MAX_COLLISION_TRIS);
 
 	loadDefaultModels();
 	defaultgm = getGroundModelByString("concrete");
 	defaultgroundgm = getGroundModelByString("gravel");
 
-	if(debugMode)
+	if ( debugMode )
 	{
 		debugmo = smgr->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
 	}
-
 }
 
 void Collisions::resizeMemory(long newSize)

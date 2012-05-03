@@ -22,16 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Savegame.h"
 
+#include "Beam.h"
 #include "BeamFactory.h"
-#include "RoRVersion.h"
-#include <Ogre.h>
-
-#include "language.h"
-
-#include "RoRFrameListener.h"
-#include "OverlayWrapper.h"
-
 #include "CameraManager.h"
+#include "Console.h"
+#include "language.h"
+#include "RoRFrameListener.h"
+#include "RoRVersion.h"
 
 using namespace Ogre;
 
@@ -42,14 +39,6 @@ const char *Savegame::current_version = "ROR_SAVEGAME_v2";
 
 #define READVAR(x)     fread(&x, sizeof(x), 1, f)
 #define READARR(x,y)   for(int n = 0; n < y; n++) { READVAR(x); }
-
-Savegame::Savegame()
-{
-}
-
-Savegame::~Savegame()
-{
-}
 
 int Savegame::save(Ogre::String &filename)
 {

@@ -17,18 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Collisions_H__
-#define __Collisions_H__
+#ifndef __Collisions_H_
+#define __Collisions_H_
 
 #include "RoRPrerequisites.h"
+
+#include "BeamData.h" // for collision_box_t
 #include "Ogre.h"
-#include <vector>
-//using namespace Ogre;
-#include "OgreTextAreaOverlayElement.h"
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
 #endif
-#include <math.h>
+
 //these are absolute maximums per terrain
 #define MAX_COLLISION_BOXES 5000
 #define DEFAULT_MAX_COLLISION_TRIS 100000
@@ -71,10 +71,6 @@ typedef struct _eventsource
 	int cbox;
 	bool enabled;
 } eventsource_t;
-
-#include "Beam.h"
-#include "RoRFrameListener.h"
-#include "heightfinder.h"
 
 typedef struct _collision_tri
 {
@@ -159,19 +155,19 @@ public:
 
 	Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
 
-	int addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx=1.0, float scy=1.0, float scz=1.0, float drx=0.0, float dry=0.0, float drz=0.0, int event_filter=EVENT_ALL, int scripthandler=-1);
-	int addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model_t* gm);
+	int addCollisionBox(Ogre::SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx, float hx, float ly, float hy, float lz, float hz, float srx, float sry, float srz, const char* eventname, const char* instancename, bool forcecam, Ogre::Vector3 campos, float scx=1.0f, float scy=1.0f, float scz=1.0f, float drx=0.0f, float dry=0.0f, float drz=0.0f, int event_filter=EVENT_ALL, int scripthandler=-1);
+	int addCollisionTri(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, ground_model_t* gm);
 	int addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm=0, std::vector<int> *collTris=0);
-	bool collisionCorrect(Vector3 *refpos);
+	bool collisionCorrect(Ogre::Vector3 *refpos);
 	bool nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm, int *handlernum=0);
-	Vector3 getPosition(char* instance, char* box);
-	Quaternion getDirection(char* instance, char* box);
+	Ogre::Vector3 getPosition(char* instance, char* box);
+	Ogre::Quaternion getDirection(char* instance, char* box);
 	collision_box_t *getBox(char* instance, char* box);
 	eventsource_t *isTruckInEventBox(Beam *truck);
-	bool isInside(Vector3 pos, char* instance, char* box, float border=0);
-	bool isInside(Vector3 pos, collision_box_t *cbox, float border=0);
+	bool isInside(Ogre::Vector3 pos, char* instance, char* box, float border=0);
+	bool isInside(Ogre::Vector3 pos, collision_box_t *cbox, float border=0);
 	bool groundCollision(node_t *node, float dt, ground_model_t** gm, float *nso=0);
-	void primitiveCollision(node_t *node, Vector3 &normal, Vector3 &force, Vector3 &velocity, float dt, ground_model_t* gm, float* nso, float penetration=0, float reaction=-1.0f);
+	void primitiveCollision(node_t *node, Ogre::Vector3 &normal, Ogre::Vector3 &force, Ogre::Vector3 &velocity, float dt, ground_model_t* gm, float* nso, float penetration=0, float reaction=-1.0f);
 	void setHfinder(HeightFinder *hf);
 	void printStats();
 
@@ -193,12 +189,11 @@ public:
 	ground_model_t *getGroundModelByString(const Ogre::String name);
 	ground_model_t *last_used_ground_model;
 
-	void getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
+	void getMeshInformation(Ogre::Mesh* mesh, size_t &vertex_count, Ogre::Vector3* &vertices,
 			size_t &index_count, unsigned* &indices,
-			const Vector3 &position = Vector3::ZERO,
-			const Quaternion &orient = Quaternion::IDENTITY,const Vector3 &scale = Vector3::UNIT_SCALE);
+			const Ogre::Vector3 &position = Ogre::Vector3::ZERO,
+			const Ogre::Quaternion &orient = Ogre::Quaternion::IDENTITY, const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE);
 	void resizeMemory(long newSize);
 };
 
-
-#endif
+#endif // __Collisions_H_

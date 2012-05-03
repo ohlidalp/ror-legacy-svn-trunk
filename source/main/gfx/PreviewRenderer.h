@@ -18,20 +18,22 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by thomas{AT}thomasfischer{DOT}biz, 5th of July 2010
-#ifndef PREVIEWRENDERER_H__
-#define PREVIEWRENDERER_H__
+#ifndef __PreviewRenderer_H_
+#define __PreviewRenderer_H_
 
 #include "RoRPrerequisites.h"
-
 
 class PreviewRenderer
 {
 public:
+
 	PreviewRenderer();
 	~PreviewRenderer();
 
 	void render();
+
 protected:
+
 	Ogre::String fn;
 
 	void render(Ogre::String ext);
@@ -39,4 +41,4 @@ protected:
 	void render2dviews(Beam *truck, Ogre::Camera *renderCamera, float minCameraRadius);
 };
 
-#endif //PREVIEWRENDERER_H__
+#endif // __PreviewRenderer_H_

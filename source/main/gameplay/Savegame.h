@@ -18,20 +18,20 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 //created by thomas fischer 23 February 2009
-#ifndef SAVEGAME_H__
-#define SAVEGAME_H__
+#ifndef __SAVEGAME_H_
+#define __SAVEGAME_H_
 
 #include "RoRPrerequisites.h"
 
 class Savegame
 {
 public:
-	Savegame();
-	~Savegame();
 
 	int load(Ogre::String &filename);
 	int save(Ogre::String &filename);
+
 protected:
+
 	static const char *current_version;
 	static const int  entry_magic = 0xCAFED00D;
 	
@@ -76,4 +76,4 @@ protected:
 	};
 };
 
-#endif //SAVEGAME_H__
+#endif // __SAVEGAME_H_

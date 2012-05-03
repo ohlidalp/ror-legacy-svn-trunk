@@ -27,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "BeamStats.h"
 #include "buoyance.h"
+#include "CameraManager.h"
 #include "CmdKeyInertia.h"
 #include "collisions.h"
 #include "DashBoardManager.h"
@@ -39,6 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
 #include "heightfinder.h"
+#include "InputEngine.h"
 #include "language.h"
 #include "MeshObject.h"
 #include "MovableText.h"
@@ -46,13 +48,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "PointColDetector.h"
 #include "PositionStorage.h"
 #include "Replay.h"
+#include "RoRFrameListener.h"
 #include "screwprop.h"
 #include "Scripting.h"
 #include "Skidmark.h"
 #include "SlideNode.h"
+#include "turbojet.h"
 #include "turboprop.h"
 #include "water.h"
-#include "CameraManager.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
