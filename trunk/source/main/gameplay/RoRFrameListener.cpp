@@ -1854,7 +1854,9 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 void updateCruiseControl(Beam* curr_truck, float dt)
 {
-	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05 || INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05 || (curr_truck->parkingbrake && curr_truck->engine->getGear() > 0))
+	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05 || INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05
+		|| (curr_truck->parkingbrake && curr_truck->engine->getGear() > 0)
+		|| !curr_truck->engine->running || !curr_truck->engine->contact)
 	{
 		curr_truck->cruisecontrolToggle();
 		return;

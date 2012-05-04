@@ -154,7 +154,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	//starter
 	if (contact && starter && curEngineRPM<stallRPM*1.5) totaltorque+=-brakingTorque;//1000.0f;
 	//restart
-	if (!running && curEngineRPM>stallRPM && starter)
+	if (!running && curEngineRPM>stallRPM && contact)
 	{
 		running=1;
 #ifdef USE_OPENAL
