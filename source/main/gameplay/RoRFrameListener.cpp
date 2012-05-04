@@ -1849,10 +1849,74 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			}
 		}
 	}
-#endif // MYGUI
+#endif //USE_MYGUI
 }
 
+void updateCruiseControl(Beam* curr_truck, float dt)
+{
+	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05 || INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05 || (curr_truck->parkingbrake && curr_truck->engine->getGear() > 0))
+	{
+		curr_truck->cruisecontrolToggle();
+		return;
+	}
 
+	if (curr_truck->engine->getGear() > 0)
+	{
+		// Try to maintain the target speed
+		if (curr_truck->cc_target_speed > curr_truck->WheelSpeed)
+		{
+			float accl = (curr_truck->cc_target_speed - curr_truck->WheelSpeed);
+			accl = std::min(accl, 1.0f);
+			accl = std::max(INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE), accl);
+			curr_truck->engine->setAcc(accl);
+		}
+	} else if (curr_truck->engine->getGear() == 0) // out of gear
+	{
+		// Try to maintain the target rpm
+		if (curr_truck->cc_target_rpm > curr_truck->engine->getRPM())
+		{
+			float accl = (curr_truck->cc_target_rpm - curr_truck->engine->getRPM()) * 0.01;
+			accl = std::min(accl, 1.0f);
+			accl = std::max(INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE), accl);
+			curr_truck->engine->setAcc(accl);
+		}
+	}
+
+	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_ACCL))
+	{
+		if (curr_truck->engine->getGear() > 0)
+		{
+			curr_truck->cc_target_speed += 5 * dt;
+		} else if (curr_truck->engine->getGear() == 0) // out of gear
+		{
+			curr_truck->cc_target_rpm += 1000.0f * dt;
+		}
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_DECL))
+	{
+		if (curr_truck->engine->getGear() > 0)
+		{
+			curr_truck->cc_target_speed -= 5 * dt;
+		} else if (curr_truck->engine->getGear() == 0) // out of gear
+		{
+			curr_truck->cc_target_rpm -= 1000.0f * dt;
+		}
+	}
+	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_READJUST))
+	{
+		curr_truck->cc_target_speed = curr_truck->WheelSpeed;
+		curr_truck->cc_target_rpm   = curr_truck->engine->getRPM();
+	}
+
+#if 0
+	if (curr_truck->WheelSpeed > curr_truck->cc_target_speed + 0.5f && !INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE))
+	{
+		float brake = (curr_truck->WheelSpeed - curr_truck->cc_target_speed) * 0.5;
+		brake = std::min(brake, 1.0f);
+		curr_truck->brake = curr_truck->brakeforce * brake;
+	}
+#endif
+}
 
 bool RoRFrameListener::updateEvents(float dt)
 {
@@ -2580,6 +2644,17 @@ bool RoRFrameListener::updateEvents(float dt)
 					{
 						if (curr_truck->tc_present && !curr_truck->tc_notoggle) curr_truck->tractioncontrolToggle();
 					}
+
+					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_CRUISE_CONTROL))
+					{
+						curr_truck->cruisecontrolToggle();
+					}
+					if(curr_truck->cc_mode)
+					{
+
+						updateCruiseControl(curr_truck,dt);
+					}
+					
 				}
 				if (curr_truck->driveable==AIRPLANE)
 				{

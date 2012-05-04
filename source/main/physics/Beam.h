@@ -124,6 +124,7 @@ public:
 	void parkingbrakeToggle();
 	void antilockbrakeToggle();
 	void tractioncontrolToggle();
+	void cruisecontrolToggle();
 	void beaconsToggle();
 	void setReplayMode(bool rm);
 	int savePosition(int position);

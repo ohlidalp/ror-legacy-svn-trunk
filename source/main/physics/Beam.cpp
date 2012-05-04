@@ -369,6 +369,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	else
 		driveable=NOT_DRIVEABLE;
 	previousGear = 0;
+	cc_mode = cc_target_rpm = cc_target_speed = 0;
 	alb_ratio = alb_minspeed = 0.0f;
 	alb_mode = 0;
 	tc_ratio = tc_fade = tc_wheelslip = 0.0f;
@@ -3451,7 +3452,7 @@ void Beam::lightsToggle()
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle();
 		}
 	}
-	lights=!lights;
+	lights = !lights;
 	if(cablight && cablightNode && isInside)
 		cablightNode->setVisible((lights!=0));
 	if (!lights)
@@ -3872,7 +3873,7 @@ void Beam::toggleCustomParticles()
 	cparticle_mode = !cparticle_mode;
 	for (int i=0; i<free_cparticle; i++)
 	{
-		cparticles[i].active=!cparticles[i].active;
+		cparticles[i].active = !cparticles[i].active;
 		for (int j=0; j<cparticles[i].psys->getNumEmitters(); j++)
 		{
 			cparticles[i].psys->getEmitter(j)->setEnabled(cparticles[i].active);
@@ -4820,7 +4821,7 @@ void Beam::hookToggle(int group, int mode, int node_number)
 
 void Beam::parkingbrakeToggle()
 {
-	parkingbrake=!parkingbrake;
+	parkingbrake = !parkingbrake;
 
 #ifdef USE_OPENAL
 	if (parkingbrake)
@@ -4835,12 +4836,27 @@ void Beam::parkingbrakeToggle()
 
 void Beam::antilockbrakeToggle()
 {
-	alb_mode=!alb_mode;
+	alb_mode = !alb_mode;
 }
 
 void Beam::tractioncontrolToggle()
 {
-	tc_mode=!tc_mode;
+	tc_mode = !tc_mode;
+}
+
+void Beam::cruisecontrolToggle()
+{
+	cc_mode = !cc_mode;
+
+	if (cc_mode)
+	{
+		cc_target_speed = WheelSpeed;
+		cc_target_rpm   = engine->getRPM();
+	} else
+	{
+		cc_target_speed = 0;
+		cc_target_rpm   = 0;
+	}
 }
 
 void Beam::beaconsToggle()
@@ -4851,7 +4867,7 @@ void Beam::beaconsToggle()
 	if(flaresMode==1)
 		enableLight=false;
 	int i;
-	beacon=!beacon;
+	beacon = !beacon;
 	for (i=0; i<free_prop; i++)
 	{
 		if (props[i].beacontype=='b')
