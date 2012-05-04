@@ -516,65 +516,63 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	coll_box.relo = l*sc;
 	coll_box.rehi = h*sc;
 	// calculate selfcenter anyway
-	coll_box.selfcenter = coll_box.relo;
+	coll_box.selfcenter  = coll_box.relo;
 	coll_box.selfcenter += coll_box.rehi;
 	coll_box.selfcenter *= 0.5;
 	
 	// and center too (we need it)
 	coll_box.center = p;
-	coll_box.virt=virt;
+	coll_box.virt = virt;
 
-	coll_box.event_filter=event_filter;
+	coll_box.event_filter = event_filter;
 	// camera stuff
-	coll_box.camforced=forcecam;
+	coll_box.camforced = forcecam;
 	if (forcecam)
 	{
-		coll_box.campos=coll_box.center+rotation*campos;
+		coll_box.campos = coll_box.center+rotation * campos;
 	}
 
 	// first, self-rotate
 	if (rotating)
 	{
 		// we have a self-rotated block
-		coll_box.selfrotated=true;
-		coll_box.selfrot=Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
-		coll_box.selfunrot=coll_box.selfrot.Inverse();
+		coll_box.selfrotated = true;
+		coll_box.selfrot     = Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
+		coll_box.selfunrot   = coll_box.selfrot.Inverse();
 	}
-	else coll_box.selfrotated=false;
+	else coll_box.selfrotated = false;
 
-	coll_box.eventsourcenum=-1;
-	if (strlen(eventname)>0)
+	coll_box.eventsourcenum = -1;
+	if (strlen(eventname) > 0)
 	{
-//LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
+		//LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
 		// this is event-generating
 		strcpy(eventsources[free_eventsource].boxname, eventname);
 		strcpy(eventsources[free_eventsource].instancename, instancename);
 		eventsources[free_eventsource].scripthandler = scripthandler;
-		eventsources[free_eventsource].cbox      = free_collision_box;
-		eventsources[free_eventsource].snode     = tenode;
+		eventsources[free_eventsource].cbox = free_collision_box;
+		eventsources[free_eventsource].snode = tenode;
 		eventsources[free_eventsource].direction = direction;
-		eventsources[free_eventsource].enabled   = true;
-		coll_box.eventsourcenum                  = free_eventsource;
+		eventsources[free_eventsource].enabled = true;
+		coll_box.eventsourcenum = free_eventsource;
 		free_eventsource++;
 	}
 
 	// next, global rotate
-	if (fabs(rx)<0.0001f && fabs(ry)<0.0001f && fabs(rz)<0.0001f)
+	if (fabs(rx) < 0.0001f && fabs(ry) < 0.0001f && fabs(rz) < 0.0001f)
 	{
 		// unrefined box
-		coll_box.refined=false;
+		coll_box.refined = false;
 	} else
 	{
 		// refined box
-		coll_box.refined=true;
+		coll_box.refined = true;
 		// build rotation
-		coll_box.rot=rotation;
-		coll_box.unrot=rotation.Inverse();
+		coll_box.rot   = rotation;
+		coll_box.unrot = rotation.Inverse();
 	}
 
-	SceneNode *debugsn = 0;
-	if(debugMode) debugsn = smgr->getRootSceneNode()->createChildSceneNode();
-
+	SceneNode *debugsn = debugMode ? smgr->getRootSceneNode()->createChildSceneNode() : 0;
 
 	// set raw box
 	// 8 points of a cube
@@ -589,19 +587,26 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		cube_points[5] = Ogre::Vector3(hx, ly, hz) * sc;
 		cube_points[6] = Ogre::Vector3(lx, hy, hz) * sc;
 		cube_points[7] = Ogre::Vector3(hx, hy, hz) * sc;
-		int i;
+		
 		// rotate box
 		if (coll_box.selfrotated)
-			for (i=0; i<8; i++)
+			for (int i=0; i < 8; i++)
 			{
 				cube_points[i]=cube_points[i]-coll_box.selfcenter;
 				cube_points[i]=coll_box.selfrot*cube_points[i];
 				cube_points[i]=cube_points[i]+coll_box.selfcenter;
 			}
+			if (coll_box.refined)
+			{
+				for (int i=0; i < 8; i++)
+				{
+					cube_points[i] = coll_box.rot * cube_points[i];
+				}
+			}
 			// find min/max
 			coll_box.lo = cube_points[0];
 			coll_box.hi = cube_points[0];
-			for (i=1; i<8; i++)
+			for (int i=1; i < 8; i++)
 			{
 				coll_box.lo.makeFloor(cube_points[i]);
 				coll_box.hi.makeCeil(cube_points[i]);
@@ -617,28 +622,30 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		coll_box.hi = p + coll_box.rehi;
 		Vector3 d = (coll_box.rehi - coll_box.relo);
 		cube_points[0] = coll_box.relo;
-		cube_points[1] = coll_box.relo;	                         cube_points[1].x += d.x;
-		cube_points[2] = coll_box.relo;                                                   cube_points[2].y += d.y;
-		cube_points[3] = coll_box.relo;                          cube_points[3].x += d.x; cube_points[3].y += d.y;
-		cube_points[4] = coll_box.relo; cube_points[4].z += d.z;
-		cube_points[5] = coll_box.relo; cube_points[5].z += d.z; cube_points[5].x += d.x;
-		cube_points[6] = coll_box.relo; cube_points[6].z += d.z;                          cube_points[6].y += d.y;
-		cube_points[7] = coll_box.relo; cube_points[7].z += d.z; cube_points[7].x += d.x; cube_points[7].y += d.y;
+		cube_points[1] = coll_box.relo;	cube_points[1].x += d.x;
+		cube_points[2] = coll_box.relo;                          cube_points[2].y += d.y;
+		cube_points[3] = coll_box.relo; cube_points[3].x += d.x; cube_points[3].y += d.y;
+		cube_points[4] = coll_box.relo;                                                   cube_points[4].z += d.z;
+		cube_points[5] = coll_box.relo; cube_points[5].x += d.x;                          cube_points[5].z += d.z;
+		cube_points[6] = coll_box.relo; cube_points[6].y += d.y;                          cube_points[6].z += d.z;
+		cube_points[7] = coll_box.relo; cube_points[7].x += d.x; cube_points[7].y += d.y; cube_points[7].z += d.z;
 	}
 
-	if(debugsn)
+	if (debugsn)
 	{
 		debugsn->setPosition(p);
 		// box content
-		ManualObject *mo =  smgr->createManualObject();
+		ManualObject *mo = smgr->createManualObject();
 		String matName = "tracks/debug/collision/box";
 		if(virt && scripthandler == -1)
 			matName = "tracks/debug/eventbox/unused";
 		else if (virt)
 			matName = "tracks/debug/eventbox/used";
 		AxisAlignedBox *aa = new AxisAlignedBox();
-		for(int i=0;i<8;i++)
+		for(int i=0; i < 8; i++)
+		{
 			aa->merge(cube_points[i]);
+		}
 		mo->begin(matName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
 		mo->position(cube_points[0]);
 		mo->position(cube_points[1]);
@@ -674,7 +681,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		debugsn->attachObject(mo);
 
 		// the border
-		mo =  smgr->createManualObject();
+		mo = smgr->createManualObject();
 		mo->begin(matName, Ogre::RenderOperation::OT_LINE_LIST);
 		mo->position(cube_points[0]);
 		mo->position(cube_points[1]);
@@ -701,11 +708,11 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 		// label
 		// setup a label
-		if(virt)
+		if (virt)
 		{
 			String labelName = "collision_box_label_"+TOSTRING(free_collision_box);
 			String labelCaption = "EVENTBOX\nevent:"+String(eventname) + "\ninstance:" + String(instancename);
-			if(scripthandler != -1)
+			if (scripthandler != -1)
 				labelCaption += "\nhandler:" + TOSTRING(scripthandler);
 			MovableText *mt = new MovableText(labelName, labelCaption);
 			mt->setFontName("highcontrast_black");
@@ -718,9 +725,8 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 			SceneNode *n2 = smgr->getRootSceneNode()->createChildSceneNode();
 			n2->attachObject(mt);
-			n2->setPosition( coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
+			n2->setPosition(coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
 		}
-
 	}
 
 	// register this collision box in the index
@@ -732,11 +738,10 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	coll_box.ilo.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
 	coll_box.ihi.makeCeil(Ogre::Vector3(0.0f));
 	coll_box.ihi.makeFloor(Ogre::Vector3(MAXIMUM_CELL));
-	
-	
-	for (int i = coll_box.ilo.x; i <= coll_box.ihi.x; i++)
+
+	for (int i=coll_box.ilo.x; i <= coll_box.ihi.x; i++)
 	{
-		for (int j = coll_box.ilo.z; j <= coll_box.ihi.z; j++)
+		for (int j=coll_box.ilo.z; j <= coll_box.ihi.z; j++)
 		{
 			//LOG("Adding a reference to cell "+TOSTRING(i)+" "+TOSTRING(j)+" at index "+TOSTRING(collision_index_free[i*NUM_COLLISON_CELLS+j]));
 			hash_add(i,j,free_collision_box);
