@@ -1084,11 +1084,35 @@ eventInfo_t eventInfo[] = {
 		"Keyboard EXPL+SHIFT+B",
 		_L("toggle antilock brake")
 	},
-		{
+	{
 		"TRUCK_TRACTION_CONTROL",
 		EV_TRUCK_TRACTION_CONTROL,
 		"Keyboard EXPL+SHIFT+T",
 		_L("toggle traction control")
+	},
+	{
+		"TRUCK_CRUISE_CONTROL",
+		EV_TRUCK_CRUISE_CONTROL,
+		"Keyboard EXPL+SPACE",
+		_L("toggle cruise control")
+	},
+	{
+		"TRUCK_CRUISE_CONTROL_READJUST",
+		EV_TRUCK_CRUISE_CONTROL_READJUST,
+		"Keyboard EXPL+SHIFT+SPACE",
+		_L("match target speed / rpm with current truck speed / rpm")
+	},
+	{
+		"TRUCK_CRUISE_CONTROL_ACCL",
+		EV_TRUCK_CRUISE_CONTROL_ACCL,
+		"Keyboard EXPL+SHIFT+R",
+		_L("increase target speed / rpm")
+	},
+	{
+		"TRUCK_CRUISE_CONTROL_DECL",
+		EV_TRUCK_CRUISE_CONTROL_DECL,
+		"Keyboard EXPL+SHIFT+F",
+		_L("decrease target speed / rpm")
 	},
 	{
 		"TRUCK_SHIFT_DOWN",

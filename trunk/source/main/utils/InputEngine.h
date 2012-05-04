@@ -254,6 +254,10 @@ enum events
 	EV_TRUCK_PARKING_BRAKE, //!< toggle parking brake
 	EV_TRUCK_ANTILOCK_BRAKE, //!< toggle antilockbrake system
 	EV_TRUCK_TRACTION_CONTROL, //!< toggle antilockbrake system
+	EV_TRUCK_CRUISE_CONTROL, //!< toggle cruise control
+	EV_TRUCK_CRUISE_CONTROL_READJUST, //!< match target speed / rpm with current truck speed / rpm
+	EV_TRUCK_CRUISE_CONTROL_ACCL,//!< increase target speed / rpm
+	EV_TRUCK_CRUISE_CONTROL_DECL,//!< decrease target speed / rpm
 	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
 	EV_TRUCK_SHIFT_NEUTRAL, //!< shift to neutral gear in manual transmission mode
 	EV_TRUCK_SHIFT_UP, //!< shift one gear up in manual transmission mode

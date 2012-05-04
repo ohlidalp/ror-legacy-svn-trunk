@@ -865,7 +865,7 @@ struct rig
 	bool disable_default_sounds;
 	int detacher_group_state; // current detacher group for the next beam generated
 
-	//antilockbrakes+tractioncontrol
+	// Antilockbrake + Tractioncontrol
 	bool slopeBrake;
 	float slopeBrakeFactor;
 	float slopeBrakeAttAngle;
@@ -890,6 +890,11 @@ struct rig
 	int antilockbrake;
 	int tractioncontrol;
 	float animTimer;
+
+	// Cruise Control
+	int cc_mode;
+	float cc_target_rpm;
+	float cc_target_speed;
 
 	float beam_creak;
 	char uniquetruckid[256];
@@ -974,10 +979,10 @@ struct rig
 
 	int proped_wheels;
 	int braked_wheels;
-	//for inter-diffential locking
+	//for inter-differential locking
 	int proppairs[MAX_WHEELS];
 
-	//! try to connect slidenodes directly after spawning
+	//! try to connect slide-nodes directly after spawning
 	bool slideNodesConnectInstantly;
 
 	//! Stores all the available RailGroups for this truck
