@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_OPENAL
 
 #include "Sound.h"
@@ -30,27 +29,27 @@ Sound::Sound(ALuint buffer, SoundManager *soundManager, int sourceIndex) :
 	, soundManager(soundManager)
 	, sourceIndex(sourceIndex)
 	, audibility(0.0f)
-	, enabled(true)
 	, gain(0.0f)
-	, hardware_index(-1)
-	, loop(false)
 	, pitch(1.0f)
 	, position(Vector3::ZERO)
-	, should_play(false)
 	, velocity(Vector3::ZERO)
+	, enabled(true)
+	, loop(false)
+	, should_play(false)
+	, hardware_index(-1)
 {
 }
 
 void Sound::computeAudibility(Vector3 pos)
 {
-	// Disable sound?
+	// disable sound?
 	if (!enabled)
 	{
 		audibility = 0.0f;
 		return;
 	}
 
-	// First check if the sound is finished!
+	// first check if the sound is finished!
 	if (!loop && should_play && hardware_index != -1)
 	{
 		int value = 0;
@@ -61,7 +60,7 @@ void Sound::computeAudibility(Vector3 pos)
 		}
 	}
 	
-	// Should it play at all?
+	// should it play at all?
 	if (!should_play || gain == 0.0f)
 	{
 		audibility = 0.0f;

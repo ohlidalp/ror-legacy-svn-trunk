@@ -17,14 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_OPENAL
+
+#include "SoundScriptManager.h"
 
 #include "Beam.h"
 #include "Settings.h"
 #include "Sound.h"
 #include "SoundManager.h"
-#include "SoundScriptManager.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -70,8 +70,8 @@ SoundScriptManager::SoundScriptManager() :
 	// reset all states
 	statemap.clear();
 
-	sm = new SoundManager(); // we can give a device name if we want here
-	LOG("SoundScriptManager: Sound Manager started with "+TOSTRING(sm->getNumHardwareSources())+" sources");
+	soundManager = new SoundManager(); // we can give a device name if we want here
+	LOG("SoundScriptManager: Sound Manager started with " + TOSTRING(soundManager->getNumHardwareSources())+" sources");
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 
@@ -227,9 +227,9 @@ void SoundScriptManager::modulate(int truck, int mod, float value, int linkType,
 		}
 	}
 
-	for (int i=0; i<free_pitches[mod]; i++)
+	for (int i=0; i < free_pitches[mod]; i++)
 	{
-		SoundScriptInstance* inst=pitches[mod+i*SS_MAX_MOD];
+		SoundScriptInstance* inst = pitches[mod + i * SS_MAX_MOD];
 		if (!inst) continue;
 		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
 		{
@@ -244,7 +244,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value, int linkType,
 void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity)
 {
 	if (soundsDisabled) return;
-	sm->setCamera(position, direction, up, velocity);
+	soundManager->setCamera(position, direction, up, velocity);
 }
 
 const StringVector& SoundScriptManager::getScriptPatterns(void) const
@@ -279,8 +279,6 @@ void SoundScriptManager::unloadResourceGroup(String groupname)
 	{
 		if (it->second && it->second->groupname == groupname)
 		{
-			delete(it->second);
-			it->second = 0;
 			templates.erase(it++);
 		} else
 		{
@@ -338,7 +336,7 @@ SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatenam
 		return NULL; // reached limit!
 	}
 
-	SoundScriptInstance* inst = new SoundScriptInstance(truck, templ, sm, templ->filename+"-"+TOSTRING(truck)+"-"+TOSTRING(instance_counter), soundLinkType, soundLinkItemId);
+	SoundScriptInstance* inst = new SoundScriptInstance(truck, templ, soundManager, templ->filename+"-"+TOSTRING(truck)+"-"+TOSTRING(instance_counter), soundLinkType, soundLinkItemId);
 	instance_counter++;
 
 	// register to lookup tables
@@ -441,9 +439,9 @@ void SoundScriptManager::skipToNextOpenBrace(DataStreamPtr& stream)
 void SoundScriptManager::soundEnable(bool state)
 {
 	if (state)
-		sm->resumeAllSounds();
+		soundManager->resumeAllSounds();
 	else
-		sm->pauseAllSounds();
+		soundManager->pauseAllSounds();
 }
 
 //=====================================================================

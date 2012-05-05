@@ -17,13 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_OPENAL
-
 #ifndef __SoundScriptManager_H_
 #define __SoundScriptManager_H_
 
 #include "RoRPrerequisites.h"
+
 #include "BeamData.h" // for MAX_TRUCKS
 #include "OgreScriptLoader.h"
 #include "Singleton.h"
@@ -304,9 +303,8 @@ private:
 	// soundLinks, soundItems, trucks, triggers
 	std::map <int, std::map <int, std::map <int, std::map <int, bool > > > > statemap;
 
-	SoundManager* sm;
+	SoundManager* soundManager;
 };
 
 #endif // __SoundScriptManager_H_
-
 #endif // USE_OPENAL

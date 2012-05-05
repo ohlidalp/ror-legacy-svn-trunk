@@ -17,14 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#pragma once
-
 #ifdef USE_OPENAL
 #ifndef __Sound_H_
 #define __Sound_H_
 
 #include "RoRPrerequisites.h"
+
 #include <AL/al.h>
 
 class Sound
@@ -58,7 +56,7 @@ private:
 	bool enabled;
 	bool should_play;
 
-	// This value is changed dynamically, depending on whether the input is played or not.
+	// this value is changed dynamically, depending on whether the input is played or not.
 	int hardware_index;
 	ALuint buffer;
 	
@@ -66,7 +64,7 @@ private:
 	Ogre::Vector3 velocity;
 
 	SoundManager* soundManager;
-	// Must not be changed during the lifetime of this object
+	// must not be changed during the lifetime of this object
 	int sourceIndex;
 };
 

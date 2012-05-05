@@ -17,14 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#pragma once
-
 #ifdef USE_OPENAL
 #ifndef __SoundManager_H_
 #define __SoundManager_H_
 
 #include "RoRPrerequisites.h"
+
 #include "Ogre.h"
 #include <AL/al.h>
 #include <AL/alc.h>
@@ -64,19 +62,19 @@ private:
 
 	bool loadWAVFile(Ogre::String filename, ALuint buffer);
 
-	// Active audio sources (hardware sources)
-	int    m_hardware_sources_num;                       // Total number of available hardware sources < MAX_HARDWARE_SOURCES
+	// active audio sources (hardware sources)
+	int    m_hardware_sources_num;                       // total number of available hardware sources < MAX_HARDWARE_SOURCES
 	int    m_hardware_sources_in_use_count;
-	int    m_hardware_sources_map[MAX_HARDWARE_SOURCES]; // Stores the hardware index for each source. -1 = unmapped
-	ALuint m_hardware_sources[MAX_HARDWARE_SOURCES];     // This buffer contains valid AL handles up to m_hardware_sources_num
+	int    m_hardware_sources_map[MAX_HARDWARE_SOURCES]; // stores the hardware index for each source. -1 = unmapped
+	ALuint m_hardware_sources[MAX_HARDWARE_SOURCES];     // this buffer contains valid AL handles up to m_hardware_sources_num
 
-	// Audio sources
+	// audio sources
 	int    m_audio_sources_in_use_count;
 	Sound* m_audio_sources[MAX_AUDIO_BUFFERS];
-	// Helper for calculating the most audible sources
+	// helper for calculating the most audible sources
 	std::pair<int, float> m_audio_sources_most_audible[MAX_AUDIO_BUFFERS];
 	
-	// Audio buffers: Array of AL buffers and filenames
+	// audio buffers: Array of AL buffers and filenames
 	int          m_audio_buffers_in_use_count;
 	ALuint       m_audio_buffers[MAX_AUDIO_BUFFERS];
 	Ogre::String m_audio_buffer_file_name[MAX_AUDIO_BUFFERS];
