@@ -42,17 +42,12 @@ SoundManager::SoundManager() :
 	, m_sound_context(NULL)
 	, m_sound_device(NULL)
 {
-	String sound_renderer = SSETTING("AudioDevice", "");
+	String sound_renderer = SSETTING("AudioDevice", "Default");
 
 	if (sound_renderer == "No sound") return;
 
-	LOG("Opening Device: '" + SSETTING("AudioDevice", "Default") + "'");
-
-	// we loop alcOpenDevice() because there is a potential race condition with the asynchronous DSound enumeration callback
-	for (int i=0; i < 100  && !m_sound_device; i++)
-	{
-		m_sound_device = alcOpenDevice(sound_renderer.c_str());
-	}
+	LOG("Opening Device: '" + sound_renderer + "'");
+	m_sound_device = alcOpenDevice(sound_renderer.c_str());
 
 	if (!m_sound_device)
 	{
