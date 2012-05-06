@@ -42,12 +42,14 @@ SoundManager::SoundManager() :
 	, m_sound_context(NULL)
 	, m_sound_device(NULL)
 {
-	String sound_renderer = SSETTING("AudioDevice", "Default");
+	String audio_device = SSETTING("AudioDevice", "Default");
 
-	if (sound_renderer == "No sound") return;
+	if (audio_device == "No sound") return;
 
-	LOG("Opening Device: '" + sound_renderer + "'");
-	m_sound_device = alcOpenDevice(sound_renderer.c_str());
+	LOG("Opening Device: '" + audio_device + "'");
+	
+	if(audio_device == "Default") audio_device = "";
+	m_sound_device = alcOpenDevice(audio_device.c_str());
 
 	if (!m_sound_device)
 	{
