@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#pragma once
+#ifndef __ColoredTextAreaOverlayElementFactory_H_
+#define __ColoredTextAreaOverlayElementFactory_H_
 
 #include "RoRPrerequisites.h"
 
@@ -43,3 +43,5 @@ public:
 		return name;
 	}
 };
+
+#endif // __ColoredTextAreaOverlayElementFactory_H_
