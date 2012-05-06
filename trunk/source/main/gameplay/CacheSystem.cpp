@@ -111,7 +111,7 @@ void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
 	loadCache();
 
 	// show error on zero content
-	if(!entries.size())
+	if(entries.empty())
 	{
 		showOgreWebError(_L("No content installed"), _L("You have no content installed"), _L("http://www.rigsofrods.com/wiki/pages/Install_Content"));
 		exit(1337);
@@ -137,7 +137,7 @@ void CacheSystem::unloadUselessResourceGroups()
 	StringVector::iterator it;
 	for(it = sv.begin(); it!=sv.end(); it++)
 	{
-		if(it->substr(0, 8) == "General-")
+		if (it->substr(0, 8) == "General-")
 		{
 			try
 			{
@@ -145,7 +145,7 @@ void CacheSystem::unloadUselessResourceGroups()
 				SoundScriptManager::getSingleton().clearNonBaseTemplates();
 #endif //OPENAL
 				// we cannot fix this problem below Ogre version 1.7
-				//ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
+				ParticleSystemManager::getSingleton().removeTemplatesByResourceGroup(*it);
 				ResourceGroupManager::getSingleton().clearResourceGroup(*it);
 				ResourceGroupManager::getSingleton().unloadResourceGroup(*it);
 				ResourceGroupManager::getSingleton().destroyResourceGroup(*it);
@@ -669,64 +669,54 @@ int CacheSystem::incrementalCacheUpdate()
 	LOG("* incremental check (1/5): deleted and changed files ...");
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(20, _L("incremental check: deleted and changed files"));
-#endif //MYGUI
-	std::vector<Cache_Entry>::iterator it;
+#endif //USE_MYGUI
 	int counter=0;
 	std::vector<Cache_Entry> changed_entries;
 	UTFString tmp;
-	for(it = entries.begin(); it != entries.end(); it++, counter++)
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); counter++)
 	{
-		int progress = ((float)counter/(float)(entries.size()))*100;
+		if (it->deleted)
+		{
+			entries.erase(it++);
+		} else
+		{
+			it++;
+		}
 #ifdef USE_MYGUI
+		int progress = ((float)counter/(float)(entries.size()))*100;
 		tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->type) + UTFString(L": ") + ANSI_TO_UTF(it->fname);
 		LoadingWindow::getSingleton().setProgress(progress, tmp);
-#endif //MYGUI
-		if(it->type == "FileSystem")
+#endif //USE_MYGUI
+		// check whether the file exists
+		String fn = getRealPath(it->dirname);
+		if(it->type == "FileSystem" || it->type == "Zip")
 		{
-			String fn = getRealPath(it->dirname + "/" + it->fname);
+			if(it->type == "FileSystem")
+				fn = getRealPath(it->dirname + "/" + it->fname);
+			
 			if(!fileExists(fn.c_str()))
 			{
 				LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
 				tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
 				LoadingWindow::getSingleton().setProgress(20, tmp);
-#endif // MYGUI
+#endif //USE_MYGUI
 				removeFileFromFileCache(it);
-				//entries.erase(it);
-				it->deleted=true;
+				it->deleted = true;
 				deletedFiles++;
-				if(it == entries.end())
-					break;
 				continue;
 			}
 		}
-		else if(it->type == "Zip")
+		// check whether it changed
+		if(it->type == "Zip")
 		{
-			String fn = getRealPath(it->dirname);
-			if(!fileExists(fn.c_str()))
-			{
-				LOG("- "+fn+" not existing");
-#ifdef USE_MYGUI
-				tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
-				LoadingWindow::getSingleton().setProgress(20, tmp);
-#endif //MYGUI
-				removeFileFromFileCache(it);
-				//entries.erase(it);
-				it->deleted = true;
-				deletedFiles++;
-				if(it == entries.end())
-					break;
-				continue;
-			}
-
 			// check file time, if that fails, fall back to sha1 (needed for platforms where filetime is not yet implemented!
 			bool check = false;
 			String ft = fileTime(fn);
 			if(ft.empty() || it->filetime.empty() || it->filetime == "unknown")
 			{
 				// slow sha1 check
-				char hash[256];
-				memset(hash, 0, 255);
+				char hash[256] = {};
 
 				CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(fn.c_str()));
@@ -739,7 +729,7 @@ int CacheSystem::incrementalCacheUpdate()
 				check = (it->filetime != ft);
 			}
 
-			if(check)
+			if (check)
 			{
 				changedFiles++;
 				LOG("- "+fn+" changed");
@@ -753,17 +743,16 @@ int CacheSystem::incrementalCacheUpdate()
 
 	// we try to reload one zip only one time, not multiple times if it contains more resources at once
 	std::vector<Ogre::String> reloaded_zips;
-	std::vector<Ogre::String>::iterator sit;
 	LOG("* incremental check (2/5): processing changed zips ...");
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(40, _L("incremental check: processing changed zips\n"));
-#endif //MYGUI
-	for(it = changed_entries.begin(); it != changed_entries.end(); it++)
+#endif //USE_MYGUI
+	for(std::vector<Cache_Entry>::iterator it = changed_entries.begin(); it != changed_entries.end(); it++)
 	{
 		bool found=false;
-		for(sit=reloaded_zips.begin();sit!=reloaded_zips.end();sit++)
+		for(std::vector<Ogre::String>::iterator it2 = reloaded_zips.begin(); it2!=reloaded_zips.end(); it2++)
 		{
-			if(*sit == it->dirname)
+			if(*it2 == it->dirname)
 			{
 				found=true;
 				break;
@@ -773,7 +762,7 @@ int CacheSystem::incrementalCacheUpdate()
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(40, _L("incremental check: processing changed zips\n")+it->fname);
-#endif //MYGUI
+#endif //USE_MYGUI
 			loadSingleZip(*it);
 			reloaded_zips.push_back(it->dirname);
 		}
@@ -781,24 +770,23 @@ int CacheSystem::incrementalCacheUpdate()
 	LOG("* incremental check (3/5): new content ...");
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(60, _L("incremental check: new content\n"));
-#endif //MYGUI
+#endif //USE_MYGUI
 	checkForNewContent();
 
 	LOG("* incremental check (4/5): new files ...");
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(80, _L("incremental check: new files\n"));
-#endif //MYGUI
+#endif //USE_MYGUI
 	checkForNewKnownFiles();
 
 	LOG("* incremental check (5/5): duplicates ...");
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(90, _L("incremental check: duplicates\n"));
-#endif //MYGUI
-	std::vector<Cache_Entry>::iterator it2;
-	for(it = entries.begin(); it != entries.end(); it++)
+#endif //USE_MYGUI
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
 	{
 		if(it->deleted) continue;
-		for(it2 = entries.begin(); it2 != entries.end(); it2++)
+		for(std::vector<Cache_Entry>::iterator it2 = entries.begin(); it2 != entries.end(); it2++)
 		{
 			if(it2->deleted) continue;
 			// clean paths, important since we compare them ...
@@ -873,7 +861,7 @@ int CacheSystem::incrementalCacheUpdate()
 	}
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setAutotrack(_L("loading...\n"));
-#endif //MYGUI
+#endif //USE_MYGUI
 
 	//LOG("* incremental check (5/5): regenerating file cache ...");
 	//generateFileCache(true);
@@ -882,43 +870,32 @@ int CacheSystem::incrementalCacheUpdate()
 
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-#endif // MYGUI
+#endif //USE_MYGUI
 	LOG("* incremental check done.");
 	return 0;
 }
 
 Cache_Entry *CacheSystem::getEntry(int modid)
 {
-	std::vector<Cache_Entry>::iterator it;
-	//int counter=0;
-	for(it = entries.begin(); it != entries.end(); it++)
-		if(modid == it->number)
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
+	{
+		if (modid == it->number)
 			return (Cache_Entry *)&*it;
+	}
 	return 0;
 }
 
 void CacheSystem::generateCache(bool forcefull)
 {
-	//OverlayManager::getSingleton().getOverlayElement("tracks/Title/load")->setCaption("regenerating Mod Cache");
-	//setProgress(1, "Opening all packs ...");
-	modcounter=0;
+	this->modcounter = 0;
 
-	if(!forcefull)
+	// see if we can avoid a full regeneration
+	if (forcefull || incrementalCacheUpdate())
 	{
-		int res = incrementalCacheUpdate();
-		if(res == 0)
-			// already incremental updated :)
-			return;
+		loadAllZips();
+
+		writeGeneratedCache();
 	}
-
-	// full regeneration below
-
-	loadAllZips();
-
-	writeGeneratedCache();
-
-	//setProgress(1, "Loaded " + TOSTRING(entries.size()) + " mods. Saving Cache ...");
-
 }
 
 Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
@@ -2068,7 +2045,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 #ifdef USE_MYGUI
 		UTFString tmp = _L("Loading zips in group ") + ANSI_TO_UTF(group) + L"\n" + ANSI_TO_UTF(iterFiles->filename) + L"\n" + ANSI_TO_UTF(TOSTRING(i)) + L"/" + ANSI_TO_UTF(TOSTRING(filecount));
 		LoadingWindow::getSingleton().setProgress(progress, tmp);
-#endif //MYGUI
+#endif //USE_MYGUI
 
 		loadSingleZip((Ogre::FileInfo)*iterFiles);
 		loadedZips[iterFiles->filename] = true;
@@ -2076,7 +2053,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 	// hide loader again
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-#endif //MYGUI
+#endif //USE_MYGUI
 }
 
 void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
@@ -2091,13 +2068,13 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("Loading directory\n") + listitem->filename);
-#endif //MYGUI
+#endif //USE_MYGUI
 		loadSingleDirectory(dirname, group, true);
 	}
 	// hide loader again
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-#endif //MYGUI
+#endif //USE_MYGUI
 }
 
 void CacheSystem::loadAllZips()
@@ -2140,12 +2117,12 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
-#endif //MYGUI
+#endif //USE_MYGUI
 		if(!isZipUsedInEntries(zippath2))
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
-#endif //MYGUI
+#endif //USE_MYGUI
 			LOG("- "+zippath+" is new");
 			newFiles++;
 			loadSingleZip((Ogre::FileInfo)*iterFiles);
@@ -2153,7 +2130,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 	}
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-#endif //MYGUI
+#endif //USE_MYGUI
 }
 
 void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
@@ -2167,19 +2144,19 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
-#endif // MYGUI
+#endif //USE_MYGUI
 		if(!isDirectoryUsedInEntries(dirname))
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
-#endif //MYGUI
+#endif //USE_MYGUI
 			LOG("- "+dirname+" is new");
 			loadSingleDirectory(dirname, group, true);
 		}
 	}
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-#endif //MYGUI
+#endif //USE_MYGUI
 }
 
 void CacheSystem::checkForNewContent()
