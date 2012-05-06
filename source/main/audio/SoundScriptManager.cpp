@@ -279,7 +279,7 @@ void SoundScriptManager::unloadResourceGroup(String groupname)
 	{
 		if (it->second && it->second->groupname == groupname)
 		{
-			templates.erase(it++);
+			it = templates.erase(it);
 		} else
 		{
 			++it;
@@ -297,7 +297,7 @@ void SoundScriptManager::clearNonBaseTemplates()
 		{
 			delete(it->second);
 			it->second = 0;
-			templates.erase(it++);
+			it = templates.erase(it);
 			counter++;
 		} else
 		{
