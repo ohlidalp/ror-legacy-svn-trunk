@@ -78,6 +78,13 @@ using namespace std;
 #include <wx/log.h>
 #include <wx/statline.h>
 #include <wx/wfstream.h>
+#include <wx/tokenzr.h>
+
+#ifdef USE_OPENAL
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#endif // USE_OPENAL
 
 #if wxCHECK_VERSION(2, 8, 0)
 #include <wx/hyperlink.h>
@@ -255,7 +262,6 @@ public:
 	void OnNoteBook2PageChange(wxNotebookEvent& event);
 	std::string readVersionInfo();
 
-	void DSoundEnumerate(wxValueChoice* wxc);
 //	void checkLinuxPaths();
 	MyApp *app;
 private:
@@ -1090,9 +1096,11 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	btnToken = new wxButton(gamePanel, get_user_token, _("Get Token"), wxPoint(x_row1+210, y), wxSize(90,25));
 	y+=35;
 
+#ifdef USE_OPENAL
 	// creak sound?
 	creaksound=new wxCheckBox(gamePanel, -1, _("Disable creak sound"), wxPoint(x_row1, y));
 	creaksound->SetToolTip(_("You can disable the default creak sound by checking this box"));
+#endif //USE_OPENAL
 
 	// aboutPanel
 	y = 10;
@@ -1182,7 +1190,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("Caelum"),        wxT("Atmospheric effects"), wxT("http://code.google.com/p/caelum/"), x_row1, y);
 	addAboutEntry(wxT("AngelScript"),   wxT("Scripting Backend"), wxT("http://www.angelcode.com/angelscript/"), x_row1, y);
 	//addAboutEntry(wxT("LUA"),           wxT("Scripting Backend"), wxT("http://www.lua.org"), x_row1, y);
+#ifdef USE_OPENAL
 	addAboutEntry(wxT("OpenAL Soft"),   wxT("Sound engine"), wxT("http://kcat.strangesoft.net/openal.html"), x_row1, y);
+#endif //USE_OPENAL
 	addAboutEntry(wxT("MyGUI"),         wxT("GUI System"), wxT("http://www.mygui.info"), x_row1, y);
 	addAboutEntry(wxT("CrashRpt"),      wxT("Crash Reporting system"), wxT("http://code.google.com/p/crashrpt/"), x_row1, y);
 	addAboutEntry(wxT("Hydrax"),        wxT("Advanced Water System"), wxT("http://www.ogre3d.org/addonforums/viewforum.php?f=20"), x_row1, y);
@@ -1477,22 +1487,46 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(advancedPanel, -1, _("You do not need to change these settings unless you experience problems"), wxPoint(10, y));
 	y+=30;
 
+#ifdef USE_OPENAL
 	dText = new wxStaticText(advancedPanel, -1, _("Sound device:"), wxPoint(10,y+3));
 	sound=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	sound->AppendValueItem(wxT("No sound"), _("No sound"));
 	sound->AppendValueItem(wxT("Default"), _("Default"));
 	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	//add the rest
-	DSoundEnumerate(sound);
-#endif
+
+
+	// get sound devices
+
+	wxLogStatus(wxT("Sound Devices: "));
+	char *devices = (char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+	while(devices && *devices !=NULL)
+	{
+		// missing header fr this:
+		//ALCdevice *device = alcOpenDevice(devices);
+		//wxLogStatus(wxString(device->szDeviceName));
+		sound->AppendValueItem(wxString(devices));
+		wxLogStatus(wxT(" *") + wxString(devices));
+		devices += strlen(devices) + 1; //next device
+	}
 	y+=35;
+
+	wxLogStatus(wxT("Sound Extensions: "));
+	char *extensions = (char *)alcGetString(NULL, ALC_ENUMERATE_ALL_EXT);
+
+	wxStringTokenizer tkz(wxString(extensions), wxT(" "));
+	while ( tkz.HasMoreTokens() )
+	{
+		wxString token = tkz.GetNextToken();
+		wxLogStatus(wxT(" *") + token);
+	}
+
 
 	dText = new wxStaticText(advancedPanel, wxID_ANY, _("Sound Volume:"), wxPoint(10,y+3));
 	soundVolume=new wxSlider(advancedPanel, volumeslider, 100, 0, 100, wxPoint(x_row1, y), wxSize(200, -1));
 	soundVolume->SetToolTip(_("sets the master volume"));
 	soundVolumeText = new wxStaticText(advancedPanel, wxID_ANY, _("100 %"), wxPoint(x_row1 + 210,y+3));
 	y+=35;
+#endif //USE_OPENAL
 
 
 	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10,y+3));
@@ -2101,9 +2135,12 @@ void MyDialog::SetDefaults()
 	dof->SetValue(false);
 	mblur->SetValue(false);
 	skidmarks->SetValue(false);
+#ifdef USE_OPENAL
 	creaksound->SetValue(true);
 	sound->SetSelection(1);//default
 	soundVolume->SetValue(100);
+#endif // USE_OPENAL
+
 	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
 
 #ifdef NETWORK
@@ -2172,12 +2209,13 @@ void MyDialog::getSettingsControls()
 	settings["DOF"] = (dof->GetValue()) ? "Yes" : "No";
 	settings["Motion blur"] = "No"; //(mblur->GetValue()) ? "Yes" : "No";
 	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
-	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
+#ifdef USE_OPENAL
+	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
 	settings["3D Sound renderer"] = sound->getSelectedValueAsSTDString();
-
 	sprintf(tmp, "%d", soundVolume->GetValue());
 	settings["Sound Volume"] = tmp;
+#endif //USE_OPENAL
 	settings["Threads"] = thread->getSelectedValueAsSTDString();
 
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
@@ -2249,6 +2287,7 @@ void MyDialog::updateSettingsControls()
 			sightRange->SetValue(sightrange);
 	}
 
+#ifdef USE_OPENAL
 	st = settings["Sound Volume"];
 	long volume = 100;
 	if (st.length()>0)
@@ -2256,6 +2295,9 @@ void MyDialog::updateSettingsControls()
 		if(conv(st).ToLong(&volume))
 			soundVolume->SetValue(volume);
 	}
+	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
+	sound->setSelectedValue(settings["3D Sound renderer"]);
+#endif //USE_OPENAL
 
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
 	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
@@ -2282,7 +2324,6 @@ void MyDialog::updateSettingsControls()
 	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
 	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
 	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
-	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
 	//st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
 	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
@@ -2291,7 +2332,6 @@ void MyDialog::updateSettingsControls()
 	//st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
 	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
 
-	sound->setSelectedValue(settings["3D Sound renderer"]);
 	thread->setSelectedValue(settings["Threads"]);
 
 	double flt = 0;
@@ -2869,6 +2909,7 @@ void MyDialog::OnSightrangesliderScroll(wxScrollEvent &e)
 
 void MyDialog::OnVolumesliderScroll(wxScrollEvent &e)
 {
+#ifdef USE_OPENAL
 	wxString s;
 	int v = soundVolume->GetValue();
 	if(v == soundVolume->GetMin())
@@ -2879,6 +2920,7 @@ void MyDialog::OnVolumesliderScroll(wxScrollEvent &e)
 		s.Printf(wxT("%i %%"), v);
 	}
 	soundVolumeText->SetLabel(s);
+#endif //USE_OPENAL
 }
 
 void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
@@ -3137,59 +3179,3 @@ void MyDialog::OnTestNet(wxCommandEvent& event)
 	*/
 #endif
 }
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-
-//DirectSound Enumeration
-
-//Callback, yay!
-static BOOL CALLBACK DSoundEnumDevices(LPGUID guid, LPCSTR desc, LPCSTR drvname, LPVOID data)
-{
-	wxValueChoice* wxc=(wxValueChoice*)data;
-	if (guid && desc)
-	{
-		//sometimes you get weird strings here
-		wxString wxdesc=conv(desc);
-		//wxLogStatus(wxT("DirectSound Callback with source '")+conv(desc)+conv("'"));
-		if (wxdesc.Length()>0) wxc->AppendValueItem(wxdesc);
-	}
-    return TRUE;
-}
-
-typedef BOOL (CALLBACK *LPDSENUMCALLBACKA)(LPGUID, LPCSTR, LPCSTR, LPVOID);
-
-static HRESULT (WINAPI *pDirectSoundEnumerateA)(LPDSENUMCALLBACKA pDSEnumCallback, LPVOID pContext);
-
-void MyDialog::DSoundEnumerate(wxValueChoice *wxc)
-{
-    size_t iter = 1;
-    HRESULT hr;
-
-	HMODULE ds_handle;
-
-    ds_handle = LoadLibraryA("dsound.dll");
-    if(ds_handle == NULL)
-    {
-        //AL_PRINT("Failed to load dsound.dll\n");
-        return;
-    }
-//pure uglyness
-//what you are seeing here is a function type inside a function type casting inside a define
-#define LOAD_FUNC(f) do { \
-    p##f = (HRESULT (__stdcall *)(LPDSENUMCALLBACKA,LPVOID))GetProcAddress((HMODULE)ds_handle, #f); \
-    if(p##f == NULL) \
-    { \
-        FreeLibrary(ds_handle); \
-        ds_handle = NULL; \
-        return; \
-    } \
-} while(0)
-
-LOAD_FUNC(DirectSoundEnumerateA);
-#undef LOAD_FUNC
-
-    hr = pDirectSoundEnumerateA(DSoundEnumDevices, wxc);
-//    if(FAILED(hr))
-//        AL_PRINT("Error enumerating DirectSound devices (%#x)!\n", (unsigned int)hr);
-}
-#endif
