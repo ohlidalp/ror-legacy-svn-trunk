@@ -223,7 +223,6 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		msh->sharedVertexData->closeGapsInBindings();
 	}
     Mesh::SubMeshIterator smIt = msh->getSubMeshIterator();
-	unsigned short idx = 0;
 	while (smIt.hasMoreElements())
 	{
 		SubMesh* sm = smIt.getNext();
@@ -634,12 +633,6 @@ Vector3 FlexBody::flexit()
 		ppt+=subnodecounts[i];
 		subnbufs[i]->writeData(0, subnodecounts[i]*sizeof(Vector3), npt, true);
 		npt+=subnodecounts[i];
-	}
-
-	if (haveshadows)
-	{
-		EdgeData * 	ed=msh->getEdgeList();
-		//ed->updateFaceNormals(0, pbuf); //wtf?
 	}
 
 	snode->setPosition(center);

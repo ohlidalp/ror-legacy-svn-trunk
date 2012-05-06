@@ -211,7 +211,7 @@ void Turboprop::updateForces(float dt, int doUpdate)
 		float altitude=nodes[noderef].AbsPosition.y;
 		float sea_level_temperature=273.15+15.0; //in Kelvin
 		float sea_level_pressure=101325; //in Pa
-		float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
+		//float airtemperature=sea_level_temperature-altitude*0.0065; //in Kelvin
 		float airpressure=sea_level_pressure*pow(1.0-0.0065*altitude/288.15, 5.24947); //in Pa
 		airdensity=airpressure*0.0000120896;//1.225 at sea level
 #ifdef USE_OPENAL
@@ -306,7 +306,6 @@ void Turboprop::updateForces(float dt, int doUpdate)
 	float tottorque=0;
 	for (int i=0; i<numblades; i++)
 	{
-		float dragfactor=0.01;
 		if (!failed && ignition)
 		{
 			Vector3 totaltipforce=Vector3::ZERO;

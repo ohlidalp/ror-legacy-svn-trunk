@@ -95,9 +95,9 @@ bool BeamFactory::removeBeam(Beam *b)
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	for(it1=streamables.begin(); it1!=streamables.end(); it1++)
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		for(it2=it1->second.begin(); it2!=it1->second.end(); it2++)
 		{
 			if (it2->second == b)
 			{
@@ -296,7 +296,7 @@ void BeamFactory::localUserAttributesChanged(int new_id)
 
 	if (streamables.find(-1) != streamables.end())
 	{
-		Beam *b = streamables[-1][0];
+		//Beam *b = streamables[-1][0];
 		streamables[new_id][0] = streamables[-1][0]; // add alias :)
 		//b->setUID(newid);
 		//b->updateNetLabel();

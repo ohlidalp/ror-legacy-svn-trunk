@@ -352,7 +352,7 @@ bool Settings::setupPaths()
 {
 	char program_path[1024] = {};
 	char resources_path[1024] = {};
-	char streams_path[1024] = {};
+	//char streams_path[1024] = {};
 	char user_path[1024] = {};
 	char config_root[1024] = {};
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32

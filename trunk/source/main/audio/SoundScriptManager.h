@@ -23,11 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include <OgreScriptLoader.h>
-
-// deprecated
-#include "BeamData.h" // for MAX_TRUCKS
 #include "Singleton.h"
+
+#include <OgreScriptLoader.h>
 
 enum {
 	MAX_SOUNDS_PER_SCRIPT = 16,
@@ -232,9 +230,9 @@ private:
 	float sounds_pitchgain[MAX_SOUNDS_PER_SCRIPT];
 	float lastgain;
 
-	int truck;				// holds the number of the truck this is for. important
-	int sound_link_type;		// holds the SL_ type this is bound to
-	int sound_link_item_id;	// holds the item number this is for
+	int truck;              // holds the number of the truck this is for. important
+	int sound_link_type;    // holds the SL_ type this is bound to
+	int sound_link_item_id; // holds the item number this is for
 };
 
 class SoundScriptManager : public Ogre::ScriptLoader, public RoRSingleton<SoundScriptManager>
@@ -267,18 +265,11 @@ public:
 	void modulate    (Beam *b,   int mod, float value, int linkType = SL_DEFAULT, int linkItemID=-1);
 
 	void setEnabled(bool state);
-	// deprecated
-	void soundEnable(bool state) { setEnabled(state); };
 
 	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
 	void setLoadingBaseSounds(bool value) { loading_base = value; };
 
 	bool isDisabled() { return disabled; }
-	// deprecated
-	inline bool working() { return !disabled; }
-
-	// deprecated
-	static const unsigned int TERRAINSOUND = MAX_TRUCKS+1;
 
 private:
 

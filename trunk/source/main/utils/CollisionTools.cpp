@@ -550,23 +550,22 @@ void CollisionTools::getStaticGeometry(
 	Ogre::Vector3 center = rg->getCentre();
 	Ogre::StaticGeometry::Region::LODIterator lit(rg->getLODIterator());
 
-	// use the closest LOD of each block
-	float sqdist = 1e24;
-	Ogre::StaticGeometry::LODBucket *theBucket = 0;
-
 #if 0
+	// use the closest LOD of each block
+	Ogre::StaticGeometry::LODBucket *theBucket = 0;
+	float sqdist = 1e24;
+
 	// XXX: TODO: FIX LODS in ogre 1.7
 	while (lit.hasMoreElements()) {
 
 		Ogre::StaticGeometry::LODBucket *b = lit.getNext();
-		if (!theBucket || b->getSquaredDistance() < sqdist) {
+		if (!theBucket || b->getSquaredDistance() < sqdist)
+		{
 			sqdist = b->getSquaredDistance();
 			theBucket = b;
 		}
 	}
-#endif //0
 
-	// TODO: What if theBucket == 0?
 	Ogre::StaticGeometry::LODBucket::MaterialIterator mit(theBucket->getMaterialIterator());
 
 	while (mit.hasMoreElements())
@@ -612,6 +611,7 @@ void CollisionTools::getStaticGeometry(
 			next_offset += vertex_data->vertexCount;
 		}
 	}
+#endif //0
 
 	overtex_count = vertices.size();
 	overtices = 0;

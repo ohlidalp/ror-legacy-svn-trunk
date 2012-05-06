@@ -144,6 +144,7 @@ public:
 		void messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage);
 #endif // OGRE_VERSION
 
+	// deprecated
 	void exploreScripts();
 
 

@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __TorqueCurve_H__
-#define __TorqueCurve_H__
+#ifndef __TorqueCurve_H_
+#define __TorqueCurve_H_
 
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
@@ -106,5 +106,4 @@ protected:
 	int processLine(Ogre::StringVector args, Ogre::String model);
 };
 
-
-#endif
+#endif // __TorqueCurve_H_

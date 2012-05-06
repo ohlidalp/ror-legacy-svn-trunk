@@ -46,6 +46,7 @@ static void Vector3InitConstructorScaler(float s, Vector3 *self)
 	new(self) Vector3(s,s,s);
 }
 
+// not used
 static int Vector3Cmp(const Vector3 &a, const Vector3 &b)
 {
 	// If a is greater than b, then we return a positive number

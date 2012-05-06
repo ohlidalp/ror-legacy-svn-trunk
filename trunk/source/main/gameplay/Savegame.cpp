@@ -226,7 +226,7 @@ int Savegame::load(Ogre::String &filename)
 		return 1;
 	}
 
-	int current_truck = BeamFactory::getSingleton().getCurrentTruckNumber();
+	//int current_truck = BeamFactory::getSingleton().getCurrentTruckNumber();
 	int free_truck    = BeamFactory::getSingleton().getTruckCount();
 	Beam **trucks     = BeamFactory::getSingleton().getTrucks();
 

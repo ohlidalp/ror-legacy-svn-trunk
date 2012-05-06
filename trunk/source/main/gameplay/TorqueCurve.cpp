@@ -140,41 +140,48 @@ int TorqueCurve::setTorqueModel(String name)
 
 int TorqueCurve::spaceCurveEvenly(Ogre::SimpleSpline *spline)
 {
-	if(!spline) return 0;
-	SimpleSpline tmpSpline=*spline;
-	Real points=tmpSpline.getNumPoints();
-	if (points>1)
-	{
-		//clear the original spline, so it's prepared for the new corrected numbers
-		spline->clear();
-		Real minDistance=10000000.0f;
-		//looking for the mininimum distance (spacing) in the current spline
-		for(int i=0;i<points-1;i++)
-		{
-			// the rpms must be in an ascending order, as the points should be added at the end of the spline
-			if (tmpSpline.getPoint(i+1).x<tmpSpline.getPoint(i).x) return 1;
-			Real distance=tmpSpline.getPoint(i+1).x-tmpSpline.getPoint(i).x;
-			if (distance<minDistance) minDistance=distance;
-		}
-		//first(smallest), and last rpm
-		Vector3 minPoint=tmpSpline.getPoint(0);
-		Vector3 maxPoint=tmpSpline.getPoint(points-1);
+	if (!spline) return 2;
 
-		Real rpmPoint=minPoint.x;
-		int PointNum=1; //this is the index used to interpolate between the rpm points
-		while (rpmPoint<=maxPoint.x && PointNum<points)
+	SimpleSpline tmpSpline = *spline;
+	Real points = tmpSpline.getNumPoints();
+
+	if (points > 1)
+	{
+		// clear the original spline, so it's prepared for the new corrected numbers
+		spline->clear();
+		Real minDistance = tmpSpline.getPoint(1).x - tmpSpline.getPoint(0).x;
+		// looking for the minimum distance (spacing) in the current spline
+		for (int i=2; i < points; i++)
 		{
-			//if actual rpm is higher than point of the spline, proceed to the next point
-			if(rpmPoint>tmpSpline.getPoint(PointNum).x) PointNum++;
-			//interpolate(linear)
-			Real newPoint=tmpSpline.getPoint(PointNum-1).y+(tmpSpline.getPoint(PointNum).y-tmpSpline.getPoint(PointNum-1).y)/
-				(tmpSpline.getPoint(PointNum).x-tmpSpline.getPoint(PointNum-1).x)*(rpmPoint-tmpSpline.getPoint(PointNum-1).x);
-			spline->addPoint(Vector3(rpmPoint,newPoint,0));
-			rpmPoint+=minDistance;
+			Real distance = tmpSpline.getPoint(i).x - tmpSpline.getPoint(i - 1).x;
+			minDistance = std::min(distance, minDistance);
 		}
-		//if the last point is missing due the even spacing, we add the last point manually
-		//criterium is that it must be smaller than 1% of the maximum rpm.
-		if(spline->getPoint(spline->getNumPoints()-1).x<maxPoint.x && (rpmPoint-maxPoint.x)<0.01*maxPoint.x) spline->addPoint(Vector3(rpmPoint,maxPoint.y,0));
+		// the rpm points must be in an ascending order, as the points should be added at the end of the spline
+		if (minDistance < 0) return 1;
+		// first(smallest)- and last(greatest) rpm
+		Vector3 minPoint = tmpSpline.getPoint(0);
+		Vector3 maxPoint = tmpSpline.getPoint(points - 1);
+
+		Real rpmPoint = minPoint.x;
+		int pointIndex = 1; // this is the index used to interpolate between the rpm points
+		while (rpmPoint <= maxPoint.x && pointIndex < points)
+		{
+			// if actual rpm is higher than point of the spline, proceed to the next point
+			if (rpmPoint > tmpSpline.getPoint(pointIndex).x)
+				pointIndex++;
+			// interpolate(linear)
+			Real newPoint = tmpSpline.getPoint(pointIndex - 1).y + (tmpSpline.getPoint(pointIndex).y - tmpSpline.getPoint(pointIndex - 1).y) /
+				(tmpSpline.getPoint(pointIndex).x - tmpSpline.getPoint(pointIndex - 1).x) * (rpmPoint-tmpSpline.getPoint(pointIndex - 1).x);
+			spline->addPoint(Vector3(rpmPoint, newPoint, 0));
+			rpmPoint += minDistance;
+		}
+		// if the last point is missing due the even spacing, we add the last point manually
+		// criterion is that it must be smaller than 1% of the maximum rpm.
+		if (spline->getPoint(spline->getNumPoints() - 1).x < maxPoint.x && (rpmPoint - maxPoint.x) < 0.01 * maxPoint.x)
+		{
+			spline->addPoint(Vector3(rpmPoint, maxPoint.y, 0));
+		}
 	}
+
 	return 0;
 }

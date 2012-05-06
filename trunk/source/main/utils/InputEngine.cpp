@@ -2043,7 +2043,6 @@ float InputEngine::deadZone(float axisValue, float dz)
 	else
 		// non-deadzone, remap the remaining part
 		return (axisValue - dz) * (1.0f / (1.0f-dz));
-	return axisValue;
 }
 
 float InputEngine::axisLinearity(float axisValue, float linearity)
@@ -2106,7 +2105,7 @@ bool InputEngine::deleteEventBySUID(int suid)
 		{
 			if(b->suid == suid)
 			{
-				b = a->second.erase(b);
+				a->second.erase(b);
 				return true;
 			}
 		}
@@ -2127,15 +2126,12 @@ bool InputEngine::isEventDefined(int eventID)
 
 int InputEngine::getKeboardKeyForCommand(int eventID)
 {
-	float returnValue = 0;
 	std::vector<event_trigger_t> t_vec = events[eventID];
 	for(std::vector<event_trigger_t>::iterator i = t_vec.begin(); i != t_vec.end(); i++)
 	{
 		event_trigger_t t = *i;
-		float value = 0;
 		if(t.eventtype == ET_Keyboard)
 			return t.keyCode;
-		return -1;
 	}
 	return -1;
 }
@@ -2765,7 +2761,6 @@ bool InputEngine::processLine(char *line)
 	default:
 		return false;
 	}
-	return false;
 }
 
 int InputEngine::getCurrentJoyButton(int &joystickNumber, int &button)

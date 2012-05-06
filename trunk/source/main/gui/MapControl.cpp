@@ -101,7 +101,7 @@ void MapControl::deleteMapEntity(MapEntity *ent)
 		{
 			// found it, erase!
 			delete *it;
-			it = mMapEntities.erase(it);
+			mMapEntities.erase(it);
 			return;
 		}
 	}

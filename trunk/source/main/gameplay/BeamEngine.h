@@ -40,7 +40,7 @@ public:
 	char type;
 	int running;
 	int contact;
-	char status[256];
+	//char status[256];
 	float hydropump;
 	int prime;
 
