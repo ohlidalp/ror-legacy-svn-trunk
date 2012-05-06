@@ -23,8 +23,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+#include <OgreScriptLoader.h>
+
+// deprecated
 #include "BeamData.h" // for MAX_TRUCKS
-#include "OgreScriptLoader.h"
 #include "Singleton.h"
 
 enum {
@@ -169,10 +171,10 @@ private:
 	bool setParameter(Ogre::StringVector vec);
 
 	Ogre::String name;
-	Ogre::String filename;
-	Ogre::String groupname;
+	Ogre::String file_name;
+	Ogre::String group_name;
 
-	bool         baseTemplate;
+	bool         base_template;
 	bool         has_start_sound;
 	bool         has_stop_sound;
 	bool         unpitchable;
@@ -221,18 +223,18 @@ private:
 	float pitchgain_cutoff(float sourcepitch, float targetpitch);
 
 	SoundScriptTemplate* templ;
-	SoundManager* sm;
-	Sound *startSound;
-	Sound *stopSound;
+	SoundManager* sound_manager;
+	Sound *start_sound;
+	Sound *stop_sound;
 	Sound *sounds[MAX_SOUNDS_PER_SCRIPT];
-	float startSound_pitchgain;
-	float stopSound_pitchgain;
+	float start_sound_pitchgain;
+	float stop_sound_pitchgain;
 	float sounds_pitchgain[MAX_SOUNDS_PER_SCRIPT];
 	float lastgain;
 
 	int truck;				// holds the number of the truck this is for. important
-	int soundLinkType;		// holds the SL_ type this is bound to
-	int soundLinkItemId;	// holds the item number this is for
+	int sound_link_type;		// holds the SL_ type this is bound to
+	int sound_link_item_id;	// holds the item number this is for
 };
 
 class SoundScriptManager : public Ogre::ScriptLoader, public RoRSingleton<SoundScriptManager>
@@ -264,13 +266,18 @@ public:
 	void modulate    (int truck, int mod, float value, int linkType = SL_DEFAULT, int linkItemID=-1);
 	void modulate    (Beam *b,   int mod, float value, int linkType = SL_DEFAULT, int linkItemID=-1);
 
-	void soundEnable(bool state);
+	void setEnabled(bool state);
+	// deprecated
+	void soundEnable(bool state) { setEnabled(state); };
 
 	void setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity);
-	void setLoadingBaseSounds(bool v) { loadingBase = v; };
+	void setLoadingBaseSounds(bool value) { loading_base = value; };
 
-	inline bool working() { return !soundsDisabled; }
+	bool isDisabled() { return disabled; }
+	// deprecated
+	inline bool working() { return !disabled; }
 
+	// deprecated
 	static const unsigned int TERRAINSOUND = MAX_TRUCKS+1;
 
 private:
@@ -279,13 +286,13 @@ private:
 	void skipToNextCloseBrace(Ogre::DataStreamPtr& chunk);
 	void skipToNextOpenBrace(Ogre::DataStreamPtr& chunk);
 
-    Ogre::StringVector mScriptPatterns;
+	bool disabled;
+	bool loading_base;
+	float max_distance;
+	float reference_distance;
+	float rolloff_factor;
 	int instance_counter;
-	bool loadingBase;
-	bool soundsDisabled;
-	float maxDistance;
-	float rolloffFactor;
-	float referenceDistance;
+    Ogre::StringVector script_patterns;
 
 	std::map <Ogre::String, SoundScriptTemplate*> templates;
 
@@ -301,9 +308,9 @@ private:
 
 	// state map
 	// soundLinks, soundItems, trucks, triggers
-	std::map <int, std::map <int, std::map <int, std::map <int, bool > > > > statemap;
+	std::map <int, std::map <int, std::map <int, std::map <int, bool > > > > state_map;
 
-	SoundManager* soundManager;
+	SoundManager* sound_manager;
 };
 
 #endif // __SoundScriptManager_H_

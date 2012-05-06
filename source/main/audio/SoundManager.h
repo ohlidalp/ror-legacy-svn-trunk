@@ -32,8 +32,6 @@ class SoundManager
 	friend class Sound;
 
 public:
-	static SoundManager* mSoundManager;
-
     SoundManager();
 	~SoundManager();
 
@@ -44,7 +42,9 @@ public:
 	void resumeAllSounds();
 	void setMasterVolume(float v);
 
-	int getNumHardwareSources() { return m_hardware_sources_num; }
+	bool isDisabled() { return audio_device == 0; }
+
+	int getNumHardwareSources() { return hardware_sources_num; }
 
 	static const float MAX_DISTANCE;
 	static const float ROLLOFF_FACTOR;
@@ -55,7 +55,7 @@ public:
 private:
 	void recomputeAllSources();
 	void recomputeSource(int source_index, int reason, float vfl, Ogre::Vector3 *vvec);
-	ALuint getHardwareSource(int hardware_index) { return m_hardware_sources[hardware_index]; };
+	ALuint getHardwareSource(int hardware_index) { return hardware_sources[hardware_index]; };
 
 	void assign(int source_index, int hardware_index);
 	void retire(int source_index);
@@ -63,27 +63,27 @@ private:
 	bool loadWAVFile(Ogre::String filename, ALuint buffer);
 
 	// active audio sources (hardware sources)
-	int    m_hardware_sources_num;                       // total number of available hardware sources < MAX_HARDWARE_SOURCES
-	int    m_hardware_sources_in_use_count;
-	int    m_hardware_sources_map[MAX_HARDWARE_SOURCES]; // stores the hardware index for each source. -1 = unmapped
-	ALuint m_hardware_sources[MAX_HARDWARE_SOURCES];     // this buffer contains valid AL handles up to m_hardware_sources_num
+	int    hardware_sources_num;                       // total number of available hardware sources < MAX_HARDWARE_SOURCES
+	int    hardware_sources_in_use_count;
+	int    hardware_sources_map[MAX_HARDWARE_SOURCES]; // stores the hardware index for each source. -1 = unmapped
+	ALuint hardware_sources[MAX_HARDWARE_SOURCES];     // this buffer contains valid AL handles up to m_hardware_sources_num
 
 	// audio sources
-	int    m_audio_sources_in_use_count;
-	Sound* m_audio_sources[MAX_AUDIO_BUFFERS];
+	int    audio_sources_in_use_count;
+	Sound* audio_sources[MAX_AUDIO_BUFFERS];
 	// helper for calculating the most audible sources
-	std::pair<int, float> m_audio_sources_most_audible[MAX_AUDIO_BUFFERS];
+	std::pair<int, float> audio_sources_most_audible[MAX_AUDIO_BUFFERS];
 	
 	// audio buffers: Array of AL buffers and filenames
-	int          m_audio_buffers_in_use_count;
-	ALuint       m_audio_buffers[MAX_AUDIO_BUFFERS];
-	Ogre::String m_audio_buffer_file_name[MAX_AUDIO_BUFFERS];
+	int          audio_buffers_in_use_count;
+	ALuint       audio_buffers[MAX_AUDIO_BUFFERS];
+	Ogre::String audio_buffer_file_name[MAX_AUDIO_BUFFERS];
 
 	Ogre::Vector3 camera_position;
-	ALCdevice*    m_sound_device;
-	ALCcontext*   m_sound_context;
+	ALCdevice*    audio_device;
+	ALCcontext*   sound_context;
 
-	float m_master_volume;
+	float master_volume;
 };
 
 #endif // __SoundManager_H_

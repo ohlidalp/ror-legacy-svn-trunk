@@ -63,9 +63,9 @@ private:
 	Ogre::Vector3 position;
 	Ogre::Vector3 velocity;
 
-	SoundManager* soundManager;
+	SoundManager* sound_manager;
 	// must not be changed during the lifetime of this object
-	int sourceIndex;
+	int source_index;
 };
 
 #endif // __Sound_H_
