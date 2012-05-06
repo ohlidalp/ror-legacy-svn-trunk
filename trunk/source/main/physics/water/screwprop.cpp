@@ -18,19 +18,21 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "screwprop.h"
+
+#include "Beamdata.h"
 #include "DustManager.h"
 #include "SoundScriptManager.h"
 #include "water.h"
 
-Screwprop::Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, int trucknum)
+Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float fullpower, Water* water, int trucknum) :
+	  nodes(nodes)
+	, noderef(noderef)
+	, nodeback(nodeback)
+	, nodeup(nodeup)
+	, fullpower(fullpower)
+	, water(water)
+	, trucknum(trucknum)
 {
-	this->trucknum=trucknum;
-	nodes=nd;
-	noderef=nr;
-	nodeback=nb;
-	nodeup=nu;
-	fullpower=power;
-	water=w;
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 	reset();
