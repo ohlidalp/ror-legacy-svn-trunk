@@ -47,7 +47,7 @@ bool MapTextureCreator::init()
 {
 	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	
-	if ( TexturePtr(texture).isNull() ) return false;;
+	if ( texture.isNull() ) return false;;
 
 	mRttTex = texture->getBuffer()->getRenderTarget();
 
@@ -63,7 +63,7 @@ bool MapTextureCreator::init()
 
 	mMaterial = MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-	if ( MaterialPtr(mMaterial).isNull() ) return false;
+	if ( mMaterial.isNull() ) return false;
 
 	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+TOSTRING(mCounter));
 
