@@ -1488,7 +1488,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=30;
 
 #ifdef USE_OPENAL
-	dText = new wxStaticText(advancedPanel, -1, _("Sound device:"), wxPoint(10,y+3));
+	dText = new wxStaticText(advancedPanel, -1, _("Audio device:"), wxPoint(10,y+3));
 	sound=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	sound->AppendValueItem(wxT("No sound"), _("No sound"));
 	sound->AppendValueItem(wxT("Default"), _("Default"));
@@ -1497,7 +1497,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// get sound devices
 
-	wxLogStatus(wxT("Sound Devices: "));
+	wxLogStatus(wxT("known Audio Devices: "));
 	char *devices = (char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
 	while(devices && *devices !=NULL)
 	{
@@ -2212,7 +2212,7 @@ void MyDialog::getSettingsControls()
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 #ifdef USE_OPENAL
 	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
-	settings["3D Sound renderer"] = sound->getSelectedValueAsSTDString();
+	settings["AudioDevice"] = sound->getSelectedValueAsSTDString();
 	sprintf(tmp, "%d", soundVolume->GetValue());
 	settings["Sound Volume"] = tmp;
 #endif //USE_OPENAL
@@ -2296,7 +2296,7 @@ void MyDialog::updateSettingsControls()
 			soundVolume->SetValue(volume);
 	}
 	st = settings["Creak Sound"]; if (st.length()>0) creaksound->SetValue(st=="No");
-	sound->setSelectedValue(settings["3D Sound renderer"]);
+	sound->setSelectedValue(settings["AudioDevice"]);
 #endif //USE_OPENAL
 
 	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");

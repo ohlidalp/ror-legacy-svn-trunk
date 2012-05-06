@@ -155,7 +155,7 @@ bool ContentManager::init(void)
 	SoundScriptManager::getSingleton().setLoadingBaseSounds(true);
 #endif // USE_OPENAL
 
-	if (SSETTING("3D Sound renderer", "") != "No sound")
+	if (SSETTING("AudioDevice", "Default") != "No sound")
 		loadMainResource("sounds");
 
 	if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
