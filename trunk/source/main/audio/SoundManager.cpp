@@ -28,14 +28,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif // OGRE_PLATFORM_LINUX
 
-
 bool _checkALErrors(const char *filename, int linenum)
 {
 	int err = alGetError();
-	if(err != AL_NO_ERROR)
+	if (err != AL_NO_ERROR)
 	{
-		char buf[4096]="";
-		sprintf(buf, "OpenAL Error: %s (0x%x), @ %s:%d\n", alGetString(err), err, filename, linenum);
+		char buf[4096] = {};
+		sprintf(buf, "OpenAL Error: %s (0x%x), @ %s:%d", alGetString(err), err, filename, linenum);
 		LOG(buf);
 		return true;
 	}
@@ -50,69 +49,54 @@ const float SoundManager::ROLLOFF_FACTOR     = 1.0f;
 const float SoundManager::REFERENCE_DISTANCE = 7.5f;
 
 SoundManager::SoundManager() :
-	  m_audio_buffers_in_use_count(0)
-	, m_audio_sources_in_use_count(0)
-	, m_hardware_sources_in_use_count(0)
-	, m_hardware_sources_num(0)
-	, m_sound_context(NULL)
-	, m_sound_device(NULL)
+	  audio_buffers_in_use_count(0)
+	, audio_sources_in_use_count(0)
+	, hardware_sources_in_use_count(0)
+	, hardware_sources_num(0)
+	, sound_context(NULL)
+	, audio_device(NULL)
 {
-	String audio_device = SSETTING("AudioDevice", "Default");
+	String device = SSETTING("AudioDevice", "");
 
-	if (audio_device == "No Output") return;
+	if (device == "")
+		audio_device = alcOpenDevice(NULL);
+	else
+		audio_device = alcOpenDevice(device.c_str());
 
-	LOG("Opening Device: '" + audio_device + "'");
-	
-	const char *alDeviceString = audio_device.c_str();
-	if(audio_device == "Default") alDeviceString = NULL;
-	m_sound_device = alcOpenDevice(alDeviceString);
-	if(!m_sound_device)
+	if (!audio_device)
 	{
 		hasALErrors();
 		return;
 	}
 
-	m_sound_context = alcCreateContext(m_sound_device, NULL);
+	sound_context = alcCreateContext(audio_device, NULL);
 
-	if (!m_sound_context)
+	if (!sound_context)
 	{
-		ALint error= alGetError();
-		LOG("SoundManager: Could not create OpenAL context, error code: " + TOSTRING(error));
-		alcCloseDevice(m_sound_device);
-		m_sound_device = NULL;
+		alcCloseDevice(audio_device);
+		audio_device = NULL;
+		hasALErrors();
 		return;
 	}
 
-	const char *tmp = alGetString(AL_VENDOR);
-	if(tmp) LOG("OpenAL vendor is: " + String(tmp));
+	alcMakeContextCurrent(sound_context);
 
-	tmp = alGetString(AL_VERSION);
-	if(tmp) LOG("OpenAL version is: " + String(tmp));
-
-	tmp = alGetString(AL_RENDERER);
-	if(tmp) LOG("OpenAL renderer is: " + String(tmp));
-
-	tmp = alGetString(AL_EXTENSIONS);
-	if(tmp) LOG("OpenAL extensions are: " + String(tmp));
-
-	tmp = alcGetString(m_sound_device, ALC_DEVICE_SPECIFIER);
-	if(tmp) LOG("OpenAL device is: " + String(tmp));
-
-	tmp = alcGetString(m_sound_device, ALC_EXTENSIONS);
-	if(tmp) LOG("OpenAL ALC extensions are: " + String(tmp));
-
-
-	alcMakeContextCurrent(m_sound_context);
+	if (alGetString(AL_VENDOR))                           LOG("SoundManager: OpenAL vendor is: "          + String(alGetString(AL_VENDOR)));
+	if (alGetString(AL_VERSION))                          LOG("SoundManager: OpenAL version is: "         + String(alGetString(AL_VERSION)));
+	if (alGetString(AL_RENDERER))                         LOG("SoundManager: OpenAL renderer is: "        + String(alGetString(AL_RENDERER)));
+	if (alGetString(AL_EXTENSIONS))                       LOG("SoundManager: OpenAL extensions are: "     + String(alGetString(AL_EXTENSIONS)));
+	if (alcGetString(audio_device, ALC_DEVICE_SPECIFIER)) LOG("SoundManager: OpenAL device is: "          + String(alcGetString(audio_device, ALC_DEVICE_SPECIFIER)));
+	if (alcGetString(audio_device, ALC_EXTENSIONS))       LOG("SoundManager: OpenAL ALC extensions are: " + String(alcGetString(audio_device, ALC_EXTENSIONS)));
 
 	// generate the AL sources
-	for (m_hardware_sources_num=0; m_hardware_sources_num < MAX_HARDWARE_SOURCES; m_hardware_sources_num++)
+	for (hardware_sources_num=0; hardware_sources_num < MAX_HARDWARE_SOURCES; hardware_sources_num++)
 	{
 		alGetError();
-		alGenSources(1, &m_hardware_sources[m_hardware_sources_num]);
+		alGenSources(1, &hardware_sources[hardware_sources_num]);
 		if (alGetError() != AL_NO_ERROR) break;
-		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_REFERENCE_DISTANCE, REFERENCE_DISTANCE);
-		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_ROLLOFF_FACTOR, ROLLOFF_FACTOR);
-		alSourcef(m_hardware_sources[m_hardware_sources_num], AL_MAX_DISTANCE, MAX_DISTANCE);
+		alSourcef(hardware_sources[hardware_sources_num], AL_REFERENCE_DISTANCE, REFERENCE_DISTANCE);
+		alSourcef(hardware_sources[hardware_sources_num], AL_ROLLOFF_FACTOR, ROLLOFF_FACTOR);
+		alSourcef(hardware_sources[hardware_sources_num], AL_MAX_DISTANCE, MAX_DISTANCE);
 	}
 
 	alDopplerFactor(1.0f);
@@ -120,36 +104,36 @@ SoundManager::SoundManager() :
 
 	for (int i=0; i < MAX_HARDWARE_SOURCES; i++)
 	{
-		m_hardware_sources_map[i] = -1;
+		hardware_sources_map[i] = -1;
 	}
 
-	m_master_volume = FSETTING("Sound Volume", 100.0f) / 100.0f;
+	master_volume = FSETTING("Sound Volume", 100.0f) / 100.0f;
 }
 
 SoundManager::~SoundManager()
 {
 	// delete the sources and buffers
-	alDeleteSources(MAX_HARDWARE_SOURCES, m_hardware_sources);
-    alDeleteBuffers(MAX_AUDIO_BUFFERS, m_audio_buffers);
+	alDeleteSources(MAX_HARDWARE_SOURCES, hardware_sources);
+	alDeleteBuffers(MAX_AUDIO_BUFFERS, audio_buffers);
 
 	// destroy the sound context and device
-    m_sound_context = alcGetCurrentContext();
-    m_sound_device  = alcGetContextsDevice(m_sound_context);
-    alcMakeContextCurrent(NULL);
-    alcDestroyContext(m_sound_context);
-    if (m_sound_device)
+	sound_context = alcGetCurrentContext();
+	audio_device  = alcGetContextsDevice(sound_context);
+	alcMakeContextCurrent(NULL);
+	alcDestroyContext(sound_context);
+	if (audio_device)
 	{
-        alcCloseDevice(m_sound_device);
+		alcCloseDevice(audio_device);
 	}
 	LOG("SoundManager destroyed.");
 }
 
 void SoundManager::setCamera(Ogre::Vector3 position, Ogre::Vector3 direction, Ogre::Vector3 up, Ogre::Vector3 velocity)
 {
-	if (!m_sound_device) return;
+	if (!audio_device) return;
 	camera_position = position;
 	recomputeAllSources();
-	
+
 	float orientation[6];
 	// direction
 	orientation[0] = direction.x;
@@ -173,36 +157,36 @@ bool compareByAudibility(std::pair<int, float> a, std::pair<int, float> b)
 // called when the camera moves
 void SoundManager::recomputeAllSources()
 {
-	if (!m_sound_device) return;
+	if (!audio_device) return;
 
-	for (int i=0; i < m_audio_sources_in_use_count; i++)
+	for (int i=0; i < audio_sources_in_use_count; i++)
 	{
-		m_audio_sources[i]->computeAudibility(camera_position);
-		m_audio_sources_most_audible[i].first = i;
-		m_audio_sources_most_audible[i].second = m_audio_sources[i]->audibility;
+		audio_sources[i]->computeAudibility(camera_position);
+		audio_sources_most_audible[i].first = i;
+		audio_sources_most_audible[i].second = audio_sources[i]->audibility;
 	}
 	// sort first 'num_hardware_sources' sources by audibility
 	// see: https://en.wikipedia.org/wiki/Selection_algorithm
-	if ((m_audio_sources_in_use_count - 1) > m_hardware_sources_num)
+	if ((audio_sources_in_use_count - 1) > hardware_sources_num)
 	{
-		std::nth_element(m_audio_sources_most_audible, m_audio_sources_most_audible+m_hardware_sources_num, m_audio_sources_most_audible+m_audio_sources_in_use_count-1, compareByAudibility);
+		std::nth_element(audio_sources_most_audible, audio_sources_most_audible+hardware_sources_num, audio_sources_most_audible+audio_sources_in_use_count-1, compareByAudibility);
 	}
 	// retire out of range sources first
-	for (int i=0; i < m_audio_sources_in_use_count; i++)
+	for (int i=0; i < audio_sources_in_use_count; i++)
 	{
-		if (m_audio_sources[m_audio_sources_most_audible[i].first]->hardware_index != -1 && (i >= m_hardware_sources_num || m_audio_sources_most_audible[i].second == 0))
-			retire(m_audio_sources_most_audible[i].first);
+		if (audio_sources[audio_sources_most_audible[i].first]->hardware_index != -1 && (i >= hardware_sources_num || audio_sources_most_audible[i].second == 0))
+			retire(audio_sources_most_audible[i].first);
 	}
 	// assign new sources
-	for (int i=0; i < std::min(m_audio_sources_in_use_count, m_hardware_sources_num); i++)
+	for (int i=0; i < std::min(audio_sources_in_use_count, hardware_sources_num); i++)
 	{
-		if (m_audio_sources[m_audio_sources_most_audible[i].first]->hardware_index == -1 && m_audio_sources_most_audible[i].second > 0)
+		if (audio_sources[audio_sources_most_audible[i].first]->hardware_index == -1 && audio_sources_most_audible[i].second > 0)
 		{
-			for (int j=0; j < m_hardware_sources_num; j++)
+			for (int j=0; j < hardware_sources_num; j++)
 			{
-				if (m_hardware_sources_map[j] == -1)
+				if (hardware_sources_map[j] == -1)
 				{
-					assign(m_audio_sources_most_audible[i].first, j);
+					assign(audio_sources_most_audible[i].first, j);
 					break;
 				}
 			}
@@ -212,12 +196,12 @@ void SoundManager::recomputeAllSources()
 
 void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vector3 *vvec)
 {
-	if (!m_sound_device) return;
-	m_audio_sources[source_index]->computeAudibility(camera_position);
+	if (!audio_device) return;
+	audio_sources[source_index]->computeAudibility(camera_position);
 
-	if (m_audio_sources[source_index]->audibility == 0.0f)
+	if (audio_sources[source_index]->audibility == 0.0f)
 	{
-		if (m_audio_sources[source_index]->hardware_index != -1)
+		if (audio_sources[source_index]->hardware_index != -1)
 		{
 			// retire the source if it is currently assigned
 			retire(source_index);
@@ -225,30 +209,30 @@ void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vect
 	} else
 	{
 		// this is a potentially audible m_audio_sources[source_index]
-		if (m_audio_sources[source_index]->hardware_index != -1)
+		if (audio_sources[source_index]->hardware_index != -1)
 		{
 			// m_audio_sources[source_index] already playing
 			// update the AL settings
 			switch (reason)
 			{
-				case Sound::REASON_PLAY: alSourcePlay(m_hardware_sources[m_audio_sources[source_index]->hardware_index]); break;
-				case Sound::REASON_STOP: alSourceStop(m_hardware_sources[m_audio_sources[source_index]->hardware_index]); break;
-				case Sound::REASON_GAIN: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_GAIN, vfl * m_master_volume); break;
-				case Sound::REASON_LOOP: alSourcei(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_LOOPING, (vfl > 0.5) ? AL_TRUE : AL_FALSE); break;
-				case Sound::REASON_PTCH: alSourcef(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_PITCH, vfl); break;
-				case Sound::REASON_POSN: alSource3f(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_POSITION, vvec->x, vvec->y, vvec->z); break;
-				case Sound::REASON_VLCT: alSource3f(m_hardware_sources[m_audio_sources[source_index]->hardware_index], AL_VELOCITY, vvec->x, vvec->y, vvec->z); break;
-				default: break;
+			case Sound::REASON_PLAY: alSourcePlay(hardware_sources[audio_sources[source_index]->hardware_index]); break;
+			case Sound::REASON_STOP: alSourceStop(hardware_sources[audio_sources[source_index]->hardware_index]); break;
+			case Sound::REASON_GAIN: alSourcef(hardware_sources[audio_sources[source_index]->hardware_index], AL_GAIN, vfl * master_volume); break;
+			case Sound::REASON_LOOP: alSourcei(hardware_sources[audio_sources[source_index]->hardware_index], AL_LOOPING, (vfl > 0.5) ? AL_TRUE : AL_FALSE); break;
+			case Sound::REASON_PTCH: alSourcef(hardware_sources[audio_sources[source_index]->hardware_index], AL_PITCH, vfl); break;
+			case Sound::REASON_POSN: alSource3f(hardware_sources[audio_sources[source_index]->hardware_index], AL_POSITION, vvec->x, vvec->y, vvec->z); break;
+			case Sound::REASON_VLCT: alSource3f(hardware_sources[audio_sources[source_index]->hardware_index], AL_VELOCITY, vvec->x, vvec->y, vvec->z); break;
+			default: break;
 			}
 		} else
 		{
 			// try to make it play by the hardware
 			// check if there is one free m_audio_sources[source_index] in the pool
-			if (m_hardware_sources_in_use_count < m_hardware_sources_num)
+			if (hardware_sources_in_use_count < hardware_sources_num)
 			{
-				for (int i=0; i < m_hardware_sources_num; i++)
+				for (int i=0; i < hardware_sources_num; i++)
 				{
-					if (m_hardware_sources_map[i] == -1)
+					if (hardware_sources_map[i] == -1)
 					{
 						assign(source_index, i);
 						break;
@@ -260,19 +244,19 @@ void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vect
 				// note: we know the table m_hardware_sources_map is full!
 				float fv = 1.0f;
 				int al_faintest = 0;
-				for (int i=0; i < m_hardware_sources_num; i++)
+				for (int i=0; i < hardware_sources_num; i++)
 				{
-					if (m_hardware_sources_map[i] >= 0 && m_audio_sources[m_hardware_sources_map[i]]->audibility < fv)
+					if (hardware_sources_map[i] >= 0 && audio_sources[hardware_sources_map[i]]->audibility < fv)
 					{
-						fv = m_audio_sources[m_hardware_sources_map[i]]->audibility;
+						fv = audio_sources[hardware_sources_map[i]]->audibility;
 						al_faintest = i;
 					}
 				}
 				// check to ensure that the sound is louder than the faintest sound currently playing
-				if (fv < m_audio_sources[source_index]->audibility)
+				if (fv < audio_sources[source_index]->audibility)
 				{
 					// this new m_audio_sources[source_index] is louder than the faintest!
-					retire(m_hardware_sources_map[al_faintest]);
+					retire(hardware_sources_map[al_faintest]);
 					assign(source_index, al_faintest);
 				}
 				// else this m_audio_sources[source_index] is too faint, we don't play it!
@@ -280,64 +264,64 @@ void SoundManager::recomputeSource(int source_index, int reason, float vfl, Vect
 		}
 	}
 }
-	
+
 void SoundManager::assign(int source_index, int hardware_index)
 {
-	if (!m_sound_device) return;
-	m_audio_sources[source_index]->hardware_index = hardware_index;
-	m_hardware_sources_map[hardware_index] = source_index;
+	if (!audio_device) return;
+	audio_sources[source_index]->hardware_index = hardware_index;
+	hardware_sources_map[hardware_index] = source_index;
 
 	// the hardware source is supposed to be stopped!
-	alSourcei(m_hardware_sources[hardware_index], AL_BUFFER, m_audio_sources[source_index]->buffer);
-	alSourcef(m_hardware_sources[hardware_index], AL_GAIN, m_audio_sources[source_index]->gain*m_master_volume);
-	alSourcei(m_hardware_sources[hardware_index], AL_LOOPING, (m_audio_sources[source_index]->loop)?AL_TRUE:AL_FALSE);
-	alSourcef(m_hardware_sources[hardware_index], AL_PITCH, m_audio_sources[source_index]->pitch);
-	alSource3f(m_hardware_sources[hardware_index], AL_POSITION, m_audio_sources[source_index]->position.x,m_audio_sources[source_index]->position.y,m_audio_sources[source_index]->position.z);
-	alSource3f(m_hardware_sources[hardware_index], AL_VELOCITY, m_audio_sources[source_index]->velocity.x,m_audio_sources[source_index]->velocity.y,m_audio_sources[source_index]->velocity.z);
-	if (m_audio_sources[source_index]->should_play)
+	alSourcei(hardware_sources[hardware_index], AL_BUFFER, audio_sources[source_index]->buffer);
+	alSourcef(hardware_sources[hardware_index], AL_GAIN, audio_sources[source_index]->gain*master_volume);
+	alSourcei(hardware_sources[hardware_index], AL_LOOPING, (audio_sources[source_index]->loop)?AL_TRUE:AL_FALSE);
+	alSourcef(hardware_sources[hardware_index], AL_PITCH, audio_sources[source_index]->pitch);
+	alSource3f(hardware_sources[hardware_index], AL_POSITION, audio_sources[source_index]->position.x,audio_sources[source_index]->position.y,audio_sources[source_index]->position.z);
+	alSource3f(hardware_sources[hardware_index], AL_VELOCITY, audio_sources[source_index]->velocity.x,audio_sources[source_index]->velocity.y,audio_sources[source_index]->velocity.z);
+	if (audio_sources[source_index]->should_play)
 	{
-		alSourcePlay(m_hardware_sources[hardware_index]);
+		alSourcePlay(hardware_sources[hardware_index]);
 	}
-	m_hardware_sources_in_use_count++;
+	hardware_sources_in_use_count++;
 }
 
 void SoundManager::retire(int source_index)
 {
-	if (!m_sound_device) return;
-	if (m_audio_sources[source_index]->hardware_index == -1) return;
-	alSourceStop(m_hardware_sources[m_audio_sources[source_index]->hardware_index]);
-	m_hardware_sources_map[m_audio_sources[source_index]->hardware_index] = -1;
-	m_audio_sources[source_index]->hardware_index = -1;
-	m_hardware_sources_in_use_count--;
+	if (!audio_device) return;
+	if (audio_sources[source_index]->hardware_index == -1) return;
+	alSourceStop(hardware_sources[audio_sources[source_index]->hardware_index]);
+	hardware_sources_map[audio_sources[source_index]->hardware_index] = -1;
+	audio_sources[source_index]->hardware_index = -1;
+	hardware_sources_in_use_count--;
 }
 
 void SoundManager::pauseAllSounds()
 {
-	if (!m_sound_device) return;
+	if (!audio_device) return;
 	// no mutex needed
 	alListenerf(AL_GAIN, 0.0f);
 }
 
 void SoundManager::resumeAllSounds()
 {
-	if (!m_sound_device) return;
+	if (!audio_device) return;
 	// no mutex needed
-	alListenerf(AL_GAIN, m_master_volume);
+	alListenerf(AL_GAIN, master_volume);
 }
 
 void SoundManager::setMasterVolume(float v)
 {
-	if (!m_sound_device) return;
+	if (!audio_device) return;
 	// no mutex needed
-	m_master_volume = v;
-	alListenerf(AL_GAIN, m_master_volume);
+	master_volume = v;
+	alListenerf(AL_GAIN, master_volume);
 }
 
 Sound* SoundManager::createSound(String filename)
 {
-	if (!m_sound_device) return NULL;
+	if (!audio_device) return NULL;
 
-	if (m_audio_buffers_in_use_count >= MAX_AUDIO_BUFFERS)
+	if (audio_buffers_in_use_count >= MAX_AUDIO_BUFFERS)
 	{
 		LOG("SoundManager: Reached MAX_AUDIO_BUFFERS limit (" + TOSTRING(MAX_AUDIO_BUFFERS) + ")");
 		return NULL;
@@ -346,11 +330,11 @@ Sound* SoundManager::createSound(String filename)
 	ALuint buffer = 0;
 
 	// is the file already loaded?
-	for (int i=0; i < m_audio_buffers_in_use_count; i++)
+	for (int i=0; i < audio_buffers_in_use_count; i++)
 	{
-		if (filename == m_audio_buffer_file_name[i])
+		if (filename == audio_buffer_file_name[i])
 		{
-			buffer = m_audio_buffers[i];
+			buffer = audio_buffers[i];
 			break;
 		}
 	}
@@ -358,28 +342,28 @@ Sound* SoundManager::createSound(String filename)
 	if (!buffer)
 	{
 		// load the file
-		alGenBuffers(1, &m_audio_buffers[m_audio_buffers_in_use_count]);
-		if (loadWAVFile(filename, m_audio_buffers[m_audio_buffers_in_use_count]))
+		alGenBuffers(1, &audio_buffers[audio_buffers_in_use_count]);
+		if (loadWAVFile(filename, audio_buffers[audio_buffers_in_use_count]))
 		{
 			// there was an error!
-			alDeleteBuffers(1, &m_audio_buffers[m_audio_buffers_in_use_count]);
-			m_audio_buffer_file_name[m_audio_buffers_in_use_count] = "";
+			alDeleteBuffers(1, &audio_buffers[audio_buffers_in_use_count]);
+			audio_buffer_file_name[audio_buffers_in_use_count] = "";
 			return NULL;
 		}
-		buffer = m_audio_buffers[m_audio_buffers_in_use_count];
-		m_audio_buffer_file_name[m_audio_buffers_in_use_count] = filename;
+		buffer = audio_buffers[audio_buffers_in_use_count];
+		audio_buffer_file_name[audio_buffers_in_use_count] = filename;
 	}
 
-	m_audio_sources[m_audio_buffers_in_use_count] = new Sound(buffer, this, m_audio_buffers_in_use_count);
+	audio_sources[audio_buffers_in_use_count] = new Sound(buffer, this, audio_buffers_in_use_count);
 
-	return m_audio_sources[m_audio_buffers_in_use_count++];
+	return audio_sources[audio_buffers_in_use_count++];
 }
 
 bool SoundManager::loadWAVFile(String filename, ALuint buffer)
 {
-	if (!m_sound_device) return true;
+	if (!audio_device) return true;
 	LOG("Loading WAV file "+filename);
-	
+
 	// create the Stream
 	ResourceGroupManager *rgm=ResourceGroupManager::getSingletonPtr();
 	String group=rgm->findGroupContainingResource(filename);
@@ -434,7 +418,7 @@ bool SoundManager::loadWAVFile(String filename, ALuint buffer)
 	}
 	// the next four bytes are the remaining size of the file
 	if (stream->read(&lbuf, 4) != 4) {LOG("Could not read file "+filename);return true;}
-	
+
 	unsigned long dataSize=lbuf;
 	int format=0;
 

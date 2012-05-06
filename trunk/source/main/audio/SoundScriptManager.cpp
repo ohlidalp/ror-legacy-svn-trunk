@@ -37,12 +37,13 @@ const float SoundScriptInstance::PITCHDOWN_FADE_FACTOR   = 3.0f;
 const float SoundScriptInstance::PITCHDOWN_CUTOFF_FACTOR = 5.0f;
 
 SoundScriptManager::SoundScriptManager() :
-	  soundsDisabled(false)
-	, loadingBase(false)
+	  disabled(true)
+	, loading_base(false)
 	, instance_counter(0)
-	, maxDistance(500.0f)
-	, rolloffFactor(1.0f)
-	, referenceDistance(7.5f)
+	, max_distance(500.0f)
+	, rolloff_factor(1.0f)
+	, reference_distance(7.5f)
+	, sound_manager(0)
 {
 	for (int i=0; i < SS_MAX_TRIG; i++)
 	{
@@ -68,19 +69,32 @@ SoundScriptManager::SoundScriptManager() :
 	}
 
 	// reset all states
-	statemap.clear();
+	state_map.clear();
 
-	soundManager = new SoundManager(); // we can give a device name if we want here
-	LOG("SoundScriptManager: Sound Manager started with " + TOSTRING(soundManager->getNumHardwareSources())+" sources");
-	mScriptPatterns.push_back("*.soundscript");
+	sound_manager = new SoundManager();
+
+	if (!sound_manager)
+	{
+		LOG("SoundScriptManager: Failed to create the Sound Manager");
+		return;
+	}
+
+	disabled = sound_manager->isDisabled();
+
+	if (disabled)
+	{
+		LOG("SoundScriptManager: Sound Manager is disabled");
+		return;
+	}
+
+	LOG("SoundScriptManager: Sound Manager started with " + TOSTRING(sound_manager->getNumHardwareSources())+" sources");
+	script_patterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
-
-	soundsDisabled = (SSETTING("AudioDevice", "Default") == "No Output");
 }
 
 void SoundScriptManager::trigOnce(Beam *truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (truck)
 	{
@@ -90,14 +104,14 @@ void SoundScriptManager::trigOnce(Beam *truck, int trig, int linkType, int linkI
 
 void SoundScriptManager::trigOnce(int truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	for (int i=0; i < free_trigs[trig]; i++)
 	{
 		// cycle through all instance groups
 		SoundScriptInstance* inst = trigs[trig+i*SS_MAX_TRIG];
 
-		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
+		if (inst->truck == truck && inst->sound_link_type == linkType && inst->sound_link_item_id == linkItemID)
 		{
 			inst->runOnce();
 		}
@@ -106,7 +120,7 @@ void SoundScriptManager::trigOnce(int truck, int trig, int linkType, int linkIte
 
 void SoundScriptManager::trigStart(Beam *truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (truck)
 	{
@@ -116,16 +130,16 @@ void SoundScriptManager::trigStart(Beam *truck, int trig, int linkType, int link
 
 void SoundScriptManager::trigStart(int truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 	if (getTrigState(truck, trig, linkType, linkItemID)) return;
 
-	statemap[linkType][linkItemID][truck][trig] = true;
+	state_map[linkType][linkItemID][truck][trig] = true;
 
 	for (int i=0; i < free_trigs[trig]; i++)
 	{
 		SoundScriptInstance* inst=trigs[trig+i*SS_MAX_TRIG];
 
-		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
+		if (inst->truck == truck && inst->sound_link_type == linkType && inst->sound_link_item_id == linkItemID)
 		{
 			inst->start();
 		}
@@ -134,7 +148,7 @@ void SoundScriptManager::trigStart(int truck, int trig, int linkType, int linkIt
 
 void SoundScriptManager::trigStop(Beam *truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (truck)
 	{
@@ -144,16 +158,16 @@ void SoundScriptManager::trigStop(Beam *truck, int trig, int linkType, int linkI
 
 void SoundScriptManager::trigStop(int truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 	if (!getTrigState(truck, trig, linkType, linkItemID)) return;
 	
-	statemap[linkType][linkItemID][truck][trig] = false;
+	state_map[linkType][linkItemID][truck][trig] = false;
 
 	for (int i=0; i < free_trigs[trig]; i++)
 	{
 		SoundScriptInstance* inst=trigs[trig+i*SS_MAX_TRIG];
 
-		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
+		if (inst->truck == truck && inst->sound_link_type == linkType && inst->sound_link_item_id == linkItemID)
 		{
 			inst->stop();
 		}
@@ -162,7 +176,7 @@ void SoundScriptManager::trigStop(int truck, int trig, int linkType, int linkIte
 
 void SoundScriptManager::trigToggle(Beam *truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 	
 	if (truck)
 	{
@@ -172,7 +186,7 @@ void SoundScriptManager::trigToggle(Beam *truck, int trig, int linkType, int lin
 
 void SoundScriptManager::trigToggle(int truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (getTrigState(truck, trig, linkType, linkItemID))
 		trigStop(truck, trig, linkType, linkItemID);
@@ -182,7 +196,7 @@ void SoundScriptManager::trigToggle(int truck, int trig, int linkType, int linkI
 
 bool SoundScriptManager::getTrigState(Beam *truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return false;
+	if (disabled) return false;
 
 	if (truck)
 		return getTrigState(truck->trucknum, trig, linkType, linkItemID);
@@ -192,14 +206,14 @@ bool SoundScriptManager::getTrigState(Beam *truck, int trig, int linkType, int l
 
 bool SoundScriptManager::getTrigState(int truck, int trig, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return false;
+	if (disabled) return false;
 
-	return statemap[linkType][linkItemID][truck][trig];
+	return state_map[linkType][linkItemID][truck][trig];
 }
 
 void SoundScriptManager::modulate(Beam *truck, int mod, float value, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (truck)
 	{
@@ -209,7 +223,7 @@ void SoundScriptManager::modulate(Beam *truck, int mod, float value, int linkTyp
 
 void SoundScriptManager::modulate(int truck, int mod, float value, int linkType, int linkItemID)
 {
-	if (soundsDisabled) return;
+	if (disabled) return;
 
 	if (mod >= SS_MAX_MOD) return;
 
@@ -217,7 +231,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value, int linkType,
 	{
 		SoundScriptInstance* inst = gains[mod + i * SS_MAX_MOD];
 		if (!inst) continue;
-		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
+		if (inst->truck == truck && inst->sound_link_type == linkType && inst->sound_link_item_id == linkItemID)
 		{
 			// this one requires modulation
 			float gain=value*value*inst->templ->gain_square+value*inst->templ->gain_multiplier+inst->templ->gain_offset;
@@ -231,7 +245,7 @@ void SoundScriptManager::modulate(int truck, int mod, float value, int linkType,
 	{
 		SoundScriptInstance* inst = pitches[mod + i * SS_MAX_MOD];
 		if (!inst) continue;
-		if (inst->truck == truck && inst->soundLinkType == linkType && inst->soundLinkItemId == linkItemID)
+		if (inst->truck == truck && inst->sound_link_type == linkType && inst->sound_link_item_id == linkItemID)
 		{
 			// this one requires modulation
 			float pitch=value*value*inst->templ->pitch_square+value*inst->templ->pitch_multiplier+inst->templ->pitch_offset;
@@ -243,13 +257,13 @@ void SoundScriptManager::modulate(int truck, int mod, float value, int linkType,
 
 void SoundScriptManager::setCamera(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity)
 {
-	if (soundsDisabled) return;
-	soundManager->setCamera(position, direction, up, velocity);
+	if (disabled) return;
+	sound_manager->setCamera(position, direction, up, velocity);
 }
 
 const StringVector& SoundScriptManager::getScriptPatterns(void) const
 {
-    return mScriptPatterns;
+    return script_patterns;
 }
 
 Real SoundScriptManager::getLoadingOrder(void) const
@@ -267,7 +281,7 @@ SoundScriptTemplate* SoundScriptManager::createTemplate(String name, String grou
 		return NULL;
 	}
 
-	SoundScriptTemplate *ssi = new SoundScriptTemplate(name, groupname, filename, loadingBase);
+	SoundScriptTemplate *ssi = new SoundScriptTemplate(name, groupname, filename, loading_base);
 	templates[name] = ssi;
 	return ssi;
 }
@@ -277,7 +291,7 @@ void SoundScriptManager::unloadResourceGroup(String groupname)
 	// first, search if there is a template name collision
 	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it!=templates.end();)
 	{
-		if (it->second && it->second->groupname == groupname)
+		if (it->second && it->second->group_name == groupname)
 		{
 			templates.erase(it++);
 		} else
@@ -293,7 +307,7 @@ void SoundScriptManager::clearNonBaseTemplates()
 
 	for(std::map<Ogre::String, SoundScriptTemplate*>::iterator it = templates.begin(); it != templates.end();)
 	{
-		if (it->second && !it->second->baseTemplate)
+		if (it->second && !it->second->base_template)
 		{
 			delete(it->second);
 			it->second = 0;
@@ -336,7 +350,7 @@ SoundScriptInstance* SoundScriptManager::createInstance(Ogre::String templatenam
 		return NULL; // reached limit!
 	}
 
-	SoundScriptInstance* inst = new SoundScriptInstance(truck, templ, soundManager, templ->filename+"-"+TOSTRING(truck)+"-"+TOSTRING(instance_counter), soundLinkType, soundLinkItemId);
+	SoundScriptInstance* inst = new SoundScriptInstance(truck, templ, sound_manager, templ->file_name+"-"+TOSTRING(truck)+"-"+TOSTRING(instance_counter), soundLinkType, soundLinkItemId);
 	instance_counter++;
 
 	// register to lookup tables
@@ -436,25 +450,25 @@ void SoundScriptManager::skipToNextOpenBrace(DataStreamPtr& stream)
 	}
 }
 
-void SoundScriptManager::soundEnable(bool state)
+void SoundScriptManager::setEnabled(bool state)
 {
 	if (state)
-		soundManager->resumeAllSounds();
+		sound_manager->resumeAllSounds();
 	else
-		soundManager->pauseAllSounds();
+		sound_manager->pauseAllSounds();
 }
 
 //=====================================================================
 
 SoundScriptTemplate::SoundScriptTemplate(String name, String groupname, String filename, bool baseTemplate) :
-	  baseTemplate(baseTemplate)
-	, filename(filename)
+	  base_template(baseTemplate)
+	, file_name(filename)
 	, free_sound(0)
 	, gain_multiplier(1.0f)
 	, gain_offset(0.0f)
 	, gain_source(SS_MOD_NONE)
 	, gain_square(0.0f)
-	, groupname(groupname)
+	, group_name(groupname)
 	, has_start_sound(false)
 	, has_stop_sound(false)
 	, name(name)
@@ -671,32 +685,32 @@ int SoundScriptTemplate::parseModulation(String str)
 
 //====================================================================
 
-SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, SoundManager* sm, String instancename, int soundLinkType, int soundLinkItemId) :
+SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, SoundManager* sound_manager, String instancename, int soundLinkType, int soundLinkItemId) :
 	  truck(truck)
 	, templ(templ)
-	, sm(sm)
-	, soundLinkType(soundLinkType)
-	, soundLinkItemId(soundLinkItemId)
-	, startSound(NULL)
-	, startSound_pitchgain(0.0f)
-	, stopSound(NULL)
-	, stopSound_pitchgain(0.0f)
+	, sound_manager(sound_manager)
+	, sound_link_type(soundLinkType)
+	, sound_link_item_id(soundLinkItemId)
+	, start_sound(NULL)
+	, start_sound_pitchgain(0.0f)
+	, stop_sound(NULL)
+	, stop_sound_pitchgain(0.0f)
 	, lastgain(1.0f)
 {
 	// create sounds
 	if (templ->has_start_sound)
 	{
-		startSound = sm->createSound(templ->start_sound_name);
+		start_sound = sound_manager->createSound(templ->start_sound_name);
 	}
 	
 	if (templ->has_stop_sound)
 	{
-		stopSound = sm->createSound(templ->stop_sound_name);
+		stop_sound = sound_manager->createSound(templ->stop_sound_name);
 	}
 	
 	for (int i=0; i < templ->free_sound; i++)
 	{
-		sounds[i] = sm->createSound(templ->sound_names[i]);
+		sounds[i] = sound_manager->createSound(templ->sound_names[i]);
 	}
 	
 	setPitch(0.0f);
@@ -707,13 +721,13 @@ SoundScriptInstance::SoundScriptInstance(int truck, SoundScriptTemplate *templ, 
 
 void SoundScriptInstance::setPitch(float value)
 {
-	if (startSound)
+	if (start_sound)
 	{
-		startSound_pitchgain = pitchgain_cutoff(templ->start_sound_pitch, value);
+		start_sound_pitchgain = pitchgain_cutoff(templ->start_sound_pitch, value);
 
-		if (startSound_pitchgain != 0.0f && templ->start_sound_pitch != 0.0f)
+		if (start_sound_pitchgain != 0.0f && templ->start_sound_pitch != 0.0f)
 		{
-			startSound->setPitch(value / templ->start_sound_pitch);
+			start_sound->setPitch(value / templ->start_sound_pitch);
 		}
 	}
 
@@ -821,13 +835,13 @@ void SoundScriptInstance::setPitch(float value)
 		}
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		stopSound_pitchgain = pitchgain_cutoff(templ->stop_sound_pitch, value);
+		stop_sound_pitchgain = pitchgain_cutoff(templ->stop_sound_pitch, value);
 
-		if (stopSound_pitchgain != 0.0f && templ->stop_sound_pitch != 0.0f)
+		if (stop_sound_pitchgain != 0.0f && templ->stop_sound_pitch != 0.0f)
 		{
-			stopSound->setPitch(value / templ->stop_sound_pitch);
+			stop_sound->setPitch(value / templ->stop_sound_pitch);
 		}
 	}
 
@@ -858,9 +872,9 @@ float SoundScriptInstance::pitchgain_cutoff(float sourcepitch, float targetpitch
 
 void SoundScriptInstance::setGain(float value)
 {
-	if (startSound)
+	if (start_sound)
 	{
-		startSound->setGain(value * startSound_pitchgain);
+		start_sound->setGain(value * start_sound_pitchgain);
 	}
 
 	for (int i=0; i < templ->free_sound; i++)
@@ -871,9 +885,9 @@ void SoundScriptInstance::setGain(float value)
 		}
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		stopSound->setGain(value * stopSound_pitchgain);
+		stop_sound->setGain(value * stop_sound_pitchgain);
 	}
 
 	lastgain = value;
@@ -881,10 +895,10 @@ void SoundScriptInstance::setGain(float value)
 
 void SoundScriptInstance::setPosition(Vector3 pos, Vector3 velocity)
 {
-	if (startSound)
+	if (start_sound)
 	{
-		startSound->setPosition(pos);
-		startSound->setVelocity(velocity);
+		start_sound->setPosition(pos);
+		start_sound->setVelocity(velocity);
 	}
 
 	for (int i=0; i<templ->free_sound; i++)
@@ -896,22 +910,22 @@ void SoundScriptInstance::setPosition(Vector3 pos, Vector3 velocity)
 		}
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		stopSound->setPosition(pos);
-		stopSound->setVelocity(velocity);
+		stop_sound->setPosition(pos);
+		stop_sound->setVelocity(velocity);
 	}
 }
 
 void SoundScriptInstance::runOnce()
 {
-	if (startSound)
+	if (start_sound)
 	{
-		if (startSound->isPlaying())
+		if (start_sound->isPlaying())
 		{
 			return;
 		}
-		startSound->play();
+		start_sound->play();
 	}
 
 	for (int i=0; i<templ->free_sound; i++)
@@ -927,22 +941,22 @@ void SoundScriptInstance::runOnce()
 		}
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		if (stopSound->isPlaying())
+		if (stop_sound->isPlaying())
 		{
 			return;
 		}
-		stopSound->play();
+		stop_sound->play();
 	}
 }
 
 void SoundScriptInstance::start()
 {
-	if (startSound)
+	if (start_sound)
 	{
-		startSound->stop();
-		startSound->play();
+		start_sound->stop();
+		start_sound->play();
 	}
 
 	for (int i=0; i<templ->free_sound; i++)
@@ -962,23 +976,23 @@ void SoundScriptInstance::stop()
 		if (sounds[i]) sounds[i]->stop();
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		stopSound->stop();
-		stopSound->play();
+		stop_sound->stop();
+		stop_sound->play();
 	}
 }
 
 void SoundScriptInstance::setEnabled(bool e)
 {
-	if (startSound)
+	if (start_sound)
 	{
-		startSound->setEnabled(e);
+		start_sound->setEnabled(e);
 	}
 
-	if (stopSound)
+	if (stop_sound)
 	{
-		stopSound->setEnabled(e);
+		stop_sound->setEnabled(e);
 	}
 
 	for (int i=0; i < templ->free_sound; i++)
