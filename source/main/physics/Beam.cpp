@@ -5639,6 +5639,7 @@ void Beam::updateDashBoards(float &dt)
 	dash->setFloat(DD_ENGINE_SPEEDO_MPH, speed_mph);
 
 	// roll
+	if (cameranodepos[0] >= 0)
 	{
 		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition;
 		dir.normalise();
@@ -5662,6 +5663,7 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// pitch
+	if (cameranodepos[0] >= 0)
 	{
 		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 		dir.normalise();
@@ -5741,7 +5743,8 @@ void Beam::updateDashBoards(float &dt)
 			dash->setFloat(DD_SCREW_STEER_0 + i, steering);
 		}
 
-		// water depth display, only if we have a screwprop at least
+		// water depth display, only if we have a screw prop at least
+		if (cameranodepos[0] >= 0)
 		{
 			//position
 			Vector3 dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
@@ -5756,7 +5759,8 @@ void Beam::updateDashBoards(float &dt)
 			}
 		}
 
-		// waterspeed
+		// water speed
+		if (cameranodepos[0] >= 0)
 		{
 			Vector3 hdir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 			hdir.normalise();
@@ -5942,18 +5946,32 @@ void Beam::updateDashBoards(float &dt)
 
 Ogre::Vector3 Beam::getGForces()
 {
-	Vector3 accv    = cameranodeacc / cameranodecount;
-	cameranodeacc   = Vector3::ZERO;
-	cameranodecount = 0;
-	float longacc   = accv.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition).normalisedCopy());
-	float latacc    = accv.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition).normalisedCopy());
-	Ogre::Vector3 upv = (nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition).crossProduct(-(nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition));
-	upv.normalise();
+	if (cameranodepos[0] >= 0)
+	{
+		Vector3 acc      = cameranodeacc / cameranodecount;
+		cameranodeacc    = Vector3::ZERO;
+		cameranodecount  = 0;
 
-	float gravity = DEFAULT_GRAVITY;
-	if(RoRFrameListener::eflsingleton)
-		gravity = RoRFrameListener::eflsingleton->getGravity();
+		float longacc     = acc.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition).normalisedCopy());
+		float latacc      = acc.dotProduct((nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition).normalisedCopy());
+		
+		Vector3 diffdir  = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+		Vector3 diffroll = nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition;
+		
+		Vector3 upv = diffdir.crossProduct(-diffroll);
+		upv.normalise();
 
-	float vertacc = (fabs(gravity)) - (accv.dotProduct((nodes[cameranodepos[0]].RelPosition - (nodes[cameranodepos[0]].RelPosition + upv)).normalisedCopy()));
-	return Vector3(vertacc/(fabs(gravity)), longacc/(fabs(gravity)), latacc/(fabs(gravity)));
+		float gravity = DEFAULT_GRAVITY;
+
+		if (RoRFrameListener::eflsingleton)
+		{
+			gravity = RoRFrameListener::eflsingleton->getGravity();
+		}
+
+		float vertacc = std::abs(gravity) - acc.dotProduct(-upv);
+
+		return Vector3(vertacc / std::abs(gravity), longacc / std::abs(gravity), latacc / std::abs(gravity));
+	}
+
+	return Vector3::ZERO;
 }
