@@ -1337,7 +1337,7 @@ int Beam::getWheelNodeCount()
 void Beam::setupDefaultSoundSources()
 {
 #ifdef USE_OPENAL
-	if(!SoundScriptManager::getSingleton().working()) return;
+	if (SoundScriptManager::getSingleton().isDisabled()) return;
 	//engine
 	if (engine)
 	{
@@ -3888,7 +3888,7 @@ void Beam::updateSoundSources()
 {
 	BES_GFX_START(BES_GFX_updateSoundSources);
 #ifdef USE_OPENAL
-	if(!SoundScriptManager::getSingleton().working()) return;
+	if (SoundScriptManager::getSingleton().isDisabled()) return;
 	for (int i=0; i<free_soundsource; i++)
 	{
 		soundsources[i].ssi->setPosition(nodes[soundsources[i].nodenum].AbsPosition, nodes[soundsources[i].nodenum].Velocity);
@@ -4742,7 +4742,7 @@ void Beam::hookToggle(int group, int mode, int node_number)
 				bool found = false;
 				if(it->lockNodes)
 				{
-					int last_node; // nodenumber storage
+					int last_node=0; // nodenumber storage
 					// all nodes, so walk them
 					for (int i=0; i<trucks[t]->free_node; i++)
 					{
@@ -5514,8 +5514,8 @@ void Beam::updateAI(float dt)
 	mSteeringForce.normalise();
 
 	float mYaw    = mSteeringForce.x;
-	float mPitch  = mSteeringForce.y;
-	float mRoll   = mTargetVO.getRotationTo( mAgentVO ).getRoll().valueRadians();
+	//float mPitch  = mSteeringForce.y;
+	//float mRoll   = mTargetVO.getRotationTo( mAgentVO ).getRoll().valueRadians();
 
 	/*
 	String txt = "AI:"+TOSTRING(mSteeringForce);
@@ -5604,7 +5604,7 @@ void Beam::updateDashBoards(float &dt)
 
 		// accelerator
 		float acc = engine->getAcc();
-		dash->setFloat(DD_ACCELERATOR, brake);
+		dash->setFloat(DD_ACCELERATOR, acc);
 
 		// RPM
 		float rpm = engine->getRPM();
@@ -5683,7 +5683,7 @@ void Beam::updateDashBoards(float &dt)
 
 	// low pressure lamp
 	bool low_pres = (canwork == 0);
-	dash->setBool(DD_LOW_PRESSURE, locked);
+	dash->setBool(DD_LOW_PRESSURE, low_pres);
 
 	// lights
 	bool lightsOn = (lights > 0);
@@ -5747,7 +5747,6 @@ void Beam::updateDashBoards(float &dt)
 			Vector3 dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 			dir.normalise();
 
-			char tmp[50]="";
 			int low_node = getLowestNode();
 			if(low_node != -1)
 			{
@@ -5804,7 +5803,7 @@ void Beam::updateDashBoards(float &dt)
 			float altitude              = nodes[0].AbsPosition.y;
 			float sea_level_temperature = 273.15 + 15.0; //in Kelvin // MAGICs D:
 			float sea_level_pressure    = 101325; //in Pa
-			float airtemperature        = sea_level_temperature - altitude * 0.0065f; //in Kelvin
+			//float airtemperature        = sea_level_temperature - altitude * 0.0065f; //in Kelvin
 			float airpressure           = sea_level_pressure * pow(1.0f - 0.0065f * altitude / 288.15f, 5.24947f); //in Pa
 			float airdensity            = airpressure * 0.0000120896f; //1.225 at sea level
 

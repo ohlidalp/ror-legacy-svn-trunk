@@ -4060,14 +4060,14 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				int axis1, axis2,keys,keyl;
 				int p1[4], p2[4];
 				float rate;
-				hascommands=1;
+				hascommands = 1;
 				Real startDelay  = 0.0f;
 				Real stopDelay   = 0.0f;
 				Real force       = ROTATOR_FORCE_DEFAULT;
 				Real tolerance   = ROTATOR_TOLERANCE_DEFAULT;
-				char startFunction[50]="";
-				char stopFunction[50]="";
-				char description[50]="";
+				char startFunction[50] = {};
+				char stopFunction[50]  = {};
+				char description[50]   = {};
 				int n = parse_args(c, args, 13);
 				axis1 = parse_node_number(c, args[0]);
 				axis2 = parse_node_number(c, args[1]);
@@ -4120,7 +4120,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				//add short key
 				commandkey[keys].rotators.push_back(-(free_rotator+1));
-				if (description  == "")
+				if (String(description)  == "")
 					commandkey[keys].description = "Rotate_Left/Right";
 				else
 					commandkey[keys].description = description;
@@ -5133,13 +5133,16 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 	};
 	
 	// we should post-process the torque curve if existing
-	if(engine)
+	if (engine)
 	{
-		int result=engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
-		if (result==1)
+		int result = engine->getTorqueCurve()->spaceCurveEvenly(engine->getTorqueCurve()->getUsedSpline());
+		if (result)
 		{
-			parser_warning(c, "TorqueCurve: Points (rpm) must be in an ascending order. Using default curve", PARSER_ERROR);
 			engine->getTorqueCurve()->setTorqueModel("default");
+			if (result == 1)
+			{
+				parser_warning(c, "TorqueCurve: Points (rpm) must be in an ascending order. Using default curve", PARSER_ERROR);
+			}
 		}
 	}
 	

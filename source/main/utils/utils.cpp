@@ -102,7 +102,7 @@ UTFString tryConvertUTF(const char *buffer)
 	{
 		return UTFString("(UTF conversion error 2)");
 	}
-	return UTFString("(UTF conversion error 3)");
+	//return UTFString("(UTF conversion error 3)");
 }
 
 Ogre::UTFString formatBytes(double bytes)

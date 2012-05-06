@@ -80,16 +80,16 @@ void ContentManager::initBootstrap(void)
 
 bool ContentManager::init(void)
 {
-    //Set listener if none has already been set
+    // set listener if none has already been set
     if (!Ogre::ResourceGroupManager::getSingleton().getLoadingListener())
         Ogre::ResourceGroupManager::getSingleton().setLoadingListener(this);
 
-	//try to get correct paths
-	//note: we don't have LogManager available yet!
-	//FIRST: Get the "program path" and the user space path
+	// try to get correct paths
+	// note: we don't have LogManager available yet!
+	// FIRST: Get the "program path" and the user space path
 
 	// note: this is now done in the settings class, so set it up
-	// note: you need to set the buildmode correcty before you build the paths!
+	// note: you need to set the build mode correctly before you build the paths!
 
 	// by default, display everything in the depth map
 	Ogre::MovableObject::setDefaultVisibilityFlags(DEPTHMAP_ENABLED);
@@ -101,15 +101,15 @@ bool ContentManager::init(void)
 
 
 
-	//load bootstrap and main resources
+	// load bootstrap and main resources
 	String dirsep="/";
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	dirsep="\\";
 #endif
-	//bootstrap
+	// bootstrap
 	// we load the bootstrap before already
 
-	//main game resources
+	// main game resources
 	LOG("Loading main resources");
 	loadMainResource("airfoils");
 	loadMainResource("materials");
@@ -149,20 +149,20 @@ bool ContentManager::init(void)
 
 	// optional ones
 
-	// sound iss a bit special as we mark the base sounds so we dont clear them accidentially later on
+	// sound is a bit special as we mark the base sounds so we don't clear them accidentally later on
 #ifdef USE_OPENAL
 	LOG("Creating Sound Manager");
 	SoundScriptManager::getSingleton().setLoadingBaseSounds(true);
 #endif // USE_OPENAL
 
-	if (SSETTING("AudioDevice", "Default") != "No Output")
+	if (SSETTING("AudioDevice", "") != "No Output")
 		loadMainResource("sounds");
 
 	if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
 		loadMainResource("caelum");
 
 	//if(BSETTING("Hydrax", false))
-	//	loadMainResource("hydrax", "Hydrax"); // special resourcegroup required!
+	//	loadMainResource("hydrax", "Hydrax"); // special resource group required!
 
 	if(SSETTING("Vegetation", "None (fastest)") != "None (fastest)")
 		loadMainResource("paged");
@@ -188,14 +188,14 @@ bool ContentManager::init(void)
 	if (SSETTING("Shadow technique", "") == "Parallel-split Shadow Maps")
 		loadMainResource("pssm");
 
-	//streams path, to be processed later by the cache system
+	// streams path, to be processed later by the cache system
 	LOG("Loading filesystems");
 
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"cache", "FileSystem", "cache");
-	//config, flat
+	// config, flat
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"config", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"alwaysload", "FileSystem", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	//packs, to be processed later by the cache system
+	// packs, to be processed later by the cache system
 
 	// add scripts folder
 	ResourceGroupManager::getSingleton().addResourceLocation(SSETTING("User Path", "")+"scripts", "FileSystem", "Scripts");
@@ -208,7 +208,7 @@ bool ContentManager::init(void)
 	ColoredTextAreaOverlayElementFactory *pCT = new ColoredTextAreaOverlayElementFactory();
 	OverlayManager::getSingleton().addOverlayElementFactory(pCT);
 
-	// Set default mipmap level (NB some APIs ignore this)
+	// set default mipmap level (NB some APIs ignore this)
 	if(TextureManager::getSingletonPtr())
 		TextureManager::getSingleton().setDefaultNumMipmaps(5);
 	String tft=SSETTING("Texture Filtering", "Trilinear");
@@ -321,13 +321,13 @@ void ContentManager::exploreFolders(Ogre::String rg)
 #endif
 	ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
 
-	FileInfoListPtr files= rgm.findResourceFileInfo(rg, "*", true); //searching for dirs
+	FileInfoListPtr files= rgm.findResourceFileInfo(rg, "*", true); // searching for dirs
 	FileInfoList::iterator iterFiles = files->begin();
 	for (; iterFiles!= files->end(); ++iterFiles)
 	{
 		if(!iterFiles->archive) continue;
 		if (iterFiles->filename==String(".svn")) continue;
-		//trying to get the full path
+		// trying to get the full path
 		String fullpath = iterFiles->archive->getName() + dirsep;
 		rgm.addResourceLocation(fullpath+iterFiles->filename, "FileSystem", rg);
 	}

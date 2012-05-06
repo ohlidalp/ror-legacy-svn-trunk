@@ -271,7 +271,7 @@ int Autopilot::adjIAS(int d)
 void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
-	if(!SoundScriptManager::getSingleton().working()) return;
+	if (SoundScriptManager::getSingleton().isDisabled()) return;
 	if (mode_gpws && hf && ref_b)
 	{
 		float groundalt=hf->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);

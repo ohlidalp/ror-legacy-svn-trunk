@@ -62,7 +62,6 @@ bool OgreFramework::configure(void)
 		{
 			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
 			exit(1);
-			return false;
 		}
 	} else
 	{
@@ -71,7 +70,6 @@ bool OgreFramework::configure(void)
 		{
 			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
 			exit(1);
-			return false;
 		}
 
 		m_pRoot->initialise(false);
@@ -87,7 +85,6 @@ bool OgreFramework::configure(void)
 		m_pRenderWnd = m_pRoot->createRenderWindow(name, 320, 240, false, &param);
 		return true;
 	}
-	return false;
 }
 
 

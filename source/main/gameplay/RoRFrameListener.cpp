@@ -1219,7 +1219,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 					hideMap();
 					SelectorWindow::getSingleton().show(SelectorWindow::LT_Network);
 				}
-#endif // MYGUI
+#endif //USE_MYGUI
 			} else {
 				// init no trucks, as there were found some
 				initTrucks(false, preselected_map);
@@ -1233,7 +1233,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		//LOG("huette debug 3");
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_Terrain);
 		SelectorWindow::getSingleton().setEnableCancel(false);
-#endif // MYGUI
+#endif //USE_MYGUI
 	}
 
 	initialized=true;
@@ -1486,10 +1486,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	bool classic_ref=true;
 	// everything is of concrete by default
 	ground_model_t *gm = collisions->getGroundModelByString("concrete");
-	bool generateLod=false;
 	char eventname[256];
 	eventname[0]=0;
-	bool lodmode=false;
 	while (!ds->eof())
 	{
 		size_t ll=ds->readLine(line, 1023);
@@ -1539,11 +1537,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (!strncmp("sound", ptline, 5))
 		{
 #ifdef USE_OPENAL
-			if(SoundScriptManager::getSingleton().working())
+			if (!SoundScriptManager::getSingleton().isDisabled())
 			{
 				char tmp[255]="";
 				sscanf(ptline, "sound %s", tmp);
-				SoundScriptInstance *sound = SoundScriptManager::getSingleton().createInstance(tmp, SoundScriptManager::TERRAINSOUND, tenode);
+				SoundScriptInstance *sound = SoundScriptManager::getSingleton().createInstance(tmp, MAX_TRUCKS+1, tenode);
 				sound->setPosition(tenode->getPosition(), Vector3::ZERO);
 				sound->start();
 			}
@@ -1957,7 +1955,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		if(gm)
 			GUI_Friction::getSingleton().setActiveCol(gm);
 	}
-#endif // MYGUI
+#endif //USE_MYGUI
 
 #ifdef USE_MYGUI
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !hidegui)
@@ -2142,8 +2140,6 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
-
-		bool enablegrab = true;
 		if (CAMERA_MODE != CameraManager::CAMERA_FREE)
 		{
 			if (!curr_truck)
@@ -3090,7 +3086,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 			}
 		}
-#endif // MYGUI
+#endif //USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && curr_truck && !netmode && curr_truck->driveable != AIRPLANE)
 		{
 			if(!BeamFactory::getSingleton().enterRescueTruck())
@@ -3370,7 +3366,7 @@ void RoRFrameListener::shutdown_final()
 #endif //SOCKETW
 	loading_state=EXITING;
 #ifdef USE_OPENAL
-	SoundScriptManager::getSingleton().soundEnable(false);
+	SoundScriptManager::getSingleton().setEnabled(false);
 #endif // OPENAL
 #ifdef USE_OIS_G27
 	//logitech G27 LEDs tachometer
@@ -3403,7 +3399,7 @@ void RoRFrameListener::hideMap()
 #ifdef USE_MYGUI
 	if(bigMap)
 		bigMap->setVisibility(false);
-#endif // MYGUI
+#endif //USE_MYGUI
 }
 
 
@@ -3428,7 +3424,7 @@ void RoRFrameListener::initializeCompontents()
 		//bigMap->setPosition(0, 0, 1, 1);
 		//bigMap->resizeToScreenRatio(win);
 	}
-#endif // MYGUI
+#endif //USE_MYGUI
 
 	collisions=new Collisions(this, mSceneMgr, debugCollisions);
 
@@ -3973,7 +3969,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						for(int b=1;b<terrain->getLayerCount();b++)
 						{
 							Ogre::Image img;
-							ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
 							String group="";
 							try
 							{
@@ -4343,7 +4338,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		bigMap->setVisibility(false);
 		bigMap->setMapTexture(mtc->getRTName());
 	}
-#endif // MYGUI
+#endif //USE_MYGUI
 
 	// fix the person starting position
 	if(persostart.isZeroLength() && !spl.pos.isZeroLength())
@@ -4357,7 +4352,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	Vector3 r2lastpos=Vector3::ZERO;
 	Quaternion r2lastrot=Quaternion::IDENTITY;
-	int r2counter=0;
 
 	//prepare for baking
 	SceneNode *bakeNode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -4365,11 +4359,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//while (!feof(fd))
 	bool proroad=false;
 #ifdef USE_PAGED
-	int treemode=0;
 	treeLoader = 0;
 	Entity *curTree = 0;
-	int treecounter=0;
-	float treescale_min=1,treescale_max=1;
 	String treename="";
 #endif
 
@@ -4404,14 +4395,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (!strncmp(line,"collision-tris", 14))
 		{
 			long amount = Collisions::MAX_COLLISION_TRIS;
-			int res = sscanf(line, "collision-tris %ld", &amount);
+			sscanf(line, "collision-tris %ld", &amount);
 			collisions->resizeMemory(amount);
 		}
 
 		if (!strncmp(line,"grid", 4))
 		{
 			float px=0,py=0,pz=0;
-			int res = sscanf(line, "grid %f, %f, %f", &px, &py, &pz);
+			sscanf(line, "grid %f, %f, %f", &px, &py, &pz);
 			Vector3 pos = Vector3(px,py,pz);
 
 			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
@@ -4928,7 +4919,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// tell this the map, so it can change the drawing distance !
 	if(mtc)
 		mtc->setStaticGeometry(bakesg);
-#endif // MYGUI
+#endif //USE_MYGUI
 
 	collisions->printStats();
 	loading_state=TERRAIN_LOADED;
@@ -5083,7 +5074,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 					e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 				}
 			}
-#endif // MYGUI
+#endif //USE_MYGUI
 		}
 
 	}
@@ -5239,7 +5230,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			//bigMap->setVisibility(true);
 			bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
 		}
-#endif // MYGUI
+#endif //USE_MYGUI
 
 		currentTruck->activate();
 		//if (trucks[current_truck]->engine->running) trucks[current_truck]->audio->playStart();
@@ -5534,7 +5525,7 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	hideMap();
 #ifdef USE_MYGUI
 	SelectorWindow::getSingleton().show(SelectorWindow::LoaderType(type));
-#endif // MYGUI
+#endif //USE_MYGUI
 }
 
 void RoRFrameListener::setDirectionArrow(char *text, Vector3 position)
@@ -5551,7 +5542,6 @@ void RoRFrameListener::setDirectionArrow(char *text, Vector3 position)
 	{
 		ow->directionOverlay->show();
 		ow->directionArrowText->setCaption(String(text));
-		float w = ow->directionArrowText->getWidth();
 		//LOG("*** new pointed position: " + TOSTRING(position));
 		ow->directionArrowDistance->setCaption("");
 		dirvisible = true;
@@ -5573,7 +5563,7 @@ void RoRFrameListener::netDisconnectTruck(int number)
 		if(e)
 			e->setVisibility(false);
 	}
-#endif // MYGUI
+#endif //USE_MYGUI
 }
 
 
@@ -5752,7 +5742,6 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 
 	// Setup custom shader sub render states according to current setup.
 	MaterialPtr curMaterial = MaterialManager::getSingleton().getByName(curMaterialName);
-	Pass* curPass = curMaterial->getTechnique(0)->getPass(0);
 
 
 	// Grab the first pass render state.
@@ -5845,13 +5834,6 @@ void RoRFrameListener::reloadCurrentTruck()
 #endif // USE_MYGUI
 		return;
 	}
-
-	// store camera settings
-	//Radian camRotX_saved = camRotX;
-	//Radian camRotY_saved = camRotY;
-
-	// store current trucks node positions
-	Vector3 *nodeStorage = (Vector3 *)malloc(sizeof(Vector3) * curr_truck->free_node + 10);
 
 	// remove the old truck
 	curr_truck->state=RECYCLE;

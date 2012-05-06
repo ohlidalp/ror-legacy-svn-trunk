@@ -143,8 +143,8 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
 
 void ScriptEngine::exploreScripts()
 {
-	// this shouldnt be used atm
-	return;
+	// this shouldn't be used at the moment
+#if 0
 #if USE_ANGELSCRIPT
 	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo("Scripts", "*.rs", false);
 	for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
@@ -152,6 +152,7 @@ void ScriptEngine::exploreScripts()
 		loadScript(iterFiles->filename);
 	}
 #endif //USE_ANGELSCRIPT
+#endif
 }
 
 void ScriptEngine::LineCallback(AngelScript::asIScriptContext *ctx, unsigned long *timeOut)
