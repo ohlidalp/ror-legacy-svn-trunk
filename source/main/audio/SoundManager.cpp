@@ -42,7 +42,7 @@ SoundManager::SoundManager() :
 	, m_sound_context(NULL)
 	, m_sound_device(NULL)
 {
-	String sound_renderer = SSETTING("3D Sound renderer", "Default");
+	String sound_renderer = SSETTING("AudioDevice", "Default");
 	master_volume = FSETTING("Sound Volume", 100.0f) / 100.0f;
 
 	if (sound_renderer == "No sound") return;
