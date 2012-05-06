@@ -511,10 +511,13 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	Ogre::Vector3 p(px, py, pz);
 	Ogre::Vector3 sc(scx, scy, scz);
 	collision_box_t& coll_box = collision_boxes[free_collision_box];
+
 	coll_box.enabled = true;
+	
 	// set refined box anyway
 	coll_box.relo = l*sc;
 	coll_box.rehi = h*sc;
+
 	// calculate selfcenter anyway
 	coll_box.selfcenter  = coll_box.relo;
 	coll_box.selfcenter += coll_box.rehi;
@@ -523,8 +526,8 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	// and center too (we need it)
 	coll_box.center = p;
 	coll_box.virt = virt;
-
 	coll_box.event_filter = event_filter;
+
 	// camera stuff
 	coll_box.camforced = forcecam;
 	if (forcecam)
@@ -539,10 +542,13 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		coll_box.selfrotated = true;
 		coll_box.selfrot     = Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
 		coll_box.selfunrot   = coll_box.selfrot.Inverse();
+	} else
+	{
+		coll_box.selfrotated = false;
 	}
-	else coll_box.selfrotated = false;
 
 	coll_box.eventsourcenum = -1;
+
 	if (strlen(eventname) > 0)
 	{
 		//LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
@@ -572,7 +578,12 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		coll_box.unrot = rotation.Inverse();
 	}
 
-	SceneNode *debugsn = debugMode ? smgr->getRootSceneNode()->createChildSceneNode() : 0;
+	SceneNode *debugsn = 0;
+	
+	if (debugMode)
+	{
+		debugsn = smgr->getRootSceneNode()->createChildSceneNode();
+	}
 
 	// set raw box
 	// 8 points of a cube
@@ -1103,7 +1114,6 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 								if (ogm) *ogm=defaultgm;
 								}
 							}
-
 					} else
 					{
 						if (cbox->eventsourcenum!=-1 && permitEvent(cbox->event_filter))
@@ -1145,8 +1155,7 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 						}
 					}
 				}
-			}
-			else
+			} else
 			{
 				// tri collision
 				collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
@@ -1250,7 +1259,7 @@ collision_box_t *Collisions::getBox(char* instance, char* box)
 
 eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 {
-	if(!truck) return 0;
+	if (!truck) return 0;
 	// check all boxes
 	for (int i=0; i<free_eventsource; i++)
 	{
@@ -1282,7 +1291,6 @@ eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 
 bool Collisions::isInside(Vector3 pos, char* instance, char* box, float border)
 {
-
 	collision_box_t *cbox=getBox(instance, box);
 	return isInside(pos, cbox, border);
 }
@@ -1292,28 +1300,33 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 	if (!cbox) return false;
 	
 	if (pos + border > cbox->lo
-	&& pos - border < cbox->hi)
+	 && pos - border < cbox->hi)
 	{
 		if (cbox->refined || cbox->selfrotated)
 		{
 			// we may have a collision, do a change of repere
-			Vector3 rpos=pos-cbox->center;
-			if (cbox->refined) rpos=cbox->unrot*rpos;
+			Vector3 rpos = pos - cbox->center;
+			if (cbox->refined)
+			{
+				rpos = cbox->unrot * rpos;
+			}
 			if (cbox->selfrotated)
 			{
-				rpos=rpos-cbox->selfcenter;
-				rpos=cbox->selfunrot*rpos;
-				rpos=rpos+cbox->selfcenter;
+				rpos = rpos - cbox->selfcenter;
+				rpos = cbox->selfunrot * rpos;
+				rpos = rpos + cbox->selfcenter;
 			}
 			
 			// now test with the inner box
-			if (rpos >cbox->relo
-			&& rpos < cbox->rehi)
+			if (rpos > cbox->relo
+			 && rpos < cbox->rehi)
 			{
 				return true;
 			}
+		} else
+		{
+			return true;
 		}
-		else return true;
 	}
 	return false;
 }
@@ -1321,9 +1334,9 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, float *nso)
 {
 	if (!hfinder) return false;
-	if(landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
+	if (landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
 	// when landuse fails or we dont have it, use the default value
-	if(!*ogm) *ogm = defaultgroundgm;
+	if (!*ogm) *ogm = defaultgroundgm;
 	last_used_ground_model = *ogm;
 
 	// new ground collision code
@@ -1452,7 +1465,8 @@ void Collisions::primitiveCollision(node_t *node, Vector3 &force, Vector3 &veloc
 
 int Collisions::createCollisionDebugVisualization()
 {
-	return 0;
+	LOG("COLL: Creating collision debug visualization ...");
+
 	static int loaded = 0;
 	// prevent double calling
 	if (loaded != 0) return -1;
@@ -1518,7 +1532,8 @@ int Collisions::createCollisionDebugVisualization()
 				groundheight+=0.1; // 10 cm hover
 				// ground height should fit
 
-				int deep = 0, cc=(int)cell->size();
+				//int deep = 0;
+				int cc = (int)cell->size();
 				float percent = cc / (float)CELL_BLOCKSIZE;
 
 				float percentd = percent;
@@ -1554,7 +1569,6 @@ int Collisions::createCollisionDebugVisualization()
 				mo->end();
 				mo->setBoundingBox(AxisAlignedBox(0, 0, 0, CELL_SIZE, 1, CELL_SIZE));
 				mo_node->attachObject(mo);
-
 
 #if 0
 				// setup the label
@@ -1647,8 +1661,8 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 	size_t shared_offset = vertex_count;
 	size_t next_offset = vertex_count;
 	size_t index_offset = index_count;
-	size_t prev_vert = vertex_count;
-	size_t prev_ind = index_count;
+	//size_t prev_vert = vertex_count;
+	//size_t prev_ind = index_count;
 
 	// Calculate how many vertices and indices we're going to need
 	for(int i = 0;i < mesh->getNumSubMeshes();i++)
