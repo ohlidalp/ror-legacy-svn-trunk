@@ -83,7 +83,7 @@ private:
 	ALCdevice*    m_sound_device;
 	ALCcontext*   m_sound_context;
 
-	float master_volume;
+	float m_master_volume;
 };
 
 #endif // __SoundManager_H_
