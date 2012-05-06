@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "screwprop.h"
 
-#include "Beamdata.h"
+#include "BeamData.h"
 #include "DustManager.h"
 #include "SoundScriptManager.h"
 #include "water.h"
