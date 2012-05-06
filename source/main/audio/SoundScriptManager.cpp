@@ -75,7 +75,7 @@ SoundScriptManager::SoundScriptManager() :
 	mScriptPatterns.push_back("*.soundscript");
 	ResourceGroupManager::getSingleton()._registerScriptLoader(this);
 
-	soundsDisabled = (SSETTING("AudioDevice", "Default") == "No sound");
+	soundsDisabled = (SSETTING("AudioDevice", "Default") == "No Output");
 }
 
 void SoundScriptManager::trigOnce(Beam *truck, int trig, int linkType, int linkItemID)
