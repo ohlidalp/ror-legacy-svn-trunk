@@ -28,6 +28,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif // OGRE_PLATFORM_LINUX
 
+
+int _checkALErrors(int linenum)
+{
+	int err = alGetError();
+	if(err != AL_NO_ERROR)
+	{
+		char buf[4096]="";
+		sprintf(buf, "OpenAL Error: %s (0x%x), @ %d\n", alGetString(err), err, linenum);
+		LOG(buf);
+	}
+	return err;
+}
+#define checkALErrors() _checkALErrors(__LINE__)
+
 using namespace Ogre;
 
 const float SoundManager::MAX_DISTANCE       = 500.0f;
@@ -44,20 +58,34 @@ SoundManager::SoundManager() :
 {
 	String audio_device = SSETTING("AudioDevice", "Default");
 
-	if (audio_device == "No sound") return;
+	if (audio_device == "No Output") return;
 
 	LOG("Opening Device: '" + audio_device + "'");
 	
-	if(audio_device == "Default") audio_device = "";
-	m_sound_device = alcOpenDevice(audio_device.c_str());
-
-	if (!m_sound_device)
-	{
-		ALint error = alGetError();
-		LOG("SoundManager: Could not create OpenAL device, error code: "+TOSTRING(error));
+	const char *alDeviceString = audio_device.c_str();
+	if(audio_device == "Default") alDeviceString = NULL;
+	m_sound_device = alcOpenDevice(alDeviceString);
+	if(checkALErrors())
 		return;
-	}
 
+	const char *tmp = alGetString(AL_VENDOR);
+	if(tmp) LOG("OpenAL vendor is: " + String(tmp));
+	
+	tmp = alGetString(AL_VERSION);
+	if(tmp) LOG("OpenAL version is: " + String(tmp));
+	
+	tmp = alGetString(AL_RENDERER);
+	if(tmp) LOG("OpenAL renderer is: " + String(tmp));
+
+	tmp = alGetString(AL_EXTENSIONS);
+	if(tmp) LOG("OpenAL extensions are: " + String(tmp));
+
+	tmp = alcGetString(m_sound_device, ALC_DEVICE_SPECIFIER);
+	if(tmp) LOG("OpenAL device is: " + String(tmp));
+
+	tmp = alcGetString(m_sound_device, ALC_EXTENSIONS);
+	if(tmp) LOG("OpenAL ALC extensions are: " + String(tmp));
+	
 	m_sound_context = alcCreateContext(m_sound_device, NULL);
 
 	if (!m_sound_context)

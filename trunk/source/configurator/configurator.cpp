@@ -1489,9 +1489,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 #ifdef USE_OPENAL
 	dText = new wxStaticText(advancedPanel, -1, _("Audio device:"), wxPoint(10,y+3));
-	sound=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
-	sound->AppendValueItem(wxT("No sound"), _("No sound"));
-	sound->AppendValueItem(wxT("Default"), _("Default"));
+	sound = new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	sound->SetToolTip(_("Select the appropriate sound source.\nLeaving to Default should work most of the time."));
 
 
