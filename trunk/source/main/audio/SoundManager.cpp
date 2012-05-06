@@ -29,18 +29,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif // OGRE_PLATFORM_LINUX
 
 
-int _checkALErrors(int linenum)
+bool _checkALErrors(const char *filename, int linenum)
 {
 	int err = alGetError();
 	if(err != AL_NO_ERROR)
 	{
 		char buf[4096]="";
-		sprintf(buf, "OpenAL Error: %s (0x%x), @ %d\n", alGetString(err), err, linenum);
+		sprintf(buf, "OpenAL Error: %s (0x%x), @ %s:%d\n", alGetString(err), err, filename, linenum);
 		LOG(buf);
+		return true;
 	}
-	return err;
+	return false;
 }
-#define checkALErrors() _checkALErrors(__LINE__)
+#define hasALErrors() _checkALErrors(__FILE__, __LINE__)
 
 using namespace Ogre;
 
@@ -65,15 +66,29 @@ SoundManager::SoundManager() :
 	const char *alDeviceString = audio_device.c_str();
 	if(audio_device == "Default") alDeviceString = NULL;
 	m_sound_device = alcOpenDevice(alDeviceString);
-	if(checkALErrors())
+	if(!m_sound_device)
+	{
+		hasALErrors();
 		return;
+	}
+
+	m_sound_context = alcCreateContext(m_sound_device, NULL);
+
+	if (!m_sound_context)
+	{
+		ALint error= alGetError();
+		LOG("SoundManager: Could not create OpenAL context, error code: " + TOSTRING(error));
+		alcCloseDevice(m_sound_device);
+		m_sound_device = NULL;
+		return;
+	}
 
 	const char *tmp = alGetString(AL_VENDOR);
 	if(tmp) LOG("OpenAL vendor is: " + String(tmp));
-	
+
 	tmp = alGetString(AL_VERSION);
 	if(tmp) LOG("OpenAL version is: " + String(tmp));
-	
+
 	tmp = alGetString(AL_RENDERER);
 	if(tmp) LOG("OpenAL renderer is: " + String(tmp));
 
@@ -85,17 +100,7 @@ SoundManager::SoundManager() :
 
 	tmp = alcGetString(m_sound_device, ALC_EXTENSIONS);
 	if(tmp) LOG("OpenAL ALC extensions are: " + String(tmp));
-	
-	m_sound_context = alcCreateContext(m_sound_device, NULL);
 
-	if (!m_sound_context)
-	{
-		ALint error= alGetError();
-		LOG("SoundManager: Could not create OpenAL context, error code: " + TOSTRING(error));
-		alcCloseDevice(m_sound_device);
-		m_sound_device = NULL;
-		return;
-	}
 
 	alcMakeContextCurrent(m_sound_context);
 
