@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "turbojet.h"
 
-#include "Beamdata.h"
+#include "BeamData.h"
 #include "materialFunctionMapper.h"
 #include "MaterialReplacer.h"
 #include "Ogre.h"
