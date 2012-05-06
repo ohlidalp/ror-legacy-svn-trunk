@@ -17,13 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "turbojet.h"
 
+#include "Beamdata.h"
 #include "materialFunctionMapper.h"
 #include "MaterialReplacer.h"
 #include "Ogre.h"
 #include "skin.h"
 #include "SoundScriptManager.h"
-#include "turbojet.h"
 
 using namespace Ogre;
 
