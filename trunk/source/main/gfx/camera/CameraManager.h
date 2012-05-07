@@ -48,9 +48,9 @@ public:
 	  , CAMERA_VEHICLE_INTERNAL
 	  , CAMERA_VEHICLE_ORBIT
 	  , CAMERA_VEHICLE_SPLINE
-	  , CAMERA_FIXED
 	  , CAMERA_END
 	  , CAMERA_FREE
+	  , CAMERA_FIXED
 	};
 	
 	void switchBehavior(int newBehavior);

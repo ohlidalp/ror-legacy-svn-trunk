@@ -18,22 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 6th of May 2010
-
-#ifndef OVERLAYWRAPPER_H__
-#define OVERLAYWRAPPER_H__
+#ifndef __OverlayWrapper_H_
+#define __OverlayWrapper_H_
 
 #include "RoRPrerequisites.h"
 
-#include "OgrePrerequisites.h"
 #include "Singleton.h"
 
-#include <map>
-
-#include <OgreOverlay.h>
 #include "OgreTextAreaOverlayElement.h"
-#include <OgrePanelOverlayElement.h>
-
-#include "Singleton.h"
 #include <OIS.h>
 
 struct loadedOverlay_t
@@ -45,7 +37,10 @@ struct loadedOverlay_t
 
 class OverlayWrapper : public RoRSingletonNoCreation<OverlayWrapper>
 {
+	friend class RoRFrameListener;
+
 public:
+
 	OverlayWrapper(Ogre::RenderWindow* win);
 	~OverlayWrapper();
 
@@ -65,7 +60,8 @@ public:
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 	float mTimeUntilNextToggle;
 
-//protected:
+protected:
+
 	int init();
 	void update(float dt);
 	void resizePanel(Ogre::OverlayElement *oe);
@@ -181,10 +177,8 @@ public:
 	float throffset;
 
 protected:
-	std::vector<struct loadedOverlay_t> overlays;
 
+	std::vector<struct loadedOverlay_t> overlays;
 };
 
-
-
-#endif //OVERLAYWRAPPER_H__
+#endif // __OverlayWrapper_H_

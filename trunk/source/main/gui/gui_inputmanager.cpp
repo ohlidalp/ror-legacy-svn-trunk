@@ -21,15 +21,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "gui_inputmanager.h"
 
+#include "OverlayWrapper.h"
+#include "RoRFrameListener.h"
 #include "SceneMouse.h"
 #include "gui_menu.h"
-
-#include "RoRFrameListener.h"
-#include "OverlayWrapper.h"
-
-#if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
-#include <windows.h>
-#endif
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_WIN32
 MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
@@ -327,7 +322,4 @@ void GUIInputManager::activateGUI()
 	if(menu) menu->setVisible(true);
 }
 
-#endif //MYGUI
-
-
-
+#endif // USE_MYGUI

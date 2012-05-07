@@ -21,14 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __TRUCKHUD_H__
 
 #include "RoRPrerequisites.h"
-
-#define COMMANDS_VISIBLE 25
-
 #include "Beam.h"
 
 class TruckHUD
 {
 public:
+
 	TruckHUD();
 	~TruckHUD();
 	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);
@@ -36,6 +34,7 @@ public:
 	bool isVisible();
 
 protected:
+
     static TruckHUD *myInstance;
 	std::map<int, float> maxVelos;
 	std::map<int, float> minVelos;
@@ -50,6 +49,8 @@ protected:
 	float updatetime;
 	int width, border;
 	void checkOverflow(Ogre::OverlayElement* e);
+
+	static const unsigned int COMMANDS_VISIBLE = 25;
 };
 
 

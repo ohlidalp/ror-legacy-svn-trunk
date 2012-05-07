@@ -80,8 +80,8 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleCineCam()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
 }
 
 #if 0

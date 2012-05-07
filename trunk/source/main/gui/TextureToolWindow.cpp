@@ -20,11 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "TextureToolWindow.h"
-#include "gui_manager.h"
+
+#include "Console.h"
+#include "Ogre.h"
+#include "Settings.h"
 #include "language.h"
 #include "utils.h"
-#include "Settings.h"
-#include "Console.h"
 
 using namespace Ogre;
 
@@ -62,11 +63,11 @@ void TextureToolWindow::fillCombo()
 	bool dynamicOnly = mChkDynamic->getStateSelected();
 	mCBo->deleteAllItems();
 
-	Ogre::ResourceManager::ResourceMapIterator it = Ogre::TextureManager::getSingleton().getResourceIterator();
+	ResourceManager::ResourceMapIterator it = TextureManager::getSingleton().getResourceIterator();
 
 	while (it.hasMoreElements())
 	{
-		Ogre::TexturePtr txt = (Ogre::TexturePtr)it.getNext();
+		TexturePtr txt = (TexturePtr)it.getNext();
 		
 		if(dynamicOnly && ((txt->getUsage() & TU_STATIC) != 0)) continue;
 		
@@ -87,11 +88,11 @@ void TextureToolWindow::hide()
 	((MyGUI::Window*)mMainWidget)->setVisibleSmooth(false);
 }
 
-void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
+void TextureToolWindow::saveTexture( String texName, bool usePNG )
 {
 	try
 	{
-		TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(texName);
+		TexturePtr tex = TextureManager::getSingleton().getByName(texName);
 		if(tex.isNull()) return;
 
 		Image img;
@@ -113,11 +114,11 @@ void TextureToolWindow::saveTexture( Ogre::String texName, bool usePNG )
 	}
 }
 
-void TextureToolWindow::updateControls( Ogre::String texName )
+void TextureToolWindow::updateControls( String texName )
 {
 	try
 	{
-		bool exists = Ogre::TextureManager::getSingleton().resourceExists(texName);
+		bool exists = TextureManager::getSingleton().resourceExists(texName);
 		if(!exists)
 		{
 			mTxt->setCaption(convertToMyGUIString("Texture not found:\n"+texName));
@@ -125,7 +126,7 @@ void TextureToolWindow::updateControls( Ogre::String texName )
 			return;
 		}
 
-		TexturePtr tex = Ogre::TextureManager::getSingleton().getByName(texName);
+		TexturePtr tex = TextureManager::getSingleton().getByName(texName);
 		if(tex.isNull())
 		{
 			mTxt->setCaption(convertToMyGUIString("Error loading texture:\n"+texName));
@@ -133,7 +134,7 @@ void TextureToolWindow::updateControls( Ogre::String texName )
 			return;
 		}
 
-		Ogre::String str = "#aa0000" + texName + "#000000\n";
+		String str = "#aa0000" + texName + "#000000\n";
 		str += "#00aa00res: #000000" + TOSTRING(tex->getWidth()) + " x " + TOSTRING(tex->getHeight()) + " pixels\n";
 		str += "#00aa00size: #000000" + formatBytes(tex->getSize()) + "\n";
 		str += "#00aa00format: #000000" + PixelUtil::getFormatName(tex->getFormat()) + "\n";
@@ -224,5 +225,4 @@ void TextureToolWindow::eventSelectTexture( MyGUI::WidgetPtr _sender )
 	updateControls(mCBo->getItemNameAt(mCBo->getItemIndexSelected()));
 }
 
-#endif //MYGUI
-
+#endif // USE_MYGUI

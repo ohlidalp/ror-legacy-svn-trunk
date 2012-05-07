@@ -17,24 +17,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_MYGUI
-
-#ifndef __MAP_CONTROL_H__
-#define __MAP_CONTROL_H__
+#ifndef __MAP_CONTROL_H_
+#define __MAP_CONTROL_H_
 
 #include "RoRPrerequisites.h"
-#include <Ogre.h>
-#include "OgreTextAreaOverlayElement.h"
-#include <vector>
-#include <MyGUI.h>
+
 #include "mygui/BaseLayout.h"
 
-
 ATTRIBUTE_CLASS_LAYOUT(MapControl, "MapControl.layout");
+
 class MapControl : public wraps::BaseLayout
 {
 public:
+
 	MapControl(int mapsizex, int mapsizez);
 	~MapControl();
 
@@ -62,6 +58,7 @@ public:
 	float getWindowScale() { return myScale; }
 
 protected:
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
 	MyGUI::StaticImage* mMapTexture;
 
@@ -74,10 +71,7 @@ protected:
 	int rWinLeft, rWinTop;
 
 	void updateEntityPositions();
-
 };
 
-#endif // __MAP_CONTROL_H__
-
-
-#endif // MYGUI
+#endif // __MAP_CONTROL_H_
+#endif // USE_MYGUI

@@ -17,45 +17,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef SkidMark_H
-#define SkidMark_H
+#ifndef __SkidMark_H_
+#define __SkidMark_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "DynamicRenderable.h"
-#include <vector>
-#include "Beam.h"
 
-typedef struct _skidmark
-{
-	Ogre::ManualObject *obj;
-	std::vector<Ogre::Vector3> points;
-	std::vector<Ogre::Real> facesizes;
-	std::vector<Ogre::String> ground_texture;
-	Ogre::Vector3 lastPointAv;
-	int pos;
-	Ogre::ColourValue colour;
-	Ogre::Vector3 face[2];
-	int facecounter;
-} skidmark_t;
-
-
-typedef struct _skidmark_config
-{
-	Ogre::String ground;
-	Ogre::String texture;
-	float slipFrom;
-	float slipTo;
-} skidmark_config_t;
+#include "Singleton.h"
 
 class SkidmarkManager : public RoRSingleton<SkidmarkManager>
 {
 public:
+
 	SkidmarkManager();
 	~SkidmarkManager();
 	
 	int getTexture(Ogre::String model, Ogre::String ground, float slip, Ogre::String &texture);
-protected:
+
+private:
+
+	typedef struct _skidmark_config
+	{
+		Ogre::String ground;
+		Ogre::String texture;
+		float slipFrom;
+		float slipTo;
+	} skidmark_config_t;
+
 	int loadDefaultModels();
 	std::map <Ogre::String, std::vector<skidmark_config_t> > models;
 	int processLine(Ogre::StringVector args,  Ogre::String model);
@@ -64,6 +51,7 @@ protected:
 class Skidmark
 {
 public:
+
 	/// Constructor - see setOperationType() for description of argument.
 	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
 	virtual ~Skidmark();
@@ -73,18 +61,36 @@ public:
 	void update();
 
 private:
-	static int instancecounter;
+
+	static int instanceCounter;
+
+	typedef struct _skidmark
+	{
+		Ogre::ManualObject *obj;
+		std::vector<Ogre::Vector3> points;
+		std::vector<Ogre::Real> faceSizes;
+		std::vector<Ogre::String> groundTexture;
+		Ogre::Vector3 lastPointAv;
+		int pos;
+		Ogre::ColourValue colour;
+		Ogre::Vector3 face[2];
+		int facecounter;
+	} skidmark_t;
+
 	Ogre::SceneManager *scm;
 	Ogre::SceneNode *mNode;
 	HeightFinder *hfinder;
 	
-	std::queue<skidmark_t> objects;
 	bool mDirty;
-	int lenght;
+	float maxDistance;
+	float maxDistanceSquared;
+	float minDistance;
+	float minDistanceSquared;
 	int bucketCount;
-	wheel_t *wheel;
-	float minDistance, maxDistance, minDistanceSquared, maxDistanceSquared;
+	int lenght;
 	static Ogre::Vector2 tex_coords[4];
+	std::queue<skidmark_t> objects;
+	wheel_t *wheel;
 	
 	void limitObjects();
 	void addObject(Ogre::Vector3 start, Ogre::String texture);
@@ -92,6 +98,4 @@ private:
 	void addPoint(const Ogre::Vector3 &value, Ogre::Real fsize, Ogre::String texture);
 };
 
-
-#endif
-
+#endif // __SkidMark_H_

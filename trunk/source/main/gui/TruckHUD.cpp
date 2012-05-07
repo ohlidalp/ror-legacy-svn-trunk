@@ -18,18 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TruckHUD.h"
-#include "InputEngine.h"
-#include "BeamEngine.h"
-#include "turboprop.h"
-#include "language.h"
-#include "TorqueCurve.h"
-#include "RoRFrameListener.h"
 
+#include "BeamEngine.h"
+#include "InputEngine.h"
+#include "language.h"
+#include "turboprop.h"
 #include "utils.h"
 
-using namespace std;
 using namespace Ogre;
-
 
 TruckHUD::TruckHUD()
 {
@@ -113,7 +109,7 @@ bool TruckHUD::isVisible()
 	return truckHUD->isVisible();
 }
 
-void TruckHUD::checkOverflow(Ogre::OverlayElement* e)
+void TruckHUD::checkOverflow(OverlayElement* e)
 {
 	int newval = e->getLeft() + e->getWidth() + border;
 	if(newval > this->width)
@@ -463,7 +459,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 			char commandOverlayID[256];
 			sprintf(commandOverlayID, "tracks/TruckInfoBox/Command%d", i); // no wchar needed
 			descl = OverlayManager::getSingleton().getOverlayElement(commandOverlayID);
-			descl->setCaption(string(""));
+			descl->setCaption(String(""));
 		}
 
 		int j = 0;

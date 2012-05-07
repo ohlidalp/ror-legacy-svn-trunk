@@ -18,21 +18,19 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
-
 #ifdef USE_MYGUI
-
-#ifndef GUI_FRICTION_H__
-#define GUI_FRICTION_H__
+#ifndef __GUI_FRICTION_H_
+#define __GUI_FRICTION_H_
 
 #include "RoRPrerequisites.h"
-#include <MyGUI.h>
 #include "Singleton.h"
-#include "OgrePrerequisites.h"
-#include "Beam.h"
+
+#include <MyGUI.h>
 
 class GUI_Friction : public RoRSingleton < GUI_Friction >
 {
 public:
+
 	GUI_Friction();
 	~GUI_Friction();
 
@@ -43,7 +41,8 @@ public:
 	
 	void setCollisions(Collisions *_col) { col = _col; };
 	void setActiveCol(ground_model_t *gm);
-protected:
+
+private:
 	MyGUI::WindowPtr win;
 	MyGUI::WindowPtr msgwin;
 	Collisions *col;
@@ -62,10 +61,8 @@ protected:
 	void notifyWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void notifyHelpWindowButtonPressed(MyGUI::WindowPtr _sender, const std::string& _name);
 	void applyChanges();
-	void showHelp(Ogre::UTFString title, UTFString msg, int x, int y);
+	void showHelp(Ogre::UTFString title, Ogre::UTFString msg, int x, int y);
 };
 
-#endif //GUI_FRICTION_H__
-
-#endif //MYGUI
-
+#endif // __GUI_FRICTION_H_
+#endif // USE_MYGUI

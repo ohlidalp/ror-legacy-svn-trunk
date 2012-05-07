@@ -19,30 +19,29 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
 
-#ifndef __HIGHSCORE_WINDOW_H__
-#define __HIGHSCORE_WINDOW_H__
+#ifndef __TextureToolWindow_H_
+#define __TextureToolWindow_H_
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
-#include <Ogre.h>
-#include "skin.h"
-
 
 ATTRIBUTE_CLASS_LAYOUT(TextureToolWindow, "TextureTool.layout");
 
-class TextureToolWindow :
-	public wraps::BaseLayout,
-	public RoRSingleton<TextureToolWindow>
+class TextureToolWindow : public wraps::BaseLayout, public RoRSingleton<TextureToolWindow>
 {
 	friend class RoRSingleton<TextureToolWindow>;
+
+public:
+
 	TextureToolWindow();
 	~TextureToolWindow();
-public:
+
 	void show();
 	void hide();
 
 private:
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(TextureToolWindow, mTxt, "txtInfo");
 	MyGUI::TextBox* mTxt;
 
@@ -73,6 +72,5 @@ private:
 	void fillCombo();
 };
 
-#endif // __HIGHSCORE_WINDOW_H__
-
-#endif //MYGUI
+#endif // __TextureToolWindow_H_
+#endif // USE_MYGUI

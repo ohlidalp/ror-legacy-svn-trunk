@@ -17,34 +17,34 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_MYGUI
 
 #include "MapControl.h"
-#include "Beam.h"
-#include "gui_manager.h"
 
-
-#include "RoRFrameListener.h"
-
+#include "BeamData.h"
 #include "MapEntity.h"
 
-MapControl::MapControl(int _mapsizex, int _mapsizez) : x(0),y(0),w(100),h(100)
+using namespace Ogre;
+
+MapControl::MapControl(int mapsizex, int mapsizez) :
+	  mapsizex(mapsizex)
+	, mapsizez(mapsizez)
+	, h(100.0f)
+	, mAlpha(1.0f)
+	, rWinHeight(1)
+	, rWinWidth(1)
+	, w(100.0f)
+	, x(0.0f)
+	, y(0.0f)
 {
 	initialiseByAttributes(this);
-
-	mapsizex=_mapsizex;
-	mapsizez=_mapsizez;
-	rWinWidth=1;
-	rWinHeight=1;
-	mAlpha = 1.0;
 }
 
 MapControl::~MapControl()
 {
 }
 
-void MapControl::setMapTexture(Ogre::String _name)
+void MapControl::setMapTexture(String _name)
 {
 	mMapTexture->setImageTexture(_name);
 }
@@ -62,14 +62,14 @@ MapEntity *MapControl::createMapEntity(String type)
 	return m;
 }
 
-MapEntity *MapControl::createNamedMapEntity(Ogre::String name, Ogre::String type)
+MapEntity *MapControl::createNamedMapEntity(String name, String type)
 {
 	MapEntity *e = createMapEntity(type);
 	mNamedEntities[name] = e;
 	return e;
 }
 
-MapEntity *MapControl::getEntityByName(Ogre::String name)
+MapEntity *MapControl::getEntityByName(String name)
 {
 	if (mNamedEntities.find(name) != mNamedEntities.end())
 		return mNamedEntities[name];
@@ -77,7 +77,7 @@ MapEntity *MapControl::getEntityByName(Ogre::String name)
 	return nullptr;
 }
 
-Ogre::String MapControl::getTypeByDriveable(int driveable)
+String MapControl::getTypeByDriveable(int driveable)
 {
 	if(driveable == NOT_DRIVEABLE)
 		return "load";
@@ -124,7 +124,7 @@ void MapControl::setAlpha(float value)
 	mMainWidget->setAlpha(value);
 }
 
-void MapControl::setPosition(float _x, float _y, float _w, float _h, Ogre::RenderWindow* rw)
+void MapControl::setPosition(float _x, float _y, float _w, float _h, RenderWindow* rw)
 {
 	mMainWidget->setCoord(_x*rWinWidth, _y*rWinHeight, _w*rWinWidth, _h*rWinHeight);
 	myScale = _w;
@@ -150,16 +150,15 @@ void MapControl::setEntitiesVisibility(bool value)
 	}
 }
 
-void MapControl::resizeToScreenRatio(Ogre::RenderWindow* rw)
+void MapControl::resizeToScreenRatio(RenderWindow* rw)
 {
 	//win->setRealPosition(
 	// TODO
 }
 
-void MapControl::updateRenderMetrics(Ogre::RenderWindow* win)
+void MapControl::updateRenderMetrics(RenderWindow* win)
 {
 	win->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
 }
 
-#endif //MYGUI
-
+#endif // USE_MYGUI

@@ -17,31 +17,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 6th of May 2010
-
 #include "OverlayWrapper.h"
-#include "Ogre.h"
-#include "TruckHUD.h"
-#include "language.h"
-#include "utils.h"
+
+#include "aeroengine.h"
+#include "autopilot.h"
+#include "BeamFactory.h"
+#include "DashBoardManager.h"
 #include "errorutils.h"
-#include "ColoredTextAreaOverlayElement.h"
+#include "language.h"
 #include "OgreFontManager.h"
 #include "RoRVersion.h"
-#include "Console.h"
-#include "DashBoardManager.h"
+#include "TruckHUD.h"
+#include "utils.h"
 
-#include "autopilot.h"
-#include "aeroengine.h"
-
-#include "BeamFactory.h"
-
-using namespace std;
 using namespace Ogre;
 
-// OverlayWrapper class
-OverlayWrapper::OverlayWrapper(Ogre::RenderWindow* win) : win(win)
+OverlayWrapper::OverlayWrapper(RenderWindow* win) : win(win)
 {
 	setSingleton(this);
 	init();
@@ -70,7 +62,7 @@ void OverlayWrapper::placeNeedle(SceneNode *node, float x, float y, float len)
 	node->setScale(0.0025, 0.007*len, 0.007);
 }
 
-Ogre::Overlay *OverlayWrapper::loadOverlay(Ogre::String name, bool autoResizeRation)
+Overlay *OverlayWrapper::loadOverlay(String name, bool autoResizeRation)
 {
 	Overlay *o = OverlayManager::getSingleton().getByName(name);
 	if(!o) return NULL;
@@ -108,7 +100,7 @@ void OverlayWrapper::resizeOverlay(struct loadedOverlay_t lo)
 	lo.o->scroll(1 - s, s - 1);
 }
 
-void OverlayWrapper::windowResized(Ogre::RenderWindow *rw)
+void OverlayWrapper::windowResized(RenderWindow *rw)
 {
 	for(std::vector<struct loadedOverlay_t>::iterator it = overlays.begin(); it != overlays.end(); it++)
 	{
@@ -116,7 +108,7 @@ void OverlayWrapper::windowResized(Ogre::RenderWindow *rw)
 	}
 }
 
-Ogre::OverlayElement *OverlayWrapper::loadOverlayElement(Ogre::String name)
+OverlayElement *OverlayWrapper::loadOverlayElement(String name)
 {
 	return OverlayManager::getSingleton().getOverlayElement(name);
 }

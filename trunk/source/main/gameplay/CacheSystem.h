@@ -38,8 +38,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CACHE CacheSystem::getSingleton()
 
-using namespace Ogre;
-
 typedef struct
 {
 	Ogre::String title;					// Category title
@@ -190,7 +188,7 @@ class CacheSystem : public RoRSingleton<CacheSystem>
 {
 	friend class RoRSingleton<CacheSystem>;
 public:	
-	void startup(SceneManager *smgr, bool forcecheck=false);
+	void startup(Ogre::SceneManager *smgr, bool forcecheck=false);
 	void loadAllZips();
 	
 	static Ogre::String stripUIDfromString(Ogre::String uidstr);
@@ -213,13 +211,13 @@ public:
 	int getTimeStamp();
 
 	// this location MUST include a path separator at the end!
-	void setLocation(String cachepath, String configpath);
+	void setLocation(Ogre::String cachepath, Ogre::String configpath);
 	
 	// this is for stats only, maybe protect it by getter later
 	int changedFiles, newFiles, deletedFiles;
 
 	void loadSingleZip(Ogre::String zippath, int cfactor, bool unload=true, bool ownGroup=true);
-	void loadSingleDirectory(String dirname, String group, bool alreadyLoaded=true);
+	void loadSingleDirectory(Ogre::String dirname, Ogre::String group, bool alreadyLoaded=true);
 
 	static bool resourceExistsInAllGroups(Ogre::String filename);
 
@@ -231,8 +229,8 @@ protected:
 	CacheSystem(const CacheSystem&);
 	CacheSystem& operator= (const CacheSystem&);
 	static CacheSystem* myInstance;
-	String location;
-	String configlocation;
+	Ogre::String location;
+	Ogre::String configlocation;
 	Ogre::SceneManager *smgr;
 
 
@@ -258,7 +256,7 @@ protected:
 	void checkForNewKnownFiles();
 
 
-	void addFile(Ogre::FileInfo f, String ext);	// adds a file to entries
+	void addFile(Ogre::FileInfo f, Ogre::String ext);	// adds a file to entries
 	void addFile(Ogre::String filename, Ogre::String archiveType, Ogre::String archiveDirectory, Ogre::String ext);
 
 	// reads all advanced information out of the entry's file
@@ -269,7 +267,7 @@ protected:
 	void unloadUselessResourceGroups();       // unload unused resources after cache generation
 	Ogre::String filenamesSHA1();             // generates the hash over the whole content
 	bool loadCache();			              // loads cache config file, new format
-	String getCacheConfigFilename(bool full); // returns filename of the cache file
+	Ogre::String getCacheConfigFilename(bool full); // returns filename of the cache file
 	int incrementalCacheUpdate();             // tries to update parts of the Cache only
 
 	void generateFileCache(Cache_Entry &entry, Ogre::String directory=Ogre::String());	// generates a new cache
@@ -319,7 +317,7 @@ protected:
 	void checkForNewContent();
 
 	void checkForNewZipsInResourceGroup(Ogre::String group);
-	void checkForNewDirectoriesInResourceGroup(String group);
+	void checkForNewDirectoriesInResourceGroup(Ogre::String group);
 
 	void generateZipList();
 	bool isZipUsedInEntries(Ogre::String filename);
@@ -327,7 +325,7 @@ protected:
 
 	bool isDirectoryUsedInEntries(Ogre::String directory);
 
-	void loadAllDirectoriesInResourceGroup(String group);
+	void loadAllDirectoriesInResourceGroup(Ogre::String group);
 
 };
 

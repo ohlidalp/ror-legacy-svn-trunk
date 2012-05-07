@@ -23,11 +23,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define GUI_MANAGER_H__
 
 #include "RoRPrerequisites.h"
-#include <Ogre.h>
-#include <MyGUI.h>
 #include "gui_inputmanager.h"
 #include "Singleton.h"
 
+#include <Ogre.h>
+#include <MyGUI.h>
 
 #define GETMYGUI GUIManager::getSingleton().getGUI()
 

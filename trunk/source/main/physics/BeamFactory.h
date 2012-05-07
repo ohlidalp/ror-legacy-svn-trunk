@@ -33,7 +33,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	friend class Network;
 	friend class RoRFrameListener;
 public:
-	BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam);
+	BeamFactory(Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Ogre::Camera *pcam);
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);

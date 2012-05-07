@@ -21,23 +21,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-#include <windows.h>
-#include <shlobj.h>
+#include <shlobj.h> // for CoCreateGuid and SHGetFolderPathA
 #include <direct.h> // for _chdir
 #endif
 
-//#include "language.h"
 #define _L
 
-#include "utils.h"
 #include "errorutils.h"
-#include "sha1.h"
+#include "Ogre.h"
 #include "RoRVersion.h"
+#include "sha1.h"
+#include "utils.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
-using namespace std;
 using namespace Ogre;
 
 Settings::Settings()
@@ -48,7 +43,7 @@ Settings::~Settings()
 {
 }
 
-Ogre::String Settings::getSetting(Ogre::String key, Ogre::String defaultValue)
+String Settings::getSetting(String key, String defaultValue)
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
@@ -59,12 +54,12 @@ Ogre::String Settings::getSetting(Ogre::String key, Ogre::String defaultValue)
 	return it->second;
 }
 
-Ogre::UTFString Settings::getUTFSetting(Ogre::UTFString key, Ogre::UTFString defaultValue)
+UTFString Settings::getUTFSetting(UTFString key, UTFString defaultValue)
 {
 	return getSetting(key, defaultValue);
 }
 
-int Settings::getIntegerSetting( Ogre::String key, int defaultValue )
+int Settings::getIntegerSetting(String key, int defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
@@ -75,7 +70,7 @@ int Settings::getIntegerSetting( Ogre::String key, int defaultValue )
 	return PARSEINT(it->second);
 }
 
-float Settings::getFloatSetting( Ogre::String key, float defaultValue )
+float Settings::getFloatSetting(String key, float defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
@@ -86,12 +81,12 @@ float Settings::getFloatSetting( Ogre::String key, float defaultValue )
 	return PARSEREAL(it->second);
 }
 
-bool Settings::getBooleanSetting(Ogre::String key, bool defaultValue)
+bool Settings::getBooleanSetting(String key, bool defaultValue)
 {
 	settings_map_t::iterator it = settings.find(key);
 	if(it == settings.end())
 	{
-		setSetting(key, defaultValue?"Yes":"No");
+		setSetting(key, defaultValue ?"Yes":"No");
 		return defaultValue;
 	}
 	String strValue = it->second;
@@ -99,7 +94,7 @@ bool Settings::getBooleanSetting(Ogre::String key, bool defaultValue)
 	return (strValue == "yes");
 }
 
-Ogre::String Settings::getSettingScriptSafe(const Ogre::String &key)
+String Settings::getSettingScriptSafe(const String &key)
 {
 	// hide certain settings for scripts
 	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
@@ -108,7 +103,7 @@ Ogre::String Settings::getSettingScriptSafe(const Ogre::String &key)
 	return settings[key];
 }
 
-void Settings::setSettingScriptSafe(const Ogre::String &key, const Ogre::String &value)
+void Settings::setSettingScriptSafe(const String &key, const String &value)
 {
 	// hide certain settings for scripts
 	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
@@ -117,12 +112,12 @@ void Settings::setSettingScriptSafe(const Ogre::String &key, const Ogre::String 
 	settings[key] = value;
 }
 
-void Settings::setSetting(Ogre::String key, Ogre::String value)
+void Settings::setSetting(String key, String value)
 {
 	settings[key] = value;
 }
 
-void Settings::setUTFSetting(Ogre::UTFString key, Ogre::UTFString value)
+void Settings::setUTFSetting(UTFString key, UTFString value)
 {
 	settings[key] = value;
 }
@@ -157,11 +152,11 @@ void Settings::saveSettings()
 	saveSettings(getSetting("Config Root", "")+"RoR.cfg");
 }
 
-void Settings::saveSettings(Ogre::String configFile)
+void Settings::saveSettings(String configFile)
 {
 	// use C++ for easier wstring usage ... :-/
 
-	ofstream f(configFile.c_str());
+	std::ofstream f(configFile.c_str());
 	if(!f.is_open()) return;
 
 	// now save the settings to RoR.cfg
@@ -169,20 +164,20 @@ void Settings::saveSettings(Ogre::String configFile)
 	for(it = settings.begin(); it != settings.end(); it++)
 	{
 		if(it->first == "BinaryHash") continue;
-		f << it->first << " = " << it->second << endl;
+		f << it->first << " = " << it->second << std::endl;
 	}
 	f.close();
 }
 
-void Settings::loadSettings(Ogre::String configFile, bool overwrite)
+void Settings::loadSettings(String configFile, bool overwrite)
 {
 	//printf("trying to load configfile: %s...\n", configFile.c_str());
-	Ogre::ConfigFile cfg;
+	ConfigFile cfg;
 	cfg.load(configFile, "=:\t", false);
 
 	// load all settings into a map!
-	Ogre::ConfigFile::SettingsIterator i = cfg.getSettingsIterator();
-	Ogre::String svalue, sname;
+	ConfigFile::SettingsIterator i = cfg.getSettingsIterator();
+	String svalue, sname;
 	while (i.hasMoreElements())
 	{
 		sname = i.peekNextKey();
@@ -298,7 +293,7 @@ bool Settings::get_system_paths(char *program_path, char *user_path)
 	sprintf(user_path, "%s/.rigsofrods/", home_path);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 	//found this code, will look later
-	std::string path = "./";
+	String path = "./";
 	ProcessSerialNumber PSN;
 	ProcessInfoRec pinfo;
 	FSSpec pspec;
@@ -364,7 +359,7 @@ bool Settings::setupPaths()
 	if(!get_system_paths(program_path, user_path))
 		return false;
 
-	std::string local_config = string(program_path) + string(dsStr) + string("config");
+	String local_config = String(program_path) + String(dsStr) + String("config");
 	if(folderExists(local_config.c_str()))
 	{
 		sprintf(user_path, "%s%sconfig%s",program_path, dsStr, dsStr);
@@ -444,17 +439,17 @@ bool Settings::setupPaths()
 		loadSettings("config.cfg", true);
 
 		// fix up time things...
-		settings["Config Root"] = settings["User Path"]+string(dsStr)+"config"+string(dsStr);
-		settings["Cache Path"]  = settings["User Path"]+string(dsStr)+"cache"+string(dsStr);
-		settings["Log Path"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr);
-		settings["ogre.cfg"]    = settings["User Path"]+string(dsStr)+"config"+string(dsStr)+"ogre.cfg";
-		settings["ogre.log"]    = settings["User Path"]+string(dsStr)+"logs"+string(dsStr)+"RoR.log";
+		settings["Config Root"] = settings["User Path"]+String(dsStr)+"config"+String(dsStr);
+		settings["Cache Path"]  = settings["User Path"]+String(dsStr)+"cache"+String(dsStr);
+		settings["Log Path"]    = settings["User Path"]+String(dsStr)+"logs"+String(dsStr);
+		settings["ogre.cfg"]    = settings["User Path"]+String(dsStr)+"config"+String(dsStr)+"ogre.cfg";
+		settings["ogre.log"]    = settings["User Path"]+String(dsStr)+"logs"+String(dsStr)+"RoR.log";
 	}
 
 	if(!settings["Enforce Log Path"].empty())
 	{
 		settings["Log Path"] = settings["Enforce Log Path"];
-		settings["ogre.log"] = settings["Log Path"]+string(dsStr)+"RoR.log";
+		settings["ogre.log"] = settings["Log Path"]+String(dsStr)+"RoR.log";
 	}
 
 	printf(" * log path:         %s\n", settings["Log Path"].c_str());
@@ -491,4 +486,3 @@ void Settings::path_add(char* path, const char* dirname)
 	sprintf(tmp, "%s%s%c", path, dirname, dirsep);
 	strcpy(path, tmp);
 }
-

@@ -17,16 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "PointColDetector.h"
 #include "Beam.h"
 
-using namespace std;
 using namespace Ogre;
 
-PointColDetector::PointColDetector(std::vector < Ogre::Vector3 > &o_list)
+PointColDetector::PointColDetector(std::vector < Vector3 > &o_list) :
+	object_list(&o_list)
 {
-	object_list = &o_list;
 	ref_list=new refelem_t[1];
 	pointid_list=new pointid_t[1];
 	update();
@@ -279,7 +277,7 @@ tail_cut:
 			median=begin+1;
 			if (ref_list[begin].point[axis]>ref_list[median].point[axis])
 			{
-				swap(ref_list[begin],ref_list[median]);
+				std::swap(ref_list[begin],ref_list[median]);
 			}
 
 			kdtree[index].min=ref_list[begin].point[axis];
@@ -325,7 +323,7 @@ void PointColDetector::build_kdtree_incr(int axis, int index)
 			median=begin+1;
 			if (ref_list[begin].point[axis]>ref_list[median].point[axis])
 			{
-				swap(ref_list[begin],ref_list[median]);
+				std::swap(ref_list[begin],ref_list[median]);
 			}
 
 			kdtree[index].min=ref_list[begin].point[axis];
@@ -409,4 +407,3 @@ void PointColDetector::partintwo(const int start, const int median, const int en
 
 	minex=min; maxex=max;
 }
-

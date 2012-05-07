@@ -17,28 +17,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
-
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
 
 #include "gui_mp.h"
-#include "gui_manager.h"
-#include "Settings.h"
 
-#include "language.h"
-#include "RoRFrameListener.h"
-#include "network.h"
-#include "PlayerColours.h"
 #include "BeamFactory.h"
+#include "PlayerColours.h"
+#include "RoRFrameListener.h"
+#include "gui_manager.h"
+#include "language.h"
+#include "network.h"
 
-GUI_Multiplayer::GUI_Multiplayer(Network *_net, Ogre::Camera *cam) : net(_net), msgwin(0), mCamera(cam), clients(0)
+using namespace Ogre;
+
+GUI_Multiplayer::GUI_Multiplayer(Network *_net, Camera *cam) :
+	  net(_net)
+	, mCamera(cam)
+	, clients(0)
+	, lineheight(16)
+	, msgwin(0)
 {
 	setSingleton(this);
-
-	lineheight=16;
-	
 	
 	// allocate some buffers
 	clients = (client_t *)calloc(MAX_PEERS,sizeof(client_t));
@@ -178,13 +179,13 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	int y = row->playername->getPosition().top;
 	// name
 	row->playername->setCaption(c->username);
-	Ogre::ColourValue col = PlayerColours::getSingleton().getColour(c->colournum);
+	ColourValue col = PlayerColours::getSingleton().getColour(c->colournum);
 	row->playername->setTextColour(MyGUI::Colour(col.r, col.g, col.b, col.a));
 	row->playername->setVisible(true);
 	x -= 18;
 	
 	// flag
-	Ogre::StringVector parts = StringUtil::split(Ogre::String(c->language), "_");
+	StringVector parts = StringUtil::split(String(c->language), "_");
 	if(parts.size() == 2)
 	{
 		String lang = parts[1];
@@ -387,7 +388,7 @@ void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipI
 {
 	if(t.type == MyGUI::ToolTipInfo::Show)
 	{
-		Ogre::String txt = sender->getUserString("tooltip");
+		String txt = sender->getUserString("tooltip");
 		if(!txt.empty())
 		{
 			tooltipText->setCaption(txt);

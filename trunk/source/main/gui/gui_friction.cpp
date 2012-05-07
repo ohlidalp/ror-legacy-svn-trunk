@@ -18,20 +18,24 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
-
 #ifdef USE_MYGUI
 
 #include "gui_friction.h"
-#include "gui_manager.h"
-#include "Settings.h"
 
+#include "BeamData.h"
+#include "Settings.h"
 #include "collisions.h"
-#include "Beam.h"
+#include "gui_manager.h"
+#include "language.h"
 #include "utils.h"
 
-#include "language.h"
+using namespace Ogre;
 
-GUI_Friction::GUI_Friction() : col(0), active_gm(0), selected_gm(0), win(0)
+GUI_Friction::GUI_Friction() :
+	  col(0)
+	, active_gm(0)
+	, selected_gm(0)
+	, win(0)
 {
 	int x=0, y=0, by=0;
 	MyGUI::EditPtr e;
@@ -391,8 +395,8 @@ void GUI_Friction::setVisible(bool value)
 		MyGUI::ComboBoxPtr cb = (MyGUI::ComboBoxPtr)win->findWidget("combo_grounds");
 		cb->removeAllItems();
 
-		std::map<Ogre::String, ground_model_t>::iterator it;
-		std::map<Ogre::String, ground_model_t> *gmm = col->getGroundModels();
+		std::map<String, ground_model_t>::iterator it;
+		std::map<String, ground_model_t> *gmm = col->getGroundModels();
 		for(it=gmm->begin(); it!=gmm->end(); it++)
 		{
 			cb->addItem((*it).second.name);

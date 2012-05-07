@@ -18,17 +18,15 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 19th of October 2011
-
 #ifdef USE_MYGUI
 
 #include "DashBoardManager.h"
+
+#include "Ogre.h"
 #include "Settings.h"
 #include "language.h"
-#include "DashBoardManager.h"
-
 #include "utils.h"
 
-#include <Ogre.h>
 using namespace Ogre;
 
 #define INITDATA(key, type, name) data[key] = dashData_t(type, name)
@@ -672,4 +670,3 @@ void DashBoard::setVisible(bool v, bool smooth)
 }
 
 #endif // USE_MYGUI
-

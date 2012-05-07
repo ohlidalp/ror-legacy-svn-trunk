@@ -272,21 +272,45 @@ void fixRenderWindowIcon (Ogre::RenderWindow *rw)
 #endif //ROR_EMBEDDED
 }
 
-Ogre::UTFString ANSI_TO_UTF(const Ogre::String& _source)
+Ogre::UTFString ANSI_TO_UTF(const Ogre::String source)
 {
-	return UTFString(ANSI_TO_WCHAR(_source)); // UTF converts from wstring
+	return UTFString(ANSI_TO_WCHAR(source)); // UTF converts from wstring
 }
 
-std::wstring ANSI_TO_WCHAR(const Ogre::String& _source)
+// TODO: Make it bulletproof! <Bad Ptr> e.g kills this
+std::wstring ANSI_TO_WCHAR(const Ogre::String source)
 {
 #ifdef WIN32
-	const char* srcPtr = _source.c_str();
+	const char* srcPtr = source.c_str();
 	int tmpSize = MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, 0, 0 );
 	WCHAR* tmpBuff = new WCHAR [ tmpSize + 1 ];
 	MultiByteToWideChar( CP_ACP, 0, srcPtr, -1, tmpBuff, tmpSize );
 	std::wstring ret = tmpBuff;
 	delete[] tmpBuff;
 	return ret;
+#if 0
+	// does not make much of a difference
+	int retval = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, _source.c_str(), -1, NULL, 0);
+	if (!SUCCEEDED(retval))
+	{
+		return std::wstring(L"ERR");
+	}
+	WCHAR* wstr = new WCHAR [ retval + 1 ];
+	if (wstr == NULL)
+	{
+		return std::wstring(L"ERR");
+	}
+	std::fill_n(wstr, retval+1, '\0' );
+	retval = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS, _source.c_str(), -1, wstr, retval);
+	if (!SUCCEEDED(retval))
+	{
+		delete[] wstr;
+		return std::wstring(L"ERR");
+	}
+	std::wstring ret = wstr;
+	delete[] wstr;
+	return ret;
+#endif
 #else
 	// TODO: GET THIS WORKING
 	/*

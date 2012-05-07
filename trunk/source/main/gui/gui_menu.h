@@ -17,20 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 13th of August 2009
 #ifdef USE_MYGUI
-
-#ifndef GUI_MENU_H__
-#define GUI_MENU_H__
+#ifndef __GUI_MENU_H_
+#define __GUI_MENU_H_
 
 #include "RoRPrerequisites.h"
-#include <MyGUI.h>
-#include "Singleton.h"
-#include "OgrePrerequisites.h"
 
 #include "BeamData.h"
+#include "Singleton.h"
 
+#include <MyGUI.h>
 #include <pthread.h>
 
 class GUI_MainMenu : public RoRSingletonNoCreation< GUI_MainMenu >
@@ -67,7 +64,5 @@ protected:
 	MyGUI::PopupMenuPtr vehiclesMenu;
 };
 
-#endif //GUI_MENU_H__
-
-#endif //MYGUI
-
+#endif // __GUI_MENU_H_
+#endif // USE_MYGUI
