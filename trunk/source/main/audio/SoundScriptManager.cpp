@@ -293,11 +293,7 @@ void SoundScriptManager::unloadResourceGroup(String groupname)
 	{
 		if (it->second && it->second->group_name == groupname)
 		{
-#if WIN32
-			it = templates.erase(it);
-#else
-			templates.erase(it++);
-#endif
+			STL_ERASE(templates, it);
 		} else
 		{
 			++it;
@@ -316,11 +312,9 @@ void SoundScriptManager::clearNonBaseTemplates()
 			delete(it->second);
 			it->second = 0;
 			counter++;
-#if WIN32
-			it = templates.erase(it);
-#else
-			templates.erase(it++);
-#endif
+
+			STL_ERASE(templates, it);
+
 		} else
 		{
 			++it;
