@@ -1307,7 +1307,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 	BES_GFX_STOP(BES_GFX_calc_masses2);
 }
 
-// this recalcs the masses, useful when the gravity was changed...
+// this recalculates the masses (useful when the gravity was changed...)
 void Beam::recalc_masses()
 {
 	this->calc_masses2(totalmass, true);
@@ -1315,17 +1315,37 @@ void Beam::recalc_masses()
 
 float Beam::getTotalMass(bool withLocked)
 {
-	float mass = totalmass; //already computed in calc_masses2
-	if (withLocked)
+	if (!withLocked) return totalmass; // already computed in calc_masses2
+
+	bool found = true;
+	float mass = 0.0f;
+	std::map< Beam*, bool> lookup_table;
+	std::pair<std::map< Beam*, bool>::iterator, bool> ret;
+
+	lookup_table.insert(std::pair< Beam*, bool>(this, false));
+
+	while (found)
 	{
-		for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+		found = false;
+
+		for (std::map< Beam*, bool>::iterator it_beam=lookup_table.begin(); it_beam != lookup_table.end(); ++it_beam)
 		{
-			if(it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
+			if (!it_beam->second)
 			{
-				mass += it->lockTruck->getTotalMass();
+				for (std::vector<hook_t>::iterator it_hook=it_beam->first->hooks.begin(); it_hook != it_beam->first->hooks.end(); ++it_hook)
+				{
+					if (it_hook->lockTruck)
+					{
+						ret = lookup_table.insert(std::pair< Beam*, bool>(it_hook->lockTruck, false));
+						found = found || ret.second;
+					}
+				}
+				mass += it_beam->first->totalmass;
+				it_beam->second = true;
 			}
 		}
 	}
+
 	return mass;
 }
 
