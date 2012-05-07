@@ -314,15 +314,15 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String source)
 #else
 	// TODO: GET THIS WORKING
 	/*
-	const char* srcPtr = _source.c_str();
+	const char* srcPtr = source.c_str();
 	iconv_t icv = iconv_open("ASCII", "UTF-8");
 	if ( icv == (iconv_t) -1 )
 	{
 		return std::wstring(L"ERR1");
 	}
 
-	char *inpbuf    = const_cast<char *>(_source.c_str());
-	size_t inbytes  = _source.size();
+	char *inpbuf    = const_cast<char *>(source.c_str());
+	size_t inbytes  = source.size();
 	size_t outbytes = inbytes;
 	size_t nread    = 0;
 	char *outbuf    = (char *)calloc((outbytes*4+1)*sizeof(char), 1);
@@ -338,8 +338,8 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String source)
 	*/
 
 	// hacky!
-	std::wstring str2(_source.length(), L' '); // Make room for characters
-	std::copy(_source.begin(), _source.end(), str2.begin());
+	std::wstring str2(source.length(), L' '); // Make room for characters
+	std::copy(source.begin(), source.end(), str2.begin());
 	return str2;
 #endif // WIN32
 }
