@@ -20,8 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created: 12th of January 2009, thomas fischer thomas{AT}thomasfischer{DOT}biz
 #ifndef NOLANG
 
-#include "OgreFontManager.h"
 #include "language.h"
+
+#include "OgreFontManager.h"
 #include "Settings.h"
 
 #ifdef USE_MYGUI
@@ -35,7 +36,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "fontTextureHelper.h"
 
-using namespace std;
 using namespace Ogre;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE

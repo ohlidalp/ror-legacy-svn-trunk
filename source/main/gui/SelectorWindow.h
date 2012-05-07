@@ -18,9 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-
-#ifndef __SELECTOR_WINDOW_H__
-#define __SELECTOR_WINDOW_H__
+#ifndef __SELECTOR_WINDOW_H_
+#define __SELECTOR_WINDOW_H_
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
@@ -105,6 +104,5 @@ private:
 	MyGUI::Widget* mPreviewStaticImagePanel;
 };
 
-#endif // __SELECTOR_WINDOW_H__
-
-#endif //MYGUI
+#endif // __SELECTOR_WINDOW_H_
+#endif // USE_MYGUI

@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 19th of October 2011
-
 #ifdef USE_MYGUI
-
-#ifndef DASHBOARDMANAGER_H__
-#define DASHBOARDMANAGER_H__
+#ifndef __DashBoardManager_H_
+#define __DashBoardManager_H_
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
 
 #include <MyGUI.h>
+
+// TODO: Clean up this header
 
 #define DD_MAXCHAR 255
 #define DD_MAX_SCREWPROP  6
@@ -266,6 +266,5 @@ protected:
 	int free_controls;
 };
 
-#endif //DASHBOARDMANAGER_H__
-
+#endif // __DashBoardManager_H_
 #endif // USE_MYGUI

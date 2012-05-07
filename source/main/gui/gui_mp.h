@@ -26,10 +26,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define GUI_MP_H__
 
 #include "RoRPrerequisites.h"
-#include <MyGUI.h>
+
+#include "rornet.h"
 #include "Singleton.h"
-#include "OgrePrerequisites.h"
-#include "Beam.h"
+
+#include <MyGUI.h>
 
 class GUI_Multiplayer : public RoRSingletonNoCreation< GUI_Multiplayer >
 {

@@ -36,7 +36,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "LoadingWindow.h"
 #endif // USE_MYGUI
 
-using namespace RoR; // CSHA1
+//using namespace RoR; // CSHA1
+using namespace Ogre;
 
 CacheSystem::CacheSystem() :
 	  changedFiles(0)
@@ -641,7 +642,7 @@ String CacheSystem::getRealPath(String path)
 	// this shall convert the path names to fit the operating system's flavor
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is required for windows since we are case insensitive ...
-	std::replace( path.begin(), path.end(), '/', '\\' );
+	path = StringUtil::replaceAll(path, "/", "\\");
 	StringUtil::toLowerCase(path);
 #endif
 	return path;
@@ -649,7 +650,7 @@ String CacheSystem::getRealPath(String path)
 
 String CacheSystem::getVirtualPath(String path)
 {
-	std::replace( path.begin(), path.end(), '\\', '/' );
+	path = StringUtil::replaceAll(path, "\\", "/");
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	// this is required for windows since we are case insensitive ...
 	StringUtil::toLowerCase(path);
@@ -670,42 +671,35 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(20, _L("incremental check: deleted and changed files"));
 #endif //USE_MYGUI
-	int counter=0;
 	std::vector<Cache_Entry> changed_entries;
-	UTFString tmp;
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); counter++)
+	UTFString tmp = "";
+	String fn = "";
+	int counter = 0;
+	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++, counter++)
 	{
-		if (it->deleted)
-		{
-			entries.erase(it++);
-		} else
-		{
-			it++;
-		}
 #ifdef USE_MYGUI
 		int progress = ((float)counter/(float)(entries.size()))*100;
-		tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->type) + UTFString(L": ") + ANSI_TO_UTF(it->fname);
+		tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->type) + _L(": ") + ANSI_TO_UTF(it->fname);
 		LoadingWindow::getSingleton().setProgress(progress, tmp);
 #endif //USE_MYGUI
 		// check whether the file exists
-		String fn = getRealPath(it->dirname);
-		if(it->type == "FileSystem" || it->type == "Zip")
+		if (it->type == "Zip")
+			fn = getRealPath(it->dirname);
+		else if (it->type == "FileSystem")
+			fn = getRealPath(it->dirname + "/" + it->fname);
+
+		if((it->type == "FileSystem" || it->type == "Zip") && !fileExists(fn.c_str()))
 		{
-			if(it->type == "FileSystem")
-				fn = getRealPath(it->dirname + "/" + it->fname);
-			
-			if(!fileExists(fn.c_str()))
-			{
-				LOG("- "+fn+" is not existing");
+			LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
-				tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
-				LoadingWindow::getSingleton().setProgress(20, tmp);
+			tmp = _L("incremental check: deleted and changed files\n") + ANSI_TO_UTF(it->fname) + _L(" not existing");
+			LoadingWindow::getSingleton().setProgress(20, tmp);
 #endif //USE_MYGUI
-				removeFileFromFileCache(it);
-				it->deleted = true;
-				deletedFiles++;
-				continue;
-			}
+			removeFileFromFileCache(it);
+			it->deleted = true;
+			// do not try: entries.erase(it)
+			deletedFiles++;
+			continue;
 		}
 		// check whether it changed
 		if(it->type == "Zip")
@@ -718,10 +712,10 @@ int CacheSystem::incrementalCacheUpdate()
 				// slow sha1 check
 				char hash[256] = {};
 
-				CSHA1 sha1;
+				RoR::CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(fn.c_str()));
 				sha1.Final();
-				sha1.ReportHash(hash, CSHA1::REPORT_HEX_SHORT);
+				sha1.ReportHash(hash, RoR::CSHA1::REPORT_HEX_SHORT);
 				check = (it->hash != String(hash));
 			} else
 			{
@@ -738,7 +732,6 @@ int CacheSystem::incrementalCacheUpdate()
 				changed_entries.push_back(*it);
 			}
 		}
-
 	}
 
 	// we try to reload one zip only one time, not multiple times if it contains more resources at once
@@ -836,11 +829,11 @@ int CacheSystem::incrementalCacheUpdate()
 				if(it->number == it2->number) continue; // do not delete self
 				LOG("- "+ it2->dirname+"/" + it->fname + " soft duplicate, resolving ...");
 				// create sha1 and see whats the correct entry :)
-				CSHA1 sha1;
+				RoR::CSHA1 sha1;
 				sha1.HashFile(const_cast<char*>(it2->dirname.c_str()));
 				sha1.Final();
 				char hashres[256]="";
-				sha1.ReportHash(hashres, CSHA1::REPORT_HEX_SHORT);
+				sha1.ReportHash(hashres, RoR::CSHA1::REPORT_HEX_SHORT);
 				String hashstr = String(hashres);
 				if(hashstr == it->hash)
 				{
@@ -1660,11 +1653,11 @@ String CacheSystem::filenamesSHA1()
 	//LOG("hash string: "+filenames);
 	char result[256]="";
 
-	CSHA1 sha1;
+	RoR::CSHA1 sha1;
 	char *data = const_cast<char*>(filenames.c_str());
 	sha1.UpdateHash((uint8_t *)data, (uint32_t)strlen(data));
 	sha1.Final();
-	sha1.ReportHash(result, CSHA1::REPORT_HEX_SHORT);
+	sha1.ReportHash(result, RoR::CSHA1::REPORT_HEX_SHORT);
 	return String(result);
 }
 
@@ -1962,10 +1955,10 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 	char hash[256];
 	memset(hash, 0, 255);
 
-	CSHA1 sha1;
+	RoR::CSHA1 sha1;
 	sha1.HashFile(const_cast<char*>(realzipPath.c_str()));
 	sha1.Final();
-	sha1.ReportHash(hash, CSHA1::REPORT_HEX_SHORT);
+	sha1.ReportHash(hash, RoR::CSHA1::REPORT_HEX_SHORT);
 	zipHashes[getVirtualPath(zippath)] = String(hash);
 
 

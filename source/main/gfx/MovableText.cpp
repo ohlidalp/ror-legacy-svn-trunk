@@ -232,7 +232,6 @@ void MovableText::_setupGeometry()
 		HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY);
 	bind->setBinding(COLOUR_BINDING, cbuf);
 
-	size_t charlen = mCaption.size();
 	//Real *pPCBuff = static_cast<Real*>(ptbuf->lock(HardwareBuffer::HBL_NORMAL));
 	Real *pPCBuff=(Real*)malloc(ptbuf->getSizeInBytes());
 	Real *oPCBuff=pPCBuff;

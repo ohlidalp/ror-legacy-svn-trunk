@@ -17,11 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "Beam.h"
 
 #include "airbrake.h"
 #include "approxmath.h"
 #include "autopilot.h"
-#include "Beam.h"
 #include "BeamData.h"
 #include "BeamEngine.h"
 #include "BeamFactory.h"
@@ -74,10 +74,10 @@ int thread_mode=THREAD_SINGLE;
 
 void *threadstart(void* vid);
 
-
-class Beam;
 Beam* threadbeam[MAX_TRUCKS];
 int free_tb=0;
+
+using namespace Ogre;
 
 Beam::~Beam()
 {
@@ -103,8 +103,8 @@ Beam::~Beam()
 	if(materialFunctionMapper) delete materialFunctionMapper;
 	if(replay) delete replay;
 
-	std::vector<Ogre::SceneNode*> deletion_sceneNodes;
-	std::vector<Ogre::Entity *> deletion_Entities;
+	std::vector<SceneNode*> deletion_sceneNodes;
+	std::vector<Entity *> deletion_Entities;
 
 	// remove all scene nodes
 	if(deletion_sceneNodes.size() > 0)
@@ -281,7 +281,7 @@ Beam::~Beam()
 	}
 }
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<Ogre::String> *_truckconfig, Skin *skin, bool freeposition) : \
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) : \
 	deleting(false), dash(nullptr)
 {
 #ifdef USE_MYGUI
@@ -738,7 +738,7 @@ void Beam::initSimpleSkeleton()
 	simpleSkeletonManualObject->setRenderingDistance(300);
 	for(int i=0; i < free_beam; i++)
 	{
-		simpleSkeletonManualObject->begin("mat-beam-0", Ogre::RenderOperation::OT_LINE_LIST);
+		simpleSkeletonManualObject->begin("mat-beam-0", RenderOperation::OT_LINE_LIST);
 		simpleSkeletonManualObject->position(beams[i].p1->smoothpos);
 		simpleSkeletonManualObject->position(beams[i].p2->smoothpos);
 		simpleSkeletonManualObject->end();
@@ -1672,7 +1672,7 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	resetSlideNodePositions();
 }
 
-void Beam::resetPosition(Ogre::Vector3 translation, bool setInitPosition)
+void Beam::resetPosition(Vector3 translation, bool setInitPosition)
 {
 	int i;
 	// total displacement
@@ -1785,7 +1785,7 @@ int Beam::getAxleLockCount()
 	return free_axle;
 }
 
-Ogre::String Beam::getAxleLockName()
+String Beam::getAxleLockName()
 {
 	if(!axles[0]) return String();
 	return axles[0]->getDiffTypeName();
@@ -4401,9 +4401,9 @@ void Beam::setMeshWireframe(SceneNode *node, bool value)
 			for(int x=0;x<m->getNumTechniques();x++)
 				for(int y=0;y<m->getTechnique(x)->getNumPasses();y++)
 					if(value)
-						m->getTechnique(x)->getPass(y)->setPolygonMode(Ogre::PM_WIREFRAME);
+						m->getTechnique(x)->getPass(y)->setPolygonMode(PM_WIREFRAME);
 					else
-						m->getTechnique(x)->getPass(y)->setPolygonMode(Ogre::PM_SOLID);
+						m->getTechnique(x)->getPass(y)->setPolygonMode(PM_SOLID);
 		}
 	}
 }
@@ -5256,7 +5256,7 @@ void *threadstart(void* vid)
 			//do work
 			beam->threadentryMulti(id);
 		}
-	} catch(Ogre::Exception& e)
+	} catch(Exception& e)
 	{
 		// try to shutdown input system upon an error
 		if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
@@ -5346,7 +5346,7 @@ bool Beam::isLocked()
 	return false;
 }
 
-int Beam::loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox)
+int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, Vector3 pos, Quaternion rot, collision_box_t *spawnbox)
 {
 	int res = loadTruck(filename, manager, parent, pos, rot, spawnbox);
 	if(res) return res;
@@ -5475,12 +5475,12 @@ void Beam::updateAI(float dt)
 	if(engine && !engine->running)
 		engine->start();
 
-	Ogre::Vector3 TargetPosition = mCamera->getPosition();
+	Vector3 TargetPosition = mCamera->getPosition();
 	TargetPosition.y=0;
-	Ogre::Quaternion TargetOrientation = Quaternion::ZERO;
+	Quaternion TargetOrientation = Quaternion::ZERO;
 
-	Ogre::Vector3 mAgentPosition        = position;
-	Ogre::Quaternion mAgentOrientation  = Quaternion(Radian(getHeadingDirectionAngle()), Vector3::NEGATIVE_UNIT_Y);
+	Vector3 mAgentPosition        = position;
+	Quaternion mAgentOrientation  = Quaternion(Radian(getHeadingDirectionAngle()), Vector3::NEGATIVE_UNIT_Y);
 	mAgentOrientation.normalise();
 
 	/*
@@ -5496,21 +5496,21 @@ void Beam::updateAI(float dt)
 	n->setOrientation(mAgentOrientation);
 	*/
 
-	Ogre::Vector3 mVectorToTarget       = TargetPosition - mAgentPosition; // A-B = B->A
+	Vector3 mVectorToTarget       = TargetPosition - mAgentPosition; // A-B = B->A
 	mAgentPosition.normalise();
 	mAgentPosition.y=0;
 
-	Ogre::Vector3 mAgentHeading         = mAgentOrientation * mAgentPosition;
-	Ogre::Vector3 mTargetHeading        = TargetOrientation * TargetPosition;
+	Vector3 mAgentHeading         = mAgentOrientation * mAgentPosition;
+	Vector3 mTargetHeading        = TargetOrientation * TargetPosition;
 	mAgentHeading.normalise();
 	mTargetHeading.normalise();
 
-	// Orientation control - Ogre::Vector3::UNIT_Y is common up vector.
-	Ogre::Vector3 mAgentVO        = mAgentOrientation.Inverse() * Ogre::Vector3::UNIT_Y;
-	Ogre::Vector3 mTargetVO       = TargetOrientation * Ogre::Vector3::UNIT_Y;
+	// Orientation control - Vector3::UNIT_Y is common up vector.
+	Vector3 mAgentVO        = mAgentOrientation.Inverse() * Vector3::UNIT_Y;
+	Vector3 mTargetVO       = TargetOrientation * Vector3::UNIT_Y;
 
 	// Compute new torque scalar (-1.0 to 1.0) based on heading vector to target.
-	Ogre::Vector3 mSteeringForce = mAgentOrientation.Inverse() * mVectorToTarget;
+	Vector3 mSteeringForce = mAgentOrientation.Inverse() * mVectorToTarget;
 	mSteeringForce.normalise();
 
 	float mYaw    = mSteeringForce.x;
@@ -5944,7 +5944,7 @@ void Beam::updateDashBoards(float &dt)
 #endif // USE_MYGUI
 }
 
-Ogre::Vector3 Beam::getGForces()
+Vector3 Beam::getGForces()
 {
 	if (cameranodepos[0] >= 0)
 	{

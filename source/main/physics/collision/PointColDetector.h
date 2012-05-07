@@ -17,41 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef __PointColDetector_H_
 #define __PointColDetector_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-#include "Beam.h"
-
-typedef struct _pointid {
-	int nodeid;
-	int truckid;
-} pointid_t;
-
-typedef struct _refelem {
-	pointid_t* pidref;
-	float* point;
-} refelem_t;
-
-typedef struct _kdnode {
-	float min;
-	int end;
-	float max;
-	refelem_t* ref;
-	float middle;
-	int begin;
-} kdnode_t;
 
 class PointColDetector
 {
 public:
-	std::vector< Vector3 > *object_list;
+
+	typedef struct _pointid {
+		int nodeid;
+		int truckid;
+	} pointid_t;
+
+	std::vector< Ogre::Vector3 > *object_list;
 	std::vector< pointid_t* > hit_list;
 	int hit_count;
 
-	PointColDetector(std::vector< Vector3 > &o_list);
+	PointColDetector(std::vector< Ogre::Vector3 > &o_list);
 	PointColDetector();
 	~PointColDetector();
 
@@ -60,18 +44,34 @@ public:
 	void update(Beam** trucks, const int numtrucks);
 	void update_structures();
 	void update_structures_for_contacters(Beam** trucks, const int numtrucks);
-	void querybb(const Vector3 &bmin, const Vector3 &bmax);
-	void query(const Vector3 &vec1, const Vector3 &vec2, const Vector3 &vec3, float enlargeBB=0.0f);
-	void query(const Vector3 &vec1, const Vector3 &vec2, const float enlargeBB=0.0f);
-	inline void calc_bounding_box(Vector3 &bmin, Vector3 &bmax, const Vector3 &vec1, const Vector3 &vec2, const Vector3 &vec3, const float enlargeBB=0.0f);
-	inline void calc_bounding_box(Vector3 &bmin, Vector3 &bmax, const Vector3 &vec1, const Vector3 &vec2, const float enlargeBB=0.0f);
+	void querybb(const Ogre::Vector3 &bmin, const Ogre::Vector3 &bmax);
+	void query(const Ogre::Vector3 &vec1, const Ogre::Vector3 &vec2, const Ogre::Vector3 &vec3, float enlargeBB=0.0f);
+	void query(const Ogre::Vector3 &vec1, const Ogre::Vector3 &vec2, const float enlargeBB=0.0f);
+	inline void calc_bounding_box(Ogre::Vector3 &bmin, Ogre::Vector3 &bmax, const Ogre::Vector3 &vec1, const Ogre::Vector3 &vec2, const Ogre::Vector3 &vec3, const float enlargeBB=0.0f);
+	inline void calc_bounding_box(Ogre::Vector3 &bmin, Ogre::Vector3 &bmax, const Ogre::Vector3 &vec1, const Ogre::Vector3 &vec2, const float enlargeBB=0.0f);
+
 private:
+
+	typedef struct _refelem {
+		pointid_t* pidref;
+		float* point;
+	} refelem_t;
+
+	typedef struct _kdnode {
+		float min;
+		int end;
+		float max;
+		refelem_t* ref;
+		float middle;
+		int begin;
+	} kdnode_t;
+
 	int object_list_size;
 	refelem_t *ref_list;
 	pointid_t *pointid_list;
 	std::vector< kdnode_t > kdtree;
-	Vector3 bbmin;
-	Vector3 bbmax;
+	Ogre::Vector3 bbmin;
+	Ogre::Vector3 bbmax;
 	inline void queryrec(int kdindex, int axis);
 	void build_kdtree(int begin, int end, int axis, int index);
 	void build_kdtree_incr(int axis, int index);

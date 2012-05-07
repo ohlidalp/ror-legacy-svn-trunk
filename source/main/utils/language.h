@@ -18,9 +18,9 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created: 12th of January 2009, thomas fischer thomas{AT}thomasfischer{DOT}biz
+#ifndef __language_h__
+#define __language_h__
 
-#ifndef LANGUAGE_H_
-#define LANGUAGE_H_
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
 
@@ -82,5 +82,6 @@ protected:
 #endif // MOFILEREADER
 	void setupCodeRanges(Ogre::String codeRangesFilename, Ogre::String codeRangesGroupname);
 };
-#endif //NOLANG
-#endif //LANGUAGE_H_
+
+#endif // NOLANG
+#endif // __language_h__

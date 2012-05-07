@@ -18,12 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-
-#ifndef GUI_INPUTMANAGER_H__
-#define GUI_INPUTMANAGER_H__
+#ifndef __GUI_INPUTMANAGER_H_
+#define __GUI_INPUTMANAGER_H_
 
 #include "RoRPrerequisites.h"
-#include <MyGUI.h>
+
 #include <OIS.h>
 #include <OgreTimer.h>
 
@@ -55,6 +54,5 @@ private:
 	void activateGUI();
 };
 
-#endif // GUI_INPUTMANAGER_H__
-#endif //MYGUI
-
+#endif // __GUI_INPUTMANAGER_H_
+#endif // USE_MYGUI

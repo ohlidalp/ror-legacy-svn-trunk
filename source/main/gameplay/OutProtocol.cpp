@@ -25,6 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OutProtocol.h"
 
+using namespace Ogre;
+
 OutProtocol::OutProtocol(void) : 
 	  delay(0.1f)
 	, id(0)
@@ -126,7 +128,7 @@ bool OutProtocol::update(float dt)
 	memset(&gd, 0, sizeof(gd));
 
 	// set some common things
-	gd.Time  = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+	gd.Time  = Root::getSingleton().getTimer()->getMilliseconds();
 	gd.ID    = id;
 	gd.Flags = 0 | OG_KM;
 	sprintf(gd.Car, "RoR");

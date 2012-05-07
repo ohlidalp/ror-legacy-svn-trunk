@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 13th of August 2009
 #ifdef USE_MYGUI
 
@@ -25,7 +24,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "ChatSystem.h"
-#include "Ogre.h"
 #include "RoRFrameListener.h"
 #include "Savegame.h"
 #include "SelectorWindow.h"
@@ -39,7 +37,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) : mefl(efl), menuWidth(800), menuHeight(20), vehicleListNeedsUpdate(false)
+GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) :
+	  mefl(efl)
+	, menuWidth(800)
+	, menuHeight(20)
+	, vehicleListNeedsUpdate(false)
 {
 	setSingleton(this);
 	pthread_mutex_init(&updateLock, NULL);
@@ -155,7 +157,7 @@ GUI_MainMenu::~GUI_MainMenu()
 {
 }
 
-Ogre::UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
+UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 {
 	UTFString tmp = ChatSystem::getColouredName(user);
 
@@ -476,5 +478,4 @@ void GUI_MainMenu::triggerUpdateVehicleList()
 	MUTEX_UNLOCK(&updateLock);
 }
 
-#endif // MYGUI
-
+#endif // USE_MYGUI

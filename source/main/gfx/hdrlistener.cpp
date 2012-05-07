@@ -104,9 +104,7 @@ void HDRListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &m
 		{
 			// horizontal bloom
 			mat->load();
-			Ogre::GpuProgramParametersSharedPtr fparams =
-				mat->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-			const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+			Ogre::GpuProgramParametersSharedPtr fparams = mat->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
 			fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsHorz[0], 15);
 			fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
 
@@ -116,9 +114,7 @@ void HDRListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &m
 		{
 			// vertical bloom
 			mat->load();
-			Ogre::GpuProgramParametersSharedPtr fparams =
-				mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
-			const Ogre::String& progName = mat->getBestTechnique()->getPass(0)->getFragmentProgramName();
+			Ogre::GpuProgramParametersSharedPtr fparams = mat->getTechnique(0)->getPass(0)->getFragmentProgramParameters();
 			fparams->setNamedConstant("sampleOffsets", mBloomTexOffsetsVert[0], 15);
 			fparams->setNamedConstant("sampleWeights", mBloomTexWeights[0], 15);
 

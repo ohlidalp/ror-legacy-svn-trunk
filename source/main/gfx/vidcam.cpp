@@ -364,7 +364,6 @@ VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera 
 	{
 		return 0;
 	}
-	return 0;
 }
 
 

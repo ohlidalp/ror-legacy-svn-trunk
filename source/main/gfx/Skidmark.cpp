@@ -17,16 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "Skidmark.h"
-#include "heightfinder.h"
-#include <Ogre.h>
-#include <cassert>
-#include <cmath>
 
-//using namespace Ogre;
-//using namespace std;
-int Skidmark::instancecounter = 0;
+#include "BeamData.h"
+#include "heightfinder.h"
+#include "Ogre.h"
+
+using namespace Ogre;
+
+int Skidmark::instanceCounter = 0;
 
 SkidmarkManager::SkidmarkManager()
 {
@@ -43,10 +42,10 @@ int SkidmarkManager::loadDefaultModels()
 {
 	LOG("SkidmarkManager loading default models");
 	// check if we have a config file
-	Ogre::String group = "";
+	String group = "";
 	try
 	{
-		group = Ogre::ResourceGroupManager::getSingleton().findGroupContainingResource("skidmarks.cfg");
+		group = ResourceGroupManager::getSingleton().findGroupContainingResource("skidmarks.cfg");
 	} catch(...)
 	{
 	}
@@ -58,19 +57,19 @@ int SkidmarkManager::loadDefaultModels()
 	}
 
 	// open the file for reading
-	Ogre::DataStreamPtr ds = Ogre::ResourceGroupManager::getSingleton().openResource("skidmarks.cfg", group);
-	Ogre::String line = "";
-	Ogre::String currentModel = "";
+	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource("skidmarks.cfg", group);
+	String line = "";
+	String currentModel = "";
 
 	while (!ds->eof())
 	{	
 		line=ds->getLine();
-		Ogre::StringUtil::trim(line);
+		StringUtil::trim(line);
 		
 		if (line.empty() || line[0]==';')
 			continue;
 
-		Ogre::StringVector args = Ogre::StringUtil::split(line, ",");
+		StringVector args = StringUtil::split(line, ",");
 		
 		if (args.size() == 1)
 		{
@@ -85,7 +84,7 @@ int SkidmarkManager::loadDefaultModels()
 	return 0;
 }
 
-int SkidmarkManager::processLine(Ogre::StringVector args,  Ogre::String modelName)
+int SkidmarkManager::processLine(StringVector args,  String modelName)
 {
 	// we only accept 4 arguments
 	if (args.size() != 4)
@@ -94,12 +93,12 @@ int SkidmarkManager::processLine(Ogre::StringVector args,  Ogre::String modelNam
 	// parse the data
 	skidmark_config_t cfg;
 	cfg.ground = args[0];
-	Ogre::StringUtil::trim(cfg.ground);
+	StringUtil::trim(cfg.ground);
 	cfg.texture = args[1];
-	Ogre::StringUtil::trim(cfg.texture);
+	StringUtil::trim(cfg.texture);
 
-	cfg.slipFrom = Ogre::StringConverter::parseReal(args[2]);
-	cfg.slipTo = Ogre::StringConverter::parseReal(args[3]);
+	cfg.slipFrom = StringConverter::parseReal(args[2]);
+	cfg.slipTo = StringConverter::parseReal(args[3]);
 
 	if(!models.size() || models.find(modelName) == models.end())
 		models[modelName] = std::vector<skidmark_config_t>();
@@ -108,7 +107,7 @@ int SkidmarkManager::processLine(Ogre::StringVector args,  Ogre::String modelNam
 	return 0;
 }
 
-int SkidmarkManager::getTexture(Ogre::String model, Ogre::String ground, float slip, Ogre::String &texture)
+int SkidmarkManager::getTexture(String model, String ground, float slip, String &texture)
 {
 	if(models.find(model) == models.end()) return 1;
 	for(std::vector<skidmark_config_t>::iterator it=models[model].begin(); it!=models[model].end(); it++)
@@ -125,25 +124,20 @@ int SkidmarkManager::getTexture(Ogre::String model, Ogre::String ground, float s
 /////////////// Skidmark below
 
 // this is a hardcoded array which we use to map ground types to a certain texture with UV/ coords
-Ogre::Vector2 Skidmark::tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
+Vector2 Skidmark::tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
 
-Skidmark::Skidmark(SceneManager *scm
-, wheel_t *wheel
-, HeightFinder *hfinder
-, Ogre::SceneNode *snode
-, int _lenght
-, int bucketCount)
-: scm(scm)
-, mNode(snode)
-, hfinder(hfinder)
-, mDirty(true)
-, lenght((_lenght%2) ? (_lenght-(_lenght%2)) : _lenght)
-, bucketCount(bucketCount)
-, wheel(wheel)
-, minDistance(0.1f)
-, maxDistance(std::max(0.5f, wheel->width*1.1f))
-, minDistanceSquared(minDistance * minDistance)
-, maxDistanceSquared(maxDistance * maxDistance)
+Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) :
+	  scm(scm)
+	, mNode(snode)
+	, hfinder(hfinder)
+	, mDirty(true)
+	, lenght((_lenght%2) ? (_lenght-(_lenght%2)) : _lenght)
+	, bucketCount(bucketCount)
+	, wheel(wheel)
+	, minDistance(0.1f)
+	, maxDistance(std::max(0.5f, wheel->width*1.1f))
+	, minDistanceSquared(minDistance * minDistance)
+	, maxDistanceSquared(maxDistance * maxDistance)
 {
 }
 
@@ -151,42 +145,42 @@ Skidmark::~Skidmark()
 {
 }
 
-void Skidmark::addObject(Ogre::Vector3 start, Ogre::String texture)
+void Skidmark::addObject(Vector3 start, String texture)
 {
 	//LOG("new skidmark section");
 	skidmark_t skid;
 	skid.pos=0;
 	skid.lastPointAv=start;
 	skid.facecounter=0;
-	skid.face[0] = Ogre::Vector3::ZERO;
-	skid.face[1] = Ogre::Vector3::ZERO;
-	skid.colour = ColourValue(Ogre::Math::RangeRandom(0, 100)/100.0f, Ogre::Math::RangeRandom(0, 100)/100.0f, Ogre::Math::RangeRandom(0, 100)/100.0f, 0.8f);
+	skid.face[0] = Vector3::ZERO;
+	skid.face[1] = Vector3::ZERO;
+	skid.colour = ColourValue(Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, Math::RangeRandom(0, 100)/100.0f, 0.8f);
 
 
 	// new material
 	char bname[256]="";
-	sprintf(bname, "mat-skidmark-%d", instancecounter);
-	Ogre::MaterialPtr mat=(Ogre::MaterialPtr)(Ogre::MaterialManager::getSingleton().create(bname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-	Ogre::Pass *p = mat->getTechnique(0)->getPass(0);
+	sprintf(bname, "mat-skidmark-%d", instanceCounter);
+	MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
+	Pass *p = mat->getTechnique(0)->getPass(0);
 	
-	p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+	p->setSceneBlending(SBT_TRANSPARENT_ALPHA);
 	p->setLightingEnabled(false);
 	p->setDepthWriteEnabled(false);
 	p->setDepthBias(3, 3);
-	p->setCullingMode(Ogre::CULL_NONE);
+	p->setCullingMode(CULL_NONE);
 
 	skid.points.resize(lenght);
-	skid.facesizes.resize(lenght);
-	skid.ground_texture.resize(lenght);
-	skid.obj = scm->createManualObject("skidmark" + TOSTRING(instancecounter++));
+	skid.faceSizes.resize(lenght);
+	skid.groundTexture.resize(lenght);
+	skid.obj = scm->createManualObject("skidmark" + TOSTRING(instanceCounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
 	for(int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
-		skid.facesizes[i] = 0;
-		skid.ground_texture[i] = "0.png";
+		skid.faceSizes[i] = 0;
+		skid.groundTexture[i] = "0.png";
 		skid.obj->position(start);
 		skid.obj->textureCoord(0,0);
 	}
@@ -205,7 +199,7 @@ void Skidmark::limitObjects()
 	{
 		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
-		objects.front().facesizes.clear();
+		objects.front().faceSizes.clear();
 		scm->destroyManualObject(objects.front().obj);
 		objects.pop();
 	}
@@ -214,20 +208,20 @@ void Skidmark::limitObjects()
 void Skidmark::setPointInt(unsigned short index, const Vector3 &value, Real fsize, String texture)
 {
 	objects.back().points[index] = value;
-	objects.back().facesizes[index] = fsize;
-	objects.back().ground_texture[index] = texture;
+	objects.back().faceSizes[index] = fsize;
+	objects.back().groundTexture[index] = texture;
 
 	mDirty = true;
 }
 
 void Skidmark::updatePoint()
 {
-	Ogre::Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
-	Ogre::Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
-	Ogre::Vector3 thisPointAV = thisPoint + axis * 0.5f;
-	Ogre::Real distance = 0;
-	Ogre::Real maxDist = maxDistance;
-	Ogre::String texture = "none";
+	Vector3 thisPoint = wheel->lastContactType?wheel->lastContactOuter:wheel->lastContactInner;
+	Vector3 axis = wheel->lastContactType?(wheel->refnode1->RelPosition - wheel->refnode0->RelPosition):(wheel->refnode0->RelPosition - wheel->refnode1->RelPosition);
+	Vector3 thisPointAV = thisPoint + axis * 0.5f;
+	Real distance = 0;
+	Real maxDist = maxDistance;
+	String texture = "none";
 	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
 	
 	// dont add points with no texture
@@ -253,7 +247,7 @@ void Skidmark::updatePoint()
 		}
 		
 		// change ground texture if required
-		if(skid.pos > 0 && skid.ground_texture[0] != texture)
+		if(skid.pos > 0 && skid.groundTexture[0] != texture)
 		{
 			// new object with new texture
 			if(distance > maxDist)
@@ -263,8 +257,8 @@ void Skidmark::updatePoint()
 			} else
 			{
 				// add new bucket with connection to last bucket
-				Ogre::Vector3 lp1 = objects.back().points[objects.back().pos-1];
-				Ogre::Vector3 lp2 = objects.back().points[objects.back().pos-2];
+				Vector3 lp1 = objects.back().points[objects.back().pos-1];
+				Vector3 lp2 = objects.back().points[objects.back().pos-2];
 				addObject(lp1, texture);
 				addPoint(lp2, distance, texture);
 				addPoint(lp1, distance, texture);
@@ -283,8 +277,8 @@ void Skidmark::updatePoint()
 				} else
 				{
 					// add new bucket with connection to last bucket
-					Ogre::Vector3 lp1 = objects.back().points[objects.back().pos-1];
-					Ogre::Vector3 lp2 = objects.back().points[objects.back().pos-2];
+					Vector3 lp1 = objects.back().points[objects.back().pos-1];
+					Vector3 lp2 = objects.back().points[objects.back().pos-2];
 					addObject(lp1, texture);
 					addPoint(lp2, distance, texture);
 					addPoint(lp1, distance, texture);
@@ -304,7 +298,7 @@ void Skidmark::updatePoint()
 	// tactics: we always choose the latest oint and then create two points
 	
 	// XXX: TO BE IMPROVED
-	//Ogre::Vector3 groundNormal = Vector3::ZERO;
+	//Vector3 groundNormal = Vector3::ZERO;
 	//hfinder->getNormalAt(thisPoint.x, thisPoint.y, thisPoint.z, &groundNormal);
 
 	//LOG("ground normal: "+TOSTRING(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
@@ -352,11 +346,11 @@ void Skidmark::update()
 {
 	if(!objects.size()) return;
 	skidmark_t skid = objects.back();
-	Ogre::Vector3 vaabMin = skid.points[0];
-	Ogre::Vector3 vaabMax = skid.points[0];
+	Vector3 vaabMin = skid.points[0];
+	Vector3 vaabMax = skid.points[0];
 	skid.obj->beginUpdate(0);
 	bool behindEnd = false;
-	Ogre::Vector3 lastValid = Ogre::Vector3::ZERO;
+	Vector3 lastValid = Vector3::ZERO;
 	int to_counter=0;
 	float tcox_counter=0;
 
@@ -368,7 +362,7 @@ void Skidmark::update()
 			to_counter=0;
 
 		if(!behindEnd)
-			tcox_counter += skid.facesizes[i] / minDistance;
+			tcox_counter += skid.faceSizes[i] / minDistance;
 
 		while(tcox_counter>1)
 			tcox_counter--;
@@ -382,7 +376,7 @@ void Skidmark::update()
 			skid.obj->position(skid.points[i]);
 
 			Vector2 tco = tex_coords[to_counter];
-			tco.x *= skid.facesizes[i] / minDistance; // scale texture according face size
+			tco.x *= skid.faceSizes[i] / minDistance; // scale texture according face size
 			skid.obj->textureCoord(tco);
 
 			lastValid = skid.points[i];

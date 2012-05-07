@@ -22,13 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectorWindow.h"
 
 #include "CacheSystem.h"
+#include "gui_manager.h"
+#include "InputEngine.h"
+#include "language.h"
 #include "LoadingWindow.h"
 #include "Settings.h"
-#include "gui_manager.h"
-#include "language.h"
-#include "utils.h"
 #include "skinmanager.h"
-#include "InputEngine.h"
+#include "utils.h"
 
 #if 0
 // translation help for category entries, should be commented at all times
@@ -64,6 +64,8 @@ _L("Fresh");
 _L("Hidden");
 #endif // 0
 
+using namespace Ogre;
+
 SelectorWindow::SelectorWindow() :
 	  mSelectedTruck(0)
 	, mSelectedSkin(0)
@@ -77,7 +79,7 @@ SelectorWindow::SelectorWindow() :
 	mCancelButton->setCaption(_L("Cancel"));
 
 	// setup controls
-	mConfigComboBox->addItem("Default", Ogre::String("Default"));
+	mConfigComboBox->addItem("Default", String("Default"));
 	mConfigComboBox->setIndexSelected(0);
 
 	mMainWidget->setRealPosition(0.1, 0.1);
@@ -262,7 +264,7 @@ void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, 
 	try
 	{
 		mTruckConfigs.clear();
-		Ogre::String config = *mConfigComboBox->getItemDataAt<Ogre::String>(_index);
+		String config = *mConfigComboBox->getItemDataAt<String>(_index);
 		mTruckConfigs.push_back(config);
 	} catch(...)
 	{
@@ -385,7 +387,7 @@ void SelectorWindow::getData()
 	}
 }
 
-bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
+bool SelectorWindow::searchCompare(String searchString, Cache_Entry *ce)
 {
 	if(searchString.find(":") == String::npos)
 	{
@@ -393,19 +395,19 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 
 		// the name
 		String dname_lower = ce->dname;
-		Ogre::StringUtil::toLowerCase(dname_lower);
+		StringUtil::toLowerCase(dname_lower);
 		if(dname_lower.find(searchString) != String::npos)
 			return true;
 		
 		// the filename
 		String fname_lower = ce->fname;
-		Ogre::StringUtil::toLowerCase(fname_lower);
+		StringUtil::toLowerCase(fname_lower);
 		if(fname_lower.find(searchString) != String::npos)
 			return true;
 
 		// the description
 		String desc = ce->description;
-		Ogre::StringUtil::toLowerCase(desc);
+		StringUtil::toLowerCase(desc);
 		if(desc.find(searchString) != String::npos)
 			return true;
 
@@ -417,13 +419,13 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 			{
 				// author name
 				String aname = it->name;
-				Ogre::StringUtil::toLowerCase(aname);
+				StringUtil::toLowerCase(aname);
 				if(aname.find(searchString) != String::npos)
 					return true;
 
 				// author email
 				String aemail = it->email;
-				Ogre::StringUtil::toLowerCase(aemail);
+				StringUtil::toLowerCase(aemail);
 				if(aemail.find(searchString) != String::npos)
 					return true;
 			}
@@ -437,12 +439,12 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 		if(v[0] == "hash")
 		{
 			String hash = ce->hash;
-			Ogre::StringUtil::toLowerCase(hash);
+			StringUtil::toLowerCase(hash);
 			return (hash.find(v[1]) != String::npos);
 		} else if(v[0] == "guid")
 		{
 			String guid = ce->guid;
-			Ogre::StringUtil::toLowerCase(guid);
+			StringUtil::toLowerCase(guid);
 			return (guid.find(v[1]) != String::npos);
 		} else if(v[0] == "author")
 		{
@@ -454,13 +456,13 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 				{
 					// author name
 					String aname = it->name;
-					Ogre::StringUtil::toLowerCase(aname);
+					StringUtil::toLowerCase(aname);
 					if(aname.find(v[1]) != String::npos)
 						return true;
 
 					// author email
 					String aemail = it->email;
-					Ogre::StringUtil::toLowerCase(aemail);
+					StringUtil::toLowerCase(aemail);
 					if(aemail.find(v[1]) != String::npos)
 						return true;
 				}
@@ -473,7 +475,7 @@ bool SelectorWindow::searchCompare(Ogre::String searchString, Cache_Entry *ce)
 		} else if(v[0] == "file")
 		{
 			String fn = ce->fname;
-			Ogre::StringUtil::toLowerCase(fn);
+			StringUtil::toLowerCase(fn);
 			return (fn.find(v[1]) != String::npos);
 		}
 
@@ -741,7 +743,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	mEntryDescriptionStaticText->setCaption(convertToMyGUIString(descriptiontxt));
 }
 
-void SelectorWindow::setPreviewImage(Ogre::String texture)
+void SelectorWindow::setPreviewImage(String texture)
 {
 	if(texture == "" || texture == "none")
 	{
@@ -774,7 +776,7 @@ void SelectorWindow::resizePreviewImage()
 {
 	// now get the texture size
 	MyGUI::IntSize imgSize(0,0);
-	TexturePtr t = Ogre::TextureManager::getSingleton().load(lastImageTextureName,Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+	TexturePtr t = TextureManager::getSingleton().load(lastImageTextureName,ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 	if(!t.isNull())
 	{
 		imgSize.width  = (int)t->getWidth() * 10;
@@ -868,5 +870,5 @@ void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::Wi
 	if(mSearchLineEdit->getCaption() == _L("Search ..."))
 		mSearchLineEdit->setCaption("");
 }
-#endif //MYGUI
 
+#endif // USE_MYGUI

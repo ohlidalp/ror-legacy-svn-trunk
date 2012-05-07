@@ -46,22 +46,22 @@ public:
 #endif
 
 	//constructor
-	Beam(int tnum
-		, SceneManager *manager
-		, SceneNode *parent
-		, RenderWindow* win
+	Beam( int tnum
+		, Ogre::SceneManager *manager
+		, Ogre::SceneNode *parent
+		, Ogre::RenderWindow* win
 		, Network *net
 		, float *mapsizex
 		, float *mapsizez
-		, Real px
-		, Real py
-		, Real pz
-		, Quaternion rot
+		, Ogre::Real px
+		, Ogre::Real py
+		, Ogre::Real pz
+		, Ogre::Quaternion rot
 		, const char* fname
 		, Collisions *icollisions
 		, HeightFinder *mfinder
 		, Water *w
-		, Camera *pcam
+		, Ogre::Camera *pcam
 		, bool networked=false
 		, bool networking=false
 		, collision_box_t *spawnbox=NULL
@@ -82,12 +82,12 @@ public:
 	void desactivate();
 	void addPressure(float v);
 	float getPressure();
-	void calc_masses2(Real total, bool reCalc=false);
+	void calc_masses2(Ogre::Real total, bool reCalc=false);
 	void calcNodeConnectivityGraph();
 	void updateContacterNodes();
-	void moveOrigin(Vector3 offset); //move physics origin
-	void changeOrigin(Vector3 newOrigin); //change physics origin
-	Vector3 getPosition();
+	void moveOrigin(Ogre::Vector3 offset); //move physics origin
+	void changeOrigin(Ogre::Vector3 newOrigin); //change physics origin
+	Ogre::Vector3 getPosition();
 	void resetAngle(float rot);
 	void resetPosition(float px, float pz, bool setInitPosition, float miny=-9999.0);
 	void resetPosition(Ogre::Vector3 translation, bool setInitPosition);
@@ -99,11 +99,11 @@ public:
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
 	//the instance called is the one of the current ACTIVATED truck
-	bool frameStep(Real dt);
+	bool frameStep(Ogre::Real dt);
 	int truckSteps;
-	void calcForcesEuler(int doUpdate, Real dt, int step, int maxsteps);
-	void truckTruckCollisions(Real dt);
-	void calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, int update);
+	void calcForcesEuler(int doUpdate, Ogre::Real dt, int step, int maxsteps);
+	void truckTruckCollisions(Ogre::Real dt);
+	void calcShocks2(int beam_i, Ogre::Real difftoBeamL, Ogre::Real &k, Ogre::Real &d, Ogre::Real dt, int update);
 	void calcAnimators(int flagstate, float &cstate, int &div, float timer, float opt1, float opt2, float opt3);
 	//! @}
 
@@ -113,7 +113,7 @@ public:
 	//! @}
 
 	//! @{ user interaction functions
-	void mouseMove(int node, Vector3 pos, float force);
+	void mouseMove(int node, Ogre::Vector3 pos, float force);
 	void lightsToggle();
 	void tieToggle(int group=-1);
 	void ropeToggle(int group=-1);
@@ -139,7 +139,7 @@ public:
 	//! @{ graphical display things */
 	void updateSkidmarks();
 	void updateAI(float dt);
-	String debugText;
+	Ogre::String debugText;
 	void prepareInside(bool inside);
 	void updateFlares(float dt, bool isCurrent=false);
 	void updateProps();
@@ -156,7 +156,7 @@ public:
 	float currentScale;
 	void updateDebugOverlay();
 	void setDebugOverlayState(int mode);
-	SceneManager *tsm;
+	Ogre::SceneManager *tsm;
 	//! @}
 
 	//! @{ startup / shutdown
@@ -164,17 +164,17 @@ public:
 	//! @}
 
 	//! @{ dynamic physical properties
-	Real brake;
-	Vector3 affforce;
-	Vector3 ffforce;
-	Real affhydro;
-	Real ffhydro;
+	Ogre::Real brake;
+	Ogre::Vector3 affforce;
+	Ogre::Vector3 ffforce;
+	Ogre::Real affhydro;
+	Ogre::Real ffhydro;
 
 	bool left_blink_on, right_blink_on, warn_blink_on;
 	//! @}
 
 	/* functions to be sorted */
-	Quaternion specialGetRotationTo(const Vector3& src, const Vector3& dest) const;
+	Ogre::Quaternion specialGetRotationTo(const Ogre::Vector3& src, const Ogre::Vector3& dest) const;
 	Ogre::String getAxleLockName();	//! get the name of the current differential model
 	int getAxleLockCount();
 	std::vector< std::vector< int > > nodetonodeconnections;
@@ -192,7 +192,7 @@ public:
 	float hydrodircommand;
 	bool hydroSpeedCoupling;
 	float hydrodirstate;
-	Real hydrodirwheeldisplay;
+	Ogre::Real hydrodirwheeldisplay;
 	//extra airplane axes
 	float hydroaileroncommand;
 	float hydroaileronstate;
@@ -228,7 +228,7 @@ public:
 	pthread_mutex_t done_count_mutex;
 	pthread_cond_t done_count_cv;
 	int done_count;
-	int calculateDriverPos(Vector3 &pos, Quaternion &rot);
+	int calculateDriverPos(Ogre::Vector3 &pos, Ogre::Quaternion &rot);
 	float getSteeringAngle();
 
 	float elevator;
@@ -236,7 +236,7 @@ public:
 	float aileron;
 	int flap;
 
-	Vector3 fusedrag;
+	Ogre::Vector3 fusedrag;
 	
 	bool disableDrag;
 	int currentcamera;
@@ -244,7 +244,7 @@ public:
 	int first_wheel_node;
 	int netbuffersize;
 	int nodebuffersize;
-	SceneNode *netLabelNode;
+	Ogre::SceneNode *netLabelNode;
 
 	std::string getTruckName();
 	std::string getTruckFileName();
@@ -300,7 +300,7 @@ public:
 	float tdt;
 	float ttdt;
 	int airbrakeval;
-	Vector3 cameranodeacc;
+	Ogre::Vector3 cameranodeacc;
 	int cameranodecount;
 	bool abs_state;
 	float abs_timer;
@@ -311,7 +311,7 @@ public:
 
 	int getTruckTime();
 	int getNetTruckTimeOffset();
-	Real getMinimalCameraRadius();
+	Ogre::Real getMinimalCameraRadius();
 
 
 	Replay *getReplay();
@@ -332,16 +332,16 @@ public:
 protected:
 	void updateDashBoards(float &dt);
 	void updateSimpleSkeleton();
-	SceneNode *simpleSkeletonNode;
+	Ogre::SceneNode *simpleSkeletonNode;
 
-	Vector3 position;
-	Vector3 lastposition;
-	Vector3 lastlastposition;
-	Real minCameraRadius;
+	Ogre::Vector3 position;
+	Ogre::Vector3 lastposition;
+	Ogre::Vector3 lastlastposition;
+	Ogre::Real minCameraRadius;
 
 
-	Real replayTimer;
-	Real replayPrecision;
+	Ogre::Real replayTimer;
+	Ogre::Real replayPrecision;
 
 	Network *net;
 	ground_model_t *lastFuzzyGroundModel;
@@ -351,14 +351,14 @@ protected:
 
 	bool deleting;
 	
-	RenderWindow* mWindow;
-	Real hydrolen;
+	Ogre::RenderWindow* mWindow;
+	Ogre::Real hydrolen;
 	
 	//number of torque points
 	//    int torquenum;
-	Real lastwspeed;
-	SceneNode *smokeNode;
-	ParticleSystem* smoker;
+	Ogre::Real lastwspeed;
+	Ogre::SceneNode *smokeNode;
+	Ogre::ParticleSystem* smoker;
 	float stabsleep;
 	//	float lastdt;
 	Collisions *collisions;
@@ -371,14 +371,14 @@ protected:
 	bool cparticle_mode;
 	Beam** ttrucks;
 	int tnumtrucks;
-	SceneNode *parentNode;
+	Ogre::SceneNode *parentNode;
 	int detailLevel;
 	bool isInside;
 	bool beacon;
 	float totalmass;
 
 	int mousenode;
-	Vector3 mousepos;
+	Ogre::Vector3 mousepos;
 	float mousemoveforce;
 	int reset_requested;
 
@@ -393,17 +393,17 @@ protected:
 	char *netb2;
 	char *netb3;
 	pthread_mutex_t net_mutex;
-	Timer *nettimer;
+	Ogre::Timer *nettimer;
 	int net_toffset;
 	int netcounter;
-	MovableText *netMT; //, *netDist;
+	Ogre::MovableText *netMT; //, *netDist;
 
 	// network properties
-	String networkUsername;
+	Ogre::String networkUsername;
 	int networkAuthlevel;
 
 	bool netBrakeLight, netReverseLight;
-	Real mTimeUntilNextToggle;
+	Ogre::Real mTimeUntilNextToggle;
 
 
 	void checkBeamMaterial();
@@ -414,10 +414,10 @@ protected:
 
 	// cab fading stuff - begin
 	void cabFade(float amount);
-	void setMeshWireframe(SceneNode *node, bool value);
-	void fadeMesh(SceneNode *node, float amount);
-	float getAlphaRejection(SceneNode *node);
-	void setAlphaRejection(SceneNode *node, float amount);
+	void setMeshWireframe(Ogre::SceneNode *node, bool value);
+	void fadeMesh(Ogre::SceneNode *node, float amount);
+	float getAlphaRejection(Ogre::SceneNode *node);
+	void setAlphaRejection(Ogre::SceneNode *node, float amount);
 	float cabFadeTimer;
 	float cabFadeTime;
 	int cabFadeMode;
@@ -443,7 +443,7 @@ protected:
 
 
 	// overloaded from Streamable:
-	Timer netTimer;
+	Ogre::Timer netTimer;
 	int last_net_time;
 	void sendStreamSetup();
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
@@ -606,7 +606,7 @@ inline int Beam::getNetTruckTimeOffset()
 	return net_toffset;
 }
 
-inline Real Beam::getMinimalCameraRadius()
+inline Ogre::Real Beam::getMinimalCameraRadius()
 {
 	return minCameraRadius;
 }
