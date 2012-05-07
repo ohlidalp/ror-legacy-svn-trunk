@@ -61,7 +61,7 @@ void TextureToolWindow::show()
 void TextureToolWindow::fillCombo()
 {
 	bool dynamicOnly = mChkDynamic->getStateSelected();
-	mCBo->deleteAllItems();
+	mCBo->removeAllItems();
 
 	ResourceManager::ResourceMapIterator it = TextureManager::getSingleton().getResourceIterator();
 
@@ -212,17 +212,17 @@ void TextureToolWindow::notifyWindowPressed(MyGUI::Window* _widget, const std::s
 
 void TextureToolWindow::eventClickSavePNGButton( MyGUI::WidgetPtr _sender )
 {
-	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), true);
+	saveTexture(mCBo->getItemNameAt(mCBo->getIndexSelected()), true);
 }
 
 void TextureToolWindow::eventClickSaveRAWButton( MyGUI::WidgetPtr _sender )
 {
-	saveTexture(mCBo->getItemNameAt(mCBo->getItemIndexSelected()), false);
+	saveTexture(mCBo->getItemNameAt(mCBo->getIndexSelected()), false);
 }
 
 void TextureToolWindow::eventSelectTexture( MyGUI::WidgetPtr _sender )
 {
-	updateControls(mCBo->getItemNameAt(mCBo->getItemIndexSelected()));
+	updateControls(mCBo->getItemNameAt(mCBo->getIndexSelected()));
 }
 
 #endif // USE_MYGUI

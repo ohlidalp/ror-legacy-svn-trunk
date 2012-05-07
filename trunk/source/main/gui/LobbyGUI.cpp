@@ -118,7 +118,7 @@ void LobbyGUI::addTab(Ogre::String name)
 	t->mHistory.push_back("");
 
 	// set focus to new tab
-	tabControl->selectSheetIndex(tabs.size()-1, false);
+	tabControl->setIndexSelected(tabs.size()-1);
 	current_tab = t;
 }
 
