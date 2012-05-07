@@ -1045,7 +1045,7 @@ void Console::onLineClicked( MyGUI::Widget* _sender )
 	popMenu->addItem(_L("Filter messages like this"), MyGUI::MenuItemType::Normal, "filter_this");
 	popMenu->addItem(_L("Remove all Filters"), MyGUI::MenuItemType::Normal, "filter_clear");
 
-	MyGUI::IntPoint point = MyGUI::InputManager::getInstance().getLastLeftPressed();
+	MyGUI::IntPoint point = MyGUI::InputManager::getInstance().getLastPressedPosition(MyGUI::MouseButton::Left);
 	popMenu->setPosition(point);
 	popMenu->setVisible(true);
 }
