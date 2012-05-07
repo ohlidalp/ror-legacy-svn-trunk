@@ -107,11 +107,16 @@ void AppStateManager::start(AppState* state)
 	unsigned long timeSinceLastFrame = 1;
 	unsigned long startTime          = 0;
 	unsigned long minTimePerFrame    = 0;
-	unsigned long maxFPS             = ISETTING("Max FPS", 0);
+	unsigned long fpsLimit           = ISETTING("FPS-Limiter", 0);
 
-	if (maxFPS)
+	if (fpsLimit < 10 || fpsLimit >= 200)
 	{
-		minTimePerFrame = 1000 / maxFPS;
+		fpsLimit = 0;
+	}
+
+	if (fpsLimit)
+	{
+		minTimePerFrame = 1000 / fpsLimit;
 	}
 
 	while(!m_bShutdown)
@@ -127,7 +132,7 @@ void AppStateManager::start(AppState* state)
 
 		update(timeSinceLastFrame);
 
-		if (maxFPS && timeSinceLastFrame < minTimePerFrame)
+		if (fpsLimit && timeSinceLastFrame < minTimePerFrame)
 		{
 			// Sleep twice as long as we were too fast.
 			sleepMilliSeconds((minTimePerFrame - timeSinceLastFrame) << 1);
