@@ -17,29 +17,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-// ============================================================================
-// declarations
-// ============================================================================
-
-// ----------------------------------------------------------------------------
-// headers
-// ----------------------------------------------------------------------------
-#include "rornet.h"
+#include "ImprovedConfigFile.h"
+#include "OISKeyboard.h"
 #include "Ogre.h"
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-//#include "crashrpt.h"
-#include <shlobj.h>
-#endif
+#include "RoRVersion.h"
+#include "Settings.h"
+#include "rornet.h"
+#include "utils.h" // RoR utils
+#include "wxValueChoice.h" // a control we wrote
 
-#include <vector>
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <iostream>
 #include <memory>
-
 
 mode_t getumask(void)
 {
@@ -47,63 +38,40 @@ mode_t getumask(void)
 	umask(mask);
 	return mask;
 }
-
 #endif
 
-#include <iostream>
-using namespace std;
-
-#include <wx/wx.h>
-#include <wx/notebook.h>
-#include <wx/combobox.h>
-#include <wx/gauge.h>
-#include <wx/scrolbar.h>
-#include <wx/grid.h>
-#include <wx/treectrl.h>
-#include <wx/tooltip.h>
-#include <wx/mediactrl.h>
-#include <wx/intl.h>
-#include <wx/textfile.h>
+#include "statpict.h"
 #include <wx/cmdline.h>
-#include <wx/html/htmlwin.h>
-#include <wx/uri.h>
+#include <wx/combobox.h>
 #include <wx/dir.h>
 #include <wx/fs_inet.h>
+#include <wx/gauge.h>
+#include <wx/grid.h>
+#include <wx/html/htmlwin.h>
+#include <wx/intl.h>
+#include <wx/log.h>
+#include <wx/log.h>
+#include <wx/mediactrl.h>
+#include <wx/notebook.h>
+#include <wx/scrolbar.h>
 #include <wx/scrolwin.h>
-#include "statpict.h"
-#include <wx/log.h>
-#include <wx/zipstrm.h>
-#include <wx/timer.h>
-#include <wx/version.h>
-#include <wx/log.h>
 #include <wx/statline.h>
-#include <wx/wfstream.h>
+#include <wx/textfile.h>
+#include <wx/timer.h>
 #include <wx/tokenzr.h>
-
-#ifdef USE_OPENAL
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <AL/alext.h>
-#endif // USE_OPENAL
+#include <wx/tooltip.h>
+#include <wx/treectrl.h>
+#include <wx/uri.h>
+#include <wx/version.h>
+#include <wx/wfstream.h>
+#include <wx/wx.h>
+#include <wx/zipstrm.h>
 
 #if wxCHECK_VERSION(2, 8, 0)
 #include <wx/hyperlink.h>
 #endif
 
-// a control we wrote
-#include "wxValueChoice.h"
-
-#include "utils.h" // RoR utils
-
 #include "wxutils.h"
-
-#include "ImprovedConfigFile.h"
-
-
-#include "Settings.h"
-#include "RoRVersion.h"
-
-#include "OISKeyboard.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #define strnlen(str, len) strlen(str)
@@ -127,6 +95,12 @@ wxLanguageInfo *language=0;
 std::vector<wxLanguageInfo*> avLanguages;
 
 std::map<std::string, std::string> settings;
+
+#ifdef USE_OPENAL
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alext.h>
+#endif // USE_OPENAL
 
 #ifdef USE_OPENCL
 #include <delayimp.h>
@@ -222,9 +196,7 @@ public:
 	bool LoadConfig();
 	void SaveConfig();
 	void updateSettingsControls(); // use after loading or after manually updating the settings map
-	void getSettingsControls(); // puts the control's status into the settings map
-	void remapControl();
-	bool isSelectedControlGroup(wxTreeItemId *item = 0);
+	void getSettingsControls();    // puts the control's status into the settings map
 	// event handlers (these functions should _not_ be virtual)
 	void OnQuit(wxCloseEvent& event);
 	void OnTimer(wxTimerEvent& event);
@@ -233,16 +205,16 @@ public:
 	void OnButSave(wxCommandEvent& event);
 	void OnButPlay(wxCommandEvent& event);
 	void OnButRestore(wxCommandEvent& event);
-	void OnTestNet(wxCommandEvent& event);
-	void OnGetUserToken(wxCommandEvent& event);
+	void OnButTestNet(wxCommandEvent& event);
+	void OnButGetUserToken(wxCommandEvent& event);
 #if wxCHECK_VERSION(2, 8, 0)
-	void OnLinkClicked(wxHtmlLinkEvent& event);
-	void OnLinkClickedUpdate(wxHtmlLinkEvent& event);
+	void OnClickedHtmlLinkMain(wxHtmlLinkEvent& event);
+	void OnClickedHtmlLinkUpdate(wxHtmlLinkEvent& event);
 #endif // version 2.8
-	void onChangeShadowChoice(wxCommandEvent& event);
-	void onChangeLanguageChoice(wxCommandEvent& event);
+	void OnChoiceShadow(wxCommandEvent& event);
+	void OnChoiceLanguage(wxCommandEvent& event);
 	//void OnButRemap(wxCommandEvent& event);
-	void OnChangeRenderer(wxCommandEvent& event);
+	void OnChoiceRenderer(wxCommandEvent& event);
 	//void OnMenuClearClick(wxCommandEvent& event);
 	//void OnMenuTestClick(wxCommandEvent& event);
 	//void OnMenuDeleteClick(wxCommandEvent& event);
@@ -255,11 +227,12 @@ public:
 	void OnButCheckOpenCL(wxCommandEvent& event);
 	void OnButCheckOpenCLBW(wxCommandEvent& event);
 	void updateRoR();
-	void OnSightrangesliderScroll(wxScrollEvent& event);
-	void OnVolumesliderScroll(wxScrollEvent& event);
-	void OnForceFeedbackScroll(wxScrollEvent& event);
-	void OnNoteBookPageChange(wxNotebookEvent& event);
-	void OnNoteBook2PageChange(wxNotebookEvent& event);
+	void OnScrollSightRange(wxScrollEvent& event);
+	void OnScrollVolume(wxScrollEvent& event);
+	void OnScrollForceFeedback(wxScrollEvent& event);
+	void OnScrollFPSLimiter(wxScrollEvent& event);
+	void OnChangedNotebook1(wxNotebookEvent& event);
+	void OnChangedNotebook2(wxNotebookEvent& event);
 	std::string readVersionInfo();
 
 //	void checkLinuxPaths();
@@ -322,6 +295,8 @@ private:
 	wxSlider *soundVolume;
 	wxStaticText *soundVolumeText;
 	wxValueChoice *thread;
+	wxSlider *fpsLimiter;
+	wxStaticText *fpsLimiterText;
 	wxValueChoice *flaresMode;
 	wxValueChoice *languageMode;
 	wxValueChoice *vegetationMode;
@@ -378,43 +353,37 @@ public:
 	int id;
 };
 
-enum
+enum control_ids
 {
-	// command buttons
-	command_cancel = 1,
-	command_save,
-	command_play,
-	command_restore,
-	device_change,
-	net_test,
-	CONTROLS_TIMER_ID,
-	UPDATE_RESET_TIMER_ID,
-	main_html,
-	update_html,
-	CTREE_ID,
-	command_load_keymap,
-	command_save_keymap,
-	command_add_key,
-	command_delete_key,
-	clear_cache,
-	regen_cache,
-	update_ror,
-	EVC_LANG,
-	SCROLL1,
-	SCROLL2,
-	EVT_CHANGE_RENDERER,
-	RENDERER_OPTION=990,
-	mynotebook,
-	mynotebook2,
-	mynotebook3,
-	FFSLIDER,
-	get_user_token,
-	check_opencl,
-	check_opencl_bw,
-	sightrangeslider,
-	volumeslider,
-	shadowschoice,
-	shadowopt,
+	button_add_key = 1,
+	button_cancel,
+	button_check_opencl,
+	button_check_opencl_bw,
+	button_clear_cache,
+	button_delete_key,
+	button_get_user_token,
+	button_load_keymap,
+	button_net_test,
+	button_play,
+	button_regen_cache,
+	button_restore,
+	button_save,
+	button_save_keymap,
+	button_update_ror,
+	changed_notebook_1,
+	changed_notebook_2,
+	changed_notebook_3,
+	choice_language,
+	choice_renderer,
+	choice_shadow,
+	clicked_html_link_main,
+	clicked_html_link_update,
+	scroll_force_feedback,
+	scroll_fps_limiter,
+	scroll_sight_range,
+	scroll_volume,
+	timer_controls,
+	timer_update_reset,
 };
 
 // ----------------------------------------------------------------------------
@@ -424,37 +393,33 @@ enum
 // handlers) which process them. It can be also done at run-time, but for the
 // simple menu events like this the static method is much simpler.
 BEGIN_EVENT_TABLE(MyDialog, wxDialog)
+	EVT_BUTTON(button_cancel, MyDialog::OnButCancel)
+	EVT_BUTTON(button_check_opencl, MyDialog::OnButCheckOpenCL)
+	EVT_BUTTON(button_check_opencl_bw, MyDialog::OnButCheckOpenCLBW)
+	EVT_BUTTON(button_clear_cache, MyDialog::OnButClearCache)
+	EVT_BUTTON(button_get_user_token, MyDialog::OnButGetUserToken)
+	EVT_BUTTON(button_net_test, MyDialog::OnButTestNet)
+	EVT_BUTTON(button_play, MyDialog::OnButPlay)
+	EVT_BUTTON(button_regen_cache, MyDialog::OnButRegenCache)
+	EVT_BUTTON(button_restore, MyDialog::OnButRestore)
+	EVT_BUTTON(button_save, MyDialog::OnButSave)
+	EVT_BUTTON(button_update_ror, MyDialog::OnButUpdateRoR)
+	EVT_CHOICE(choice_language, MyDialog::OnChoiceLanguage)
+	EVT_CHOICE(choice_renderer, MyDialog::OnChoiceRenderer)
+	EVT_CHOICE(choice_shadow, MyDialog::OnChoiceShadow)
 	EVT_CLOSE(MyDialog::OnQuit)
-	EVT_TIMER(CONTROLS_TIMER_ID, MyDialog::OnTimer)
-	EVT_TIMER(UPDATE_RESET_TIMER_ID, MyDialog::OnTimerReset)
-	EVT_BUTTON(command_cancel, MyDialog::OnButCancel)
-	EVT_BUTTON(command_save, MyDialog::OnButSave)
-	EVT_BUTTON(command_play, MyDialog::OnButPlay)
-	EVT_BUTTON(command_restore, MyDialog::OnButRestore)
-	EVT_BUTTON(net_test, MyDialog::OnTestNet)
-	EVT_BUTTON(get_user_token, MyDialog::OnGetUserToken)
-	EVT_BUTTON(clear_cache, MyDialog::OnButClearCache)
-	EVT_BUTTON(regen_cache, MyDialog::OnButRegenCache)
-	EVT_BUTTON(update_ror, MyDialog::OnButUpdateRoR)
-	EVT_BUTTON(check_opencl, MyDialog::OnButCheckOpenCL)
-	EVT_BUTTON(check_opencl_bw, MyDialog::OnButCheckOpenCLBW)
+	EVT_COMMAND_SCROLL(scroll_force_feedback, MyDialog::OnScrollForceFeedback)
+	EVT_COMMAND_SCROLL(scroll_fps_limiter, MyDialog::OnScrollFPSLimiter)
+	EVT_COMMAND_SCROLL(scroll_sight_range, MyDialog::OnScrollSightRange)
+	EVT_COMMAND_SCROLL(scroll_volume, MyDialog::OnScrollVolume)
 #if wxCHECK_VERSION(2, 8, 0)
-	EVT_HTML_LINK_CLICKED(main_html, MyDialog::OnLinkClicked)
-	EVT_HTML_LINK_CLICKED(update_html, MyDialog::OnLinkClickedUpdate)
+	EVT_HTML_LINK_CLICKED(clicked_html_link_main, MyDialog::OnClickedHtmlLinkMain)
+	EVT_HTML_LINK_CLICKED(clicked_html_link_update, MyDialog::OnClickedHtmlLinkUpdate)
 #endif  // wxCHECK_VERSION(2, 8, 0)
-	EVT_CHOICE(shadowschoice, MyDialog::onChangeShadowChoice)
-	EVT_COMMAND_SCROLL(sightrangeslider, MyDialog::OnSightrangesliderScroll)
-	EVT_COMMAND_SCROLL(volumeslider, MyDialog::OnVolumesliderScroll)
-	
-	EVT_COMMAND_SCROLL(FFSLIDER, MyDialog::OnForceFeedbackScroll)
-	EVT_CHOICE(EVC_LANG, MyDialog::onChangeLanguageChoice)
-	//EVT_BUTTON(BTN_REMAP, MyDialog::OnButRemap)
-
-	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook, MyDialog::OnNoteBookPageChange)
-	EVT_NOTEBOOK_PAGE_CHANGED(mynotebook2, MyDialog::OnNoteBook2PageChange)
-
-	EVT_CHOICE(EVT_CHANGE_RENDERER, MyDialog::OnChangeRenderer)
-
+	EVT_NOTEBOOK_PAGE_CHANGED(changed_notebook_1, MyDialog::OnChangedNotebook1)
+	EVT_NOTEBOOK_PAGE_CHANGED(changed_notebook_2, MyDialog::OnChangedNotebook2)
+	EVT_TIMER(timer_controls, MyDialog::OnTimer)
+	EVT_TIMER(timer_update_reset, MyDialog::OnTimerReset)
 END_EVENT_TABLE()
 
 // Create a new application object: this macro will allow wxWidgets to create
@@ -740,7 +705,7 @@ bool MyApp::checkUserPath()
 		if(!wxFileName::DirExists(UserPath))
 			wxFileName::Mkdir(UserPath);
 
-		auto_ptr<wxZipEntry> entry;
+		std::auto_ptr< wxZipEntry > entry;
 
 		// first: figure out the zip path
 		wxFileName skeletonZip = wxFileName(ProgramPath, wxEmptyString);
@@ -757,8 +722,6 @@ bool MyApp::checkUserPath()
 			w->ShowModal();
 			delete(w);
 			exit(1);
-
-			return false;
 		}
 
 		// unpack
@@ -936,31 +899,31 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	mainsizer->Add(imagePanel, 0, wxGROW);
 
 	//notebook
-	nbook=new wxNotebook(this, mynotebook, wxPoint(3, 100), wxSize(490, 415));
+	nbook=new wxNotebook(this, changed_notebook_1, wxPoint(3, 100), wxSize(490, 415));
 	mainsizer->Add(nbook, 1, wxGROW);
 
 	wxSizer *btnsizer = new wxBoxSizer(wxHORIZONTAL);
 	//buttons
 	if(!app->postinstall)
 	{
-		wxButton *btnRestore = new wxButton( this, command_restore, _("Restore Defaults"), wxPoint(35,520), wxSize(100,25));
+		wxButton *btnRestore = new wxButton( this, button_restore, _("Restore Defaults"), wxPoint(35,520), wxSize(100,25));
 		btnRestore->SetToolTip(_("Restore the default configuration."));
 		btnsizer->Add(btnRestore, 1, wxGROW | wxALL, 5);
 
-		wxButton *btnPlay = new wxButton( this, command_play, _("Save and Play"), wxPoint(140,520), wxSize(100,25));
+		wxButton *btnPlay = new wxButton( this, button_play, _("Save and Play"), wxPoint(140,520), wxSize(100,25));
 		btnPlay->SetToolTip(_("Save the current configuration and start RoR."));
 		btnsizer->Add(btnPlay, 1, wxGROW | wxALL, 5);
 
-		wxButton *btnsaveAndExit = new wxButton( this, command_save, _("Save and Exit"), wxPoint(245,520), wxSize(100,25));
-		btnsaveAndExit->SetToolTip(_("Save the current configuration and close the configuration program."));
-		btnsizer->Add(btnsaveAndExit, 1, wxGROW | wxALL, 5);
+		wxButton *btnSaveAndExit = new wxButton( this, button_save, _("Save and Exit"), wxPoint(245,520), wxSize(100,25));
+		btnSaveAndExit->SetToolTip(_("Save the current configuration and close the configuration program."));
+		btnsizer->Add(btnSaveAndExit, 1, wxGROW | wxALL, 5);
 
-		wxButton *btnClose = new wxButton( this, command_cancel, _("Cancel"), wxPoint(350,520), wxSize(100,25));
+		wxButton *btnClose = new wxButton( this, button_cancel, _("Cancel"), wxPoint(350,520), wxSize(100,25));
 		btnClose->SetToolTip(_("Cancel the configuration changes and close the configuration program."));
 		btnsizer->Add(btnClose, 1, wxGROW | wxALL, 5);
 	} else
 	{
-		wxButton *btnPlay = new wxButton( this, command_play, _("Save and Play"), wxPoint(350,520), wxSize(100,25));
+		wxButton *btnPlay = new wxButton( this, button_play, _("Save and Play"), wxPoint(350,520), wxSize(100,25));
 		btnPlay->SetToolTip(_("Save the current configuration and start RoR."));
 		btnsizer->Add(btnPlay, 1, wxGROW | wxALL, 5);
 	}
@@ -974,7 +937,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	//settingsSizer->SetSizeHints(this);
 	settingsPanel->SetSizer(settingsSizer);
 	// second notebook containing the settings tabs
-	wxNotebook *snbook=new wxNotebook(settingsPanel, mynotebook2, wxPoint(0, 0), wxSize(100,250));
+	wxNotebook *snbook=new wxNotebook(settingsPanel, changed_notebook_2, wxPoint(0, 0), wxSize(100,250));
 	settingsSizer->Add(snbook, 1, wxGROW);
 
 	rsPanel=new wxPanel(snbook, -1);
@@ -992,7 +955,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxSizer *controlsSizer = new wxBoxSizer(wxVERTICAL);
 	controlsPanel->SetSizer(controlsSizer);
 	// third notebook for control tabs
-	wxNotebook *ctbook=new wxNotebook(controlsPanel, mynotebook3, wxPoint(0, 0), wxSize(100,250));
+	wxNotebook *ctbook=new wxNotebook(controlsPanel, changed_notebook_3, wxPoint(0, 0), wxSize(100,250));
 	controlsSizer->Add(ctbook, 1, wxGROW);
 
 	wxPanel *ctsetPanel=new wxPanel(ctbook, -1);
@@ -1035,7 +998,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// clear the renderer settings and fill them later
 	dText = new wxStaticText(rsPanel, -1, _("Render System"), wxPoint(10, 28));
-	renderer = new wxValueChoice(rsPanel, EVT_CHANGE_RENDERER, wxPoint(220, 25), wxSize(220, -1), 0);
+	renderer = new wxValueChoice(rsPanel, choice_renderer, wxPoint(220, 25), wxSize(220, -1), 0);
 	// renderer options done, do the rest
 
 	// gamePanel
@@ -1043,7 +1006,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	int x_row1 = 150, x_row2 = 300;
 
 	dText = new wxStaticText(gamePanel, -1, _("Language:"), wxPoint(10, y));
-	languageMode=new wxValueChoice(gamePanel, EVC_LANG, wxPoint(x_row1, y), wxSize(200, -1), wxCB_READONLY);
+	languageMode=new wxValueChoice(gamePanel, choice_language, wxPoint(x_row1, y), wxSize(200, -1), wxCB_READONLY);
 
 	int sel = 0;
 	languageMode->AppendValueItem(wxT("English (U.S.)"));
@@ -1093,7 +1056,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dText = new wxStaticText(gamePanel, -1, _("User Token: "), wxPoint(10,y+3));
 	usertoken=new wxTextCtrl(gamePanel, -1, wxString(), wxPoint(x_row1, y), wxSize(200, -1));
 	usertoken->SetToolTip(_("Your rigsofrods.com User Token."));
-	btnToken = new wxButton(gamePanel, get_user_token, _("Get Token"), wxPoint(x_row1+210, y), wxSize(90,25));
+	btnToken = new wxButton(gamePanel, button_get_user_token, _("Get Token"), wxPoint(x_row1+210, y), wxSize(90,25));
 	y+=35;
 
 #ifdef USE_OPENAL
@@ -1315,7 +1278,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Shadow type:"), wxPoint(10,y+3));
-	shadow=new wxValueChoice(graphicsPanel, shadowschoice, wxPoint(x_row1, y), wxSize(200, -1), 0);
+	shadow=new wxValueChoice(graphicsPanel, choice_shadow, wxPoint(x_row1, y), wxSize(200, -1), 0);
 	shadow->AppendValueItem(wxT("No shadows (fastest)"), _("No shadows (fastest)"));
 	shadow->AppendValueItem(wxT("Texture shadows"), _("Texture shadows"));
 	shadow->AppendValueItem(wxT("Stencil shadows (best looking)"), _("Stencil shadows (best looking)"));
@@ -1327,12 +1290,12 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, wxID_ANY, _("Sightrange:"), wxPoint(10,y+3));
-	sightRange=new wxSlider(graphicsPanel, sightrangeslider, 5000, 10, 5000, wxPoint(x_row1, y), wxSize(200, -1));
+	sightRange=new wxSlider(graphicsPanel, scroll_sight_range, 5000, 10, 5000, wxPoint(x_row1, y), wxSize(200, -1));
 	sightRange->SetToolTip(_("determines how far you can see in meters"));
 	sightRangeText = new wxStaticText(graphicsPanel, wxID_ANY, _("Unlimited"), wxPoint(x_row1 + 210,y+3));
 	y+=25;
 
-	shadowOptimizations=new wxCheckBox(graphicsPanel, shadowopt, _("Shadow Performance Optimizations"), wxPoint(x_row1, y), wxSize(200, -1), 0);
+	shadowOptimizations=new wxCheckBox(graphicsPanel, wxID_ANY, _("Shadow Performance Optimizations"), wxPoint(x_row1, y), wxSize(200, -1), 0);
 	shadowOptimizations->SetToolTip(_("When turned on, it disables the vehicles shadow when driving in first person mode."));
 	y+=25;
 
@@ -1404,7 +1367,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
-	screenShotFormat =new wxValueChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
+	screenShotFormat=new wxValueChoice(graphicsPanel, -1, wxPoint(x_row1, y), wxSize(200, -1), 0);
 	screenShotFormat->AppendValueItem(wxT("jpg (smaller, default)"), _("jpg (smaller, default)"));
 	screenShotFormat->AppendValueItem(wxT("png (bigger, no quality loss)"), _("png (bigger, no quality loss)"));
 	screenShotFormat->SetToolTip(_("In what Format should screenshots be saved?"));
@@ -1414,29 +1377,29 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	ffEnable=new wxCheckBox(ffPanel, -1, _("Enable Force Feedback"), wxPoint(150, 25));
 
 	dText = new wxStaticText(ffPanel, -1, _("Overall force level:"), wxPoint(20,53));
-	ffOverall=new wxSlider(ffPanel, FFSLIDER, 100, 0, 1000, wxPoint(150, 50), wxSize(200, 40));
+	ffOverall=new wxSlider(ffPanel, scroll_force_feedback, 100, 0, 1000, wxPoint(150, 50), wxSize(200, 40));
 	ffOverall->SetToolTip(_("Adjusts the level of all the forces."));
 	ffOverallText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,53));
 
 	dText = new wxStaticText(ffPanel, -1, _("Steering feedback level:"), wxPoint(20,103));
-	ffHydro=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 100), wxSize(200, 40));
+	ffHydro=new wxSlider(ffPanel, scroll_force_feedback, 100, 0, 4000, wxPoint(150, 100), wxSize(200, 40));
 	ffHydro->SetToolTip(_("Adjusts the contribution of forces coming from the wheels and the steering mechanism."));
 	ffHydroText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,103));
 
 	dText = new wxStaticText(ffPanel, -1, _("Self-centering level:"), wxPoint(20,153));
-	ffCenter=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 150), wxSize(200, 40));
+	ffCenter=new wxSlider(ffPanel, scroll_force_feedback, 100, 0, 4000, wxPoint(150, 150), wxSize(200, 40));
 	ffCenter->SetToolTip(_("Adjusts the self-centering effect applied to the driving wheel when driving at high speed."));
 	ffCenterText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,153));
 
 	dText = new wxStaticText(ffPanel, -1, _("Inertia feedback level:"), wxPoint(20,203));
-	ffCamera=new wxSlider(ffPanel, FFSLIDER, 100, 0, 4000, wxPoint(150, 200), wxSize(200, 40));
+	ffCamera=new wxSlider(ffPanel, scroll_force_feedback, 100, 0, 4000, wxPoint(150, 200), wxSize(200, 40));
 	ffCamera->SetToolTip(_("Adjusts the contribution of forces coming shocks and accelerations (this parameter is currently unused)."));
 	ffCamera->Enable(false);
 	ffCameraText=new wxStaticText(ffPanel, -1, wxString(), wxPoint(360,203));
 
-	//update textboxes
+	//update text boxes
 	wxScrollEvent dummye;
-	OnForceFeedbackScroll(dummye);
+	OnScrollForceFeedback(dummye);
 
 	//network panel
 #ifdef NETWORK
@@ -1454,7 +1417,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	//dText = new wxStaticText(netPanel, -1, wxString("Servers list: "), wxPoint(5,5));
 	wxSizer *sizer_net_middle = new wxBoxSizer(wxHORIZONTAL);
-	networkhtmw = new wxHtmlWindow(netPanel, main_html, wxPoint(0, 30), wxSize(480, 270));
+	networkhtmw = new wxHtmlWindow(netPanel, clicked_html_link_main, wxPoint(0, 30), wxSize(480, 270));
 	//networkhtmw->LoadPage(REPO_HTML_SERVERLIST);
 	networkhtmw->SetPage(_("<p>How to play in Multiplayer:</p><br><ol><li>Click on the <b>Update</b> button to see available servers here.</li><li>Click on any underlined Server in the list.</li><li>Click on <b>Save and Play</b> button to start the game.</li></ol>"));
 	networkhtmw->SetToolTip(_("Click on blue hyperlinks to select a server."));
@@ -1476,7 +1439,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	serverpassword->SetToolTip(_("The server password, if required."));
 	sizer_net->Add(panel_net_bottom, 0, wxGROW);
 
-	btnUpdate = new wxButton(panel_net_bottom, net_test, _("Update"), wxPoint(360, 5), wxSize(110,65));
+	btnUpdate = new wxButton(panel_net_bottom, button_net_test, _("Update"), wxPoint(360, 5), wxSize(110,65));
 
 	netPanel->SetSizer(sizer_net);
 
@@ -1495,9 +1458,9 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	// get sound devices
 
-	wxLogStatus(wxT("known Audio Devices: "));
+	wxLogStatus(wxT("Known Audio Devices: "));
 	char *devices = (char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
-	while(devices && *devices !=NULL)
+	while(devices && *devices != 0)
 	{
 		// missing header fr this:
 		//ALCdevice *device = alcOpenDevice(devices);
@@ -1518,16 +1481,15 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 		wxLogStatus(wxT(" *") + token);
 	}
 
-
-	dText = new wxStaticText(advancedPanel, wxID_ANY, _("Sound Volume:"), wxPoint(10,y+3));
-	soundVolume=new wxSlider(advancedPanel, volumeslider, 100, 0, 100, wxPoint(x_row1, y), wxSize(200, -1));
+	dText = new wxStaticText(advancedPanel, -1, _("Sound Volume:"), wxPoint(10, y+3));
+	soundVolume=new wxSlider(advancedPanel, scroll_volume, 100, 0, 100, wxPoint(x_row1, y), wxSize(200, -1));
 	soundVolume->SetToolTip(_("sets the master volume"));
-	soundVolumeText = new wxStaticText(advancedPanel, wxID_ANY, _("100 %"), wxPoint(x_row1 + 210,y+3));
+	soundVolumeText = new wxStaticText(advancedPanel, -1, _("100 %"), wxPoint(x_row1 + 210, y+3));
 	y+=35;
 #endif //USE_OPENAL
 
-
-	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10,y+3));
+	// Threads
+	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10, y+3));
 	thread=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 	thread->AppendValueItem(wxT("1 (Single Core CPU)"), _("1 (Single Core CPU)"));
 	thread->AppendValueItem(wxT("2 (Hyper-Threading or Dual core CPU)"), _("2 (Hyper-Threading or Dual core CPU)"));
@@ -1535,6 +1497,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
 	y+=35;
 
+	// Lights
 	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y+3));
 	flaresMode=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
 //	flaresMode->AppendValueItem(wxT("None (fastest)"), _("None (fastest)")); //this creates a bug in the autopilot
@@ -1545,30 +1508,35 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	flaresMode->SetToolTip(_("Determines which lights will project light on the environment.\nThe more light sources are used, the slowest it will be."));
 	y+=35;
 
+	// FPS-Limiter
+	dText = new wxStaticText(advancedPanel, -1, _("FPS-Limiter:"), wxPoint(10, y+3));
+	fpsLimiter=new wxSlider(advancedPanel, scroll_fps_limiter, 200, 10, 200, wxPoint(x_row1, y), wxSize(200, -1));
+	fpsLimiter->SetToolTip(_("sets the maximum frames per second"));
+	fpsLimiterText = new wxStaticText(advancedPanel, -1, _("Unlimited"), wxPoint(x_row1 + 210, y+3));
+	y+=35;
+
+	// Cache
 	dText = new wxStaticText(advancedPanel, -1, _("In case the mods cache becomes corrupted, \nuse these buttons to fix the cache."), wxPoint(10, y));
-	y+=40;
-	
-	wxButton *btn = new wxButton(advancedPanel, regen_cache, _("Regen cache"), wxPoint(x_row1, y));
+
+	wxButton *btn = new wxButton(advancedPanel, button_regen_cache, _("Regen cache"), wxPoint(x_row2-52, y));
 	btn->SetToolTip(_("Use this to regenerate the cache outside of RoR. If this does not work, use the clear cache button."));
 	
-	btn = new wxButton(advancedPanel, clear_cache, _("Clear cache"), wxPoint(x_row2, y));
+	btn = new wxButton(advancedPanel, button_clear_cache, _("Clear cache"), wxPoint(x_row2+43, y));
 	btn->SetToolTip(_("Use this to remove the whole cache and force the generation from ground up."));
-	y+=30;
+	y+=45;
 
-
-	dText = new wxStaticText(advancedPanel, -1, _("Various Settings:"), wxPoint(10,y+3));
-	replaymode=new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(x_row1, y));
+	// Various Settings
+	dText = new wxStaticText(advancedPanel, -1, _("Various Settings:"), wxPoint(10, y+3));
+	replaymode = new wxCheckBox(advancedPanel, -1, _("Replay Mode"), wxPoint(x_row1, y));
 	replaymode->SetToolTip(_("Replay mode. (Will affect your frame rate)"));
 	y+=15;
-	posstor=new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(x_row1, y));
+	posstor = new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(x_row1, y));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 	y+=15;
-
-	autodl=new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(x_row1, y));
+	autodl = new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(x_row1, y));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
 	autodl->Disable();
 	y+=15;
-
 	hydrax=new wxCheckBox(advancedPanel, -1, _("Hydrax Water System"), wxPoint(x_row1, y));
 	hydrax->SetToolTip(_("Enables the new water rendering system. EXPERIMENTAL. Overrides any water settings."));
 	hydrax->Disable();
@@ -1613,17 +1581,17 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	sizer_gpu->Add(sizer_gpu2, 1, wxGROW, 3);
 
-	wxButton *btng = new wxButton(GPUPanel, check_opencl, _("Check for OpenCL Support"));
+	wxButton *btng = new wxButton(GPUPanel, button_check_opencl, _("Check for OpenCL Support"));
 	sizer_gpu->Add(btng, 0, wxGROW, 3);
 
-	wxButton *btnw = new wxButton(GPUPanel, check_opencl_bw, _("Check OpenCL Bandwidth"));
+	wxButton *btnw = new wxButton(GPUPanel, button_check_opencl_bw, _("Check OpenCL Bandwidth"));
 	sizer_gpu->Add(btnw, 0, wxGROW, 3);
 
 	GPUPanel->SetSizer(sizer_gpu);
 #endif // USE_OPENCL
 
 	//	controlstimer=new wxTimer(this, CONTROLS_TIMER_ID);
-	timer1=new wxTimer(this, UPDATE_RESET_TIMER_ID);
+	timer1=new wxTimer(this, timer_update_reset);
 
 	// inititalize ogre only when we really need it due to long startup times
 	ogreRoot = 0;
@@ -1788,7 +1756,7 @@ void MyDialog::loadOgre()
 	updateRendersystems(ogreRoot->getRenderSystem());
 }
 
-void MyDialog::onChangeShadowChoice(wxCommandEvent &e)
+void MyDialog::OnChoiceShadow(wxCommandEvent &e)
 {
 	// TBD
 	bool enable = (shadow->GetSelection() != 0);
@@ -1802,7 +1770,7 @@ void MyDialog::onChangeShadowChoice(wxCommandEvent &e)
 	}
 }
 
-void MyDialog::onChangeLanguageChoice(wxCommandEvent& event)
+void MyDialog::OnChoiceLanguage(wxCommandEvent& event)
 {
 	wxString warning = _("You must save and restart the program to activate the new language!");
 	wxString caption = _("new Language selected");
@@ -1890,7 +1858,7 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 			renderer_choice.resize(counter + 1);
 
 			renderer_text[counter] = new wxStaticText(rsPanel, wxID_ANY, conv("."), wxPoint(x, y+3), wxSize(210, 25));
-			renderer_choice[counter] = new wxValueChoice(rsPanel, RENDERER_OPTION + counter, wxPoint(x + 220, y), wxSize(220, -1), 0);
+			renderer_choice[counter] = new wxValueChoice(rsPanel, wxID_ANY, wxPoint(x + 220, y), wxSize(220, -1), 0);
 			renderer_name[counter] = std::string();
 		} else
 		{
@@ -2074,28 +2042,28 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 void MyDialog::SetDefaults()
 {
-	inputgrab->SetSelection(0); //All
-	textfilt->SetSelection(3); //anisotropic
-	sky->SetSelection(1);//caelum
-	shadow->SetSelection(1);//texture shadows
+	inputgrab->SetSelection(0);          // All
+	textfilt->SetSelection(3);           // anisotropic
+	sky->SetSelection(1);                // caelum
+	shadow->SetSelection(1);             // texture shadows
 	shadowOptimizations->SetValue(true);
-	sightRange->SetValue(5000); //5k = unlimited
-	water->SetSelection(0);//basic water
-	waves->SetValue(false); // no waves
-	vegetationMode->SetSelection(3); // Full
+	sightRange->SetValue(5000);          // 5k = unlimited
+	water->SetSelection(0);              // basic water
+	waves->SetValue(false);              // no waves
+	vegetationMode->SetSelection(3);     // Full
 	particles->SetValue(true);
-
-	flaresMode->SetSelection(2); // all trucks
-	//languageMode->SetSelection(0);
+	flaresMode->SetSelection(2);         // all trucks
+	fpsLimiter->SetValue(200);           // 200 = unlimited
 
 	ffEnable->SetValue(true);
 	ffOverall->SetValue(100);
 	ffHydro->SetValue(100);
 	ffCenter->SetValue(50);
 	ffCamera->SetValue(0);
+
 	//update textboxes
 	wxScrollEvent dummye;
-	OnForceFeedbackScroll(dummye);
+	OnScrollForceFeedback(dummye);
 
 	screenShotFormat->SetSelection(0);
 	gearBoxMode->SetSelection(0);
@@ -2139,7 +2107,7 @@ void MyDialog::SetDefaults()
 	soundVolume->SetValue(100);
 #endif // USE_OPENAL
 
-	thread->SetSelection(1);//2 CPUs is now the norm (incl. HyperThreading)
+	thread->SetSelection(1); //2 CPUs is now the norm (incl. HyperThreading)
 
 #ifdef NETWORK
 	network_enable->SetValue(false);
@@ -2215,7 +2183,8 @@ void MyDialog::getSettingsControls()
 	settings["Sound Volume"] = tmp;
 #endif //USE_OPENAL
 	settings["Threads"] = thread->getSelectedValueAsSTDString();
-
+	sprintf(tmp, "%d", fpsLimiter->GetValue());
+	settings["FPS-Limiter"] = tmp;
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
 	sprintf(tmp, "%d", ffOverall->GetValue());
 	settings["Force Feedback Gain"] = tmp;
@@ -2285,6 +2254,14 @@ void MyDialog::updateSettingsControls()
 			sightRange->SetValue(sightrange);
 	}
 
+	long fpslimit = 200;
+	st = settings["FPS-Limiter"];
+	if (st.length()>0)
+	{
+		if(conv(st).ToLong(&fpslimit))
+			fpsLimiter->SetValue(fpslimit);
+	}
+
 #ifdef USE_OPENAL
 	st = settings["Sound Volume"];
 	long volume = 100;
@@ -2345,9 +2322,9 @@ void MyDialog::updateSettingsControls()
 	st = settings["Preselected Map"]; if (st.length()>0) presel_map->SetValue(conv(st));
 	st = settings["Preselected Truck"]; if (st.length()>0) presel_truck->SetValue(conv(st));
 
-	//update textboxes
+	// update textboxes
 	wxScrollEvent dummye;
-	OnForceFeedbackScroll(dummye);
+	OnScrollForceFeedback(dummye);
 	
 	flaresMode->setSelectedValue(settings["Lights"]);
 	vegetationMode->setSelectedValue(settings["Vegetation"]);
@@ -2373,9 +2350,9 @@ void MyDialog::updateSettingsControls()
 	st = settings["User Token"]; if (st.length()>0) usertoken->SetValue(conv(st));
 #endif
 	// update slider text
-	OnSightrangesliderScroll(dummye);
-	OnVolumesliderScroll(dummye);
-
+	OnScrollSightRange(dummye);
+	OnScrollVolume(dummye);
+	OnScrollFPSLimiter(dummye);
 }
 
 bool MyDialog::LoadConfig()
@@ -2502,7 +2479,7 @@ void MyDialog::OnQuit(wxCloseEvent& WXUNUSED(event))
 	exit(0);
 }
 
-void MyDialog::OnChangeRenderer(wxCommandEvent& ev)
+void MyDialog::OnChoiceRenderer(wxCommandEvent& ev)
 {
 	if(!ogreRoot) return;
 	try
@@ -2891,11 +2868,11 @@ void MyDialog::OnButClearCache(wxCommandEvent& event)
 	wxMessageBox(_("Cache cleared"), wxT("RoR: Cache cleared"), wxICON_INFORMATION);
 }
 
-void MyDialog::OnSightrangesliderScroll(wxScrollEvent &e)
+void MyDialog::OnScrollSightRange(wxScrollEvent &e)
 {
 	wxString s;
 	int v = sightRange->GetValue();
-	if(v == sightRange->GetMax())
+	if (v == sightRange->GetMax())
 	{
 		s = _("Unlimited");
 	} else
@@ -2905,12 +2882,12 @@ void MyDialog::OnSightrangesliderScroll(wxScrollEvent &e)
 	sightRangeText->SetLabel(s);
 }
 
-void MyDialog::OnVolumesliderScroll(wxScrollEvent &e)
+void MyDialog::OnScrollVolume(wxScrollEvent &e)
 {
 #ifdef USE_OPENAL
 	wxString s;
 	int v = soundVolume->GetValue();
-	if(v == soundVolume->GetMin())
+	if (v == soundVolume->GetMin())
 	{
 		s = _("Muted");
 	} else
@@ -2921,7 +2898,7 @@ void MyDialog::OnVolumesliderScroll(wxScrollEvent &e)
 #endif //USE_OPENAL
 }
 
-void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
+void MyDialog::OnScrollForceFeedback(wxScrollEvent & event)
 {
 	wxString s;
 	int val=ffOverall->GetValue();
@@ -2941,8 +2918,22 @@ void MyDialog::OnForceFeedbackScroll(wxScrollEvent & event)
 	ffCameraText->SetLabel(s);
 }
 
+void MyDialog::OnScrollFPSLimiter(wxScrollEvent & event)
+{
+	wxString s;
+	int v = fpsLimiter->GetValue();
+	if (v == fpsLimiter->GetMax())
+	{
+		s = _("Unlimited");
+	} else
+	{
+		s.Printf(wxT("%i fps"), v);
+	}
+	fpsLimiterText->SetLabel(s);
+}
+
 #if wxCHECK_VERSION(2, 8, 0)
-void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
+void MyDialog::OnClickedHtmlLinkMain(wxHtmlLinkEvent& event)
 {
 	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
 	wxString href=linkinfo.GetHref();
@@ -2973,7 +2964,7 @@ void MyDialog::OnLinkClicked(wxHtmlLinkEvent& event)
 //	res->ShowModal();
 }
 
-void MyDialog::OnLinkClickedUpdate(wxHtmlLinkEvent& event)
+void MyDialog::OnClickedHtmlLinkUpdate(wxHtmlLinkEvent& event)
 {
 	wxHtmlLinkInfo linkinfo=event.GetLinkInfo();
 	wxString href=linkinfo.GetHref();
@@ -2991,7 +2982,7 @@ void MyDialog::OnLinkClickedUpdate(wxHtmlLinkEvent& event)
 }
 #endif // version 2.8
 
-void MyDialog::OnNoteBook2PageChange(wxNotebookEvent& event)
+void MyDialog::OnChangedNotebook2(wxNotebookEvent& event)
 {
 	// settings notebook page change
 	if(event.GetSelection() == 0)
@@ -3066,7 +3057,7 @@ std::string MyDialog::readVersionInfo()
 }
 #endif //WIN32
 
-void MyDialog::OnNoteBookPageChange(wxNotebookEvent& event)
+void MyDialog::OnChangedNotebook1(wxNotebookEvent& event)
 {
 	wxString tabname = nbook->GetPageText(event.GetSelection());
 	if(tabname == _("Updates"))
@@ -3092,12 +3083,12 @@ void MyDialog::OnTimerReset(wxTimerEvent& event)
 	btnUpdate->Enable(true);
 }
 
-void MyDialog::OnGetUserToken(wxCommandEvent& event)
+void MyDialog::OnButGetUserToken(wxCommandEvent& event)
 {
 	wxLaunchDefaultBrowser(wxT("http://usertoken.rigsofrods.com"));
 }
 
-void MyDialog::OnTestNet(wxCommandEvent& event)
+void MyDialog::OnButTestNet(wxCommandEvent& event)
 {
 #ifdef NETWORK
 	btnUpdate->Enable(false);
