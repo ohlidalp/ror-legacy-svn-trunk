@@ -18,17 +18,19 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "envmap.h"
-#include "Beam.h"
 
+#include "Beam.h"
+#include "Settings.h"
 #include "SkyManager.h"
 
-#include "Settings.h"
+using namespace Ogre;
 
-Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bool dynamic) : debug_sn(0)
+Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bool dynamic) :
+	  debug_sn(0)
+	, isDynamic(dynamic)
+	, inited(false)
+	, round(0)
 {
-	isDynamic=dynamic;
-	inited=false;
-	round=0;
 	texture = TextureManager::getSingleton().createManual("EnvironmentTexture",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_CUBE_MAP, 256, 256, 0,
 		PF_R8G8B8, TU_RENDERTARGET);
@@ -89,9 +91,9 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 			Vector3 position = Vector3::ZERO;
 			Vector3 scale = Vector3(1,1,1);
 			
-			Ogre::MeshPtr mesh = Ogre::MeshManager::getSingletonPtr()->createManual("cubeMapDebug", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			MeshPtr mesh = MeshManager::getSingletonPtr()->createManual("cubeMapDebug", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			// create sub mesh
-			Ogre::SubMesh *sub = mesh->createSubMesh();
+			SubMesh *sub = mesh->createSubMesh();
 
 			// Initialize render operation
 			sub->operationType = RenderOperation::OT_TRIANGLE_LIST;
@@ -162,7 +164,7 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 			sub->indexData->indexBuffer = indexBuffer;
 
 			// Index data
-			static const Ogre::uint16 indexData[] = {
+			static const uint16 indexData[] = {
 			//   Indices         // Face
 			   0,  1,  2,      //  0
 			   2,  1,  3,      //  1
@@ -261,4 +263,3 @@ void Envmap::forceUpdate(Vector3 center)
 void Envmap::prepareShutdown()
 {
 }
-

@@ -39,7 +39,7 @@ class CameraManager : public RoRSingletonNoCreation < CameraManager >
 
 public:
 
-	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam);
+	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl,  HeightFinder *hf);
 	~CameraManager();
 
 	enum CameraBehaviors
@@ -65,17 +65,19 @@ public:
 
 protected:
 
+	cameraContext_t ctx;
 	DOFManager *mDOF;
+	HeightFinder *mHfinder;
 	Ogre::Camera *mCamera;
 	Ogre::Radian pushcamRotX, pushcamRotY;
 	Ogre::SceneManager *mSceneMgr;
 	Ogre::Vector3 mLastPosition;
-	cameraContext_t ctx;
+	RoRFrameListener *mEfl;
 	float mMoveScale, mRotScale;
 	float mMoveSpeed, mRotateSpeed;
-
-	CameraBehavior *currentBehavior;
+	
 	int currentBehaviorID;
+	CameraBehavior *currentBehavior;
 
 	std::map <int , CameraBehavior *> globalBehaviors;
 

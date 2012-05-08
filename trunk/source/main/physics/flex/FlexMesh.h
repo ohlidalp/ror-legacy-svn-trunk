@@ -17,21 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __FlexMesh_H__
-#define __FlexMesh_H__
+#ifndef __FlexMesh_H_
+#define __FlexMesh_H_
 
 #include "RoRPrerequisites.h"
 
+#include "BeamData.h"
 #include "Ogre.h"
-#include "Beam.h"
-#include "materialFunctionMapper.h"
-
-using namespace Ogre;
 
 class Flexable
 {
 public:
-	virtual Vector3 flexit()=0;
+	virtual Ogre::Vector3 flexit()=0;
 	virtual void setVisible(bool visible) = 0;
 
 };
@@ -41,29 +38,29 @@ class FlexMesh: public Flexable
 private:
 typedef struct
 {
-	Vector3 vertex;
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
+	Ogre::Vector3 vertex;
+	Ogre::Vector3 normal;
+//	Ogre::Vector3 color;
+	Ogre::Vector2 texcoord;
 } CoVertice_t;
 
 typedef struct
 {
-	Vector3 vertex;
+	Ogre::Vector3 vertex;
 } posVertice_t;
 
 typedef struct
 {
-	Vector3 normal;
-//	Vector3 color;
-	Vector2 texcoord;
+	Ogre::Vector3 normal;
+//	Ogre::Vector3 color;
+	Ogre::Vector2 texcoord;
 } norVertice_t;
 
 	Ogre::MeshPtr msh;
-	SubMesh* subface;
-	SubMesh* subband;
-	VertexDeclaration* decl;
-	HardwareVertexBufferSharedPtr vbuf;
+	Ogre::SubMesh* subface;
+	Ogre::SubMesh* subband;
+	Ogre::VertexDeclaration* decl;
+	Ogre::HardwareVertexBufferSharedPtr vbuf;
 
 	size_t nVertices;
 	size_t vbufCount;
@@ -92,18 +89,16 @@ typedef struct
 	unsigned short *bandfaces;
 	node_t *nodes;
 	int nbrays;
-	SceneManager *smanager;
+	Ogre::SceneManager *smanager;
 	bool is_rimmed;
 	float rim_ratio;
 
 public:
-	FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed=false, float rimratio=1.0);
-	Vector3 updateVertices();
-	Vector3 updateShadowVertices();
-	Vector3 flexit();
+	FlexMesh(Ogre::SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed=false, float rimratio=1.0);
+	Ogre::Vector3 updateVertices();
+	Ogre::Vector3 updateShadowVertices();
+	Ogre::Vector3 flexit();
 	void setVisible(bool visible);
 };
 
-
-
-#endif
+#endif // __FlexMesh_H_

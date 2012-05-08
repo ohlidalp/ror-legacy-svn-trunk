@@ -22,15 +22,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-//body
-
-#include "Ogre.h"
-#include "Beam.h"
+#include "BeamData.h"
 #include "materialFunctionMapper.h"
-
-using namespace Ogre;
-
-#define MAX_SET_INTERVALS 256
+#include "Ogre.h"
 
 class FlexBody
 {
@@ -49,44 +43,44 @@ private:
 		int nx;
 		int ny;
 		int nz;
-		Vector3 coords;
+		Ogre::Vector3 coords;
 	} Locator_t;
+
+	static const int MAX_SET_INTERVALS = 256;
 
 	node_t *nodes;
 	int numnodes;
-	size_t vertex_count;//,index_count;
-	Vector3* vertices;
-	Vector3* dstpos;
-	Vector3* srcnormals;
-	Vector3* dstnormals;
-	ARGB* srccolors;
-//	unsigned* indices;
+	size_t vertex_count;
+	Ogre::Vector3* vertices;
+	Ogre::Vector3* dstpos;
+	Ogre::Vector3* srcnormals;
+	Ogre::Vector3* dstnormals;
+	Ogre::ARGB* srccolors;
 	Locator_t *locs; //1 loc per vertex
 
 	int cref;
 	int cx;
 	int cy;
-	Vector3 coffset;
-	SceneNode *snode;
+	Ogre::Vector3 coffset;
+	Ogre::SceneNode *snode;
 
 	interval_t nodeset[MAX_SET_INTERVALS];
 	int freenodeset;
 
-	bool hasshared;
 	int sharedcount;
-	HardwareVertexBufferSharedPtr sharedpbuf;
-	HardwareVertexBufferSharedPtr sharednbuf;
-	HardwareVertexBufferSharedPtr sharedcbuf;
+	Ogre::HardwareVertexBufferSharedPtr sharedpbuf;
+	Ogre::HardwareVertexBufferSharedPtr sharednbuf;
+	Ogre::HardwareVertexBufferSharedPtr sharedcbuf;
 	int numsubmeshbuf;
 	int *submeshnums;
 	int *subnodecounts;
-	HardwareVertexBufferSharedPtr subpbufs[16];//positions
-	HardwareVertexBufferSharedPtr subnbufs[16];//normals
-	HardwareVertexBufferSharedPtr subcbufs[16];//colors
+	Ogre::HardwareVertexBufferSharedPtr subpbufs[16];//positions
+	Ogre::HardwareVertexBufferSharedPtr subnbufs[16];//normals
+	Ogre::HardwareVertexBufferSharedPtr subcbufs[16];//colors
 
+	bool enabled;
 
-
-
+	bool hasshared;
 	bool haveshadows;
 	bool havetangents;
 	bool havetexture;
@@ -96,28 +90,20 @@ private:
 	Ogre::MeshPtr msh;
 
 public:
-	FlexBody(SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows, MaterialReplacer *mr);
+	FlexBody(Ogre::SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Ogre::Vector3 offset, Ogre::Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows, MaterialReplacer *mr);
 
-/*	void getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &vertices,
-											  size_t &index_count, unsigned* &indices,
-											  const Vector3 &position,
-											  const Quaternion &orient,const Vector3 &scale);*/
-
-	void addinterval(int from, int to) {nodeset[freenodeset].from=from; nodeset[freenodeset].to=to; freenodeset++;};
+	void addinterval(int from, int to);
 	bool isinset(int n);
-	void printMeshInfo(Mesh* mesh);
+	void printMeshInfo(Ogre::Mesh* mesh);
 	void setVisible(bool visible);
-	Vector3 flexit();
+	Ogre::Vector3 flexit();
 	void reset();
 	void updateBlend();
 	void writeBlend();
-	SceneNode *getSceneNode() { return snode; };
+	Ogre::SceneNode *getSceneNode() { return snode; };
 
-	int cameramode;
-	bool enabled;
+	int flexBodyCameraMode;
 	void setEnabled(bool e);
 };
 
-
-
-#endif
+#endif // __FlexBody_H__

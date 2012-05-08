@@ -22,15 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include <math.h>
+#include "BeamData.h"
 #include "Ogre.h"
-#include "Beam.h"
-#include "Airfoil.h"
-#include "aeroengine.h"
-class Aeroengine;
-
-using namespace Ogre;
-
 
 class FlexAirfoil
 {
@@ -38,33 +31,33 @@ private:
 	float airfoilpos[90];
 	typedef struct
 	{
-		Vector3 vertex;
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 vertex;
+		Ogre::Vector3 normal;
+	//	Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} CoVertice_t;
 
 	typedef struct
 	{
-		Vector3 vertex;
+		Ogre::Vector3 vertex;
 	} posVertice_t;
 
 	typedef struct
 	{
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 normal;
+	//	Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} norVertice_t;
 
 	Ogre::MeshPtr msh;
-	SubMesh* subface;
-	SubMesh* subband;
+	Ogre::SubMesh* subface;
+	Ogre::SubMesh* subband;
 
-	SubMesh* subcup;
-	SubMesh* subcdn;
+	Ogre::SubMesh* subcup;
+	Ogre::SubMesh* subcdn;
 
-	VertexDeclaration* decl;
-	HardwareVertexBufferSharedPtr vbuf;
+	Ogre::VertexDeclaration* decl;
+	Ogre::HardwareVertexBufferSharedPtr vbuf;
 
 	size_t nVertices;
 	size_t vbufCount;
@@ -95,7 +88,7 @@ private:
 	unsigned short *cupfaces;
 	unsigned short *cdnfaces;
 	node_t *nodes;
-	SceneManager *smanager;
+	Ogre::SceneManager *smanager;
 
 
 	float sref;
@@ -140,14 +133,14 @@ public:
 
 	char debug[256];
 
-	FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able);
+	FlexAirfoil(Ogre::SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Ogre::Vector2 texlf, Ogre::Vector2 texrf, Ogre::Vector2 texlb, Ogre::Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able);
 	~FlexAirfoil();
 
-	Vector3 updateVertices();
-	Vector3 updateShadowVertices();
+	Ogre::Vector3 updateVertices();
+	Ogre::Vector3 updateShadowVertices();
 	void setControlDeflection(float val);
 
-	Vector3 flexit();
+	Ogre::Vector3 flexit();
 
 	void enableInducedDrag(float span, float area, bool l);
 
@@ -156,5 +149,4 @@ public:
 	void updateForces();
 };
 
-
-#endif
+#endif // __FlexAirfoil_H__

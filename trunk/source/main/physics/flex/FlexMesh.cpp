@@ -18,14 +18,19 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexMesh.h"
+
+#include "Ogre.h"
 #include "ResourceBuffer.h"
-FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed, float rimratio)
+
+using namespace Ogre;
+
+FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed, float rimratio) :
+	  is_rimmed(rimmed)
+	, nbrays(nrays)
+	, nodes(nds)
+	, rim_ratio(rimratio)
+	, smanager(manager)
 {
-	is_rimmed=rimmed;
-	rim_ratio=rimratio;
-	smanager=manager;
-	nbrays=nrays;
-	nodes=nds;
 	/// Create the mesh via the MeshManager
 	msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
 

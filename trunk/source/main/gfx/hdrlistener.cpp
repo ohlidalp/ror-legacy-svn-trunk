@@ -19,21 +19,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "hdrlistener.h"
 
-//---------------------------------------------------------------------------
-HDRListener::HDRListener()
-{
-}
-//---------------------------------------------------------------------------
-HDRListener::~HDRListener()
-{
-}
-//---------------------------------------------------------------------------
 void HDRListener::notifyViewportSize(int width, int height)
 {
 	mVpWidth = width;
 	mVpHeight = height;
 }
-//---------------------------------------------------------------------------
+
 void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 {
 	// Get some RTT dimensions for later calculations
@@ -46,7 +37,7 @@ void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 		if(def->name == "rt_bloom0")
 		{
 			mBloomSize = (int)def->width; // should be square
-			// Calculate gaussian texture offsets & weights
+			// Calculate Gaussian texture offsets & weights
 			float deviation = 3.0f;
 			float texelSize = 1.0f / (float)mBloomSize;
 
@@ -86,7 +77,7 @@ void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 		}
 	}
 }
-//---------------------------------------------------------------------------
+
 void HDRListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
 {
 	// Prepare the fragment params offsets
@@ -122,9 +113,8 @@ void HDRListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &m
 		}
 	}
 }
-//---------------------------------------------------------------------------
+
 void HDRListener::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
 {
 }
-//---------------------------------------------------------------------------
 

@@ -22,13 +22,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 
-#include <Ogre.h>
-#include "network.h"
-#include "pthread.h"
 #include "RoRFrameListener.h"
-#include "collisions.h"
 #include "Settings.h"
-#include "BeamEngine.h"
+#include "collisions.h"
+#include "network.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -41,7 +38,7 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::_instance = 0;
 
-BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *_w, Camera *pcam) :
+BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam) :
 	  manager(manager)
 	, parent(parent)
 	, win(win)
@@ -50,28 +47,19 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, mapsizez(mapsizez)
 	, icollisions(icollisions)
 	, mfinder(mfinder)
-	, w(_w)
+	, w(w)
 	, pcam(pcam)
-	, thread_mode(THREAD_SINGLE)
-	//, trucks(0)
-	, free_truck(0)
 	, current_truck(-1)
 	, done_count(0)
+	, free_truck(0)
 	, physFrame(0)
 	, tdr(0)
+	, thread_mode(THREAD_SINGLE)
 {
-	pthread_mutex_init(&done_count_mutex, NULL);
-	pthread_mutex_init(&vehicles_mutex, NULL);
-	pthread_cond_init(&done_count_cv, NULL);
-
-	for (int t=0; t<MAX_TRUCKS; t++)
+	for (int t=0; t < MAX_TRUCKS; t++)
 		trucks[t] = 0;
 
-	String threadMode = SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)");
-
-	if (threadMode == "1 (Single Core CPU)")
-		thread_mode = THREAD_SINGLE;
-	else
+	if (SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)") == "2 (Hyper-Threading or Dual core CPU)")
 		thread_mode = THREAD_MULTI;
 
 	if (BSETTING("2DReplay", false))
@@ -95,9 +83,9 @@ bool BeamFactory::removeBeam(Beam *b)
 	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
 	std::map < unsigned int, Beam *>::iterator it2;
 
-	for(it1=streamables.begin(); it1!=streamables.end(); it1++)
+	for (it1=streamables.begin(); it1!=streamables.end(); it1++)
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end(); it2++)
+		for (it2=it1->second.begin(); it2!=it1->second.end(); it2++)
 		{
 			if (it2->second == b)
 			{
@@ -118,7 +106,7 @@ bool BeamFactory::removeBeam(Beam *b)
 	return false;
 }
 
-Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<Ogre::String> *truckconfig, Skin *skin, bool freePosition)
+Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<String> *truckconfig, Skin *skin, bool freePosition)
 {
 	bool networked=false, networking=false;
 	if (net) networking = true;
@@ -191,8 +179,8 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		client_t *c = net->getClientInfo(reg->sourceid);
 		if (c)
 		{
-			Ogre::UTFString username = ChatSystem::getColouredName(*c);
-			Ogre::UTFString message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
+			UTFString username = ChatSystem::getColouredName(*c);
+			UTFString message = username + ChatSystem::commandColour + _L(" spawned a new vehicle: ") + ChatSystem::normalColour + treg->name;
 #ifdef USE_MYGUI
 			Console *console = Console::getSingletonPtrNoCreation();
 			if (console) console->putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_VEHILCE_ADD, message, "car_add.png");
@@ -223,7 +211,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 	}
 
 	// fill truckconfig
-	std::vector<Ogre::String> truckconfig;
+	std::vector<String> truckconfig;
 	for(int t=0; t<10; t++)
 	{
 		if (!strnlen(treg->truckconfig[t], 60))
@@ -340,9 +328,6 @@ Beam *BeamFactory::getBeam(int source_id, int stream_id)
 
 bool BeamFactory::syncRemoteStreams()
 {
-	// block until all threads done
-	//BEAMLOCK();
-
 	// we override this here, so we know if something changed and could update the player list
 	// we delete and add trucks in there, so be sure that nothing runs as we delete them ...
 	bool changes = StreamableFactory <BeamFactory, Beam>::syncRemoteStreams();
@@ -366,7 +351,7 @@ void BeamFactory::updateGUI()
 bool BeamFactory::checkForActive(int j, bool *sleepyList)
 {
 	sleepyList[j]=true;
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if ( !sleepyList[t] &&
@@ -388,7 +373,7 @@ bool BeamFactory::checkForActive(int j, bool *sleepyList)
 
 void BeamFactory::recursiveActivation(int j)
 {
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if ((trucks[t]->state==SLEEPING || trucks[t]->state==MAYSLEEP || trucks[t]->state==GOSLEEP ||(trucks[t]->state==DESACTIVATED && trucks[t]->sleepcount>=5)) &&
@@ -413,13 +398,13 @@ void BeamFactory::checkSleepingState()
 		//if its grabbed, its moving
 		//if (isnodegrabbed && trucks[truckgrabbed]->state==SLEEPING) trucks[truckgrabbed]->desactivate();
 		// put to sleep
-		for (int t=0; t<free_truck; t++)
+		for (int t=0; t < free_truck; t++)
 		{
 			if (!trucks[t]) continue;
 			if (trucks[t]->state==MAYSLEEP)
 			{
 				bool sleepyList[MAX_TRUCKS];
-				for (int i=0; i<MAX_TRUCKS; i++) sleepyList[i]=false;
+				for (int i=0; i < MAX_TRUCKS; i++) sleepyList[i]=false;
 				if (!checkForActive(t, sleepyList))
 				{
 					// no active truck in the set, put everybody to sleep
@@ -437,7 +422,7 @@ void BeamFactory::checkSleepingState()
 		// special stuff for rollable gear
 		int t;
 		bool rollmode=false;
-		for (t=0; t<free_truck; t++)
+		for (t=0; t < free_truck; t++)
 		{
 			if (!trucks[t]) continue;
 			if (trucks[t]->state != SLEEPING)
@@ -468,7 +453,7 @@ int BeamFactory::getFreeTruckSlot()
 
 void BeamFactory::activateAllTrucks()
 {
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || trucks[t]->state == DESACTIVATED)
@@ -482,7 +467,7 @@ void BeamFactory::activateAllTrucks()
 
 void BeamFactory::sendAllTrucksSleeping()
 {
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if (trucks[t]->state == ACTIVATED)
@@ -505,14 +490,14 @@ int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* bo
 {
 	// try to find the desired truck (the one in the box)
 	int id = -1;
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if (collisions->isInside(trucks[t]->nodes[0].AbsPosition, inst, box))
 		{
 			if (id == -1)
 				// first truck found
-				id=t;
+				id = t;
 			else
 				// second truck found -> unclear which vehicle was meant
 				return -1;
@@ -563,17 +548,9 @@ void BeamFactory::_deleteTruck(Beam *b)
 	if (b == 0)
 		return;
 
-	// block until all threads done
-	{
-		//BEAMLOCK();
-
-		// synced delete
-		trucks[b->trucknum] = 0;
-		// TODO: properly delete trucks
-
-		delete b;
-		b = 0;
-	}
+	trucks[b->trucknum] = 0;
+	delete b;
+	b = 0;
 
 #ifdef USE_MYGUI
 	GUI_MainMenu::getSingleton().triggerUpdateVehicleList();
@@ -610,7 +587,7 @@ bool BeamFactory::enterRescueTruck()
 {
 	// rescue!
 	// search a rescue truck
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		if (trucks[t]->rescuer) {
@@ -626,14 +603,14 @@ bool BeamFactory::enterRescueTruck()
 
 void BeamFactory::updateVisual(float dt)
 {
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		
 		// always update the labels
 		trucks[t]->updateLabels(dt);
 
-		if (trucks[t]->state!=SLEEPING && trucks[t]->loading_finished)
+		if (trucks[t]->state != SLEEPING && trucks[t]->loading_finished)
 		{
 			trucks[t]->updateSkidmarks();
 			trucks[t]->updateVisual(dt);
@@ -644,7 +621,7 @@ void BeamFactory::updateVisual(float dt)
 
 void BeamFactory::updateAI(float dt)
 {
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 		
@@ -664,7 +641,7 @@ void BeamFactory::calcPhysics(float dt)
 	if (tdr) tdr->update(dt);
 
 	// things always on
-	for (int t=0; t<free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
 
@@ -682,7 +659,7 @@ void BeamFactory::calcPhysics(float dt)
 			}
 			default:
 			{
-				if (t!=current_truck && trucks[t]->engine)
+				if (t != current_truck && trucks[t]->engine)
 					trucks[t]->engine->update(dt, 1);
 				if (trucks[t]->networking)
 					trucks[t]->sendStreamData();
@@ -716,10 +693,9 @@ void BeamFactory::removeInstance(stream_del_t *del)
 	if (del->streamid == -1)
 	{
 		// delete all streams
-		for(it_beam=it_stream->second.begin(); it_beam!=it_stream->second.end(); it_beam++)
+		for(it_beam=it_stream->second.begin(); it_beam != it_stream->second.end(); it_beam++)
 			removeInstance(it_beam->second);
-	}
-	else
+	} else
 	{
 		// find the stream matching the streamid
 		it_beam = it_stream->second.find(del->streamid);
@@ -739,86 +715,3 @@ void BeamFactory::windowResized()
 	}
 #endif // USE_MYGUI
 }
-
-#if 0
-void *threadstart()
-{
-#ifdef USE_CRASHRPT
-	if(BSETTING("NoCrashRpt", true))
-	{
-		// add the crash handler for this thread
-		CrThreadAutoInstallHelper cr_thread_install_helper;
-		MYASSERT(cr_thread_install_helper.m_nInstallStatus==0);
-	}
-#endif //USE_CRASHRPT
-
-	// 64 bit systems does have longer addresses!
-	long int id;
-	id=(long int)vid;
-	Beam *beam=threadbeam[id];
-
-	try
-	{
-		//additional exception handler required, otherwise RoR just crashes upon exception
-		while (1)
-		{
-			// sync threads
-			//beamLock->syncBeamThreads();
-
-			//do work
-			beam->threadentryMulti(id);
-		}
-	} catch(Ogre::Exception& e)
-	{
-		// try to shutdown input system upon an error
-		if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
-			INPUTENGINE.prepareShutdown();
-
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
-		showOgreWebError("An exception has occurred!", e.getFullDescription(), url);
-	}
-
-	//if(beamLock) delete(beamLock);
-	pthread_exit(NULL);
-	return NULL;
-}
-void BeamFactory::_workThread()
-{
-	ttdt=tdt;
-	tdt=dt;
-	float dtperstep=dt/(Real)steps;
-
-	for (int i=0; i<steps; i++)
-	{
-		for (int t=0; t<numtrucks; t++)
-		{
-			if(!trucks[t]) continue;
-
-			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-				trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
-		}
-		truckTruckCollisions(dtperstep);
-	}
-
-	for (int t=0; t<numtrucks; t++)
-	{
-		if(!trucks[t]) continue;
-
-		if (trucks[t]->reset_requested)
-			trucks[t]->SyncReset();
-
-		if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-		{
-			trucks[t]->lastlastposition=trucks[t]->lastposition;
-			trucks[t]->lastposition=trucks[t]->position;
-			trucks[t]->updateTruckPosition();
-		}
-		if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-			trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
-	}
-
-	ffforce=affforce/steps;
-	ffhydro=affhydro/steps;
-	if (free_hydro) ffhydro=ffhydro/free_hydro;
-}
-#endif // 0

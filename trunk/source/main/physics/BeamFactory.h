@@ -20,13 +20,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 24th of August 2009
 
-#ifndef __BEAMFACTORY_H_
-#define __BEAMFACTORY_H_
+#ifndef __BeamFactory_H_
+#define __BeamFactory_H_
 
 #include "RoRPrerequisites.h"
+
 #include "Beam.h"
-#include "TwoDReplay.h"
+#include "pthread.h"
 #include "StreamableFactory.h"
+#include "TwoDReplay.h"
 
 class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {
@@ -110,17 +112,7 @@ protected:
 	void removeInstance(Beam *b);
 	void removeInstance(stream_del_t *del);
 	void _deleteTruck(Beam *b);
-	void _waitForSyncAndLock();
-	void _ReleaseLock();
 	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
-
-	pthread_mutex_t done_count_mutex;
-	pthread_mutex_t vehicles_mutex;
-	pthread_cond_t done_count_cv;
-	pthread_mutex_t work_mutex;
-	pthread_cond_t work_cv;
-	pthread_t threads[32];
-
 };
 
-#endif // __BEAMFACTORY_H_
+#endif // __BeamFactory_H_

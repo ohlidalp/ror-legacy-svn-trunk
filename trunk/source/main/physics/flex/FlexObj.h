@@ -22,41 +22,36 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-//body
-
+#include "BeamData.h"
 #include "Ogre.h"
-#include "Beam.h"
-
-using namespace Ogre;
-
 
 class FlexObj
 {
 private:
 	typedef struct
 	{
-		Vector3 vertex;
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 vertex;
+		Ogre::Vector3 normal;
+		//Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} CoVertice_t;
 
 	typedef struct
 	{
-		Vector3 vertex;
+		Ogre::Vector3 vertex;
 	} posVertice_t;
 
 	typedef struct
 	{
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 normal;
+		//Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} norVertice_t;
 
 	Ogre::MeshPtr msh;
-	SubMesh** subs;
-	VertexDeclaration* decl;
-	HardwareVertexBufferSharedPtr vbuf;
+	Ogre::SubMesh** subs;
+	Ogre::VertexDeclaration* decl;
+	Ogre::HardwareVertexBufferSharedPtr vbuf;
 
 	size_t nVertices;
 	size_t vbufCount;
@@ -84,27 +79,24 @@ private:
 	unsigned short *faces;
 	node_t *nodes;
 	int nbrays;
-	SceneManager *smanager;
+	Ogre::SceneManager *smanager;
 
 	float *sref;
 	int triangleCount;
 
 public:
 
-
-	FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname);
+	FlexObj(Ogre::SceneManager *manager, node_t *nds, int numtexcoords, Ogre::Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname);
 	~FlexObj();
 
 	//find the zeroed id of the node v in the context of the tidx triangle
 	int findID(int tidx, int v, int numsubmeshes, int* subtexindex, int* subtriindex);
 	//with normals
-	Vector3 updateVertices();
+	Ogre::Vector3 updateVertices();
 	//with normals
-	Vector3 updateShadowVertices();
-	Vector3 flexit();
+	Ogre::Vector3 updateShadowVertices();
+	Ogre::Vector3 flexit();
 	void scale(float factor);
 };
 
-
-
-#endif
+#endif // __FlexObj_H__

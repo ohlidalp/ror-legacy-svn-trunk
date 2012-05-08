@@ -18,28 +18,34 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexBody.h"
+
+#include "MaterialReplacer.h"
 #include "ResourceBuffer.h"
 #include "Settings.h"
-
 #include "skin.h"
-#include "MaterialReplacer.h"
 
-FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows, MaterialReplacer *mr) : snode(0), faulty(false), mr(mr)
+using namespace Ogre;
+
+FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows, MaterialReplacer *mr) :
+	  flexBodyCameraMode(-2)
+	, coffset(offset)
+	, cref(ref)
+	, enabled(true)
+	, faulty(false)
+	, freenodeset(0)
+	, haveblend(true)
+	, havetangents(false)
+	, mr(mr)
+	, nodes(nds)
+	, numnodes(numnds)
+	, snode(0)
 {
-	nodes=nds;
-	numnodes=numnds;
-	cref=ref; nodes[cref].iIsSkin=true;
+	nodes[cref].iIsSkin=true;
 	cx=nx; nodes[cx].iIsSkin=true;
 	cy=ny; nodes[cy].iIsSkin=true;
-	coffset=offset;
-	cameramode=-2; // all cameras
-	enabled=true;
 
 	haveshadows=(manager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || manager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
-	havetangents=false;
-	haveblend=true;
 
-	freenodeset=0;
 	//parsing set definition
 	char* pos=setdef;
 	char* end=pos;
@@ -68,7 +74,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 
 	/*
 	// too verbose, removed
-	for (int i=0; i<freenodeset; i++)
+	for (int i=0; i < freenodeset; i++)
 		LOG("FLEXBODY node interval "+TOSTRING(i)+": "+TOSTRING(nodeset[i].from)+"-"+TOSTRING(nodeset[i].to));
 	*/
 
@@ -116,7 +122,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	strncpy(uname_mesh, uname, 250);
 	uname_mesh[250] = '\0';
 	strcat(uname_mesh, "_mesh");
-	MeshPtr mesh = Ogre::MeshManager::getSingleton().load(meshname, groupname);
+	MeshPtr mesh = MeshManager::getSingleton().load(meshname, groupname);
 	MeshPtr newmesh = mesh->clone(uname_mesh);
 	
 	// now find possible LODs
@@ -573,10 +579,23 @@ void FlexBody::printMeshInfo(Mesh* mesh)
 	}
 }
 
+void FlexBody::addinterval(int from, int to)
+{
+	if (freenodeset < MAX_SET_INTERVALS)
+	{
+		nodeset[freenodeset].from=from;
+		nodeset[freenodeset].to=to;
+		freenodeset++;
+	}
+}
 
 bool FlexBody::isinset(int n)
 {
-	for (int i=0; i<freenodeset; i++) if (n>=nodeset[i].from && n<=nodeset[i].to) return true;
+	for (int i=0; i < freenodeset; i++)
+	{
+		if (n >= nodeset[i].from && n <= nodeset[i].to)
+			return true;
+	}
 	return false;
 }
 
