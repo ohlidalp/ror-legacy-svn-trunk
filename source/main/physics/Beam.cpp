@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 
 #include "airbrake.h"
+#include "Airfoil.h"
 #include "approxmath.h"
 #include "autopilot.h"
 #include "BeamData.h"
@@ -68,14 +69,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // Birthtime
 float mrtime;
-
-//threads and mutexes, see also at the bottom
-int thread_mode=THREAD_SINGLE;
-
-void *threadstart(void* vid);
-
-Beam* threadbeam[MAX_TRUCKS];
-int free_tb=0;
 
 using namespace Ogre;
 
@@ -585,41 +578,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	if (engine) engine->offstart();
 	// pressurize tires
 	addPressure(0.0);
-	// thread start
-	// get parameters
-	String threadMode = SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)");
-	if (threadMode == "1 (Single Core CPU)")
-		thread_mode = THREAD_SINGLE;
-	if (threadMode == "2 (Hyper-Threading or Dual core CPU)")
-		thread_mode = THREAD_MULTI;
 
 	checkBeamMaterial();
 
-	// init mutexes
-	pthread_mutex_init(&work_mutex, NULL);
-	pthread_cond_init(&work_cv, NULL);
-
-	done_count=thread_mode; // for ready test
-
-	pthread_mutex_init(&done_count_mutex, NULL);
-	pthread_cond_init(&done_count_cv, NULL);
-
-	threadbeam[free_tb]=this;
-	free_tb++;
-
-	// start threads
-	if (thread_mode > THREAD_SINGLE)
-	{
-		for (int i=0; i<thread_mode; i++)
-			if (pthread_create(&threads[i], NULL, threadstart, (void*)(free_tb-1)))
-				LOG("BEAM: Can not start a thread");
-
-	}
-
-	// wait for the thread(s) to be ready
-	//BEAMLOCK();
-
-	// all finished? so start network stuff
+	// start network stuff
 	if (networked)
 	{
 		state=NETWORKED;
@@ -1928,7 +1890,7 @@ void Beam::SyncReset()
 }
 
 //this is called by the threads
-void Beam::threadentryMulti(int id)
+void Beam::threadentry(int id)
 {
 	Beam **trucks=ttrucks;
 	int steps=tsteps;
@@ -2078,86 +2040,42 @@ bool Beam::frameStep(Real dt)
 	else
 	{
 		//simulation update
-		if (thread_mode == THREAD_SINGLE)
+		ttdt=tdt;
+		tdt=dt;
+		float dtperstep=dt/(Real)steps;
+
+		for (int i=0; i<steps; i++)
 		{
-			ttdt=tdt;
-			tdt=dt;
-			float dtperstep=dt/(Real)steps;
-
-			for (int i=0; i<steps; i++)
-			{
-				for (int t=0; t<numtrucks; t++)
-				{
-					if(!trucks[t]) continue;
-
-					if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
-				}
-				truckTruckCollisions(dtperstep);
-			}
-
 			for (int t=0; t<numtrucks; t++)
 			{
 				if(!trucks[t]) continue;
 
-				if (trucks[t]->reset_requested)
-					trucks[t]->SyncReset();
-
 				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
-				{
-					trucks[t]->lastlastposition=trucks[t]->lastposition;
-					trucks[t]->lastposition=trucks[t]->position;
-					trucks[t]->updateTruckPosition();
-				}
-				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 			}
-
-			ffforce=affforce/steps;
-			ffhydro=affhydro/steps;
-			if (free_hydro) ffhydro=ffhydro/free_hydro;
-
-		} else
-		{
-			//block until all threads are done
-			{
-				//BEAMLOCK();
-				for (int t=0; t<numtrucks; t++)
-				{
-					if (!trucks[t]) continue;
-
-					if (trucks[t]->reset_requested)
-						trucks[t]->SyncReset();
-
-					if (trucks[t]->state != SLEEPING && trucks[t]->state != NETWORKED && trucks[t]->state != RECYCLE)
-					{
-						trucks[t]->lastlastposition=trucks[t]->lastposition;
-						trucks[t]->lastposition=trucks[t]->position;
-						trucks[t]->updateTruckPosition();
-					}
-
-					if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-						trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
-				}
-			}
-
-			tsteps=steps;
-			ttdt=tdt;
-			tdt=dt;
-			ttrucks=trucks;
-			tnumtrucks=numtrucks;
-
-			//preparing workdone
-			MUTEX_LOCK(&done_count_mutex);
-			done_count=thread_mode;
-			MUTEX_UNLOCK(&done_count_mutex);
-
-			//unblock threads
-			MUTEX_LOCK(&work_mutex);
-			pthread_cond_broadcast(&work_cv);
-			MUTEX_UNLOCK(&work_mutex);
+			truckTruckCollisions(dtperstep);
 		}
 
+		for (int t=0; t<numtrucks; t++)
+		{
+			if(!trucks[t]) continue;
+
+			if (trucks[t]->reset_requested)
+				trucks[t]->SyncReset();
+
+			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+			{
+				trucks[t]->lastlastposition=trucks[t]->lastposition;
+				trucks[t]->lastposition=trucks[t]->position;
+				trucks[t]->updateTruckPosition();
+			}
+			if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+				trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+		}
+
+		ffforce=affforce/steps;
+		ffhydro=affhydro/steps;
+		if (free_hydro) ffhydro=ffhydro/free_hydro;
 
 #ifdef FEAT_TIMING
 		if(statistics)     statistics->frameStep(dt);
@@ -5241,54 +5159,6 @@ void Beam::deleteNetTruck()
 	updateVisual();
 }
 
-void *threadstart(void* vid)
-{
-#ifdef USE_CRASHRPT
-	if(BSETTING("NoCrashRpt", true))
-	{
-		// add the crash handler for this thread
-		CrThreadAutoInstallHelper cr_thread_install_helper;
-		MYASSERT(cr_thread_install_helper.m_nInstallStatus==0);
-	}
-#endif //USE_CRASHRPT
-
-	// 64 bit systems does have longer addresses!
-	long int id;
-	id=(long int)vid;
-	Beam *beam=threadbeam[id];
-
-	try
-	{
-		//additional exception handler required, otherwise RoR just crashes upon exception
-		while (1)
-		{
-			//wait signal
-			MUTEX_LOCK(&beam->work_mutex);
-
-			//signal end
-			MUTEX_LOCK(&beam->done_count_mutex);
-			beam->done_count--;
-			pthread_cond_signal(&beam->done_count_cv);
-			MUTEX_UNLOCK(&beam->done_count_mutex);
-
-			pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
-			MUTEX_UNLOCK(&beam->work_mutex);
-			//do work
-			beam->threadentryMulti(id);
-		}
-	} catch(Exception& e)
-	{
-		// try to shutdown input system upon an error
-		if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
-			INPUTENGINE.prepareShutdown();
-
-		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
-		showOgreWebError("An exception has occurred!", e.getFullDescription(), url);
-	}
-	pthread_exit(NULL);
-	return NULL;
-}
-
 float Beam::getHeadingDirectionAngle()
 {
 	int refnode = cameranodepos[0];
@@ -5334,7 +5204,7 @@ void Beam::changedCamera()
 	// look for flexbodies
 	for(int i=0;i<free_flexbody;i++)
 	{
-		bool enabled = (flexbodies[i]->cameramode == -2 || flexbodies[i]->cameramode == currentcamera);
+		bool enabled = (flexbodies[i]->flexBodyCameraMode == -2 || flexbodies[i]->flexBodyCameraMode == currentcamera);
 		flexbodies[i]->setEnabled(enabled);
 	}
 }

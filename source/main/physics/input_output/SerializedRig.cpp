@@ -21,9 +21,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SerializedRig.h"
 
 #include "airbrake.h"
+#include "Airfoil.h"
 #include "autopilot.h"
 #include "BeamEngine.h"
 #include "buoyance.h"
+#include "CacheSystem.h"
 #include "CmdKeyInertia.h"
 #include "Console.h"
 #include "Differentials.h"
@@ -922,7 +924,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				// always use the last flexbody
 				FlexBody *flex = flexbodies[free_flexbody-1];
-				if(flex) flex->cameramode = pmode;
+				if(flex) flex->flexBodyCameraMode = pmode;
 				continue;
 			}
 

@@ -20,19 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __FlexMeshWheel_H__
 #define __FlexMeshWheel_H__
 
-
 #include "RoRPrerequisites.h"
 
-//wheels only!
-
-#include "Ogre.h"
-#include "Beam.h"
+#include "BeamData.h"
 #include "FlexMesh.h"
 #include "materialFunctionMapper.h"
-
-using namespace Ogre;
-
-#define NLIMIT 65536
+#include "Ogre.h"
 
 class FlexMeshWheel: public Flexable
 {
@@ -41,28 +34,28 @@ private:
 	
 	typedef struct
 	{
-		Vector3 vertex;
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 vertex;
+		Ogre::Vector3 normal;
+		//Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} CoVertice_t;
 
 	typedef struct
 	{
-		Vector3 vertex;
+		Ogre::Vector3 vertex;
 	} posVertice_t;
 
 	typedef struct
 	{
-		Vector3 normal;
-	//	Vector3 color;
-		Vector2 texcoord;
+		Ogre::Vector3 normal;
+		//Ogre::Vector3 color;
+		Ogre::Vector2 texcoord;
 	} norVertice_t;
 
 	Ogre::MeshPtr msh;
-	SubMesh* sub;
-	VertexDeclaration* decl;
-	HardwareVertexBufferSharedPtr vbuf;
+	Ogre::SubMesh* sub;
+	Ogre::VertexDeclaration* decl;
+	Ogre::HardwareVertexBufferSharedPtr vbuf;
 
 	size_t nVertices;
 	size_t vbufCount;
@@ -94,22 +87,20 @@ private:
 	unsigned short *faces;
 	node_t *nodes;
 	int nbrays;
-	SceneManager *smanager;
+	Ogre::SceneManager *smanager;
 	float rim_radius;
-	SceneNode *rnode;
+	Ogre::SceneNode *rnode;
 	float normy;
 	bool revrim;
-	Entity *rimEnt;
+	Ogre::Entity *rimEnt;
 public:
-	FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
+	FlexMeshWheel(Ogre::SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
 
-	Vector3 updateVertices();
-	Vector3 updateShadowVertices();
-	Vector3 flexit();
-	Entity *getRimEntity() { return rimEnt; };
+	Ogre::Vector3 updateVertices();
+	Ogre::Vector3 updateShadowVertices();
+	Ogre::Vector3 flexit();
+	Ogre::Entity *getRimEntity() { return rimEnt; };
 	void setVisible(bool visible);
 };
 
-
-
-#endif
+#endif // __FlexMeshWheel_H__

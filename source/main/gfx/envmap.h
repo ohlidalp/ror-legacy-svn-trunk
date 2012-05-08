@@ -17,40 +17,34 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Envmap_H__
-#define __Envmap_H__
+#ifndef __EnvironmentMap_H_
+#define __EnvironmentMap_H_
 
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
 
-
-class Beam;
-using namespace Ogre;
-
 class Envmap
 {
 private:
-	Camera *camera[6];
-	RenderTarget *rt[6];
-	TexturePtr texture;
-	RenderTexture* rttTex;
-	SceneNode *snode;
+	Ogre::Camera *camera[6];
+	Ogre::RenderTarget *rt[6];
+	Ogre::TexturePtr texture;
+	Ogre::RenderTexture* rttTex;
+	Ogre::SceneNode *snode;
 	int round;
 	bool isDynamic;
-	SceneNode *debug_sn;
+	Ogre::SceneNode *debug_sn;
 
 public:
 
 	bool inited;
-	Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bool dynamic);
+	Envmap(Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, Ogre::Camera *incam, bool dynamic);
 	void removeEnvMapFromTruckMaterial(Ogre::String truckMaterial);
 	void addEnvMapToTruckMaterial(Ogre::String truckMaterial);
-	void update(Vector3 center, Beam *beam=0);
-	void forceUpdate(Vector3 center);
+	void update(Ogre::Vector3 center, Beam *beam=0);
+	void forceUpdate(Ogre::Vector3 center);
 	void prepareShutdown();
 
 };
 
-
-
-#endif
+#endif // __EnvironmentMap_H_

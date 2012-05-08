@@ -22,84 +22,69 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#define WATER_FULL_QUALITY 0
-#define WATER_FULL_SPEED 1
-#define WATER_REFLECT 2
-#define WATER_BASIC 3
-
-#define WAVEREZ 100
-
-#define MAX_WAVETRAINS 10
-
-#include "water.h"
 #include "Ogre.h"
-
-
-//#include "DustPool.h"
-using namespace Ogre;
-
-//class DustPool;
+#include "water.h"
 
 extern float mrtime;
 
-
-typedef struct
-{
-	float amplitude;
-	float maxheight;
-	float wavelength;
-	float wavespeed;
-	float direction;
-} wavetrain_t;
-
 class WaterOld : public Water
 {
-private:
-	Camera *mReflectCam;
-	Camera *mRefractCam;
-	Camera *mCamera;
-	int mType;
-	float mScale;
-	bool haswaves;
-	RenderTexture* rttTex1;
-	RenderTexture* rttTex2;
-	int framecounter;
-	SceneNode *pTestNode;
-	SceneNode *pBottomNode;
-	float height, orgheight;
-	wavetrain_t wavetrains[MAX_WAVETRAINS];
-	int free_wavetrain;
-	float maxampl;
-	HardwareVertexBufferSharedPtr wbuf;
-	float *wbuffer;
-	float *mapsizex, *mapsizez;
-	Ogre::Viewport *vRtt1, *vRtt2;
 public:
-	WaterOld();
-	WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWindow *mWindow, float wheight, float *mapsizex, float *mapsizez, bool usewaves);
-	void moveTo(Camera *cam, float centerheight);
-	void showWave(Vector3 refpos);
-	void update();
-	void prepareShutdown();
-	float getHeight();
-	bool visible;
+	WaterOld(int type, Ogre::Camera *camera, Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, float wheight, float *mapsizex, float *mapsizez, bool usewaves);
 
+	float getHeight();
+	float getHeightWaves(Ogre::Vector3 pos);
+	Ogre::Vector3 getVelocity(Ogre::Vector3 pos);
+
+	void setFadeColour(Ogre::ColourValue ambient);
+	void setHeight(float value);
+	void setSunPosition(Ogre::Vector3);
 	void setVisible(bool value);
 
-	float getHeightWaves(Vector3 pos);
-
-	Vector3 getVelocity(Vector3 pos);
-
+	bool allowUnderWater();
+	void framestep(float dt);
+	void moveTo(Ogre::Camera *cam, float centerheight);
+	void prepareShutdown();
+	void showWave(Ogre::Vector3 refpos);
+	void update();
 	void updateReflectionPlane(float h);
 
-	void setFadeColour(ColourValue ambient);
+	enum water_quality {WATER_FULL_QUALITY, WATER_FULL_SPEED, WATER_REFLECT, WATER_BASIC};
 
-	void setSunPosition(Ogre::Vector3);
-	void framestep(float dt);
-	bool allowUnderWater();
-	void setHeight(float value);
+private:
+
+	typedef struct
+	{
+		float amplitude;
+		float maxheight;
+		float wavelength;
+		float wavespeed;
+		float direction;
+	} wavetrain_t;
+
+	static const int WAVEREZ = 100;
+	static const int MAX_WAVETRAINS = 10;
+
+	bool haswaves;
+	bool visible;
+	Ogre::Camera *mCamera;
+	Ogre::Camera *mReflectCam;
+	Ogre::Camera *mRefractCam;
+	float *mapsizex, *mapsizez;
+	float *wbuffer;
+	float height, orgheight;
+	float maxampl;
+	float mScale;
+	Ogre::HardwareVertexBufferSharedPtr wbuf;
+	int framecounter;
+	int free_wavetrain;
+	int mType;
+	Ogre::Viewport *vRtt1, *vRtt2;
+	Ogre::RenderTexture* rttTex1;
+	Ogre::RenderTexture* rttTex2;
+	Ogre::SceneNode *pBottomNode;
+	Ogre::SceneNode *pTestNode;
+	wavetrain_t wavetrains[MAX_WAVETRAINS];
 };
 
-
-
-#endif
+#endif // __WaterOld_H__

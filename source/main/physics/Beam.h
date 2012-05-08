@@ -94,7 +94,7 @@ public:
 	void reset(bool keepPosition = false); //call this one to reset a truck from any context
 	void SyncReset(); //this one should be called only synchronously (without physics running in background)
 	//this is called by the threads
-	void threadentryMulti(int id);
+	void threadentry(int id);
 	//integration loop
 	//bool frameStarted(const FrameEvent& evt)
 	//this will be called once by frame and is responsible for animation of all the trucks!
@@ -222,12 +222,6 @@ public:
 	float refpressure;
 	PointColDetector *pointCD;
 
-	pthread_mutex_t work_mutex;
-	pthread_cond_t work_cv;
-
-	pthread_mutex_t done_count_mutex;
-	pthread_cond_t done_count_cv;
-	int done_count;
 	int calculateDriverPos(Ogre::Vector3 &pos, Ogre::Quaternion &rot);
 	float getSteeringAngle();
 
@@ -385,7 +379,6 @@ protected:
 
 	float ipy;
 
-	pthread_t netthread;
 	oob_t *oob1;
 	oob_t *oob2;
 	oob_t *oob3;
@@ -405,12 +398,7 @@ protected:
 	bool netBrakeLight, netReverseLight;
 	Ogre::Real mTimeUntilNextToggle;
 
-
 	void checkBeamMaterial();
-
-	//TruckCommandScheduler *truckScript;
-
-	pthread_t threads[4];
 
 	// cab fading stuff - begin
 	void cabFade(float amount);

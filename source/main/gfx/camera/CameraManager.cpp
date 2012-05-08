@@ -22,12 +22,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "Console.h"
+#include "envmap.h"
+#include "heightfinder.h"
 #include "InputEngine.h"
+#include "language.h"
 #include "Ogre.h"
 #include "RoRFrameListener.h"
 #include "Settings.h"
 #include "SoundScriptManager.h"
-#include "language.h"
+#include "SkyManager.h"
+#include "water.h"
 
 #include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFixed.h"
@@ -40,11 +44,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) : 
+CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf) : 
 	  currentBehavior(0)
 	, currentBehaviorID(-1)
 	, mCamera(cam)
 	, mDOF(0)
+	, mEfl(efl)
+	, mHfinder(hf)
 	, mLastPosition(Vector3::ZERO)
 	, mMoveScale(1.0f)
 	, mMoveSpeed(50.0f)
@@ -56,7 +62,7 @@ CameraManager::CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam) :
 
 	if ( BSETTING("DOF", false) )
 	{
-		mDOF = new DOFManager(mSceneMgr, mCamera->getViewport(), Ogre::Root::getSingletonPtr(), mCamera);
+		mDOF = new DOFManager(mSceneMgr, mCamera->getViewport(), Root::getSingletonPtr(), mCamera);
 		mDOF->setEnabled(true);
 	}
 
@@ -83,144 +89,6 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
 }
-
-#if 0
-void CameraManager::updateInput()
-{
-	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-
-	//camera mode
-	if (cameramode != CAMERA_FREE && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE_FIXED)
-	{
-		if (cameramode==CAMERA_VEHICLE_INTERNAL)
-		{
-			//end of internal cam
-			camRotX=pushcamRotX;
-			camRotY=pushcamRotY;
-		}
-		cameramode++;
-		if (cameramode==CAMERA_VEHICLE_INTERNAL)
-		{
-			//start of internal cam
-			pushcamRotX=camRotX;
-			pushcamRotY=camRotY;
-			camRotX=0;
-			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-		}
-		if (cameramode==CAMERA_END) cameramode=0;
-	}
-	//camera mode
-	if (curr_truck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
-	{
-		if (cameramode==CAMERA_VEHICLE_INTERNAL && curr_truck->currentcamera < curr_truck->freecinecamera-1)
-		{
-			curr_truck->currentcamera++;
-			curr_truck->changedCamera();
-		}
-		else
-		{
-			OverlayWrapper *ow = OverlayWrapper::getSingletonPtrNoCreation();
-			if (cameramode==CAMERA_VEHICLE_INTERNAL)
-			{
-				//end of internal cam
-				camRotX=pushcamRotX;
-				camRotY=pushcamRotY;
-				curr_truck->prepareInside(false);
-				if(ow) ow->showDashboardOverlays(true, curr_truck);
-				curr_truck->currentcamera=-1;
-				//if(bigMap) bigMap->setVisibility(true);
-				curr_truck->changedCamera();
-			}
-			cameramode++;
-			if (cameramode==CAMERA_VEHICLE_INTERNAL)
-			{
-				//start of internal cam
-				pushcamRotX=camRotX;
-				pushcamRotY=camRotY;
-				camRotX=0;
-				camRotY=DEFAULT_INTERNAL_CAM_PITCH;
-				curr_truck->prepareInside(true);
-				//if(bigMap) bigMap->setVisibility(false);
-				// airplane dashboard in the plane visible
-				if(ow)
-				{
-					if(curr_truck->driveable == AIRPLANE)
-						ow->showDashboardOverlays(true, curr_truck);
-					else
-						ow->showDashboardOverlays(false, curr_truck);
-				}
-				curr_truck->currentcamera=0;
-				curr_truck->changedCamera();
-			}
-
-			if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
-		}
-	}
-	// camera FOV settings
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
-	{
-		int fov = mCamera->getFOVy().valueDegrees();
-		if(fov>10)
-			fov -= 2;
-		mCamera->setFOVy(Degree(fov));
-	#ifdef USE_MYGUI
-		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
-	#endif // USE_MYGUI
-		// save the settings
-		if (cameramode == CAMERA_VEHICLE_INTERNAL)
-			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
-		else if (cameramode == CAMERA_EXT)
-			SETTINGS.setSetting("FOV External", TOSTRING(fov));
-	}
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
-	{
-		int fov = mCamera->getFOVy().valueDegrees();
-		if(fov<160)
-			fov += 2;
-		mCamera->setFOVy(Degree(fov));
-	#ifdef USE_MYGUI
-		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
-	#endif // USE_MYGUI
-		// save the settings
-		if (cameramode == CAMERA_VEHICLE_INTERNAL)
-			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
-		else if (cameramode == CAMERA_EXT)
-			SETTINGS.setSetting("FOV External", TOSTRING(fov));
-	}
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
-	{
-		mCamera->setPolygonMode( (mCamera->getPolygonMode() + 1) % 3 );
-	}
-	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX))
-	{
-		if(cameramode == CAMERA_FREE)
-		{
-			// change to fixed free camera: that is working like fixed cam
-			cameramode = CAMERA_FREE_FIXED;
-			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			LOG("switching to fixed free camera mode");
-#ifdef USE_MYGUI
-			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
-#endif // USE_MYGUI
-		} else if(cameramode == CAMERA_FREE_FIXED)
-		{
-			cameramode = CAMERA_FREE;
-			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
-			LOG("switching to free camera mode from fixed mode");
-#ifdef USE_MYGUI
-			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
-#endif // USE_MYGUI
-		}
-	}
-
-	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
-	{
-		currentBehavior = globalBehaviors[CAMERA_FREE];
-	}
-}
-#endif // 0
 
 void CameraManager::switchToNextBehavior()
 {
@@ -266,7 +134,7 @@ void CameraManager::update(float dt)
 
 	ctx.dt               = dt;
 	ctx.translationScale = mMoveScale;
-	ctx.rotationScale    = Ogre::Degree(mRotScale);
+	ctx.rotationScale    = Degree(mRotScale);
 
 	if(!currentBehavior->allowInteraction())
 	{
@@ -300,7 +168,30 @@ void CameraManager::update(float dt)
 	mLastPosition = mCamera->getPosition();
 
 	SoundScriptManager::getSingleton().setCamera(mCamera->getPosition(), mCamera->getDirection(), mCamera->getUp(), cameraSpeed);
-#endif //USE_OPENAL
+#endif // USE_OPENAL
+
+	////////////////////////////
+	// Work in progress (WIP) //
+	////////////////////////////
+
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+
+	// environment map
+	Envmap* envmap = mEfl->getEnvmap();
+	if (envmap && curr_truck)
+	{
+		envmap->update(curr_truck->getPosition(), curr_truck);
+	}
+
+	// water
+	Water* water = mEfl->getWater();
+	if (water)
+	{
+		if (curr_truck)
+			water->moveTo(mCamera, water->getHeightWaves(curr_truck->getPosition()));
+		else
+			water->moveTo(mCamera, water->getHeight());
+	}
 
 #if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -331,7 +222,7 @@ void CameraManager::update(float dt)
 			px=((int)(person->getPosition().x)/100)*100;
 			pz=((int)(person->getPosition().z)/100)*100;
 			Real h=hfinder->getHeightAt(px+50.0,pz+50.0);
-			Real random = Ogre::Math::RangeRandom(0.0f, 1.0f);
+			Real random = Math::RangeRandom(0.0f, 1.0f);
 			if(w && random > 0.3f && !w->allowUnderWater())
 			{
 				// chance of 30% to get an underwater view?
@@ -410,7 +301,7 @@ void CameraManager::update(float dt)
 					dir.normalise();
 					newposition=newposition+dir*450.0+Vector3(5.0, 0.0, 5.0);
 					Real h=hfinder->getHeightAt(newposition.x,newposition.z);
-					Real random = Ogre::Math::RangeRandom(0.0f, 1.0f);
+					Real random = Math::RangeRandom(0.0f, 1.0f);
 					if(w && random > 0.3f && !w->allowUnderWater())
 					{
 						// chance of 30% to get an underwater view?
@@ -554,32 +445,6 @@ void CameraManager::update(float dt)
 		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
 	}
 	*/
-	//envmap
-	if (envmap)
-	{
-		if (!envmap->inited)
-		{
-			envmap->forceUpdate(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
-		}
-		if (curr_truck)
-		{
-			envmap->update(curr_truck->getPosition(), curr_truck);
-
-#ifdef USE_CAELUM
-			// important: switch back to normal camera
-			if(SkyManager::getSingletonPtr())
-				SkyManager::getSingleton().notifyCameraChanged(mCamera);
-#endif // USE_CAELUM
-		}
-	}
-	//water
-	if (w)
-	{
-		if (curr_truck)
-			w->moveTo(mCamera, w->getHeightWaves(curr_truck->getPosition()));
-		else
-			w->moveTo(mCamera, w->getHeight());
-	}
 #endif // 0
 }
 
@@ -606,3 +471,141 @@ bool CameraManager::allowInteraction()
 	if ( !currentBehavior ) return false;
 	return currentBehavior->allowInteraction();
 }
+
+#if 0
+void CameraManager::updateInput()
+{
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+
+	//camera mode
+	if (cameramode != CAMERA_FREE && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE_FIXED)
+	{
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
+		{
+			//end of internal cam
+			camRotX=pushcamRotX;
+			camRotY=pushcamRotY;
+		}
+		cameramode++;
+		if (cameramode==CAMERA_VEHICLE_INTERNAL)
+		{
+			//start of internal cam
+			pushcamRotX=camRotX;
+			pushcamRotY=camRotY;
+			camRotX=0;
+			camRotY=DEFAULT_INTERNAL_CAM_PITCH;
+		}
+		if (cameramode==CAMERA_END) cameramode=0;
+	}
+	//camera mode
+	if (curr_truck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) && cameramode != CAMERA_FREE && cameramode != CAMERA_FREE_FIXED)
+	{
+		if (cameramode==CAMERA_VEHICLE_INTERNAL && curr_truck->currentcamera < curr_truck->freecinecamera-1)
+		{
+			curr_truck->currentcamera++;
+			curr_truck->changedCamera();
+		}
+		else
+		{
+			OverlayWrapper *ow = OverlayWrapper::getSingletonPtrNoCreation();
+			if (cameramode==CAMERA_VEHICLE_INTERNAL)
+			{
+				//end of internal cam
+				camRotX=pushcamRotX;
+				camRotY=pushcamRotY;
+				curr_truck->prepareInside(false);
+				if(ow) ow->showDashboardOverlays(true, curr_truck);
+				curr_truck->currentcamera=-1;
+				//if(bigMap) bigMap->setVisibility(true);
+				curr_truck->changedCamera();
+			}
+			cameramode++;
+			if (cameramode==CAMERA_VEHICLE_INTERNAL)
+			{
+				//start of internal cam
+				pushcamRotX=camRotX;
+				pushcamRotY=camRotY;
+				camRotX=0;
+				camRotY=DEFAULT_INTERNAL_CAM_PITCH;
+				curr_truck->prepareInside(true);
+				//if(bigMap) bigMap->setVisibility(false);
+				// airplane dashboard in the plane visible
+				if(ow)
+				{
+					if(curr_truck->driveable == AIRPLANE)
+						ow->showDashboardOverlays(true, curr_truck);
+					else
+						ow->showDashboardOverlays(false, curr_truck);
+				}
+				curr_truck->currentcamera=0;
+				curr_truck->changedCamera();
+			}
+
+			if (cameramode==CAMERA_END) cameramode = CAMERA_EXT;
+		}
+	}
+	// camera FOV settings
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
+	{
+		int fov = mCamera->getFOVy().valueDegrees();
+		if(fov>10)
+			fov -= 2;
+		mCamera->setFOVy(Degree(fov));
+#ifdef USE_MYGUI
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
+#endif // USE_MYGUI
+		// save the settings
+		if (cameramode == CAMERA_VEHICLE_INTERNAL)
+			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
+		else if (cameramode == CAMERA_EXT)
+			SETTINGS.setSetting("FOV External", TOSTRING(fov));
+	}
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
+	{
+		int fov = mCamera->getFOVy().valueDegrees();
+		if(fov<160)
+			fov += 2;
+		mCamera->setFOVy(Degree(fov));
+#ifdef USE_MYGUI
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
+#endif // USE_MYGUI
+		// save the settings
+		if (cameramode == CAMERA_VEHICLE_INTERNAL)
+			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
+		else if (cameramode == CAMERA_EXT)
+			SETTINGS.setSetting("FOV External", TOSTRING(fov));
+	}
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
+	{
+		mCamera->setPolygonMode( (mCamera->getPolygonMode() + 1) % 3 );
+	}
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX))
+	{
+		if(cameramode == CAMERA_FREE)
+		{
+			// change to fixed free camera: that is working like fixed cam
+			cameramode = CAMERA_FREE_FIXED;
+			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
+			LOG("switching to fixed free camera mode");
+#ifdef USE_MYGUI
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
+#endif // USE_MYGUI
+		} else if(cameramode == CAMERA_FREE_FIXED)
+		{
+			cameramode = CAMERA_FREE;
+			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
+			LOG("switching to free camera mode from fixed mode");
+#ifdef USE_MYGUI
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
+#endif // USE_MYGUI
+		}
+	}
+
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE))
+	{
+		currentBehavior = globalBehaviors[CAMERA_FREE];
+	}
+}
+#endif // 0

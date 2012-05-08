@@ -220,7 +220,6 @@ protected:
 	int screenHeight;
 	int screenWidth;
 	int shaderSchemeMode;
-	int thread_mode;
 	int truck_preload_num;
 	int truckgrabbed;
 	
@@ -295,6 +294,7 @@ public: // public methods
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 	Water *getWater() { return w; };
+	Envmap *getEnvmap() { return envmap; };
 
 	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
 	bool checkForActive(int j, bool *sleepyList);

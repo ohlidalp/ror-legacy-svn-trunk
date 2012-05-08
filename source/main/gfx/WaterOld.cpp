@@ -18,15 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "WaterOld.h"
+
+#include "ResourceBuffer.h"
+#include "RoRFrameListener.h"
 #include "Settings.h"
 
-#include "RoRFrameListener.h"
-#include "ResourceBuffer.h"
+using namespace Ogre;
 
-//Camera* theCam;
 Entity* pPlaneEnt;
-//std::vector<Entity*> aboveWaterEnts;
-//std::vector<Entity*> belowWaterEnts;
 
 Plane waterPlane;
 Plane bottomPlane;
@@ -75,11 +74,6 @@ public:
 
 RefractionTextureListener mRefractionListener;
 ReflectionTextureListener mReflectionListener;
-
-WaterOld::WaterOld()
-{
-	// empty constructor for derivated objects
-}
 
 WaterOld::WaterOld(int type, Camera *camera, SceneManager *mSceneMgr, RenderWindow *mWindow, float wheight, float *_mapsizex, float *_mapsizez, bool usewaves)
 {
@@ -501,7 +495,7 @@ void WaterOld::updateReflectionPlane(float h)
 }
 
 
-void WaterOld::setSunPosition(Ogre::Vector3)
+void WaterOld::setSunPosition(Vector3)
 {
 	// not used here!
 }

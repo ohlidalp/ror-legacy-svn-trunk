@@ -23,13 +23,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
 
-
 class HeatHazeListener : public Ogre::RenderTargetListener
 {
 public:
 	HeatHazeListener(Ogre::SceneManager *mSceneMgr);
     void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+
 private:
 	Ogre::SceneManager *mSceneMgr;
 };
@@ -41,6 +41,7 @@ public:
 	void setEnable(bool en);
 	void prepareShutdown();
 	void update();
+
 private:
 	HeatHazeListener *listener;
 	Ogre::Camera *mHazeCam;
@@ -49,4 +50,4 @@ private:
 	Ogre::SceneManager *mSceneMgr;	
 };
 
-#endif
+#endif // __HeatHaze_H__

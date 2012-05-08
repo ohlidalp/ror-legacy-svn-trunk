@@ -18,21 +18,24 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexMeshWheel.h"
-#include "ResourceBuffer.h"
 
-#include "skin.h"
 #include "MaterialReplacer.h"
+#include "ResourceBuffer.h"
+#include "skin.h"
 
-FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) : mr(mr)
+using namespace Ogre;
+
+FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) :
+	  id0(n1)
+	, id1(n2)
+	, idstart(nstart)
+	, mr(mr)
+	, nbrays(nrays)
+	, nodes(nds)
+	, revrim(rimreverse)
+	, rim_radius(rimradius)
+	, smanager(manager)
 {
-	rim_radius=rimradius;
-	revrim=rimreverse;
-	smanager=manager;
-	nbrays=nrays;
-	nodes=nds;
-	id0=n1;
-	id1=n2;
-	idstart=nstart;
 
 	//the rim object
 	char rimname[256];
@@ -329,4 +332,3 @@ Vector3 FlexMeshWheel::flexit()
 	}
 	return center;
 }
-

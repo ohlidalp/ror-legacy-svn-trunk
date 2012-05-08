@@ -154,10 +154,9 @@ Material *terrainmaterial = 0;
 char terrainoriginalmaterial[100];
 bool shutdownall=false;
 
-
-
-// static heightfinder
+// static height finder
 HeightFinder *RoRFrameListener::hfinder = 0;
+// static elf singleton
 RoRFrameListener *RoRFrameListener::eflsingleton = 0;
 
 //workaround for pagedgeometry
@@ -745,7 +744,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	terrainFileHash = String();
 	terrainModHash = String();
 
-	// we dont use overlays in embedded mode
+	// we don't use overlays in embedded mode
 	if(!isEmbedded)
 		ow = new OverlayWrapper(win);
 
@@ -765,8 +764,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new Console();
 #endif //USE_MYGUI
 
-	// init cameramanager after mygui
-	new CameraManager(scm, mCamera);
+	// init camera manager after mygui
+	new CameraManager(scm, mCamera, this, hfinder);
 
 
 #ifdef USE_OIS_G27
@@ -3380,8 +3379,8 @@ void RoRFrameListener::shutdown_final()
 	if (editorfd) fclose(editorfd);
 	if (w) w->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
+	if (envmap) envmap->prepareShutdown();
 	if (heathaze) heathaze->prepareShutdown();
-
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if (curr_truck) curr_truck->prepareShutdown();
@@ -4284,13 +4283,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if      (waterSettingsString == "None")
 			w = 0;
 		else if (waterSettingsString == "Basic (fastest)")
-			w = new WaterOld(WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			w = new WaterOld(WaterOld::WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection")
-			w = new WaterOld(WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			w = new WaterOld(WaterOld::WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection + refraction (speed optimized)")
-			w = new WaterOld(WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			w = new WaterOld(WaterOld::WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection + refraction (quality optimized)")
-			w = new WaterOld(WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			w = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 	}
 	if(w) w->setFadeColour(fadeColour);
 	if(person) person->setWater(w);

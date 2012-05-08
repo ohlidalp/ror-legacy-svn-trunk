@@ -17,16 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "FlexObj.h"
 #include "ResourceBuffer.h"
-
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif //OGRE_PLATFORM_LINUX
 
+using namespace Ogre;
 
 FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname)
 {

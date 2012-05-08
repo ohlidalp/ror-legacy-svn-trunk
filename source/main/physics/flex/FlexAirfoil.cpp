@@ -18,9 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexAirfoil.h"
-#include "ResourceBuffer.h"
-#include "approxmath.h"
 
+#include "aeroengine.h"
+#include "Airfoil.h"
+#include "approxmath.h"
+#include "ResourceBuffer.h"
 
 float refairfoilpos[90]={
 		0.00, 0.50, 0.00,
@@ -64,6 +66,8 @@ float refairfoilpos[90]={
 		0.00, 0.50, 1.00,
 		1.00, 0.50, 1.00
 	};
+
+using namespace Ogre;
 
 FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able)
 {
