@@ -86,6 +86,14 @@ Beam::~Beam()
 	if(dash) delete dash; dash=0;
 #endif // USE_MYGUI
 
+	// stop all the Sounds
+#ifdef USE_OPENAL
+	for(int i=SS_TRIG_NONE+1; i<SS_MAX_TRIG; i++)
+	{
+		SoundScriptManager::getSingleton().trigStop(this->trucknum, i);
+	}
+#endif // USE_OPENAL
+
 	// destruct and remove every tiny bit of stuff we created :-|
 	if(nettimer) delete nettimer; nettimer=0;
 	if(engine) delete engine; engine=0;
