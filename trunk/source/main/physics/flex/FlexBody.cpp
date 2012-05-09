@@ -97,7 +97,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 
 		// orientation
 		Vector3 refX = fast_normalise(diffX);
-		Vector3 refY = diffX.crossProduct(normal);
+		Vector3 refY = refX.crossProduct(normal);
 		orientation  = Quaternion(refX, normal, refY) * rot;
 	} else
 	{
