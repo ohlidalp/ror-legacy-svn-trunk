@@ -52,6 +52,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "screwprop.h"
 #include "Scripting.h"
+#include "Settings.h"
 #include "Skidmark.h"
 #include "SlideNode.h"
 #include "turbojet.h"
@@ -476,13 +477,16 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	oldreplaypos=-1;
 	watercontact=0;
 	watercontactold=0;
-	//			lastdt=0.1;
-	//for (i=0; i<MAX_COMMANDS; i++) {commandkey[i].bfree=0;commandkey[i].rotfree=0;commandkey[i].kpressed=0;};
+	// initialize commands
+	for (int i=0; i<MAX_COMMANDS; i++)
+	{
+		commandkey[i].commandValueState = -1;
+		commandkey[i].commandValue = 0;
+	}
 	ipy=py;
 	position=Vector3(px,py,pz);
 	lastposition=Vector3(px,py,pz);
 	lastlastposition=Vector3(px,py,pz);
-//	aposition=Vector3(px,py,pz);
 
 	cabFadeMode = 0;
 	cabFadeTimer=0;
@@ -5196,23 +5200,23 @@ void Beam::changedCamera()
 		bool enabled = (soundsources[i].type == -2 || soundsources[i].type == currentcamera);
 		soundsources[i].ssi->setEnabled(enabled);
 	}
-#endif //OPENAL
+#endif // USE_OPENAL
 
-	// change videocamera mode needs for-loop through all video(mirror)cams, check cmode against currentcamera and then send the right bool
+	// change video camera mode needs for-loop through all video(mirror)cams, check camera mode against currentcamera and then send the right bool
 	// bool state = true;
 	// VideoCamera *v = VideoCamera::setActive(state);
 
 	// look for props
-	for(int i=0;i<free_prop;i++)
+	for(int i=0; i< free_prop; i++)
 	{
 		bool enabled = (props[i].cameramode == -2 || props[i].cameramode == currentcamera);
 		if(props[i].mo) props[i].mo->setMeshEnabled(enabled);
 	}
 
 	// look for flexbodies
-	for(int i=0;i<free_flexbody;i++)
+	for(int i=0; i < free_flexbody; i++)
 	{
-		bool enabled = (flexbodies[i]->flexBodyCameraMode == -2 || flexbodies[i]->flexBodyCameraMode == currentcamera);
+		bool enabled = (flexbodies[i]->cameramode == -2 || flexbodies[i]->cameramode == currentcamera);
 		flexbodies[i]->setEnabled(enabled);
 	}
 }
