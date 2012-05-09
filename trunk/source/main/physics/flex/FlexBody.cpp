@@ -438,19 +438,23 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		}
 #endif // 0
 
-		Vector3 vz=(nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos).crossProduct(nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
-		vz.normalise();
+		// If something unexpected happens here, then
+		// replace fast_normalise(a) with a.normalisedCopy()
+
 		Matrix3 mat;
-		mat.SetColumn(0, nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos);
-		mat.SetColumn(1, nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
-//		mat.SetColumn(2, nodes[locs[i].nz].smoothpos-nodes[locs[i].ref].smoothpos);
-		mat.SetColumn(2, vz);
-		mat=mat.Inverse();
+		Vector3 diffX = nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos;
+		Vector3 diffY = nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos;
 
-		//compute coordinates in the newly formed euclidian basis
-		locs[i].coords=mat*(vertices[i]-nodes[locs[i].ref].smoothpos);
+		mat.SetColumn(0, diffX);
+		mat.SetColumn(1, diffY);
+		mat.SetColumn(2, fast_normalise(diffX.crossProduct(diffY))); // Old version: mat.SetColumn(2, nodes[loc.nz].smoothpos-nodes[loc.ref].smoothpos);
 
-		//thats it!
+		mat = mat.Inverse();
+
+		//compute coordinates in the newly formed Euclidean basis
+		locs[i].coords= mat * (vertices[i] - nodes[locs[i].ref].smoothpos);
+
+		// that's it!
 	}
 
 	//shadow
@@ -508,19 +512,22 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 #endif //0
 
+	// If something unexpected happens here, then
+	// replace fast_normalise(a) with a.normalisedCopy()
 	for (int i=0; i<(int)vertex_count; i++)
 	{
-		Vector3 vz=(nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos).crossProduct(nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
-		vz.normalise();
 		Matrix3 mat;
-		mat.SetColumn(0, nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos);
-		mat.SetColumn(1, nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
-//		mat.SetColumn(2, nodes[locs[i].nz].smoothpos-nodes[locs[i].ref].smoothpos);
-		mat.SetColumn(2, vz);
-		mat=mat.Inverse();
+		Vector3 diffX = nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos;
+		Vector3 diffY = nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos;
 
-		//compute coordinates in the euclidian basis
-		srcnormals[i]=mat*(orientation*srcnormals[i]);
+		mat.SetColumn(0, diffX);
+		mat.SetColumn(1, diffY);
+		mat.SetColumn(2, fast_normalise(diffX.crossProduct(diffY))); // Old version: mat.SetColumn(2, nodes[loc.nz].smoothpos-nodes[loc.ref].smoothpos);
+
+		mat = mat.Inverse();
+
+		// compute coordinates in the Euclidean basis
+		srcnormals[i] = mat*(orientation * srcnormals[i]);
 	}
 
 	LOG("FLEXBODY ready");
@@ -603,40 +610,42 @@ bool FlexBody::isinset(int n)
 
 Vector3 FlexBody::flexit()
 {
-	if(faulty) return Vector3::ZERO;
-	if(!enabled) return Vector3::ZERO;
+	if (faulty) return Vector3::ZERO;
+	if (!enabled) return Vector3::ZERO;
 	if (hasblend) updateBlend();
-	//compute the local center
-
+	
+	// compute the local center
 	Vector3 normal;
 	Vector3 center;
+
 	if(cref >= 0)
 	{
-		normal=(nodes[cy].smoothpos-nodes[cref].smoothpos).crossProduct(nodes[cx].smoothpos-nodes[cref].smoothpos);
-		normal.normalise();
-		center=nodes[cref].smoothpos+coffset.x*(nodes[cx].smoothpos-nodes[cref].smoothpos)+coffset.y*(nodes[cy].smoothpos-nodes[cref].smoothpos);
-		center=(center+normal*coffset.z);
+		Vector3 diffX = nodes[cx].smoothpos-nodes[cref].smoothpos;
+		Vector3 diffY = nodes[cy].smoothpos-nodes[cref].smoothpos;
+		normal = diffY.crossProduct(diffX).normalisedCopy();
+
+		center = nodes[cref].smoothpos + coffset.x*diffX + coffset.y*diffY;
+		center = center + coffset.z*normal;
 	} else
 	{
 		normal = Vector3::UNIT_Y;
 		center = nodes[0].smoothpos;
 	}
 
-	//okay
+	// If something unexpected happens here, then
+	// replace fast_normalise(a) with a.normalisedCopy()
 	for (int i=0; i<(int)vertex_count; i++)
 	{
-		Locator_t *loc=&locs[i];
 		Matrix3 mat;
-		mat.SetColumn(0, nodes[loc->nx].smoothpos-nodes[loc->ref].smoothpos);
-		mat.SetColumn(1, nodes[loc->ny].smoothpos-nodes[loc->ref].smoothpos);
-//		mat.SetColumn(2, nodes[loc->nz].smoothpos-nodes[loc->ref].smoothpos);
-		Vector3 vz=(nodes[loc->nx].smoothpos-nodes[loc->ref].smoothpos).crossProduct(nodes[loc->ny].smoothpos-nodes[loc->ref].smoothpos);
-		vz.normalise();
-		mat.SetColumn(2, vz);
+		Vector3 diffX = nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos;
+		Vector3 diffY = nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos;
 
-		dstpos[i]=mat*loc->coords+nodes[loc->ref].smoothpos-center;
-		dstnormals[i]=mat*srcnormals[i];
-		dstnormals[i].normalise(); //painfull but necessary!
+		mat.SetColumn(0, diffX);
+		mat.SetColumn(1, diffY);
+		mat.SetColumn(2, fast_normalise(diffX.crossProduct(diffY))); // Old version: mat.SetColumn(2, nodes[loc.nz].smoothpos-nodes[loc.ref].smoothpos);
+
+		dstpos[i] = mat * locs[i].coords + nodes[locs[i].ref].smoothpos - center;
+		dstnormals[i] = fast_normalise(mat * srcnormals[i]);
 	}
 	
 	Vector3 *ppt=dstpos;
