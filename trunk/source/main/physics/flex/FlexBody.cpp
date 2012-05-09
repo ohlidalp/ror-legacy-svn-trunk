@@ -86,16 +86,19 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	Quaternion orientation = Quaternion::ZERO;
 	if(ref >= 0)
 	{
-		normal=(nodes[ny].smoothpos-nodes[ref].smoothpos).crossProduct(nodes[nx].smoothpos-nodes[ref].smoothpos);
-		normal.normalise();
-		//position
-		position=nodes[ref].smoothpos+offset.x*(nodes[nx].smoothpos-nodes[ref].smoothpos)+offset.y*(nodes[ny].smoothpos-nodes[ref].smoothpos);
-		position=(position+normal*offset.z);
-		//orientation
-		Vector3 refx=nodes[nx].smoothpos-nodes[ref].smoothpos;
-		refx.normalise();
-		Vector3 refy=refx.crossProduct(normal);
-		orientation=Quaternion(refx, normal, refy)*rot;
+		Vector3 diffX = nodes[nx].smoothpos-nodes[ref].smoothpos;
+		Vector3 diffY = nodes[ny].smoothpos-nodes[ref].smoothpos;
+
+		normal = fast_normalise(diffY.crossProduct(diffX));
+
+		// position
+		position = nodes[ref].smoothpos + offset.x*diffX + offset.y*diffY;
+		position = position + offset.z*normal;
+
+		// orientation
+		Vector3 refX = fast_normalise(diffX);
+		Vector3 refY = diffX.crossProduct(normal);
+		orientation  = Quaternion(refX, normal, refY) * rot;
 	} else
 	{
 		// special case!
@@ -384,20 +387,22 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		//search another close, orthogonal node as the Y vector
 		mindist=100000.0;
 		minnode=-1;
-		Vector3 vx=nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos;
-		vx.normalise();
+		Vector3 vx = fast_normalise(nodes[locs[i].nx].smoothpos - nodes[locs[i].ref].smoothpos);
 		for (int k=0; k<numnodes; k++)
 		{
 			if (!isinset(k)) continue;
 			//if (nodes[k].iswheel) continue;
 			if (k==locs[i].ref) continue;
 			if (k==locs[i].nx) continue;
-			Vector3 vt=nodes[k].smoothpos-nodes[locs[i].ref].smoothpos;
-			vt.normalise();
-			float cost=vx.dotProduct(vt);
+			Vector3 vt = fast_normalise(nodes[k].smoothpos - nodes[locs[i].ref].smoothpos);
+			float cost = vx.dotProduct(vt);
 			if (cost>0.707 || cost<-0.707) continue; //rejection, fails the orthogonality criterion (+-45 degree)
-			float dist=(vertices[i]-nodes[k].smoothpos).length();
-			if (dist<mindist) {mindist=dist;minnode=k;};
+			float dist = (vertices[i] - nodes[k].smoothpos).length();
+			if (dist < mindist)
+			{
+				mindist = dist;
+				minnode = k;
+			};
 		}
 		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": VY node not found");
 		locs[i].ny=minnode;
