@@ -30,16 +30,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Console.h"
 #include "Differentials.h"
 #include "FlexAirfoil.h"
+#include "FlexBody.h"
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
 #include "InputEngine.h"
 #include "JSON.h"
+#include "MaterialReplacer.h"
 #include "MeshObject.h"
 #include "RoRFrameListener.h"
 #include "RoRVersion.h"
 #include "ScopeLog.h"
 #include "screwprop.h"
+#include "Settings.h"
+#include "skin.h"
 #include "SlideNode.h"
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
@@ -47,9 +51,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "turbojet.h"
 #include "utils.h"
 #include "vidcam.h"
-
-// TODO: Not really needed for truck loading, or used very rarely
-#include "FlexBody.h"
 
 using namespace Ogre;
 
@@ -924,7 +925,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 				// always use the last flexbody
 				FlexBody *flex = flexbodies[free_flexbody-1];
-				if(flex) flex->flexBodyCameraMode = pmode;
+				if(flex) flex->cameramode = pmode;
 				continue;
 			}
 
