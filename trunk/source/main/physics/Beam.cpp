@@ -1914,9 +1914,7 @@ void Beam::threadentry(int id)
 	{
 		for (int t=0; t<numtrucks; t++)
 		{
-			if(!trucks[t]) continue;
-
-			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+			if (trucks[t] && trucks[t]->state < SLEEPING)
 				trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 		}
 		truckTruckCollisions(dtperstep);
@@ -2060,9 +2058,7 @@ bool Beam::frameStep(Real dt)
 		{
 			for (int t=0; t<numtrucks; t++)
 			{
-				if(!trucks[t]) continue;
-
-				if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+				if (trucks[t] && trucks[t]->state < SLEEPING)
 					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
 			}
 			truckTruckCollisions(dtperstep);
@@ -3020,37 +3016,52 @@ void Beam::truckTruckCollisions(Real dt)
 	Beam** trucks = BeamFactory::getSingleton().getTrucks();
 	int numtrucks = BeamFactory::getSingleton().getTruckCount();
 
-	float trwidth;
+	////////////////////////////////////////////////////////////////////
+	// Is there any valid reason not to do this kind of optimization? //
+	////////////////////////////////////////////////////////////////////
+	// if (num_trucks < 2) return;
+	//
+	// pointCD->update(trucks, numtrucks);
+	//
+	// if (num_active_trucks < 2) return;
 
-	int t;
-	int hitnodeid;
-	int hittruckid;
-	int i;
+	int num_trucks = 0;
+	int num_active_trucks = 0;
 
-	float inverted_dt=1.0f/dt;
+	for (int t=0; t<numtrucks; t++)
+	{
+		if (trucks[t] && trucks[t]->state <= SLEEPING) num_trucks++;
+		if (trucks[t] && trucks[t]->state <  SLEEPING) num_active_trucks++;	
+	}
 
-	if(pointCD) pointCD->update(trucks, numtrucks);
+	if (num_trucks < 2) return;
 
+	pointCD->update(trucks, numtrucks);
 
-	// TODO Unused Varaible
-	//int colltype=0;
-	int tmpv;
+	if (num_active_trucks < 2) return;
+
+	float inverted_dt = 1.0f / dt;
+	
+	Beam* hittruck;
 	Matrix3 forward;
-	bool calcforward;
 	Vector3 bx;
 	Vector3 by;
 	Vector3 bz;
-	Vector3 point;
 	Vector3 forcevec;
-	Vector3 vecrelVel;
 	Vector3 plnormal;
-	node_t* no;
+	Vector3 point;
+	Vector3 vecrelVel;
+	bool calcforward;
+	float trwidth;
+	int hitnodeid;
+	int hittruckid;
+	int tmpv;
+	node_t* hitnode;
 	node_t* na;
 	node_t* nb;
-	node_t* hitnode;
-	Beam* hittruck;
+	node_t* no;
 
-	for (t=0; t<numtrucks; t++)
+	for (int t=0; t<numtrucks; t++)
 	{
 		//If you change any of the below "ifs" concerning trucks then you should
 		//also consider changing the parallel "ifs" inside PointColDetector
@@ -3060,7 +3071,7 @@ void Beam::truckTruckCollisions(Real dt)
 
 		trwidth=trucks[t]->collrange;
 
-		for (i=0; i<trucks[t]->free_collcab; i++)
+		for (int i=0; i<trucks[t]->free_collcab; i++)
 		{
 			if (trucks[t]->collcabrate[i].rate>0)
 			{
