@@ -20,7 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 1st of May 2010
 #include "MeshObject.h"
+
+#include "materialFunctionMapper.h"
+#include "MaterialReplacer.h"
 #include "Ogre.h"
+#include "Settings.h"
+#include "skin.h"
 
 using namespace Ogre;
 
@@ -110,9 +115,6 @@ void MeshObject::setVisible(bool b)
 	if(loaded && sceneNode)
 		sceneNode->setVisible(b);
 }
-
-
-
 
 void MeshObject::postProcess()
 {

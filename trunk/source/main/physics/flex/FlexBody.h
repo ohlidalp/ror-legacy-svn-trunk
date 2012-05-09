@@ -81,10 +81,10 @@ private:
 	bool enabled;
 
 	bool hasshared;
-	bool haveshadows;
-	bool havetangents;
-	bool havetexture;
-	bool haveblend;
+	bool hasshadows;
+	bool hastangents;
+	bool hastexture;
+	bool hasblend;
 	bool faulty;
 
 	Ogre::MeshPtr msh;
@@ -102,7 +102,7 @@ public:
 	void writeBlend();
 	Ogre::SceneNode *getSceneNode() { return snode; };
 
-	int flexBodyCameraMode;
+	int cameramode;
 	void setEnabled(bool e);
 };
 

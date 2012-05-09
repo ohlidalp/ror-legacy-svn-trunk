@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexBody.h"
 
+#include "approxmath.h"
 #include "MaterialReplacer.h"
 #include "ResourceBuffer.h"
 #include "Settings.h"
@@ -27,24 +28,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshname, char* uname, int ref, int nx, int ny, Vector3 offset, Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool enableShadows, MaterialReplacer *mr) :
-	  flexBodyCameraMode(-2)
+	  cameramode(-2)	
 	, coffset(offset)
 	, cref(ref)
+	, cx(nx)
+	, cy(ny)
 	, enabled(true)
 	, faulty(false)
 	, freenodeset(0)
-	, haveblend(true)
-	, havetangents(false)
+	, hasblend(true)
+	, hastangents(false)
 	, mr(mr)
 	, nodes(nds)
 	, numnodes(numnds)
 	, snode(0)
 {
 	nodes[cref].iIsSkin=true;
-	cx=nx; nodes[cx].iIsSkin=true;
-	cy=ny; nodes[cy].iIsSkin=true;
+	nodes[cx].iIsSkin=true;
+	nodes[cy].iIsSkin=true;
 
-	haveshadows=(manager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || manager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
+	hasshadows=(manager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || manager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
 
 	//parsing set definition
 	char* pos=setdef;
@@ -151,11 +154,11 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	msh=ent->getMesh();
 
 	//determine if we have texture coordinates everywhere
-	havetexture=true;
-	if (msh->sharedVertexData && msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) havetexture=false;
-	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices && msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) havetexture=false;
-	if (!havetexture) LOG("FLEXBODY Warning: at least one part of this mesh does not have texture coordinates, switching off texturing!");
-	if (!havetexture) {havetangents=false;haveblend=false;}; //we can't do this
+	hastexture=true;
+	if (msh->sharedVertexData && msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) hastexture=false;
+	for (int i=0; i<msh->getNumSubMeshes(); i++) if (!msh->getSubMesh(i)->useSharedVertices && msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES)==0) hastexture=false;
+	if (!hastexture) LOG("FLEXBODY Warning: at least one part of this mesh does not have texture coordinates, switching off texturing!");
+	if (!hastexture) {hastangents=false;hasblend=false;}; //we can't do this
 
 	//detect the anomalous case where a mesh is exported without normal vectors
 	bool havenormal=true;
@@ -167,9 +170,9 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	VertexDeclaration* optimalVD=HardwareBufferManager::getSingleton().createVertexDeclaration();
 	optimalVD->addElement(0, 0, VET_FLOAT3, VES_POSITION);
 	optimalVD->addElement(1, 0, VET_FLOAT3, VES_NORMAL);
-	if (haveblend) optimalVD->addElement(2, 0, VET_COLOUR_ARGB, VES_DIFFUSE);
-	if (havetexture) optimalVD->addElement(3, 0, VET_FLOAT2, VES_TEXTURE_COORDINATES);
-	if (havetangents) optimalVD->addElement(4, 0, VET_FLOAT3, VES_TANGENT);
+	if (hasblend) optimalVD->addElement(2, 0, VET_COLOUR_ARGB, VES_DIFFUSE);
+	if (hastexture) optimalVD->addElement(3, 0, VET_FLOAT2, VES_TEXTURE_COORDINATES);
+	if (hastangents) optimalVD->addElement(4, 0, VET_FLOAT3, VES_TANGENT);
 	optimalVD->sort();
 	optimalVD->closeGapsInSource();
 
@@ -181,7 +184,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	//printMeshInfo(ent->getMesh().getPointer());
 
 	//adding color buffers, well get the reference later
-	if (haveblend)
+	if (hasblend)
 	{
 		if (msh->sharedVertexData)
 		{
@@ -212,7 +215,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 
 	//tangents for envmapping
-	if (havetangents)
+	if (hastangents)
 	{
 		LOG("FLEXBODY preparing for tangents");
 		unsigned short srcTex, destTex;
@@ -285,7 +288,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	dstpos=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	srcnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
 	dstnormals=(Vector3*)malloc(sizeof(Vector3)*vertex_count);
-	if (haveblend)
+	if (hasblend)
 	{
 		srccolors=(ARGB*)malloc(sizeof(ARGB)*vertex_count);
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
@@ -307,7 +310,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		sharednbuf->readData(0, msh->sharedVertexData->vertexCount*sizeof(Vector3), (void*)npt);
 		npt+=msh->sharedVertexData->vertexCount;
 		//colors
-		if (haveblend)
+		if (hasblend)
 		{
 			source=msh->sharedVertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE)->getSource();
 			sharedcbuf=msh->sharedVertexData->vertexBufferBinding->getBuffer(source);
@@ -329,7 +332,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		subnbufs[cursubmesh]->readData(0, msh->getSubMesh(i)->vertexData->vertexCount*sizeof(Vector3), (void*)npt);
 		npt+=msh->getSubMesh(i)->vertexData->vertexCount;
 		//colors
-		if (haveblend)
+		if (hasblend)
 		{
 			source=msh->getSubMesh(i)->vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE)->getSource();
 			subcbufs[cursubmesh]=msh->getSubMesh(i)->vertexData->vertexBufferBinding->getBuffer(source);
@@ -399,7 +402,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		if (minnode==-1) LOG("FLEXBODY ERROR on mesh "+String(meshname)+": VY node not found");
 		locs[i].ny=minnode;
 		nodes[minnode].iIsSkin=true;
-/*
+
+#if 0
 		//search the final close, orthogonal node as the Z vector
 		mindist=100000.0;
 		minnode=-1;
@@ -432,7 +436,8 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 			locs[i].nz=locs[i].ny;
 			locs[i].ny=t;
 		}
-*/
+#endif // 0
+
 		Vector3 vz=(nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos).crossProduct(nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
 		vz.normalise();
 		Matrix3 mat;
@@ -449,10 +454,10 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 
 	//shadow
-	if (haveshadows)
+	if (hasshadows)
 	{
 		LOG("FLEXBODY preparing for shadow volume");
-		msh->prepareForShadowVolume(); //we do this always so we have only one datastructure format to manage
+		msh->prepareForShadowVolume(); // we do this always so we have only one data structure format to manage
 		msh->buildEdgeList();
 	}
 
@@ -503,7 +508,6 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 	}
 #endif //0
 
-
 	for (int i=0; i<(int)vertex_count; i++)
 	{
 		Vector3 vz=(nodes[locs[i].nx].smoothpos-nodes[locs[i].ref].smoothpos).crossProduct(nodes[locs[i].ny].smoothpos-nodes[locs[i].ref].smoothpos);
@@ -519,9 +523,7 @@ FlexBody::FlexBody(SceneManager *manager, node_t *nds, int numnds, char* meshnam
 		srcnormals[i]=mat*(orientation*srcnormals[i]);
 	}
 
-
 	LOG("FLEXBODY ready");
-
 }
 
 void FlexBody::setEnabled(bool e)
@@ -603,7 +605,7 @@ Vector3 FlexBody::flexit()
 {
 	if(faulty) return Vector3::ZERO;
 	if(!enabled) return Vector3::ZERO;
-	if (haveblend) updateBlend();
+	if (hasblend) updateBlend();
 	//compute the local center
 
 	Vector3 normal;
@@ -661,7 +663,7 @@ Vector3 FlexBody::flexit()
 void FlexBody::reset()
 {
 	if(faulty) return;
-	if (haveblend)
+	if (hasblend)
 	{
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
 		writeBlend();
@@ -671,7 +673,7 @@ void FlexBody::reset()
 void FlexBody::writeBlend()
 {
 	if(!enabled) return;
-	if (!haveblend) return;
+	if (!hasblend) return;
 	ARGB *cpt=srccolors;
 	if (hasshared)
 	{

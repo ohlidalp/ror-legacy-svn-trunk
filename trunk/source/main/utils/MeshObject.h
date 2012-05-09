@@ -20,16 +20,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 1st of May 2010
 
-#ifndef MESHOBJECT_H__
-#define MESHOBJECT_H__
+#ifndef __MeshObject_H_
+#define __MeshObject_H_
 
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
-
-#include "materialFunctionMapper.h"
-#include "MaterialReplacer.h"
-#include "Settings.h"
-#include "skin.h"
 
 class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
 {
@@ -78,4 +73,4 @@ protected:
 	void unloadingComplete(Ogre::Resource *r);
 };
 
-#endif //MESHOBJECT_H__
+#endif // __MeshObject_H_
