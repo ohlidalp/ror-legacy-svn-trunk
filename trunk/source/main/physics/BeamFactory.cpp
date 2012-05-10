@@ -50,17 +50,15 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	, w(w)
 	, pcam(pcam)
 	, current_truck(-1)
-	, done_count(0)
 	, free_truck(0)
 	, physFrame(0)
 	, tdr(0)
-	, thread_mode(THREAD_SINGLE)
 {
 	for (int t=0; t < MAX_TRUCKS; t++)
 		trucks[t] = 0;
 
 	if (SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)") == "2 (Hyper-Threading or Dual core CPU)")
-		thread_mode = THREAD_MULTI;
+		Beam::thread_mode = THREAD_MULTI;
 
 	if (BSETTING("2DReplay", false))
 		tdr = new TwoDReplay();

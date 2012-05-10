@@ -40,26 +40,25 @@ public:
 
 	Beam *createLocal(int slotid);
 	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freePosition=false);
-	bool removeBeam(Beam *b);
-
 	Beam *createRemoteInstance(stream_reg_t *reg);
 
 	Beam *getBeam(int source_id, int stream_id); // used by character
 
-	int getTruckCount() { return free_truck; };
-	Beam *getTruck(int number) { return trucks[number]; };
 	Beam *getCurrentTruck() { return (current_truck<0)?0:trucks[current_truck]; };
+	Beam *getTruck(int number) { return trucks[number]; };
+	Beam **getTrucks() { return trucks; };
 	int getCurrentTruckNumber() { return current_truck; };
-	void recalcGravityMasses();
-	void repairTruck(Collisions *collisions, char* inst, char* box, bool keepPosition=false);
+	int getTruckCount() { return free_truck; };
+
+	void setCurrentTruck(int new_truck);
+
+	bool removeBeam(Beam *b);
+	void removeCurrentTruck();
 	void removeTruck(Collisions *collisions, char* inst, char* box);
 	void removeTruck(int truck);
-	void removeCurrentTruck();
-	void setCurrentTruck(int new_truck);
+	
 	bool enterRescueTruck();
-
-	void activateAllTrucks();
-	void sendAllTrucksSleeping();
+	void repairTruck(Collisions *collisions, char* inst, char* box, bool keepPosition=false);
 
 	void updateVisual(float dt);
 	void updateAI(float dt);
@@ -67,28 +66,28 @@ public:
 	inline unsigned long getPhysFrame() { return physFrame; };
 
 	void calcPhysics(float dt);
+	void recalcGravityMasses();
 
-	Beam **getTrucks() { return trucks; };
 	int updateSimulation(float dt);
 
-	// beam engine functions
 	bool checkForActive(int j, bool *sleepyList);
+	void activateAllTrucks();
 	void recursiveActivation(int j);
+	void sendAllTrucksSleeping();
 	void checkSleepingState();
 
 	void windowResized();
 
 protected:
-	Ogre::SceneManager *manager;
-	Ogre::SceneNode *parent;
-	Ogre::RenderWindow* win;
-	Network *net;
-	float *mapsizex, *mapsizez;
 	Collisions *icollisions;
 	HeightFinder *mfinder;
-	Water *w;
+	Network *net;
 	Ogre::Camera *pcam;
-	int thread_mode;
+	Ogre::RenderWindow* win;
+	Ogre::SceneManager *manager;
+	Ogre::SceneNode *parent;
+	Water *w;
+	float *mapsizex, *mapsizez;
 	
 	Beam *trucks[MAX_TRUCKS];
 	int free_truck;
@@ -98,21 +97,18 @@ protected:
 
 	unsigned long physFrame;
 
-	int done_count;
-
 	int getFreeTruckSlot();
+	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);
 	void localUserAttributesChanged(int newid);
-
 
 	bool syncRemoteStreams();
 	void updateGUI();
 	void removeInstance(Beam *b);
 	void removeInstance(stream_del_t *del);
 	void _deleteTruck(Beam *b);
-	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
 };
 
 #endif // __BeamFactory_H_
