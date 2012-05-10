@@ -222,6 +222,22 @@ public:
 	float refpressure;
 	PointColDetector *pointCD;
 
+	pthread_mutex_t work_mutex;
+	pthread_cond_t work_cv;
+	pthread_mutex_t done_count_mutex;
+	pthread_cond_t done_count_cv;
+	pthread_t thread;
+	int done_count;
+
+	/**
+	 * Blocks until all threads are done.
+	 */
+	void _waitForSync();
+
+	static Beam* threadbeam[MAX_TRUCKS];
+	static int thread_mode;
+	static int free_tb;
+
 	int calculateDriverPos(Ogre::Vector3 &pos, Ogre::Quaternion &rot);
 	float getSteeringAngle();
 

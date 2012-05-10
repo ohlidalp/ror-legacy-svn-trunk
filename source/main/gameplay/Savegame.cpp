@@ -45,8 +45,7 @@ int Savegame::save(Ogre::String &filename)
 	LOG("trying to save savegame as " + filename + " ...");
 	FILE *f = fopen(filename.c_str(), "wb");
 
-	// wait for engine sync
-	//BEAMLOCK();
+	// wait for engine sync?
 
 	// TODO: show error
 	if(!f)

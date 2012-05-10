@@ -68,10 +68,410 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 # include "crashrpt.h"
 #endif
 
-// Birthtime
+// time of birth
 float mrtime;
 
 using namespace Ogre;
+
+
+void *threadstart(void* vid);
+Beam* Beam::threadbeam[MAX_TRUCKS];
+int Beam::thread_mode = THREAD_SINGLE;
+int Beam::free_tb = 0;
+
+Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) :
+	  deleting(false)
+	, abs_state(false)
+	, abs_timer(0.0)
+	, aileron(0)
+	, avichatter_timer(11.0f) // some pseudo random number,  doesn't matter
+	, beacon(false)
+	, blinkingtype(BLINK_NONE)
+	, blinktreshpassed(false)
+	, brake(0.0)
+	, cabFadeMode(0)
+	, cabFadeTime(0.3)
+	, cabFadeTimer(0)
+	, cameranodeacc(Vector3::ZERO)
+	, cameranodecount(0)
+	, canwork(1)
+	, collisions(icollisions)
+	, cparticle_mode(false)
+	, currentScale(1)
+	, currentcamera(-1) // -1 = external
+	, dash(nullptr)
+	, detailLevel(0)
+	, disableDrag(false)
+	, elevator(0)
+	, fasted(1)
+	, flap(0)
+	, floating_origin_enable(true)
+	, fusedrag(Vector3::ZERO)
+	, hydroaileroncommand(0)
+	, hydroaileronstate(0)
+	, hydrodircommand(0)
+	, hydrodirstate(0)
+	, hydrodirwheeldisplay(0.0)
+	, hydroelevatorcommand(0)
+	, hydroelevatorstate(0)
+	, hydroruddercommand(0)
+	, hydrorudderstate(0)
+	, ipy(py)
+	, isInside(false)
+	, label(tnum) // convenient, but set overwise elsewhere for a good cause
+	, lastFuzzyGroundModel(0)
+	, last_net_time(0)
+	, lastlastposition(Vector3(px, py, pz))
+	, lastposition(Vector3(px, py, pz))
+	, lastwspeed(0.0)
+	, leftMirrorAngle(0.52)
+	, lights(1)
+	, lockSkeletonchange(false)
+	, mTimeUntilNextToggle(0)
+	, mWindow(win)
+	, mapsizex(_mapsizex)
+	, mapsizez(_mapsizez)
+	, meshesVisible(true)
+	, minCameraRadius(0)
+	, mousemoveforce(0.0f)
+	, mousenode(-1)
+	, mousepos(Vector3::ZERO)
+	, net(_net)
+	, netBrakeLight(false)
+	, netLabelNode(0)
+	, netMT(0)
+	, netReverseLight(false)
+	, networkAuthlevel(0)
+	, networkUsername("")
+	, oldreplaypos(-1)
+	, parentNode(parent)
+	, parkingbrake(0)
+	, posStorage(0)
+	, position(Vector3(px, py, pz))
+	, previousGear(0)
+	, refpressure(50.0)
+	, replay(0)
+	, replayPrecision(0)
+	, replayTimer(0)
+	, replaylen(10000)
+	, replaymode(false)
+	, replaypos(0)
+	, requires_wheel_contact(false)
+	, reset_requested(0)
+	, reverselight(false)
+	, rightMirrorAngle(-0.52)
+	, rudder(0)
+	, simpleSkeletonInitiated(false)
+	, simpleSkeletonManualObject(0)
+	, skeleton(0)
+	, sleepcount(0)
+	, slowed(1)
+	, smokeNode(NULL)
+	, smoker(NULL)
+	, stabcommand(0)
+	, stabratio(0.0)
+	, stabsleep(0.0)
+	, tdt(0.1)
+	, totalmass(0)
+	, tsm(manager)
+	, tsteps(100)
+	, ttdt(0.1)
+	, watercontact(0)
+	, watercontactold(0)
+{
+
+	airbrakeval = 0;
+	alb_minspeed = 0.0f;
+	alb_mode = 0;
+	alb_notoggle = false;
+	alb_notoggle = false;
+	alb_present = false;
+	alb_pulse = 1;
+	alb_pulse_state = false;
+	alb_ratio = 0.0f;
+	animTimer = 0.0f;
+	antilockbrake = 0;
+
+	cabMesh = NULL;
+	cablight = 0;
+	cablightNode = 0;
+
+	cc_mode = 0;
+	cc_target_rpm = 0;
+	cc_target_speed = 0;
+
+	debugVisuals = 0;
+
+	driveable = NOT_DRIVEABLE;
+	driverSeat = 0;
+
+	enable_wheel2 = true; // since 0.38 enabled wheels2 by default
+	engine = 0;
+
+	flaresMode = _flaresMode;
+
+	freePositioned = freeposition;
+	free_aeroengine = 0;
+	free_airbrake = 0;
+	free_axle = 0;
+	free_beam = 0;
+	free_buoycab = 0;
+	free_cab = 0;
+	free_camerarail = 0;
+	free_collcab = 0;
+	free_contacter = 0;
+	free_cparticle = 0;
+	free_flare = 0;
+	free_flexbody = 0;
+	free_hydro = 0;
+	free_node = 0;
+	free_pressure_beam = 0;
+	free_prop = 0;
+	free_rigidifier = 0;
+	free_rotator = 0;
+	free_screwprop = 0;
+	free_shock = 0;
+	free_soundsource = 0;
+	free_sub = 0;
+	free_texcoord = 0;
+	free_wheel = 0;
+	free_wing = 0;
+
+	heathaze = !disable_smoke && BSETTING("HeatHaze", false);
+	hfinder = mfinder;
+	hideInChooser = false;
+
+	mCamera = pcam;
+
+	mrtime = 0.0;
+
+	networking = networking;
+
+	origin = Vector3::ZERO;
+
+	previousCrank = 0.0f;
+
+	state = SLEEPING;
+	tc_fade = 0.0f;
+	tc_mode = 0;
+	tc_present = false;
+	tc_pulse = 1;
+	tc_pulse_state = false;
+	tc_ratio = 0.0f;
+	tc_wheelslip = 0.0f;
+	tcalb_timer = 0.0f;
+
+	tractioncontrol = 0;
+	trucknum = tnum;
+
+	usedSkin = skin;
+	water = w;
+
+#ifdef USE_MYGUI
+	dash = new DashBoardManager();
+#endif // USE_MYGUI
+
+#ifdef FEAT_TIMING
+	// this enables beam engine timing statistics
+	statistics = BES.getClient(tnum, BES_CORE);
+	statistics_gfx = BES.getClient(tnum, BES_GFX);
+#endif
+
+	if (net) networking = true; // enable networking if some network class is existing
+
+	for(int i=0; i<MAX_SUBMESHES; i++)
+	{
+		subisback[i] = 0;
+	}	
+
+	LOG("BEAM: loading new truck: " + String(fname));
+
+	if (ismachine)
+	{
+		driveable = MACHINE;
+	}
+
+	// copy truck config
+	if (_truckconfig && _truckconfig->size())
+	{
+		for(std::vector<String>::iterator it = _truckconfig->begin(); it != _truckconfig->end(); it++)
+		{
+			truckconfig.push_back(*it);
+		}
+	}
+
+	materialFunctionMapper = new MaterialFunctionMapper();
+	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
+	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
+	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
+
+	submesh_ground_model = icollisions->defaultgm;
+
+	realtruckfilename = String(fname);
+	sprintf(truckname, "t%i", tnum);
+	
+	strcpy(uniquetruckid,"-1");
+	
+	simpleSkeletonNode = parent->createChildSceneNode();
+	deletion_sceneNodes.push_back(simpleSkeletonNode);
+	
+	beamsRoot=parent->createChildSceneNode();
+	deletion_sceneNodes.push_back(netLabelNode);
+
+	if (networked)
+	{
+		state = NETWORKED; //required for proper loading
+	}
+
+	// initialize commands
+	for (int i=0; i<MAX_COMMANDS; i++)
+	{
+		commandkey[i].commandValueState = -1;
+		commandkey[i].commandValue = 0;
+	}
+
+	// skidmark stuff
+	useSkidmarks = BSETTING("Skidmarks", false);
+
+	// always init skidmarks with 0
+	for(int i=0; i<MAX_WHEELS*2; i++)
+	{
+		skidtrails[i] = 0;
+	}	
+
+	// you could disable the collision code here:
+	// pointCD = 0;
+	pointCD = new PointColDetector();
+	
+	dustp   = DustManager::getSingleton().getDustPool("dust");
+	dripp   = DustManager::getSingleton().getDustPool("dripp");
+	sparksp = DustManager::getSingleton().getDustPool("sparks");
+	clumpp  = DustManager::getSingleton().getDustPool("clump");
+	splashp = DustManager::getSingleton().getDustPool("splash");
+	ripplep = DustManager::getSingleton().getDustPool("ripple");
+	
+	if (networked || networking)
+	{
+		enable_wheel2 = false;
+	}
+
+	cparticle_enabled = BSETTING("Particles", true);
+	if (strnlen(fname, 200) > 0)
+	{
+		if (loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
+		{
+	   		return;
+		}
+	}
+
+	// setup sounds properly
+	changedCamera();
+
+	// setup replay mode
+	bool enablereplay = BSETTING("Replay mode", false);
+
+	if (enablereplay && state != NETWORKED && !networking)
+	{
+		replaylen = ISETTING("Replay length", 10000);
+		replay = new Replay(this, replaylen);
+
+		int steps = ISETTING("Replay Steps per second", 240);
+
+		if (steps <= 0)
+			replayPrecision = 0.0f;
+		else
+			replayPrecision = 1.0f / ((float)steps);
+	}
+
+	// add storage
+	bool enablePosStor = BSETTING("Position Storage", false);
+	if (enablePosStor)
+	{
+		posStorage = new PositionStorage(free_node, 10);
+	}
+
+	//search first_wheel_node
+	first_wheel_node=free_node;
+	for (int i=0; i<free_node; i++)
+	{
+		if (nodes[i].iswheel)
+		{
+			first_wheel_node=i;
+			break;
+		}
+	}
+
+	// network buffer layout (without oob_t):
+	//
+	//  - 3 floats (x,y,z) for the reference node 0
+	//  - free_node - 1 times 3 short ints (compressed position info)
+	//  - free_wheel times a float for the wheel rotation
+	//
+	nodebuffersize = sizeof(float) * 3 + (first_wheel_node-1) * sizeof(short int) * 3;
+	netbuffersize  = nodebuffersize + free_wheel * sizeof(float);
+	updateVisual();
+	// stop lights
+	lightsToggle();
+
+	updateFlares(0);
+	updateProps();
+	if (engine)
+	{
+		engine->offstart();
+	}
+	// pressurize tires
+	addPressure(0.0);
+
+	checkBeamMaterial();
+
+	// start thread stuff
+	if (thread_mode == THREAD_MULTI)
+	{
+		// init mutexes
+		pthread_mutex_init(&work_mutex, NULL);
+		pthread_cond_init(&work_cv, NULL);
+		
+		pthread_mutex_init(&done_count_mutex, NULL);
+		pthread_cond_init(&done_count_cv, NULL);
+
+		threadbeam[free_tb] = this;
+		done_count = 1;
+		free_tb++;
+
+		if (pthread_create(&thread, NULL, threadstart, (void*)(free_tb-1)))
+		{
+			LOG("BEAM: Can not start a thread");
+		}
+		_waitForSync();
+	}
+
+	// start network stuff
+	if (networked)
+	{
+		state=NETWORKED;
+		// malloc memory
+		oob1=(oob_t*)malloc(sizeof(oob_t));
+		oob2=(oob_t*)malloc(sizeof(oob_t));
+		oob3=(oob_t*)malloc(sizeof(oob_t));
+		netb1=(char*)malloc(netbuffersize);
+		netb2=(char*)malloc(netbuffersize);
+		netb3=(char*)malloc(netbuffersize);
+		nettimer = new Timer();
+		net_toffset=0;
+		netcounter=0;
+		// init mutex
+		pthread_mutex_init(&net_mutex, NULL);
+		if (engine)
+		{
+			engine->start();
+		}
+	}
+
+	if (networking)
+	{
+		sendStreamSetup();
+	}
+}
 
 Beam::~Beam()
 {
@@ -81,6 +481,8 @@ Beam::~Beam()
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
+
+	_waitForSync();
 
 	// delete all classes we might have constructed
 #ifdef USE_MYGUI
@@ -281,346 +683,6 @@ Beam::~Beam()
 		delete netMT;
 		netMT = 0;
 	}
-}
-
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) : \
-	deleting(false), dash(nullptr)
-{
-#ifdef USE_MYGUI
-	dash = new DashBoardManager();
-#endif // USE_MYGUI
-	net=_net;
-	if(net && !networking) networking = true; // enable networking if some network class is existing
-
-	avichatter_timer=11.0f; // some pseudo random number, doesnt matter ;)
-	tsteps=100;
-	driverSeat=0;
-	submesh_ground_model = icollisions->defaultgm;
-	networkUsername = String();
-	networkAuthlevel = 0;
-	freePositioned = freeposition;
-	free_axle=0;
-	replayTimer=0;
-	minCameraRadius=0;
-	last_net_time=0;
-	lastFuzzyGroundModel=0;
-	usedSkin = skin;
-	LOG("BEAM: loading new truck: " + String(fname));
-	trucknum=tnum;
-	currentScale=1;
-	// copy truck config
-	if(_truckconfig && _truckconfig->size())
-		for(std::vector<String>::iterator it = _truckconfig->begin(); it!=_truckconfig->end();it++)
-			truckconfig.push_back(*it);
-	materialFunctionMapper = new MaterialFunctionMapper();
-	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
-	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
-	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
-	free_soundsource=0;
-	debugVisuals=0;
-	netMT = 0;
-	meshesVisible=true;
-
-#ifdef FEAT_TIMING
-	// this enables beam engine timing statistics
-	statistics = BES.getClient(tnum, BES_CORE);
-	statistics_gfx = BES.getClient(tnum, BES_GFX);
-#endif
-
-	//truckScript = new TruckCommandScheduler();
-	flaresMode = _flaresMode;
-	airbrakeval=0;
-	origin=Vector3::ZERO;
-	cameranodeacc=Vector3::ZERO;
-	cameranodecount=0;
-	label=tnum; //convenient, but set overwise elsewhere for a good cause
-	this->networking=networking;
-	mapsizex = _mapsizex;
-	mapsizez = _mapsizez;
-	floating_origin_enable=true;
-	lockSkeletonchange=false;
-	reset_requested=0;
-	mrtime=0.0;
-	free_flexbody=0;
-	netLabelNode=0;
-	free_rigidifier=0;
-	free_rotator=0;
-	free_cparticle=0;
-	free_airbrake=0;
-	cparticle_mode=false;
-	mousenode=-1;
-	mousemoveforce=0.0f;
-	mousepos=Vector3::ZERO;
-	cablight=0;
-	cablightNode=0;
-	disableDrag=false;
-	fusedrag=Vector3::ZERO;
-	elevator=0;
-	rudder=0;
-	aileron=0;
-	flap=0;
-	free_aeroengine=0;
-	free_screwprop=0;
-	free_wing=0;
-	refpressure=50.0;
-	free_pressure_beam=0;
-	leftMirrorAngle=0.52;
-	rightMirrorAngle=-0.52;
-	if(ismachine)
-		driveable=MACHINE;
-	else
-		driveable=NOT_DRIVEABLE;
-	previousGear = 0;
-	cc_mode = cc_target_rpm = cc_target_speed = 0;
-	alb_ratio = alb_minspeed = 0.0f;
-	alb_mode = 0;
-	tc_ratio = tc_fade = tc_wheelslip = 0.0f;
-	tc_mode = 0;
-	tc_pulse = 1;
-	alb_pulse = 1;
-	tc_present = alb_present = alb_notoggle = false;
-	tc_pulse_state = alb_pulse_state = alb_notoggle = false;
-	tcalb_timer = 0.0f;
-	previousCrank = 0.0f;
-	animTimer = 0.0f;
-	engine=0;
-	isInside=false;
-	beacon=false;
-	realtruckfilename = String(fname);
-	sprintf(truckname, "t%i", tnum);
-	simpleSkeletonManualObject=0;
-	simpleSkeletonInitiated=false;
-	strcpy(uniquetruckid,"-1");
-	tsm=manager;
-	simpleSkeletonNode = parent->createChildSceneNode();
-	deletion_sceneNodes.push_back(simpleSkeletonNode);
-
-	tdt=0.1;
-	ttdt=0.1;
-	//load terrain altitudes
-	//			hfinder=new HeightFinder(terrainmap, tsm);
-	mCamera=pcam;
-	hfinder=mfinder;
-	mWindow=win;
-	beamsRoot=parent->createChildSceneNode();
-	deletion_sceneNodes.push_back(netLabelNode);
-
-	parentNode=parent;
-	//			float gears[]={6.0, 3.0, 1.5, 1.0, 0.75};
-	//	engine=new BeamEngine(1000.0,2000.0, 1870.0, 4.0, 5, gears, 3.42, audio);
-	//engine=new BeamEngine(1000.0,2000.0, 4000.0, 4.0, 5, gears, 3.42, audio);
-
-	//init
-	water=w;
-	detailLevel=0;
-	//			state=DESACTIVATED;
-	//			sleepcount=9;
-	state=SLEEPING;
-	if (networked) state=NETWORKED; //required for proper loading
-	sleepcount=0;
-	currentcamera=-1; // -1 = external
-
-	requires_wheel_contact=false;
-	subisback[0]=0;
-	canwork=1;
-	totalmass=0;
-	parkingbrake=0;
-	antilockbrake = 0;
-	tractioncontrol = 0;
-	lights=1;
-	reverselight=false;
-	free_node=0;
-	free_beam=0;
-	free_contacter=0;
-	free_hydro=0;
-	free_wheel=0;
-	free_sub=0;
-	free_texcoord=0;
-	free_cab=0;
-	free_collcab=0;
-	free_buoycab=0;
-	free_shock=0;
-	free_flare=0;
-	free_prop=0;
-	free_camerarail=0;
-	lastwspeed=0.0;
-	stabcommand=0;
-	stabratio=0.0;
-	stabsleep=0.0;
-	cabMesh=NULL;
-	smokeNode=NULL;
-	smoker=NULL;
-	brake=0.0;
-	hideInChooser=false;
-	abs_timer=0.0;
-	abs_state=false;
-	blinktreshpassed=false;
-	blinkingtype=BLINK_NONE;
-	mTimeUntilNextToggle = 0;
-	netBrakeLight = false;
-	netReverseLight = false;
-	skeleton=0;
-	fasted=1;
-	slowed=1;
-	hydrodircommand=0;
-	hydrodirstate=0;
-	hydrodirwheeldisplay=0.0;
-	hydroaileroncommand=0;
-	hydroaileronstate=0;
-	hydroruddercommand=0;
-	hydrorudderstate=0;
-	hydroelevatorcommand=0;
-	hydroelevatorstate=0;
-	replaymode=false;
-	replaypos=0;
-	replayPrecision=0;
-	oldreplaypos=-1;
-	watercontact=0;
-	watercontactold=0;
-	// initialize commands
-	for (int i=0; i<MAX_COMMANDS; i++)
-	{
-		commandkey[i].commandValueState = -1;
-		commandkey[i].commandValue = 0;
-	}
-	ipy=py;
-	position=Vector3(px,py,pz);
-	lastposition=Vector3(px,py,pz);
-	lastlastposition=Vector3(px,py,pz);
-
-	cabFadeMode = 0;
-	cabFadeTimer=0;
-	cabFadeTime=0.3;
-
-	// skidmark stuff
-	useSkidmarks = BSETTING("Skidmarks", false);
-
-	// always init skidmarks with 0
-	for(int i=0; i<MAX_WHEELS*2; i++) skidtrails[i] = 0;
-
-	collisions=icollisions;
-
-	// you could disable the collision code here:
-	// pointCD = 0;
-	pointCD = new PointColDetector();
-
-
-	dustp   = DustManager::getSingleton().getDustPool("dust");
-	dripp   = DustManager::getSingleton().getDustPool("dripp");
-	sparksp = DustManager::getSingleton().getDustPool("sparks");
-	clumpp  = DustManager::getSingleton().getDustPool("clump");
-	splashp = DustManager::getSingleton().getDustPool("splash");
-	ripplep = DustManager::getSingleton().getDustPool("ripple");
-
-	heathaze=BSETTING("HeatHaze", false);
-	if(heathaze && disable_smoke)
-		// no heathaze without smoke!
-		heathaze=false;
-
-
-	enable_wheel2=true; // since 0.38, enabled wheels2 by default // BSETTING("Enhanced wheels");
-	if (networked || networking) enable_wheel2=false;
-
-	cparticle_enabled=BSETTING("Particles", true);
-	if(strnlen(fname,200) > 0)
-	{
-		if(loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
-		{
-	   		return;
-		}
-	}
-
-
-
-
-	//            printf("%i nodes, %i beams\n", free_node, free_beam);
-
-	// setup sounds properly
-	changedCamera();
-
-	// setup replay mode
-	bool enablereplay = BSETTING("Replay mode", false);
-	replay=0;
-	replaylen = 10000;
-	if(enablereplay && state != NETWORKED && !networking)
-	{
-		replaylen = ISETTING("Replay length", 10000);
-		replay = new Replay(this, replaylen);
-
-		int steps = ISETTING("Replay Steps per second", 240);
-
-		if(steps <= 0)
-			replayPrecision = 0.0f;
-		else
-			replayPrecision = 1.0f / ((float)steps);
-	}
-
-	// add storage
-	posStorage=0;
-	bool enablePosStor = BSETTING("Position Storage", false);
-	if(enablePosStor)
-	{
-		posStorage = new PositionStorage(free_node, 10);
-	}
-
-	//search first_wheel_node
-	first_wheel_node=free_node;
-	for (int i=0; i<free_node; i++)
-	{
-		if (nodes[i].iswheel)
-		{
-			first_wheel_node=i;
-			break;
-		}
-	}
-	// network buffer layout (without oob_t):
-	//
-	//  - 3 floats (x,y,z) for the reference node 0
-	//  - free_node - 1 times 3 short ints (compressed position info)
-	//  - free_wheel times a float for the wheel rotation
-	//
-	nodebuffersize = sizeof(float) * 3 + (first_wheel_node-1) * sizeof(short int) * 3;
-	netbuffersize  = nodebuffersize + free_wheel * sizeof(float);
-	updateVisual();
-	// stop lights
-	lightsToggle();
-
-	updateFlares(0);
-	updateProps();
-	if (engine) engine->offstart();
-	// pressurize tires
-	addPressure(0.0);
-
-	checkBeamMaterial();
-
-	// start network stuff
-	if (networked)
-	{
-		state=NETWORKED;
-		// malloc memory
-		oob1=(oob_t*)malloc(sizeof(oob_t));
-		oob2=(oob_t*)malloc(sizeof(oob_t));
-		oob3=(oob_t*)malloc(sizeof(oob_t));
-		netb1=(char*)malloc(netbuffersize);
-		netb2=(char*)malloc(netbuffersize);
-		netb3=(char*)malloc(netbuffersize);
-		nettimer = new Timer();
-		net_toffset=0;
-		netcounter=0;
-		// init mutex
-		pthread_mutex_init(&net_mutex, NULL);
-		if (engine) engine->start();
-	}
-
-	if(networking)
-	{
-		sendStreamSetup();
-	}
-
-	//if(networked)
-	//	showSkeleton(true, true);
-
-	//updateDebugOverlay();
 }
 
 // This method scales trucks. Stresses should *NOT* be scaled, they describe
@@ -1942,7 +2004,7 @@ bool Beam::frameStep(Real dt)
 	);
 	*/
 	if (!loading_finished) return true;
-	if (state==SLEEPING || state==NETWORKED || state==RECYCLE) return true;
+	if (state >= SLEEPING) return true;
 	if (dt==0) return true;
 	if(mTimeUntilNextToggle>-1)
 		mTimeUntilNextToggle-= dt;
@@ -2049,57 +2111,110 @@ bool Beam::frameStep(Real dt)
 	}
 	else
 	{
-		//simulation update
-		ttdt=tdt;
-		tdt=dt;
-		float dtperstep=dt/(Real)steps;
-
-		for (int i=0; i<steps; i++)
+		// simulation update
+		if (thread_mode == THREAD_SINGLE)
 		{
+			ttdt=tdt;
+			tdt=dt;
+			float dtperstep=dt/(Real)steps;
+
+			for (int i=0; i<steps; i++)
+			{
+				for (int t=0; t<numtrucks; t++)
+				{
+					if (trucks[t] && trucks[t]->state < SLEEPING)
+						trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
+				}
+				truckTruckCollisions(dtperstep);
+			}
+
 			for (int t=0; t<numtrucks; t++)
 			{
-				if (trucks[t] && trucks[t]->state < SLEEPING)
-					trucks[t]->calcForcesEuler(i==0, dtperstep, i, steps);
+				if(!trucks[t]) continue;
+
+				if (trucks[t]->reset_requested)
+					trucks[t]->SyncReset();
+
+				if (trucks[t]->state < SLEEPING)
+				{
+					trucks[t]->lastlastposition=trucks[t]->lastposition;
+					trucks[t]->lastposition=trucks[t]->position;
+					trucks[t]->updateTruckPosition();
+				}
+				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
 			}
-			truckTruckCollisions(dtperstep);
-		}
 
-		for (int t=0; t<numtrucks; t++)
+			ffforce = affforce / steps;
+			ffhydro = affhydro / steps;
+			if (free_hydro) ffhydro = ffhydro / free_hydro;
+		} else
 		{
-			if(!trucks[t]) continue;
+			_waitForSync();
 
-			if (trucks[t]->reset_requested)
-				trucks[t]->SyncReset();
-
-			if (trucks[t]->state!=SLEEPING && trucks[t]->state!=NETWORKED && trucks[t]->state!=RECYCLE)
+			for (int t=0; t<numtrucks; t++)
 			{
+				if(!trucks[t]) continue;
 				trucks[t]->lastlastposition=trucks[t]->lastposition;
 				trucks[t]->lastposition=trucks[t]->position;
-				trucks[t]->updateTruckPosition();
 			}
-			if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
-				trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
-		}
 
-		ffforce=affforce/steps;
-		ffhydro=affhydro/steps;
-		if (free_hydro) ffhydro=ffhydro/free_hydro;
+			// smooth
+			for (int t=0; t<numtrucks; t++)
+			{
+				if (!trucks[t]) continue;
+				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
+				if (trucks[t]->state < SLEEPING)
+				{
+					trucks[t]->updateTruckPosition();
+				}
+				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+				{
+					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+				}
+			}
+
+			tsteps=steps;
+			ttdt=tdt;
+			tdt=dt;
+			ttrucks=trucks;
+			tnumtrucks=numtrucks;
+			// preparing workdone
+			MUTEX_LOCK(&done_count_mutex);
+			done_count=1;
+			MUTEX_UNLOCK(&done_count_mutex);
+
+			// unblock threads
+			MUTEX_LOCK(&work_mutex);
+			pthread_cond_broadcast(&work_cv);
+			MUTEX_UNLOCK(&work_mutex);
+		}
 
 #ifdef FEAT_TIMING
 		if(statistics)     statistics->frameStep(dt);
 		if(statistics_gfx) statistics_gfx->frameStep(dt);
-#endif
-		//we must take care of this
+#endif // FEAT_TIMING
+
+		// we must take care of this
 		for (int t=0; t<numtrucks; t++)
 		{
 			if(!trucks[t]) continue;
-			//synchronous sleep
-			if (trucks[t]->state==GOSLEEP) trucks[t]->state=SLEEPING;
+
+			// synchronous sleep
+			if (trucks[t]->state==GOSLEEP) trucks[t]->state = SLEEPING;
+
 			if (trucks[t]->state==DESACTIVATED)
 			{
 				trucks[t]->sleepcount++;
-				if ((trucks[t]->lastposition-trucks[t]->lastlastposition).length()/dt>0.1) trucks[t]->sleepcount=7;
-				if (trucks[t]->sleepcount>10) {trucks[t]->state=MAYSLEEP;trucks[t]->sleepcount=0;}
+				if ((trucks[t]->lastposition - trucks[t]->lastlastposition).length() / dt>0.1)
+				{
+					trucks[t]->sleepcount = 7;
+				}
+				if (trucks[t]->sleepcount > 10)
+				{
+					trucks[t]->state = MAYSLEEP;
+					trucks[t]->sleepcount=0;
+				}
 			}
 		}
 	}
@@ -2108,7 +2223,20 @@ bool Beam::frameStep(Real dt)
 
 void Beam::prepareShutdown()
 {
-	//BEAMLOCK();
+	_waitForSync();
+}
+
+void Beam::_waitForSync()
+{
+	if (thread_mode == THREAD_MULTI)
+	{
+		MUTEX_LOCK(&done_count_mutex);
+		while (done_count > 0)
+		{
+			pthread_cond_wait(&done_count_cv, &done_count_mutex);
+		}
+		MUTEX_UNLOCK(&done_count_mutex);
+	}
 }
 
 void Beam::sendStreamSetup()
@@ -5180,6 +5308,54 @@ void Beam::deleteNetTruck()
 	resetPosition(100000, 100000, false, 100000);
 	netLabelNode->setVisible(false);
 	updateVisual();
+}
+
+void *threadstart(void* vid)
+{
+#ifdef USE_CRASHRPT
+	if(SSETTING("NoCrashRpt").empty())
+	{
+		// add the crash handler for this thread
+		CrThreadAutoInstallHelper cr_thread_install_helper;
+		MYASSERT(cr_thread_install_helper.m_nInstallStatus==0);
+	}
+#endif // USE_CRASHRPT
+
+	// 64 bit systems do have longer addresses!
+	long int id;
+	id = (long int)vid;
+	Beam *beam = Beam::threadbeam[id];
+
+	try
+	{
+		// additional exception handler required, otherwise RoR just crashes upon exception
+		while (1)
+		{
+			// wait signal
+			MUTEX_LOCK(&beam->work_mutex);
+
+			// signal end
+			MUTEX_LOCK(&beam->done_count_mutex);
+			beam->done_count--;
+			pthread_cond_signal(&beam->done_count_cv);
+			MUTEX_UNLOCK(&beam->done_count_mutex);
+
+			pthread_cond_wait(&beam->work_cv, &beam->work_mutex);
+			MUTEX_UNLOCK(&beam->work_mutex);
+			// do work
+			beam->threadentry(id);
+		}
+	} catch(Ogre::Exception& e)
+	{
+		// try to shutdown input system upon an error
+		if (InputEngine::getSingletonPtrNoCreation())
+			INPUTENGINE.prepareShutdown();
+
+		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
+		showOgreWebError("An exception has occured!", e.getFullDescription(), url);
+	}
+	pthread_exit(NULL);
+	return NULL;
 }
 
 float Beam::getHeadingDirectionAngle()
