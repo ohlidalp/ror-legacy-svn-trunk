@@ -323,13 +323,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		state = NETWORKED; //required for proper loading
 	}
 
-	// initialize commands
-	for (int i=0; i<MAX_COMMANDS; i++)
-	{
-		commandkey[i].commandValueState = -1;
-		commandkey[i].commandValue = 0;
-	}
-
 	// skidmark stuff
 	useSkidmarks = BSETTING("Skidmarks", false);
 

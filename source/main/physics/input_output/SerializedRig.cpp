@@ -150,10 +150,10 @@ SerializedRig::SerializedRig()
 	// commands contain complex data structures, do not memset them ...
 	for(int i=0;i<MAX_COMMANDS+1;i++)
 	{
-		this->commandkey[i].commandValue=-1;
+		this->commandkey[i].commandValue=0;
 		this->commandkey[i].beams.clear();
 		this->commandkey[i].rotators.clear();
-		this->commandkey[i].description = String();
+		this->commandkey[i].description="";
 	}
 
 	memset(this->rotators, 0, sizeof(rotator_t) * MAX_ROTATORS); free_rotator = 0;
