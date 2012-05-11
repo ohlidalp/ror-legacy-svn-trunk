@@ -178,8 +178,8 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
     m_pViewport->setCamera(0);
 	m_pViewport->setBackgroundColour(ColourValue::Black);
 
-	//
-	//mRoot->setFrameSmoothingPeriod(2.0);
+	// smooth over two frames
+	m_pRoot->setFrameSmoothingPeriod(2.0f);
 
 	// init inputsystem
 
