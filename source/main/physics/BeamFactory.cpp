@@ -106,17 +106,15 @@ bool BeamFactory::removeBeam(Beam *b)
 
 Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<String> *truckconfig, Skin *skin, bool freePosition)
 {
-	bool networked=false, networking=false;
-	if (net) networking = true;
-
 	int truck_num = getFreeTruckSlot();
 	if (truck_num == -1)
 	{
-		LOG("ERROR: could not add beam to main list");
+		LOG("ERROR: Could not add beam to main list");
 		return 0;
 	}
 
-	Beam *b = new Beam(truck_num,
+	Beam *b = new Beam(
+		truck_num,
 		manager,
 		manager->getRootSceneNode()->createChildSceneNode(),
 		win,
@@ -132,8 +130,8 @@ Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collis
 		mfinder,
 		w,
 		pcam,
-		networked,
-		networking,
+		false, // networked
+		net!=0, // networking
 		spawnbox,
 		ismachine,
 		flareMode,
@@ -145,7 +143,9 @@ Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collis
 
 	// lock slide nodes after spawning the truck?
 	if (b->getSlideNodesLockInstant())
+	{
 		b->toggleSlideNodeLock();
+	}
 
 	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
@@ -157,7 +157,10 @@ Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collis
 #endif // USE_MYGUI
 
 	// add own username to truck
-	if (net) b->updateNetworkInfo();
+	if (net)
+	{
+		b->updateNetworkInfo();
+	}
 
 	return b;
 }
@@ -186,10 +189,6 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		}
 	}
 #endif // USE_SOCKETW
-
-
-	bool networked=true, networking=false;
-	if (net) networking = true;
 
 	// check if we got this truck installed
 	String filename = String(treg->name);
@@ -229,7 +228,8 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		return 0;
 	}
 
-	Beam *b = new Beam(truck_num,
+	Beam *b = new Beam(
+		truck_num,
 		manager,
 		manager->getRootSceneNode(),
 		win,
@@ -245,13 +245,13 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		mfinder,
 		w,
 		pcam,
-		networked,
-		networking,
+		false, // networked
+		net!=0, // networking
 		0,
 		false,
 		3,
 		&truckconfig,
-		0);
+		false);
 
 	trucks[truck_num] = b;
 
@@ -346,44 +346,39 @@ void BeamFactory::updateGUI()
 }
 
 // j is the index of a MAYSLEEP truck, returns true if one active was found in the set
-bool BeamFactory::checkForActive(int j, bool *sleepyList)
+bool BeamFactory::checkForActive(int j, std::bitset<MAX_TRUCKS> &sleepy)
 {
-	sleepyList[j]=true;
+	sleepy.set(j, true);
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		if ( !sleepyList[t] &&
+		if (trucks[t] && !sleepy[t] &&
 			((trucks[j]->minx<trucks[t]->minx && trucks[t]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[t]->maxx && trucks[t]->maxx<trucks[j]->maxx) || (trucks[t]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[t]->maxx)) &&
 			((trucks[j]->miny<trucks[t]->miny && trucks[t]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[t]->maxy && trucks[t]->maxy<trucks[j]->maxy) || (trucks[t]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[t]->maxy)) &&
-			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
-			)
+			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz)))
 		{
-			if (trucks[t]->state == MAYSLEEP || (trucks[t]->state == DESACTIVATED && trucks[t]->sleepcount >= 5))
-			{
-				if (checkForActive(t, sleepyList)) return true;
-			}
-			else return true;
-		};
+			if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || (trucks[t]->state == DESACTIVATED && trucks[t]->sleepcount >= 5))
+				return checkForActive(t, sleepy);
+			else
+				return true;
+		}
 	}
 	return false;
 }
-
 
 void BeamFactory::recursiveActivation(int j)
 {
 	for (int t=0; t < free_truck; t++)
 	{
 		if (!trucks[t]) continue;
-		if ((trucks[t]->state==SLEEPING || trucks[t]->state==MAYSLEEP || trucks[t]->state==GOSLEEP ||(trucks[t]->state==DESACTIVATED && trucks[t]->sleepcount>=5)) &&
+		if ((trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || (trucks[t]->state == DESACTIVATED && trucks[t]->sleepcount >= 5)) &&
 			((trucks[j]->minx<trucks[t]->minx && trucks[t]->minx<trucks[j]->maxx) || (trucks[j]->minx<trucks[t]->maxx && trucks[t]->maxx<trucks[j]->maxx) || (trucks[t]->minx<trucks[j]->maxx && trucks[j]->maxx<trucks[t]->maxx)) &&
 			((trucks[j]->miny<trucks[t]->miny && trucks[t]->miny<trucks[j]->maxy) || (trucks[j]->miny<trucks[t]->maxy && trucks[t]->maxy<trucks[j]->maxy) || (trucks[t]->miny<trucks[j]->maxy && trucks[j]->maxy<trucks[t]->maxy)) &&
-			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz))
-			)
+			((trucks[j]->minz<trucks[t]->minz && trucks[t]->minz<trucks[j]->maxz) || (trucks[j]->minz<trucks[t]->maxz && trucks[t]->maxz<trucks[j]->maxz) || (trucks[t]->minz<trucks[j]->maxz && trucks[j]->maxz<trucks[t]->maxz)))
 		{
 			trucks[t]->desactivate(); // make the truck not leading but active
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
 			recursiveActivation(t);
-		};
+		}
 	}
 }
 
@@ -391,26 +386,25 @@ void BeamFactory::checkSleepingState()
 {
 	if (current_truck >= 0 && trucks[current_truck])
 	{
-		trucks[current_truck]->disableDrag=false;
+		trucks[current_truck]->disableDrag = false;
 		recursiveActivation(current_truck);
 		//if its grabbed, its moving
 		//if (isnodegrabbed && trucks[truckgrabbed]->state==SLEEPING) trucks[truckgrabbed]->desactivate();
 		// put to sleep
 		for (int t=0; t < free_truck; t++)
 		{
-			if (!trucks[t]) continue;
-			if (trucks[t]->state==MAYSLEEP)
+			if (trucks[t] && trucks[t]->state == MAYSLEEP)
 			{
-				bool sleepyList[MAX_TRUCKS];
-				for (int i=0; i < MAX_TRUCKS; i++) sleepyList[i]=false;
-				if (!checkForActive(t, sleepyList))
+				std::bitset<MAX_TRUCKS> sleepy;
+				if (!checkForActive(t, sleepy))
 				{
 					// no active truck in the set, put everybody to sleep
-					for (int i=0; i<free_truck; i++)
+					for (int i=0; i < free_truck; i++)
 					{
-						if (!trucks[i]) continue;
-						if (sleepyList[i])
+						if (trucks[i] && sleepy[i])
+						{
 							trucks[i]->state=GOSLEEP;
+						}
 					}
 				}
 			}
@@ -437,7 +431,7 @@ int BeamFactory::getFreeTruckSlot()
 	// find a free slot for the truck
 	for (int t=0; t<MAX_TRUCKS; t++)
 	{
-		if (trucks[t] == 0 && t >= free_truck) // XXX: TODO: remove this hack
+		if (!trucks[t] && t >= free_truck) // XXX: TODO: remove this hack
 		{
 			// reuse slots
 			if (t >= free_truck)
@@ -448,13 +442,11 @@ int BeamFactory::getFreeTruckSlot()
 	return -1;
 }
 
-
 void BeamFactory::activateAllTrucks()
 {
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		if (trucks[t]->state == SLEEPING || trucks[t]->state == MAYSLEEP || trucks[t]->state == GOSLEEP || trucks[t]->state == DESACTIVATED)
+		if (trucks[t] && trucks[t]->state >= DESACTIVATED || trucks[t]->state <= SLEEPING)
 		{
 			trucks[t]->desactivate(); // make the truck not leading but active
 			trucks[t]->disableDrag = trucks[current_truck]->driveable==AIRPLANE;
@@ -467,20 +459,22 @@ void BeamFactory::sendAllTrucksSleeping()
 {
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		if (trucks[t]->state == ACTIVATED)
-			trucks[t]->state=GOSLEEP;
+		if (trucks[t] && trucks[t]->state == ACTIVATED)
+		{
+			trucks[t]->state = GOSLEEP;
+		}
 	}
 }
-
 
 void BeamFactory::recalcGravityMasses()
 {
 	// update the mass of all trucks
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		trucks[t]->recalc_masses();
+		if (trucks[t])
+		{
+			trucks[t]->recalc_masses();
+		}
 	}
 }
 
@@ -523,8 +517,11 @@ void BeamFactory::repairTruck(Collisions *collisions, char* inst, char* box, boo
 void BeamFactory::removeTruck(Collisions *collisions, char* inst, char* box)
 {
 	int rtruck = findTruckInsideBox(collisions, inst, box);
+
 	if (rtruck >= 0)
+	{
 		removeTruck(rtruck);
+	}
 }
 
 void BeamFactory::removeTruck(int truck)
@@ -543,8 +540,7 @@ void BeamFactory::removeTruck(int truck)
 
 void BeamFactory::_deleteTruck(Beam *b)
 {
-	if (b == 0)
-		return;
+	if (b == 0)	return;
 
 	trucks[b->trucknum] = 0;
 	delete b;
@@ -587,8 +583,7 @@ bool BeamFactory::enterRescueTruck()
 	// search a rescue truck
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		if (trucks[t]->rescuer) {
+		if (trucks[t] && trucks[t]->rescuer) {
 			// go to person mode first
 			setCurrentTruck(-1);
 			// then to the rescue truck, this fixes overlapping interfaces
@@ -621,9 +616,10 @@ void BeamFactory::updateAI(float dt)
 {
 	for (int t=0; t < free_truck; t++)
 	{
-		if (!trucks[t]) continue;
-		
-		trucks[t]->updateAI(dt);
+		if (trucks[t])
+		{
+			trucks[t]->updateAI(dt);
+		}
 	}
 }
 
@@ -708,8 +704,10 @@ void BeamFactory::windowResized()
 #ifdef USE_MYGUI
 	for(int t=0; t < free_truck; t++)
 	{
-		if(!trucks[t]) continue;
-		trucks[t]->dash->windowResized();
+		if(trucks[t])
+		{
+			trucks[t]->dash->windowResized();
+		}
 	}
 #endif // USE_MYGUI
 }

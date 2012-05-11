@@ -70,7 +70,7 @@ public:
 
 	int updateSimulation(float dt);
 
-	bool checkForActive(int j, bool *sleepyList);
+	bool checkForActive(int j, std::bitset<MAX_TRUCKS> &sleepyList);
 	void activateAllTrucks();
 	void recursiveActivation(int j);
 	void sendAllTrucksSleeping();

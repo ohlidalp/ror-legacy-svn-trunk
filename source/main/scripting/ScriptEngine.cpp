@@ -531,8 +531,7 @@ int ScriptEngine::framestep(Real dt)
 		for(int t = 0; t < free_truck; t++)
 		{
 			Beam *b = trucks[t];
-			if (!b || b->state == SLEEPING || b->state == NETWORKED || b->state == RECYCLE)
-				continue;
+			if (!b || b->state >= SLEEPING) continue;
 
 			bool allwheels=true;
 			int handlerid=-1;

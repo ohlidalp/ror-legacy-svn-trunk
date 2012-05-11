@@ -297,7 +297,6 @@ public: // public methods
 	Envmap *getEnvmap() { return envmap; };
 
 	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
-	bool checkForActive(int j, bool *sleepyList);
 	bool frameEnded(const Ogre::FrameEvent& evt);
 	bool frameStarted(const Ogre::FrameEvent& evt); // Override frameStarted event to process that (don't care about frameEnded)
 

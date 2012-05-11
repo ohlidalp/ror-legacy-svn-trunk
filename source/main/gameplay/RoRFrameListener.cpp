@@ -162,7 +162,7 @@ RoRFrameListener *RoRFrameListener::eflsingleton = 0;
 //workaround for pagedgeometry
 inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 {
-	if(!RoRFrameListener::hfinder)
+	if (!RoRFrameListener::hfinder)
 		return 1;
 	return RoRFrameListener::hfinder->getHeightAt(x, z);
 }
@@ -172,7 +172,7 @@ inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 void RoRFrameListener::startTimer()
 {
 	raceStartTime = (int)rtime;
-	if(ow)
+	if (ow)
 	{
 		ow->racing->show();
 		ow->laptimes->show();
@@ -185,7 +185,7 @@ float RoRFrameListener::stopTimer()
 {
 	float time=rtime - raceStartTime;
 	// let the display on
-	if(ow)
+	if (ow)
 	{
 		wchar_t txt[256] = L"";
 		UTFString fmt = _L("Last lap: %.2i'%.2i.%.2i");
@@ -202,7 +202,7 @@ float RoRFrameListener::stopTimer()
 
 void RoRFrameListener::updateRacingGUI()
 {
-	if(!ow) return;
+	if (!ow) return;
 	// update racing gui if required
 	float time=rtime - raceStartTime;
 	wchar_t txt[10];
@@ -248,7 +248,7 @@ void RoRFrameListener::updateIO(float dt)
 
 void RoRFrameListener::updateGUI(float dt)
 {
-	if(!ow) return; // no gui, then skip this
+	if (!ow) return; // no gui, then skip this
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if (!curr_truck) return;
@@ -278,7 +278,7 @@ void RoRFrameListener::updateGUI(float dt)
 	if (curr_truck->driveable == TRUCK)
 	{
 		//TRUCK
-		if(!curr_truck->engine) return;
+		if (!curr_truck->engine) return;
 
 		//special case for the editor
 		if (curr_truck->editorId>=0 && editor)
@@ -366,7 +366,7 @@ void RoRFrameListener::updateGUI(float dt)
 
 		// calculate tach stuff
 		Real tachoFactor = 0.072;
-		if(curr_truck->useMaxRPMforGUI)
+		if (curr_truck->useMaxRPMforGUI)
 			tachoFactor = 0.072 * (3500 / curr_truck->engine->getMaxRPM());
 		angle=126.0-fabs(curr_truck->engine->getRPM() * tachoFactor);
 		if (angle<-120.0) angle=-120.0;
@@ -511,7 +511,7 @@ void RoRFrameListener::updateGUI(float dt)
 				angle=((kt-23.0)/1.111);
 			else if (kt<100.0)
 				angle=(24.0+(kt-50.0)/0.8621);
-			else if(kt<300.0)
+			else if (kt<300.0)
 				angle=(82.0+(kt-100.0)/0.8065);
 			else
 				angle=329.0;
@@ -685,11 +685,11 @@ void RoRFrameListener::updateGUI(float dt)
 		//position
 
 		char tmp[50]="";
-		if(curr_truck->getLowestNode() != -1)
+		if (curr_truck->getLowestNode() != -1)
 		{
 			Vector3 pos = curr_truck->nodes[curr_truck->getLowestNode()].AbsPosition;
 			float height =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
-			if(height>0.1 && height < 99.9)
+			if (height>0.1 && height < 99.9)
 			{
 				sprintf(tmp, "%2.1f", height);
 				ow->boat_depth_value_taoe->setCaption(tmp);
@@ -719,42 +719,78 @@ void RoRFrameListener::setGravity(float value)
 
 // Constructor takes a RenderWindow because it uses that to determine input context
 RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, Ogre::String inputhwnd) :
-	parentState(parentState),
+	bigMap(0),
+	clutch(0),
+	collisions(0),
+	dashboard(0),
+	debugCollisions(false),
+	editor(0),
+	editorfd(0),
+	envmap(0),
+	flaresMode(3), // on by default
+	forcefeedback(0),
+	freeTruckPosition(false),
+	free_localizer(0),
+	hdrListener(0),
+	heathaze(0),
+	hidegui(false),
 	initialized(false),
-	mCollisionTools(0),
-	isEmbedded(isEmbedded),
-	ow(0),
 	inputhwnd(inputhwnd),
+	isEmbedded(isEmbedded),
+	joyshiftlock(0),
+	loadedTerrain("none"),
+	loading_state(NONE_LOADED),
+	mCamera(cam),
+	mCollisionTools(0),
+	mRoot(root),
+	mSceneMgr(scm),
+	mStatsOn(0),
+	mTimeUntilNextToggle(0),
+	mTruckInfoOn(false),
+	mWindow(win),
+	mapMode(0),
+	mapsizex(3000),
+	mapsizez(3000),
+	mtc(0),
+	net(0),
+	netChat(0),
+	netPointToUID(-1),
+	net_quality(0),
+	net_quality_changed(false),
+	netcheckGUITimer(0),
+	objcounter(0),
+	objectCounter(0),
+	ow(0),
+	parentState(parentState),
+	person(0),
+	persostart(Vector3(0,0,0)),
+	pressure_pressed(false),
+	raceStartTime(-1),
 	reload_box(0),
-	net(0)
+	reload_pos(Vector3::ZERO),
+	road(0),
+	rtime(0),
+	shaderSchemeMode(1),
+	terrainFileHash(""),
+	terrainFileName(""),
+	terrainHasTruckShop(false),
+	terrainModHash(""),
+	terrainName(""),
+	terrainUID(""),
+	truck_preload_num(0),
+	w(0)
 {
-	RoRFrameListener::eflsingleton=this;
+	RoRFrameListener::eflsingleton = this;
 
 	pthread_mutex_init(&mutex_data, NULL);
-	net_quality=0;
-	net_quality_changed=false;
-	freeTruckPosition=false;
-
-	mCamera = cam;
-
-	terrainHasTruckShop=false;
-
-	terrainName = String();
-	terrainFileName = String();
-	terrainFileHash = String();
-	terrainModHash = String();
 
 	// we don't use overlays in embedded mode
-	if(!isEmbedded)
+	if (!isEmbedded)
+	{
 		ow = new OverlayWrapper(win);
+	}
 
-	enablePosStor = (BSETTING("Position Storage", false));
-	objectCounter=0;
-	hdrListener=0;
-	shaderSchemeMode=1;
-	netPointToUID=-1;
-	netcheckGUITimer=0;
-	forcefeedback=0;
+	enablePosStor = BSETTING("Position Storage", false);
 
 #ifdef USE_MYGUI
 	// init GUI
@@ -762,64 +798,64 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	new GUIManager(root, scm, win);
 	// create console, must be done early
 	new Console();
-#endif //USE_MYGUI
 
-	// init camera manager after mygui
-	new CameraManager(scm, mCamera, this, hfinder);
+	LoadingWindow::getSingleton();
+	SelectorWindow::getSingleton();
+	// create main menu :D
+	if (!isEmbedded)
+	{
+		new GUI_MainMenu(this);
+		GUI_Friction::getSingleton();
+	}
 
+	if (!BSETTING("REPO_MODE", false))
+	{
+		MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
+		// load random image in the wallpaper
+		String randomWallpaper = GUIManager::getRandomWallpaperImage();
+		if (!v.empty() && !randomWallpaper.empty())
+		{
+			MyGUI::Widget *mainw = v.at(0);
+			if (mainw)
+			{
+				MyGUI::ImageBox *img = (MyGUI::ImageBox *)(mainw->getChildAt(0));
+				if (img) img->setImageTexture(randomWallpaper);
+			}
+		}
+	}
+#endif //MYGUI
 
 #ifdef USE_OIS_G27
-	leds=0;
+	leds = 0;
 #endif // USE_OIS_G27
+#ifdef USE_OIS_G27
+	leds = INPUTENGINE.getLogitechLEDsDevice();
+#endif //OIS_G27
 
 #ifdef USE_MPLATFORM
 	mplatform = new MPlatform_FD();
 	if (mplatform) mplatform->connect();
 #endif
 
-
 #ifdef USE_ANGELSCRIPT
 	new ScriptEngine(this, 0);
-	//ScriptEngine::getSingleton().exploreScripts();
+	// print some log message so we know angelscript is alive :)
+	ScriptEngine::getSingleton().scriptLog->logMessage("ScriptEngine running");
 #endif
+
+#ifdef HAS_EDITOR
+	trucked = 0;
+#endif
+
+	// init camera manager after mygui
+	new CameraManager(scm, mCamera, this, hfinder);
 
 	gameStartTime = getTimeStamp();
-	loadedTerrain="none";
-	terrainUID="";
-	mtc=0;
-	bigMap=0;
-	envmap=0;
-	debugCollisions=false;
-	free_localizer=0;
-	loading_state=NONE_LOADED;
-	pressure_pressed=false;
-	rtime=0;
-	joyshiftlock=0;
-	mScene=scm;
-	persostart=Vector3(0,0,0);
-	person=0;
-	netChat=0;
-	reload_pos=Vector3::ZERO;
-	editorfd=0;
-#ifdef HAS_EDITOR
-	trucked=0;
-#endif
-	w=0;
-	mapsizex = 3000;
-	mapsizez = 3000;
-	hidegui=false;
-	collisions=0;
-	editor=0;
-	dashboard=0;//new Dashboard(scm,win);
-
-	mSceneMgr=scm;
 
 	//network
 	netmode = BSETTING("Network enable", false);
 
-	mRoot=root;
-
-	if(ow)
+	if (ow)
 	{
 		// setup direction arrow
 		Entity *arrent = mSceneMgr->createEntity("dirArrowEntity", "arrow2.mesh");
@@ -837,55 +873,20 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		dirArrowPointed = Vector3::ZERO;
 		ow->directionOverlay->add3D(dirArrowNode);
 	}
-	raceStartTime=-1;
-	truck_preload_num=0;
-
 
 	INPUTENGINE.setupDefault(win, inputhwnd);
-
-#ifdef USE_MYGUI
-	LoadingWindow::getSingleton();
-	SelectorWindow::getSingleton();
-	// create main menu :D
-	if(!isEmbedded)
-	{
-		new GUI_MainMenu(this);
-		GUI_Friction::getSingleton();
-	}
-
-	if(!BSETTING("REPO_MODE", false))
-	{
-		MyGUI::VectorWidgetPtr v = MyGUI::LayoutManager::getInstance().loadLayout("wallpaper.layout");
-		// load random image in the wallpaper
-		String randomWallpaper = GUIManager::getRandomWallpaperImage();
-		if(!v.empty() && !randomWallpaper.empty())
-		{
-			MyGUI::Widget *mainw = v.at(0);
-			if(mainw)
-			{
-				MyGUI::ImageBox *img = (MyGUI::ImageBox *)(mainw->getChildAt(0));
-				if(img) img->setImageTexture(randomWallpaper);
-			}
-		}
-	}
-
-	// print some log message so we know angelscript is alive :)
-#ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().scriptLog->logMessage("ScriptEngine running");
-#endif // USE_ANGELSCRIPT
-#endif //MYGUI
 
 	// setup particle manager
 	new DustManager(mSceneMgr);
 
-	if(BSETTING("regen-cache-only", false))
+	if (BSETTING("regen-cache-only", false))
 	{
 		CACHE.startup(scm, true);
 		UTFString str = _L("Cache regeneration done.\n");
-		if(CACHE.newFiles > 0)     str = str + TOUTFSTRING(CACHE.newFiles) + _L(" new files\n");
-		if(CACHE.changedFiles > 0) str = str + TOUTFSTRING(CACHE.changedFiles) + _L(" changed files\n");
-		if(CACHE.deletedFiles > 0) str = str + TOUTFSTRING(CACHE.deletedFiles) + _L(" deleted files\n");
-		if(CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str = str + _L("no changes");
+		if (CACHE.newFiles > 0)     str = str + TOUTFSTRING(CACHE.newFiles) + _L(" new files\n");
+		if (CACHE.changedFiles > 0) str = str + TOUTFSTRING(CACHE.changedFiles) + _L(" changed files\n");
+		if (CACHE.deletedFiles > 0) str = str + TOUTFSTRING(CACHE.deletedFiles) + _L(" deleted files\n");
+		if (CACHE.newFiles + CACHE.changedFiles + CACHE.deletedFiles == 0) str = str + _L("no changes");
 		str = str + _L("\n(These stats can be imprecise)");
 		showError(_L("Cache regeneration done"), str);
 		exit(0);
@@ -896,34 +897,29 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	screenWidth=win->getWidth();
 	screenHeight=win->getHeight();
 
-
 	windowResized(win);
 	RoRWindowEventUtilities::addWindowEventListener(win, this);
 
-
 	debugCollisions = BSETTING("Debug Collisions", false);
 
-
 	// get lights mode
-	flaresMode = 3; // on by default
 	String lightsMode = SSETTING("Lights", "Only current vehicle, main lights");
-	if     (lightsMode == "None (fastest)")
+	if (lightsMode == "None (fastest)")
 		flaresMode = 0;
-	else if(lightsMode == "No light sources")
+	else if (lightsMode == "No light sources")
 		flaresMode = 1;
-	else if(lightsMode == "Only current vehicle, main lights")
+	else if (lightsMode == "Only current vehicle, main lights")
 		flaresMode = 2;
-	else if(lightsMode == "All vehicles, main lights")
+	else if (lightsMode == "All vehicles, main lights")
 		flaresMode = 3;
-	else if(lightsMode == "All vehicles, all lights")
+	else if (lightsMode == "All vehicles, all lights")
 		flaresMode = 4;
 
 
 	// heathaze effect
-	heathaze=0;
-	if(BSETTING("HeatHaze", false))
+	if (BSETTING("HeatHaze", false))
 	{
-		heathaze=new HeatHaze(scm, win,cam);
+		heathaze = new HeatHaze(scm, win,cam);
 		heathaze->setEnable(true);
 	}
 
@@ -941,18 +937,14 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			float centg   = FSETTING("Force Feedback Centering", 0  ) / 100.0f;
 			float camg    = FSETTING("Force Feedback Camera",    100) / 100.0f;
 
-			forcefeedback=new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
+			forcefeedback = new ForceFeedback(INPUTENGINE.getForceFeedbackDevice(), ogain, stressg, centg, camg);
 		}
 	}
-
-#ifdef USE_OIS_G27
-	leds = INPUTENGINE.getLogitechLEDsDevice();
-#endif //OIS_G27
 
 	String screenshotFormatString = SSETTING("Screenshot Format", "jpg (smaller, default)");
 	if     (screenshotFormatString == "jpg (smaller, default)")
 		strcpy(screenshotformat, "jpg");
-	else if(screenshotFormatString =="png (bigger, no quality loss)")
+	else if (screenshotFormatString =="png (bigger, no quality loss)")
 		strcpy(screenshotformat, "png");
 	else
 		strncpy(screenshotformat, screenshotFormatString.c_str(), 10);
@@ -968,17 +960,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	//joy=new BeamJoystick(mInputManager, deadzone, useforce, &cfg);
 	//useforce=joy->hasForce();
 
-	mWindow = win;
-	mStatsOn = 0;
-	mTruckInfoOn = false;
-	mapMode=0;
-	mTimeUntilNextToggle = 0;
-	clutch=0;
-	road=0;
-
-	objcounter=0;
-
-
 	// check command line args
 	String cmd = SSETTING("cmdline CMD", "");
 	String cmdAction = "";
@@ -986,7 +967,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	String modName = "";
 	long cmdServerPort = 0;
 	Vector3 spawnLocation = Vector3::ZERO;
-	if(!cmd.empty())
+	if (!cmd.empty())
 	{
 		Ogre::StringVector str = StringUtil::split(cmd, "/");
 		// process args now
@@ -995,16 +976,16 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 			String argstr = *it;
 			Ogre::StringVector args = StringUtil::split(argstr, ":");
-			if(args.size()<2) continue;
-			if(args[0] == "action" && args.size() == 2) cmdAction = args[1];
-			if(args[0] == "serverpass" && args.size() == 2) SETTINGS.setSetting("Server password", args[1]);
-			if(args[0] == "modname" && args.size() == 2) modName = args[1];
-			if(args[0] == "ipport" && args.size() == 3)
+			if (args.size()<2) continue;
+			if (args[0] == "action" && args.size() == 2) cmdAction = args[1];
+			if (args[0] == "serverpass" && args.size() == 2) SETTINGS.setSetting("Server password", args[1]);
+			if (args[0] == "modname" && args.size() == 2) modName = args[1];
+			if (args[0] == "ipport" && args.size() == 3)
 			{
 				cmdServerIP = args[1];
 				cmdServerPort = StringConverter::parseLong(args[2]);
 			}
-			if(args[0] == "loc" && args.size() == 4)
+			if (args[0] == "loc" && args.size() == 4)
 			{
 				spawnLocation = Vector3(StringConverter::parseInt(args[1]), StringConverter::parseInt(args[2]), StringConverter::parseInt(args[3]));
 				SETTINGS.setSetting("net spawn location", TOSTRING(spawnLocation));
@@ -1012,17 +993,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		}
 	}
 
-	if(cmdAction == "regencache") SETTINGS.setSetting("regen-cache-only", "Yes");
-	if(cmdAction == "installmod")
+	if (cmdAction == "regencache") SETTINGS.setSetting("regen-cache-only", "Yes");
+	if (cmdAction == "installmod")
 	{
 		// use modname!
 	}
 
-
 	// check if we enable netmode based on cmdline
-	if(!netmode && cmdAction == "joinserver")
+	if (!netmode && cmdAction == "joinserver")
 		netmode = true;
-	net=0;
 
 	// preselected map or truck?
 	String preselected_map = SSETTING("Preselected Map", "");
@@ -1030,9 +1009,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	String preselected_truckConfig = SSETTING("Preselected TruckConfig", "");
 	bool enterTruck = (BSETTING("Enter Preselected Truck", false));
 
-	if(preselected_map != "") LOG("Preselected Map: " + (preselected_map));
-	if(preselected_truck != "") LOG("Preselected Truck: " + (preselected_truck));
-	if(preselected_truckConfig != "") LOG("Preselected Truck Config: " + (preselected_truckConfig));
+	if (preselected_map != "") LOG("Preselected Map: " + (preselected_map));
+	if (preselected_truck != "") LOG("Preselected Truck: " + (preselected_truck));
+	if (preselected_truckConfig != "") LOG("Preselected Truck Config: " + (preselected_truckConfig));
 
 	//LOG("huette debug 1");
 
@@ -1048,15 +1027,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	// notice: all factories must be available before starting the network!
 #ifdef USE_SOCKETW
-	if(netmode)
+	if (netmode)
 	{
 		// cmdline overrides config
 		std::string sname = SSETTING("Server name", "").c_str();
-		if(cmdAction == "joinserver" && !cmdServerIP.empty())
+		if (cmdAction == "joinserver" && !cmdServerIP.empty())
 			sname = cmdServerIP;
 
 		long sport = ISETTING("Server port", 1337);
-		if(cmdAction == "joinserver" && cmdServerPort)
+		if (cmdAction == "joinserver" && cmdServerPort)
 			sport = cmdServerPort;
 
 		if (sport==0)
@@ -1085,7 +1064,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif //USE_SOCKETW
 
 #endif //USE_MYGUI
-		if(!connres)
+		if (!connres)
 		{
 			LOG("connection failed. server down?");
 			showError(_L("Unable to connect to server"), _L("Unable to connect to the server. It is certainly down or you have network problems."));
@@ -1094,7 +1073,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		}
 		char *terrn = net->getTerrainName();
 		bool isAnyTerrain = (terrn && !strcmp(terrn, "any"));
-		if(preselected_map.empty() && isAnyTerrain)
+		if (preselected_map.empty() && isAnyTerrain)
 		{
 			// so show the terrain selection
 			preselected_map = "";
@@ -1105,7 +1084,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 		// create person _AFTER_ network, important
 		int colourNum = 0;
-		if(net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
+		if (net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
 		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
 
 		// network chat stuff
@@ -1113,7 +1092,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 #ifdef USE_MYGUI
 		Console *c = Console::getSingletonPtrNoCreation();
-		if(c)
+		if (c)
 		{
 			c->setVisible(true);
 			c->setNetChat(netChat);
@@ -1140,7 +1119,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// load guy
 	int source=-1;
 #ifdef USE_SOCKETW
-	if(net)
+	if (net)
 		source = net->getUserID();
 #endif //SOCKETW
 
@@ -1149,13 +1128,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 
 	// now continue to load everything...
-	if(preselected_map != "")
+	if (preselected_map != "")
 	{
-		if(!CACHE.checkResourceLoaded(preselected_map))
+		if (!CACHE.checkResourceLoaded(preselected_map))
 		{
 			preselected_map  = preselected_map + ".terrn";
 			// fallback to old terrain name with .terrn
-			if(!CACHE.checkResourceLoaded(preselected_map))
+			if (!CACHE.checkResourceLoaded(preselected_map))
 			{
 				LOG("Terrain not found: " + preselected_map);
 				showError(_L("Terrain loading error"), _L("Terrain not found: ") + preselected_map);
@@ -1185,17 +1164,17 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		//}
 
 		//load preselected truck
-		if(preselected_truck == "none")
+		if (preselected_truck == "none")
 		{
 			// do not load truck
-		} else if(preselected_truck != "")
+		} else if (preselected_truck != "")
 		{
 			loading_state=TERRAIN_LOADED;
 			std::vector<String> *tconfig = 0;
-			if(!preselected_truckConfig.empty())
+			if (!preselected_truckConfig.empty())
 			{
 				std::vector<String> tconfig2;
-				if(!preselected_truckConfig.empty())
+				if (!preselected_truckConfig.empty())
 					tconfig2.push_back(preselected_truckConfig);
 				tconfig = &tconfig2;
 			}
@@ -1208,7 +1187,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #ifdef USE_MYGUI
 				// show truck selector
 				SelectorWindow::getSingleton().setEnableCancel(false);
-				if(w)
+				if (w)
 				{
 					hideMap();
 					SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
@@ -1249,12 +1228,12 @@ RoRFrameListener::~RoRFrameListener()
 #ifdef USE_PAGED
 	for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
 	{
-		if(it->geom)
+		if (it->geom)
 		{
 			delete(it->geom);
 			it->geom=0;
 		}
-		if(it->loader)
+		if (it->loader)
 		{
 			delete((TreeLoader2D *)it->loader);
 			it->loader=0;
@@ -1289,7 +1268,7 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 	char ppname[1024];
 	sprintf(ppname, "%s-mini.dds", preselected_map);
 	group="";
-	if(group == "")
+	if (group == "")
 	{
 		sprintf(ppname, "%s-mini.png", preselected_map);
 		try
@@ -1299,7 +1278,7 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 		{
 		}
 	}
-	if(group == "")
+	if (group == "")
 		return;
 	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo(group, ppname);
 	if (!files->empty())
@@ -1315,7 +1294,7 @@ void RoRFrameListener::loadNetTerrain(char *preselected_map)
 
 void RoRFrameListener::unloadObject(const char* instancename)
 {
-	if(loadedObjects.find(std::string(instancename)) == loadedObjects.end())
+	if (loadedObjects.find(std::string(instancename)) == loadedObjects.end())
 	{
 		LOG("unable to unload object: " + std::string(instancename));
 		return;
@@ -1324,11 +1303,11 @@ void RoRFrameListener::unloadObject(const char* instancename)
 	loaded_object_t obj = loadedObjects[std::string(instancename)];
 
 	// check if it was already deleted
-	if(!obj.enabled)
+	if (!obj.enabled)
 		return;
 
 	// unload any collision tris
-	if(obj.collTris.size() > 0)
+	if (obj.collTris.size() > 0)
 	{
 		for(std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
 		{
@@ -1337,7 +1316,7 @@ void RoRFrameListener::unloadObject(const char* instancename)
 	}
 	
 	// and any collision boxes
-	if(obj.collBoxes.size() > 0)
+	if (obj.collBoxes.size() > 0)
 	{
 		for(std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
 		{
@@ -1353,7 +1332,7 @@ void RoRFrameListener::unloadObject(const char* instancename)
 void RoRFrameListener::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int scripthandler, const char *type, bool uniquifyMaterial)
 {
 	ScopeLog log("object_"+String(name));
-	if(type && !strcmp(type, "grid"))
+	if (type && !strcmp(type, "grid"))
 	{
 		// some fast grid object hacks :)
 		for(int x=0;x<500;x+=50)
@@ -1363,11 +1342,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	}
 
 	// nice idea, but too many random hits
-	//if(abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
-	//if(abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
-	//if(abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
+	//if (abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
+	//if (abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
+	//if (abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
 
-	if(strnlen(name, 250)==0)
+	if (strnlen(name, 250)==0)
 		return;
 
 	//FILE *fd;
@@ -1391,24 +1370,24 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	String odefgroup = "";
 	String odefname = "";
 	bool odefFound = false;
-	if(terrainUID != "" && !CACHE.stringHasUID(name))
+	if (terrainUID != "" && !CACHE.stringHasUID(name))
 	{
 		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
 		odefname = String(fname);
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
-		if(exists)
+		if (exists)
 		{	
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
 			odefFound = true;
 		}
 	}
 
-	if(!odefFound)
+	if (!odefFound)
 	{
 		sprintf(fname,"%s.odef", name);
 		odefname = String(fname);
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
-		if(exists)
+		if (exists)
 		{
 			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
 			odefFound = true;
@@ -1416,8 +1395,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	}
 
 
-	if(!CACHE.checkResourceLoaded(odefname, odefgroup))
-	if(!odefFound)
+	if (!CACHE.checkResourceLoaded(odefname, odefgroup))
+	if (!odefFound)
 	{
 		LOG("Error while loading Terrain: could not find required .odef file: " + odefname + ". Ignoring entry.");
 		return;
@@ -1426,7 +1405,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
 
 	ds->readLine(mesh, 1023);
-	if(String(mesh) == "LOD")
+	if (String(mesh) == "LOD")
 	{
 		// LOD line is obsolete
 		ds->readLine(mesh, 1023);
@@ -1443,8 +1422,8 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	bool background_loading = BSETTING("Background Loading", false);
 
 	MeshObject *mo = NULL;
-	if(String(mesh) != "none")
-		mo = new MeshObject(mScene, mesh, oname, tenode, NULL, background_loading);
+	if (String(mesh) != "none")
+		mo = new MeshObject(mSceneMgr, mesh, oname, tenode, NULL, background_loading);
 	
 	//mo->setQueryFlags(OBJECTS_MASK);
 	//tenode->attachObject(te);
@@ -1463,7 +1442,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	obj->collTris.clear();
 
 
-	if(mo && uniquifyMaterial && instancename)
+	if (mo && uniquifyMaterial && instancename)
 	{
 		for(unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
 		{
@@ -1604,20 +1583,20 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			char ts[256];
 			ts[0]=0;
 			sscanf(ptline, "event %s %s",eventname, ts);
-			if(!strncmp(ts, "avatar", 6))
+			if (!strncmp(ts, "avatar", 6))
 				event_filter=EVENT_AVATAR;
-			else if(!strncmp(ts, "truck", 5))
+			else if (!strncmp(ts, "truck", 5))
 				event_filter=EVENT_TRUCK;
-			else if(!strncmp(ts, "airplane", 8))
+			else if (!strncmp(ts, "airplane", 8))
 				event_filter=EVENT_AIRPLANE;
-			else if(!strncmp(ts, "delete", 8))
+			else if (!strncmp(ts, "delete", 8))
 				event_filter=EVENT_DELETE;
 			
-			if(!strncmp(ts, "shoptruck", 9))
+			if (!strncmp(ts, "shoptruck", 9))
 				terrainHasTruckShop=true;
 
 			// fallback
-			if(strlen(ts) == 0)
+			if (strlen(ts) == 0)
 				event_filter=EVENT_ALL;
 
 			continue;
@@ -1643,7 +1622,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			float x=0, y=0, z=0, scale=0;
 			char pname[255]="", sname[255]="";
 			int res = sscanf(ptline, "particleSystem %f, %f, %f, %f, %s %s", &scale, &x, &y, &z, pname, sname);
-			if(res != 6) continue;
+			if (res != 6) continue;
 
 			// hacky: prevent duplicates
 			String paname = String(pname);
@@ -1662,7 +1641,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			for(unsigned short i = 0; i<affCount; ++i)
 			{
 				pAff = pParticleSys->getAffector(i);
-				if(pAff->getType()=="ExtinguishableFire")
+				if (pAff->getType()=="ExtinguishableFire")
 					((ExtinguishableFireAffector*)pAff)->setInstanceName(obj->instanceName);
 			}
 #endif // USE_ANGELSCRIPT
@@ -1677,7 +1656,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		{
 			char mat[256]="";
 			sscanf(ptline, "setMeshMaterial %s", mat);
-			if(mo->getEntity() && strnlen(mat,250)>0)
+			if (mo->getEntity() && strnlen(mat,250)>0)
 			{
 				mo->getEntity()->setMaterialName(String(mat));
 				// load it
@@ -1702,10 +1681,10 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			char animname[256]="";
 			float speedfactorMin = 0, speedfactorMax = 0;
 			sscanf(ptline, "playanimation %f, %f, %s", &speedfactorMin, &speedfactorMax, animname);
-			if(tenode && mo->getEntity() && strnlen(animname,250)>0)
+			if (tenode && mo->getEntity() && strnlen(animname,250)>0)
 			{
 				AnimationStateSet *s = mo->getEntity()->getAllAnimationStates();
-				if(!s->hasAnimationState(String(animname)))
+				if (!s->hasAnimationState(String(animname)))
 				{
 					LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
 					continue;
@@ -1714,7 +1693,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				ao.node = tenode;
 				ao.ent = mo->getEntity();
 				ao.speedfactor = speedfactorMin;
-				if(speedfactorMin != speedfactorMax)
+				if (speedfactorMin != speedfactorMax)
 					ao.speedfactor = Math::RangeRandom(speedfactorMin, speedfactorMax);
 				ao.anim = 0;
 				try
@@ -1724,7 +1703,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 				{
 					ao.anim = 0;
 				}
-				if(!ao.anim)
+				if (!ao.anim)
 				{
 					LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
 					continue;
@@ -1736,18 +1715,18 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		}
 		if (!strncmp("drawTextOnMeshTexture", ptline, 21) && mo)
 		{
-			if(!mo->getEntity())
+			if (!mo->getEntity())
 				continue;
 			String matName = mo->getEntity()->getSubEntity(0)->getMaterialName();
 			MaterialPtr m = MaterialManager::getSingleton().getByName(matName);
-			if(m.getPointer() == 0)
+			if (m.getPointer() == 0)
 			{
 				LOG("ODEF: problem with drawTextOnMeshTexture command: mesh material not found: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 			String texName = m->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
 			Texture* background = (Texture *)TextureManager::getSingleton().getByName(texName).getPointer();
-			if(!background)
+			if (!background)
 			{
 				LOG("ODEF: problem with drawTextOnMeshTexture command: mesh texture not found: "+String(fname)+" : "+String(ptline));
 				continue;
@@ -1759,7 +1738,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			sprintf(tmpTextName, "TextOnTexture_%d_Texture", textureNumber);
 			sprintf(tmpMatName, "TextOnTexture_%d_Material", textureNumber);			// Make sure the texture is not WRITE_ONLY, we need to read the buffer to do the blending with the font (get the alpha for example)
 			TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
-			if(texture.getPointer() == 0)
+			if (texture.getPointer() == 0)
 			{
 				LOG("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+String(fname)+" : "+String(ptline));
 				continue;
@@ -1771,14 +1750,14 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			char text[256]="";
 			char option='l';
 			int res = sscanf(ptline, "drawTextOnMeshTexture %f, %f, %f, %f, %f, %f, %f, %f, %c, %s %s", &x, &y, &w, &h, &r, &g, &b, &a, &option, fontname, text);
-			if(res < 11)
+			if (res < 11)
 			{
 				LOG("ODEF: problem with drawTextOnMeshTexture command: "+String(fname)+" : "+String(ptline));
 				continue;
 			}
 
 			// cehck if we got a template argument
-			if(!strncmp(text, "{{argument1}}", 13))
+			if (!strncmp(text, "{{argument1}}", 13))
 				strncpy(text, instancename, 250);
 
 			// replace '_' with ' '
@@ -1786,7 +1765,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 			while (*text_pointer!=0) {if (*text_pointer=='_') *text_pointer=' ';text_pointer++;};
 
 			Font* font = (Font *)FontManager::getSingleton().getByName(String(fontname)).getPointer();
-			if(!font)
+			if (!font)
 			{
 				LOG("ODEF: problem with drawTextOnMeshTexture command: font not found: "+String(fname)+" : "+String(ptline));
 				continue;
@@ -1821,7 +1800,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	//add icons if type is set
 #ifdef USE_MYGUI
 	String typestr = "";
-	if(type && bigMap)
+	if (type && bigMap)
 	{
 		typestr = String(type);
 		// hack for raceways
@@ -1832,16 +1811,16 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 		if (!strncmp(name, "road", 4))
 			typestr = "road";
 
-		if(typestr != String("") && typestr != String("road") && typestr != String("sign"))
+		if (typestr != String("") && typestr != String("road") && typestr != String("sign"))
 		{
 			MapEntity *e = bigMap->createMapEntity(typestr);
-			if(e)
+			if (e)
 			{
 				e->setVisibility(true);
 				e->setPosition(px, pz);
 				e->setRotation(Radian(ry));
 
-				if(String(name) != String(""))
+				if (String(name) != String(""))
 					e->setDescription(String(instancename));
 			}
 		}
@@ -1922,7 +1901,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (dt==0.0f) return true;
 
 	INPUTENGINE.updateKeyBounces(dt);
-	if(!INPUTENGINE.getInputsChanged()) return true;
+	if (!INPUTENGINE.getInputsChanged()) return true;
 
 	bool dirty = false;
 	//update joystick readings
@@ -1942,16 +1921,16 @@ bool RoRFrameListener::updateEvents(float dt)
 	*/
 
 	// update overlays if enabled
-	if(ow) ow->update(dt);
+	if (ow) ow->update(dt);
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 #ifdef USE_MYGUI
-	if(GUI_Friction::getSingletonPtr() && GUI_Friction::getSingleton().getVisible() && curr_truck)
+	if (GUI_Friction::getSingletonPtr() && GUI_Friction::getSingleton().getVisible() && curr_truck)
 	{
 		// friction GUI active
 		ground_model_t *gm = curr_truck->getLastFuzzyGroundModel();
-		if(gm)
+		if (gm)
 			GUI_Friction::getSingleton().setActiveCol(gm);
 	}
 #endif //USE_MYGUI
@@ -1960,7 +1939,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_ENTER_CHATMODE, 0.5f) && !hidegui)
 	{
 		Console *c = Console::getSingletonPtrNoCreation();
-		if(c)
+		if (c)
 		{
 			INPUTENGINE.resetKeys();
 			c->setVisible(true);
@@ -1968,16 +1947,13 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 	}
 #endif //USE_MYGUI
-
-	bool cameraAllowsInteraction = CameraManager::getSingleton().allowInteraction();
-
 	// update characters
-	if(loading_state==ALL_LOADED && net)
+	if (loading_state==ALL_LOADED && net)
 		CharacterFactory::getSingleton().updateCharacters(dt);
-	else if(loading_state==ALL_LOADED && !net)
-		person->update(dt, cameraAllowsInteraction);
+	else if (loading_state==ALL_LOADED && !net)
+		person->update(dt);
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
 		shutdown_final();
 	}
@@ -1992,7 +1968,7 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setVisible(false);
 #endif // USE_MYGUI
-		if(String(screenshotformat) == "png")
+		if (String(screenshotformat) == "png")
 		{
 
 
@@ -2002,7 +1978,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("terrain_ModHash", terrainModHash);
 			as->addData("terrain_FileHash", terrainFileHash);
 			as->addData("Truck_Num", TOSTRING(BeamFactory::getSingleton().getCurrentTruckNumber()));
-			if(curr_truck)
+			if (curr_truck)
 			{
 				as->addData("Truck_fname", curr_truck->realtruckfilename);
 				as->addData("Truck_name", curr_truck->getTruckName());
@@ -2055,13 +2031,13 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOWTRUCKTOOL, 0.5f) && current_truck != -1)
 	{
-		//if(truckToolGUI)
+		//if (truckToolGUI)
 		//	truckToolGUI->show();
 	}
 */
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RELOAD_ROADS, 0.5f))
 	{
-		if(proceduralManager)
+		if (proceduralManager)
 		{
 			//proceduralManager->deleteAllObjects();
 			proceduralManager->updateAllObjects();
@@ -2070,7 +2046,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 	// position storage
-	if(enablePosStor && curr_truck)
+	if (enablePosStor && curr_truck)
 	{
 		int res = -10, slot=-1;
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS1, 0.5f)) { slot=0; res = curr_truck->savePosition(slot); };
@@ -2084,13 +2060,13 @@ bool RoRFrameListener::updateEvents(float dt)
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = curr_truck->savePosition(slot); };
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = curr_truck->savePosition(slot); };
 #ifdef USE_MYGUI
-		if(slot != -1 && !res)
+		if (slot != -1 && !res)
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Position saved under slot ") + TOSTRING(slot+1), "infromation.png");
-		else if(slot != -1 && res)
+		else if (slot != -1 && res)
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Error while saving position saved under slot ") + TOSTRING(slot+1), "error.png");
 #endif //USE_MYGUI
 
-		if(res == -10)
+		if (res == -10)
 		{
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS1, 0.5f)) { slot=0; res = curr_truck->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS2, 0.5f)) { slot=1; res = curr_truck->loadPosition(slot); };
@@ -2103,9 +2079,9 @@ bool RoRFrameListener::updateEvents(float dt)
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = curr_truck->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = curr_truck->loadPosition(slot); };
 #ifdef USE_MYGUI
-			if(slot != -1 && res==0)
+			if (slot != -1 && res==0)
 				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Loaded position from slot ") + TOSTRING(slot+1), "infromation.png");
-			else if(slot != -1 && res!=0)
+			else if (slot != -1 && res!=0)
 				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Could not load position from slot ") + TOSTRING(slot+1), "error.png");
 #endif // USE_MYGUI
 		}
@@ -2119,12 +2095,12 @@ bool RoRFrameListener::updateEvents(float dt)
 		static int org_width = -1, org_height = -1;
 		int width = mWindow->getWidth();
 		int height = mWindow->getHeight();
-		if(org_width == -1)
+		if (org_width == -1)
 			org_width = width;
-		if(org_height == -1)
+		if (org_height == -1)
 			org_height = height;
 		bool mode = mWindow->isFullScreen();
-		if(!mode)
+		if (!mode)
 		{
 			mWindow->setFullscreen(true, org_width, org_height);
 			LOG(" ** switched to fullscreen: "+TOSTRING(width)+"x"+TOSTRING(height));
@@ -2143,7 +2119,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			if (!curr_truck)
 			{
-				if(person)
+				if (person)
 				{
 					person->setPhysicsEnabled(true);
 				}
@@ -2161,16 +2137,16 @@ bool RoRFrameListener::updateEvents(float dt)
 					curr_truck->commandkey[i].commandValue = 0;
 					int eventID = EV_COMMANDS_01 + (i - 1);
 					float tmp = INPUTENGINE.getEventValue(eventID);
-					if(tmp > 0.0)
+					if (tmp > 0.0)
 					{
 						curr_truck->commandkey[i].commandValue = tmp;
 					}
 
-					if(tmp > 0.01f && oldVal < 0.01f)
+					if (tmp > 0.01f && oldVal < 0.01f)
 					{
 						// just started
 						curr_truck->commandkey[i].commandValueState = 1;
-					} else if(tmp < 0.01f && oldVal > 0.01f)
+					} else if (tmp < 0.01f && oldVal > 0.01f)
 					{
 						// just stopped
 						curr_truck->commandkey[i].commandValueState = -1;
@@ -2198,19 +2174,19 @@ bool RoRFrameListener::updateEvents(float dt)
 						curr_truck->replaypos-=10;
 					}
 
-					if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+					if (INPUTENGINE.isKeyDown(OIS::KC_LMENU))
 					{
-						if(curr_truck->replaypos <= 0 && curr_truck->replaypos >= -curr_truck->replaylen)
+						if (curr_truck->replaypos <= 0 && curr_truck->replaypos >= -curr_truck->replaylen)
 						{
-							if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 							{
 								curr_truck->replaypos += INPUTENGINE.getMouseState().X.rel * 1.5f;
 							} else
 							{
 								curr_truck->replaypos += INPUTENGINE.getMouseState().X.rel * 0.05f;
 							}
-							if(curr_truck->replaypos > 0) curr_truck->replaypos = 0;
-							if(curr_truck->replaypos < -curr_truck->replaylen) curr_truck->replaypos = -curr_truck->replaylen;
+							if (curr_truck->replaypos > 0) curr_truck->replaypos = 0;
+							if (curr_truck->replaypos < -curr_truck->replaylen) curr_truck->replaypos = -curr_truck->replaylen;
 
 						}
 					}
@@ -2260,7 +2236,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATELEFT, 0.1f))
 								{
 									float value = 0.5;
-									if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
+									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
 									if (road) {road->dturn(+value);}
 									else if (editor) {editor->dturn(+1);}
 								}
@@ -2268,7 +2244,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATERIGHT, 0.1f))
 								{
 									float value = 0.5;
-									if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
+									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
 									if (road) {road->dturn(-value);}
 									else if (editor) {editor->dturn(-1);}
 								}
@@ -2276,7 +2252,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHBACKWARD, 0.1f))
 								{
 									float value = 0.5;
-									if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 									value = 4;
 									if (road) {road->dpitch(-value);}
 									else if (editor) {editor->dpitch(-1);}
@@ -2285,7 +2261,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHFOREWARD, 0.1f))
 								{
 									float value = 0.5;
-									if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 									value = 4;
 									if (road) {road-> dpitch(value);}
 									else if (editor) {editor->dpitch(1);}
@@ -2355,8 +2331,8 @@ bool RoRFrameListener::updateEvents(float dt)
 
 						float sum = -std::max(tmp_left_digital,tmp_left_analog)+ std::max(tmp_right_digital,tmp_right_analog);
 
-						if(sum < -1) sum = -1;
-						if(sum > 1) sum = 1;
+						if (sum < -1) sum = -1;
+						if (sum > 1) sum = 1;
 
 						curr_truck->hydrodircommand = sum;
 
@@ -2371,27 +2347,27 @@ bool RoRFrameListener::updateEvents(float dt)
 						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
 						float brake  = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
 
-						if(!arcadeControls)
+						if (!arcadeControls)
 						{
 							// classic mode, realistic
-							if(curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+							if (curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
 							curr_truck->brake = brake*curr_truck->brakeforce;
 						} else
 						{
 							// start engine
-							if(accval > 0 && curr_truck->engine && !curr_truck->engine->running)
+							if (accval > 0 && curr_truck->engine && !curr_truck->engine->running)
 								curr_truck->engine->start();
 
 							// omg, arcade controls: hey - people wanted it x|
-							if(curr_truck->WheelSpeed >= 0 && curr_truck->engine->getGear() > 0)
+							if (curr_truck->WheelSpeed >= 0 && curr_truck->engine->getGear() > 0)
 							{
 								// we drive forward, everything is as its used to be: brake is brake and acc. is acc.
-								if(curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+								if (curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
 								curr_truck->brake = brake*curr_truck->brakeforce;
 							} else if (curr_truck->WheelSpeed < 0 && curr_truck->engine->getGear() < 0)
 							{
 								// we drive backwards, reverse controls: brake is acc. and acc. is brake.
-								if(curr_truck->engine) curr_truck->engine->autoSetAcc(brake);
+								if (curr_truck->engine) curr_truck->engine->autoSetAcc(brake);
 								curr_truck->brake = accval*curr_truck->brakeforce;
 							}
 
@@ -2400,11 +2376,11 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f && curr_truck->engine && curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 							{
 								// switching point, does the user want to drive forward from backward or the other way round? change gears?
-								if(brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)
+								if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)
 								{
 									// we are on the brake, jump to reverse gear
 									curr_truck->engine->autoShiftSet(BeamEngine::REAR);
-								} else if(brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
+								} else if (brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
 								{
 									// we are on the gas pedal, jump to first gear when we were in rear gear
 									curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
@@ -2503,7 +2479,7 @@ bool RoRFrameListener::updateEvents(float dt)
 										int gearoffset  = curgear-curgearrange*6;
 										if (gearoffset<0) gearoffset = 0;
 										// one can select range only if in natural
-										if(shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
+										if (shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
 											{
 												//  maybe this should not be here, but should experiment
 												if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE) && curgearrange!=0)
@@ -2533,11 +2509,11 @@ bool RoRFrameListener::updateEvents(float dt)
 													}
 											}
 //zaxxon
-										if(curgear == -1)
+										if (curgear == -1)
 											{
 												gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
 											}
-										else if(curgear > 0 && curgear < 19)
+										else if (curgear > 0 && curgear < 19)
 											{
 												if (shiftmode==BeamEngine::MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
 												else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
@@ -2581,7 +2557,7 @@ bool RoRFrameListener::updateEvents(float dt)
 															}
 													}
 												if (!found) curr_truck->engine->shiftTo(0);
-											} // end of if(gear_changed)
+											} // end of if (gear_changed)
 //										if (!found && curgear!=0) curr_truck->engine->shiftTo(0);
 									} // end of shitmode>MANUAL
 							} // endof ->engine
@@ -2590,7 +2566,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
 					{
 						//Toggle Auto shift
-						if(!curr_truck->getAxleLockCount())
+						if (!curr_truck->getAxleLockCount())
 						{
 #ifdef USE_MYGUI
 							Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No differential installed on current vehicle!"), "warning.png", 3000);
@@ -2646,7 +2622,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					{
 						curr_truck->cruisecontrolToggle();
 					}
-					if(curr_truck->cc_mode)
+					if (curr_truck->cc_mode)
 					{
 
 						updateCruiseControl(curr_truck,dt);
@@ -2714,9 +2690,9 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_AIRPLANE_PARKING_BRAKE))
 					{
 						curr_truck->parkingbrakeToggle();
-						if(ow)
+						if (ow)
 						{
-							if(curr_truck->parkingbrake)
+							if (curr_truck->parkingbrake)
 								OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
 							else
 								OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");
@@ -2782,11 +2758,11 @@ bool RoRFrameListener::updateEvents(float dt)
 
 					//throttle
 					float tmp_throttle = INPUTENGINE.getEventBoolValue(EV_AIRPLANE_THROTTLE);
-					if(tmp_throttle > 0)
+					if (tmp_throttle > 0)
 						for (int i=0; i<curr_truck->free_aeroengine; i++)
 							curr_truck->aeroengines[i]->setThrottle(tmp_throttle);
 
-					if(INPUTENGINE.isEventDefined(EV_AIRPLANE_THROTTLE_AXIS))
+					if (INPUTENGINE.isEventDefined(EV_AIRPLANE_THROTTLE_AXIS))
 					{
 						float f = INPUTENGINE.getEventValue(EV_AIRPLANE_THROTTLE_AXIS);
 						for (int i=0; i<curr_truck->free_aeroengine; i++)
@@ -2831,7 +2807,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 					//throttle
 
-					if(INPUTENGINE.isEventDefined(EV_BOAT_THROTTLE_AXIS))
+					if (INPUTENGINE.isEventDefined(EV_BOAT_THROTTLE_AXIS))
 					{
 						float f = INPUTENGINE.getEventValue(EV_BOAT_THROTTLE_AXIS);
 						// use negative values also!
@@ -2859,12 +2835,12 @@ bool RoRFrameListener::updateEvents(float dt)
 					float stime = INPUTENGINE.getEventBounceTime(EV_BOAT_STEER_LEFT) + INPUTENGINE.getEventBounceTime(EV_BOAT_STEER_RIGHT);
 					float sum_steer = (tmp_steer_left - tmp_steer_right) * 0.06;
 					// do not center the rudder!
-					if(fabs(sum_steer)>0 && stime <= 0)
+					if (fabs(sum_steer)>0 && stime <= 0)
 					{
 						for (int i=0; i<curr_truck->free_screwprop; i++)
 							curr_truck->screwprops[i]->setRudder(curr_truck->screwprops[i]->getRudder() + sum_steer);
 					}
-					if(INPUTENGINE.isEventDefined(EV_BOAT_STEER_LEFT_AXIS) && INPUTENGINE.isEventDefined(EV_BOAT_STEER_RIGHT_AXIS))
+					if (INPUTENGINE.isEventDefined(EV_BOAT_STEER_LEFT_AXIS) && INPUTENGINE.isEventDefined(EV_BOAT_STEER_RIGHT_AXIS))
 					{
 						tmp_steer_left = INPUTENGINE.getEventValue(EV_BOAT_STEER_LEFT_AXIS);
 						tmp_steer_right = INPUTENGINE.getEventValue(EV_BOAT_STEER_RIGHT_AXIS);
@@ -2961,7 +2937,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				//camera mode
 				if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_LESS) && curr_truck)
 				{
-					if(ow) ow->showPressureOverlay(true);
+					if (ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
 					SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
@@ -2970,7 +2946,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 				else if (INPUTENGINE.getEventBoolValue(EV_COMMON_PRESSURE_MORE))
 				{
-					if(ow) ow->showPressureOverlay(true);
+					if (ow) ow->showPressureOverlay(true);
 #ifdef USE_OPENAL
 					SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
@@ -2982,7 +2958,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_AIR);
 #endif // OPENAL
 					pressure_pressed=false;
-					if(ow) ow->showPressureOverlay(false);
+					if (ow) ow->showPressureOverlay(false);
 				}
 
 
@@ -3026,7 +3002,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				update_time = SkyManager::getSingleton().getTimeFactor() != 1.0f;
 			}
 
-			if( update_time )
+			if ( update_time )
 			{
 				SkyManager::getSingleton().setTimeFactor(time_factor);
 #ifdef USE_MYGUI
@@ -3039,22 +3015,22 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
 		{
-			if(bigMap)
+			if (bigMap)
 			{
 				mapMode++;
-				if(mapMode>2)
+				if (mapMode>2)
 					mapMode=0;
 
-				if(mapMode==0)
+				if (mapMode==0)
 				{
 					bigMap->setVisibility(true);
-					if(CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
+					if (CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
 						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
 					}
-				} else if(mapMode==1)
+				} else if (mapMode==1)
 				{
 					bigMap->setVisibility(true);
 					// make it big
@@ -3069,17 +3045,17 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
 		{
-			if(bigMap)
+			if (bigMap)
 			{
-				if(fabs(1-bigMap->getAlpha()) < 0.001)
+				if (fabs(1-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(0.5);
 				}
-				else if(fabs(0.5-bigMap->getAlpha()) < 0.001)
+				else if (fabs(0.5-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(0.2);
 				}
-				else if(fabs(0.2-bigMap->getAlpha()) < 0.001)
+				else if (fabs(0.2-bigMap->getAlpha()) < 0.001)
 				{
 					bigMap->setAlpha(1);
 				}
@@ -3088,7 +3064,7 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif //USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && curr_truck && !netmode && curr_truck->driveable != AIRPLANE)
 		{
-			if(!BeamFactory::getSingleton().enterRescueTruck())
+			if (!BeamFactory::getSingleton().enterRescueTruck())
 			{
 #ifdef USE_MYGUI
 				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
@@ -3169,7 +3145,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		// in embedded mode we wont show that loading stuff
 		/*
-		if(isEmbedded)
+		if (isEmbedded)
 		{
 			loading_state=ALL_LOADED;
 #ifdef USE_MYGUI
@@ -3187,7 +3163,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			{
 				Cache_Entry *sel = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
-				if(sel)
+				if (sel)
 				{
 					terrainUID = sel->uniqueid;
 					loadTerrain(sel->fname);
@@ -3196,7 +3172,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (truck_preload_num == 0)
 					{
 						// show truck selector
-						if(w)
+						if (w)
 						{
 							hideMap();
 							SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
@@ -3218,8 +3194,8 @@ bool RoRFrameListener::updateEvents(float dt)
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
-				if(config.size() == 0) configptr = 0;
-				if(selt)
+				if (config.size() == 0) configptr = 0;
+				if (selt)
 					initTrucks(true, selt->fname, selt->fext, configptr, false, skin);
 
 			} else if (loading_state==RELOADING)
@@ -3227,13 +3203,13 @@ bool RoRFrameListener::updateEvents(float dt)
 				Cache_Entry *selt = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				Beam *localTruck = 0;
-				if(selt)
+				if (selt)
 				{
 					//we load an extra truck
 					String selected = selt->fname;
 					std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
-					if(config.size() == 0) configptr = 0;
+					if (config.size() == 0) configptr = 0;
 
 					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin, freeTruckPosition);
 					freeTruckPosition=false; // reset this, only to be used once
@@ -3241,10 +3217,10 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 
-				if(bigMap && localTruck)
+				if (bigMap && localTruck)
 				{
 					MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
-					if(e)
+					if (e)
 					{
 						e->setState(DESACTIVATED);
 						e->setVisibility(true);
@@ -3260,7 +3236,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 				GUIManager::getSingleton().unfocus();
 
-				if(localTruck && localTruck->driveable)
+				if (localTruck && localTruck->driveable)
 				{
 					//we are supposed to be in this truck, if it is a truck
 					if (localTruck->engine)
@@ -3282,14 +3258,14 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && curr_truck)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TRUCK_INFO) && curr_truck)
 	{
 		mTruckInfoOn = ! mTruckInfoOn;
 		dirty=true;
-		if(ow) ow->truckhud->show(mTruckInfoOn);
+		if (ow) ow->truckhud->show(mTruckInfoOn);
 	}
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI))
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_HIDE_GUI))
 	{
 		hidegui = !hidegui;
 		hideGUI(hidegui);
@@ -3299,33 +3275,33 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS) && loading_state == ALL_LOADED)
 	{
 		dirty=true;
-		if(mStatsOn==0)
+		if (mStatsOn==0)
 			mStatsOn=1;
-		else if(mStatsOn==1)
+		else if (mStatsOn==1)
 			mStatsOn=0;
-		else if(mStatsOn==2)
+		else if (mStatsOn==2)
 			mStatsOn=0;
 
-		if(ow) ow->showDebugOverlay(mStatsOn);
+		if (ow) ow->showDebugOverlay(mStatsOn);
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_MAT_DEBUG))
 	{
-		if(mStatsOn==0)
+		if (mStatsOn==0)
 			mStatsOn=2;
-		else if(mStatsOn==1)
+		else if (mStatsOn==1)
 			mStatsOn=2;
-		else if(mStatsOn==2)
+		else if (mStatsOn==2)
 			mStatsOn=0;
 		dirty=true;
-		if(ow) ow->showDebugOverlay(mStatsOn);
+		if (ow) ow->showDebugOverlay(mStatsOn);
 	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
 		Vector3 pos = Vector3::ZERO;
 		float rotz = 0;
-		if(BeamFactory::getSingleton().getCurrentTruckNumber() == -1)
+		if (BeamFactory::getSingleton().getCurrentTruckNumber() == -1)
 		{
 			pos = person->getPosition();
 			rotz = person->getOrientation().getYaw().valueDegrees()+180;
@@ -3387,7 +3363,7 @@ void RoRFrameListener::shutdown_final()
 	INPUTENGINE.prepareShutdown();
 
 	RigsOfRods *ror = RigsOfRods::getSingletonPtr();
-	if(ror) ror->tryShutdown();
+	if (ror) ror->tryShutdown();
 
 	shutdownall=true;
 	//terrainmaterial->getBestTechnique()->getPass(0)->getTextureUnitState(0)->setTextureName(terrainoriginalmaterial);
@@ -3396,7 +3372,7 @@ void RoRFrameListener::shutdown_final()
 void RoRFrameListener::hideMap()
 {
 #ifdef USE_MYGUI
-	if(bigMap)
+	if (bigMap)
 		bigMap->setVisibility(false);
 #endif //USE_MYGUI
 }
@@ -3411,7 +3387,7 @@ void RoRFrameListener::initializeCompontents()
 
 	// map must be loaded before the script engine
 	// init the map
-	if(!disableMap)
+	if (!disableMap)
 	{
 		bigMap = new MapControl((int)mapsizex, (int)mapsizez);
 		// important: update first!
@@ -3430,9 +3406,9 @@ void RoRFrameListener::initializeCompontents()
 	// load AS
 #ifdef USE_ANGELSCRIPT
 	ScriptEngine::getSingleton().setCollisions(collisions);
-	if(!netmode)
+	if (!netmode)
 	{
-		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
+		if (ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
 		{
 			ScriptEngine::getSingleton().loadScript(loadedTerrain+".as");
 		} else
@@ -3453,9 +3429,9 @@ void RoRFrameListener::initializeCompontents()
 	// update icollisions instance in factory
 	BeamFactory::getSingleton().icollisions = collisions;
 
-	if(person) person->setCollisions(collisions);
+	if (person) person->setCollisions(collisions);
 #ifdef USE_MYGUI
-	if(GUI_Friction::getSingletonPtr())
+	if (GUI_Friction::getSingletonPtr())
 		GUI_Friction::getSingleton().setCollisions(collisions);
 #endif //MYGUI
 
@@ -3472,17 +3448,16 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	ScopeLog log("terrain_"+terrainfile);
 
 	// check if the resource is loaded
-	if(!CACHE.checkResourceLoaded(terrainfile))
+	if (!CACHE.checkResourceLoaded(terrainfile))
 	{
 		// fallback for terrains, add .terrn if not found and retry
 		terrainfile  = terrainfile + ".terrn";
-		if(!CACHE.checkResourceLoaded(terrainfile))
+		if (!CACHE.checkResourceLoaded(terrainfile))
 		{
 			LOG("Terrain not found: " + terrainfile);
 			showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
 			exit(123);
 		}
-
 	}
 
 	// set the terrain hash
@@ -3492,9 +3467,9 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		memset(hash_result, 0, 249);
 		RoR::CSHA1 sha1;
 		String fn;
-		if(ce.type == "Zip")
+		if (ce.type == "Zip")
 			fn = ce.dirname;
-		else if(ce.type == "FileSystem")
+		else if (ce.type == "FileSystem")
 			fn = ce.dirname + SSETTING("dirsep", "\\") + ce.fname;
 		sha1.HashFile(const_cast<char*>(fn.c_str()));
 		sha1.Final();
@@ -3506,7 +3481,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	initializeCompontents();
 
-	if(terrainfile.find(".terrn") != String::npos)
+	if (terrainfile.find(".terrn") != String::npos)
 	{
 		LOG("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
@@ -3515,21 +3490,21 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		// exit on unknown terrain handler
 		LOG("Terrain not supported, unknown format: " + terrainfile);
 		showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
-		exit(123);
+		exit(1);
 	}
 
 #ifdef USE_MYGUI
-	if(!BSETTING("REPO_MODE", false))
+	if (!BSETTING("REPO_MODE", false))
 	{
 		// hide loading window
 		LoadingWindow::getSingleton().hide();
 		// hide wallpaper
 		MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
-		if(w) w->setVisibleSmooth(false);
+		if (w) w->setVisibleSmooth(false);
 	}
 #endif // USE_MYGUI
 
-	if(person) person->setVisible(true);
+	if (person) person->setVisible(true);
 }
 
 void RoRFrameListener::loadClassicTerrain(String terrainfile)
@@ -3541,21 +3516,18 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	char line[1024];
 	float r,g,b;
 	float cx,cy,cz;
-	String group="";
+	String group = "";
 	try
 	{
 		group = ResourceGroupManager::getSingleton().findGroupContainingResource(terrainfile);
-	}catch(...)
-	{
-	}
-	if(group == "")
+	} catch(...) {}
+	if (group == "")
 	{
 		// we need to do a bit more here, since this can also happen on joining a MP server, in that case the user should get a better error message ...
 		LOG("Terrain not found: " + String(terrainfile));
 		showError(_L("Terrain loading error"), _L("Terrain not found: ") + terrainfile);
 		exit(125);
 	}
-
 
 	// set the terrain cache entry
 	//loaded_terrain = CACHE.getResourceInfo(terrainfile);
@@ -3583,15 +3555,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		ds->seek(0); // to start
 	}
 
-
-
 	ds->readLine(line, 1023);
 	terrainName = String(line);
 
 	//geometry
 	ds->readLine(geom, 1023);
 
-	if(String(geom).find(".cfg2") != String::npos)
+	if (String(geom).find(".cfg2") != String::npos)
 	{
 		LOG("new terrain mode enabled");
 		SETTINGS.setSetting("new Terrain Mode", "Yes");
@@ -3647,15 +3617,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	{
 	    ConfigFile config;
 		ResourceGroupManager& rgm = ResourceGroupManager::getSingleton();
-		String group="";
+		String group = "";
 		try
 		{
 			group = ResourceGroupManager::getSingleton().findGroupContainingResource(geom);
-		}catch(...)
+		} catch(...) {}
+		if (group == "")
 		{
+			LOG("Geometry not found: " + String(terrainfile));
+			showError(_L("Geometry loading error"), _L("Geometry not found: ") + String(geom));
+			exit(125);
 		}
-		if(group == "")
-			return;
 		DataStreamPtr stream=rgm.openResource(geom, group);
 		config.load( stream );
 	    String val;
@@ -3696,7 +3668,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	{
 		new SkyManager();
 
-		SkyManager::getSingleton().init(mScene, mWindow, mCamera);
+		SkyManager::getSingleton().init(mSceneMgr, mWindow, mCamera);
 		mainLight = SkyManager::getSingleton().getMainLight();
 	} else
 #endif //CAELUM
@@ -3713,7 +3685,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		//mSceneMgr->setSkyBox(true, sandstormcubemap, farclip);
 		//mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8);
 		
-		if(!inifite_farclip)
+		if (!inifite_farclip)
 			mSceneMgr->setFog(FOG_LINEAR, fadeColour,  0, farclip * 0.7, farclip * 0.9);
 	}
 	mCamera->getViewport()->setBackgroundColour(fadeColour);
@@ -3724,7 +3696,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if (SSETTING("Sky effects", "Caelum (best looking, slower)")=="Caelum (best looking, slower)")
 	{
 		String cfn = terrainfile + ".os";
-		if(ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(cfn))
+		if (ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(cfn))
 			SkyManager::getSingleton().loadScript(cfn);
 		else
 			SkyManager::getSingleton().loadScript("ror_default_sky");
@@ -3745,7 +3717,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		}catch(...)
 		{
 		}
-		if(group == "")
+		if (group == "")
 			return;
 		DataStreamPtr ds_config = ResourceGroupManager::getSingleton().openResource(String(geom), group);
 		cfg.load(ds_config, "\t:=", false);
@@ -3759,11 +3731,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (tmpSize != String(""))
 			mapsizez = atof(tmpSize.c_str());
 #ifdef USE_MYGUI
-		if(bigMap)
+		if (bigMap)
 			bigMap->setWorldSize(mapsizex, mapsizez);
 #endif //MYGUI
 
-		if(!newTerrainMode && !disableTetrrain)
+		if (!newTerrainMode && !disableTetrrain)
 		{
 			// classic mode
 			mSceneMgr->setWorldGeometry(geom);
@@ -3800,7 +3772,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
 			
 			// testing composite map
-			if(mCamera->getFarClipDistance() == 0)
+			if (mCamera->getFarClipDistance() == 0)
 				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(1000.0f);
 			else
 				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
@@ -3827,10 +3799,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
 
 			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-			if(mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
+			if (mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
 			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
 			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
-			if(mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
+			if (mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
 
 			
 
@@ -3843,10 +3815,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 			defaultimp.inputScale   = pageMaxHeight;
 			defaultimp.minBatchSize = 33;
-			if(!cfg.getSetting("minBatchSize").empty())
+			if (!cfg.getSetting("minBatchSize").empty())
 				defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));
 
-			if(!cfg.getSetting("maxBatchSize").empty())
+			if (!cfg.getSetting("maxBatchSize").empty())
 				defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("maxBatchSize"));
 
 			// TBD: properly load textures: http://www.ogre3d.org/forums/viewtopic.php?f=2&t=60302&start=0
@@ -3854,7 +3826,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			// textures
 			StringVector blendMaps, blendMode;
 			int numLayers = StringConverter::parseInt(cfg.getSetting("Layers.count"));
-			if(numLayers > 0)
+			if (numLayers > 0)
 			{
 				defaultimp.layerList.resize(numLayers+1);
 				blendMaps.resize(numLayers+1);
@@ -3873,10 +3845,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			bool is_cached = (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename));
 
 			bool disableCaching = false;
-			if(!cfg.getSetting("disableCaching").empty())
+			if (!cfg.getSetting("disableCaching").empty())
 				disableCaching = StringConverter::parseBool(cfg.getSetting("disableCaching"));
 
-			if(disableCaching || !is_cached)
+			if (disableCaching || !is_cached)
 			{
 				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
 				{
@@ -3891,14 +3863,14 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						{
 							String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
 							String heightmapFilename = cfg.getSetting(heightmapString);
-							if(heightmapFilename.empty())
+							if (heightmapFilename.empty())
 							{
 								// try loading the old non-paged name
 								heightmapString = "Heightmap.image";
 								heightmapFilename = cfg.getSetting(heightmapString);
 							}
 							Image img;
-							if(heightmapFilename.find(".raw") != String::npos)
+							if (heightmapFilename.find(".raw") != String::npos)
 							{
 								int rawSize = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.size"));
 								int bpp = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.bpp"));
@@ -3907,7 +3879,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
 								LOG(" loading RAW image: " + TOSTRING(stream->size()) + " / " + TOSTRING(rawSize*rawSize*bpp));
 								PixelFormat pformat = PF_L8;
-								if(bpp == 2)
+								if (bpp == 2)
 									pformat = PF_L16;
 								img.loadRawData(stream, rawSize, rawSize, 1, pformat);
 							} else
@@ -3915,7 +3887,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 								img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 							}
 
-							if(!cfg.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(cfg.getSetting("Heightmap.flip")))
+							if (!cfg.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(cfg.getSetting("Heightmap.flip")))
 								img.flipAroundX();
 
 
@@ -3938,7 +3910,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 					for (long py = TERRAIN_PAGE_MIN_Y; py <= TERRAIN_PAGE_MAX_Y; ++py)
 					{
 						Terrain* terrain = mTerrainGroup->getTerrain(x,py);
-						if(!terrain) continue;
+						if (!terrain) continue;
 
 						ShadowManager::getSingleton().updatePSSM(terrain);
 
@@ -3946,7 +3918,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 						/*
 						String textureString = "Texture.image." + TOSTRING(x) + "." + TOSTRING(y);
 						String textureFilename = cfg.getSetting(textureString);
-						if(textureFilename.empty())
+						if (textureFilename.empty())
 						{
 							// try to load traditional world texture
 							textureString="WorldTexture";
@@ -3960,26 +3932,24 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 							terrain->setGlobalColourMapEnabled(true, 1024);
 
 							TexturePtr tp = terrain->getGlobalColourMap();
-							if(!tp.isNull())
+							if (!tp.isNull())
 								tp->loadImage(colourMap);
 						}
 						*/
 
-						for(int b=1;b<terrain->getLayerCount();b++)
+						for(int i=1; i<terrain->getLayerCount(); i++)
 						{
 							Ogre::Image img;
 							String group="";
 							try
 							{
-								group = ResourceGroupManager::getSingleton().findGroupContainingResource(blendMaps[b]);
-							}catch(...)
-							{
-							}
-							if(group.empty())
+								group = ResourceGroupManager::getSingleton().findGroupContainingResource(blendMaps[i]);
+							} catch(...) {}
+							if (group.empty())
 								continue;
-							img.load(blendMaps[b], group);
+							img.load(blendMaps[i], group);
 
-							TerrainLayerBlendMap *bm = terrain->getLayerBlendMap(b); // starting with 1, very strange ...
+							TerrainLayerBlendMap *bm = terrain->getLayerBlendMap(i); // starting with 1, very strange ...
 
 							int bmSize = terrain->getLayerBlendMapSize();
 							float* pBlend1 = bm->getBlendPointer();
@@ -3993,13 +3963,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 									int iy = int(img.getHeight()*ty);
 									Ogre::ColourValue c = img.getColourAt(ix, iy, 0);
 									float alpha = 1;//(1/b);
-									if(blendMode[b] == "R")
+									if (blendMode[i] == "R")
 										*pBlend1++ = c.r * alpha;
-									else if(blendMode[b] == "G")
+									else if (blendMode[i] == "G")
 										*pBlend1++ = c.g * alpha;
-									else if(blendMode[b] == "B")
+									else if (blendMode[i] == "B")
 										*pBlend1++ = c.b * alpha;
-									else if(blendMode[b] == "A")
+									else if (blendMode[i] == "A")
 										*pBlend1++ = c.a * alpha;
 								}
 							}
@@ -4009,7 +3979,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 					}
 				}
 
-				if(disableCaching)
+				if (disableCaching)
 					mTerrainGroup->saveAllTerrains(false);
 			} else
 			{
@@ -4042,17 +4012,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		pagedMode = 0;
 		pagedDetailFactor = 0.001;
 	}
-	else if(vegetationMode == "20%")
+	else if (vegetationMode == "20%")
 	{
 		pagedMode = 1;
 		pagedDetailFactor = 0.2;
 	}
-	else if(vegetationMode == "50%")
+	else if (vegetationMode == "50%")
 	{
 		pagedMode = 2;
 		pagedDetailFactor = 0.5;
 	}
-	else if(vegetationMode == "Full (best looking, slower)")
+	else if (vegetationMode == "Full (best looking, slower)")
 	{
 		pagedMode = 3;
 		pagedDetailFactor = 1;
@@ -4066,9 +4036,9 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	plane.normal = -Vector3::UNIT_Y;
 
 
-	if(!terMat.isNull())
+	if (!terMat.isNull())
 		terrainmaterial = terMat.get();
-	if(terrainmaterial)
+	if (terrainmaterial)
 		LOG("using Terrain Material '"+terrainmaterial->getName()+"'");
 
 	//create sky material
@@ -4095,7 +4065,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// first compositor: HDR!
 	// HDR if wished
 	bool useHDR = (BSETTING("HDR", false));
-	if(useHDR)
+	if (useHDR)
 		initHDR();
 
 
@@ -4214,16 +4184,16 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	{
 	//	//CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fadeColour);
 		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->_getOriginalSceneCompositor();
-		if(co)
+		if (co)
 		{
 			CompositionTechnique *ct = co->getTechnique();
-			if(ct)
+			if (ct)
 			{
 				CompositionTargetPass *ctp = ct->getOutputTargetPass();
-				if(ctp)
+				if (ctp)
 				{
 					CompositionPass *p = ctp->getPass(0);
-					if(p)
+					if (p)
 						p->setClearColour(fadeColour);
 				}
 			}
@@ -4242,7 +4212,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		}catch(...)
 		{
 		}
-		if(group == "")
+		if (group == "")
 			return;
 		DataStreamPtr stream=rgm.openResource(geom, group);
 		config.load(stream);
@@ -4263,7 +4233,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	//set terrain map
 	//MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/BigMap"));
-	//if(terrainmaterial && bigMap)
+	//if (terrainmaterial && bigMap)
 	//mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName());
 	//	bigMap->setBackground(terrainmaterial->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName());
 
@@ -4275,7 +4245,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		bool usewaves=(BSETTING("Waves", false));
 
 		// disable waves in multiplayer
-		if(net)
+		if (net)
 			usewaves=false;
 
 		String waterSettingsString = SSETTING("Water effects", "Reflection + refraction (speed optimized)");
@@ -4291,8 +4261,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		else if (waterSettingsString == "Reflection + refraction (quality optimized)")
 			w = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 	}
-	if(w) w->setFadeColour(fadeColour);
-	if(person) person->setWater(w);
+	if (w) w->setFadeColour(fadeColour);
+	if (person) person->setWater(w);
 	BeamFactory::getSingleton().w = w;
 	DustManager::getSingleton().setWater(w);
 
@@ -4303,48 +4273,52 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	}
 
 	//dashboard
-	// always enabled
-	{
-		dashboard = new Dashboard(mSceneMgr,mWindow);
-	}
-
+	dashboard = new Dashboard(mSceneMgr);
 
 	//setup heightfinder
-	float wheight=0.0;
-	if (w) wheight=w->getHeight()-30.0;
+	float wheight = 0.0f;
+	if (w)
+	{
+		wheight = w->getHeight() - 30.0f;
+	}
 
 	// we choose the heightfinder depending on whether we use the classical
 	// terrain or the new one
-	if(newTerrainMode)
+	if (newTerrainMode)
 		hfinder = new NTHeightFinder(mTerrainGroup, Vector3::ZERO);
 	else
 		hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
 
 	collisions->setHfinder(hfinder);
-	if(person) person->setHFinder(hfinder);
+	if (person)
+	{
+		person->setHFinder(hfinder);
+	}
 
 	// update hfinder instance in factory
 	BeamFactory::getSingleton().mfinder = hfinder;
 
 	// set camera to some nice spot, overviewing the terrain, showing the loading progress
-	if(spl.pos != Vector3::ZERO)    mCamera->setPosition(spl.pos);
-	if(spl.rot != Quaternion::ZERO) mCamera->setOrientation(spl.rot);
+	if (spl.pos != Vector3::ZERO)    mCamera->setPosition(spl.pos);
+	if (spl.rot != Quaternion::ZERO) mCamera->setOrientation(spl.rot);
 
 #ifdef USE_MYGUI
-	if(bigMap)
+	if (bigMap)
 	{
-		mtc = new MapTextureCreator(mScene, mCamera, this);
+		mtc = new MapTextureCreator(mSceneMgr, mCamera, this);
 		bigMap->setVisibility(false);
 		bigMap->setMapTexture(mtc->getRTName());
 	}
 #endif //USE_MYGUI
 
 	// fix the person starting position
-	if(persostart.isZeroLength() && !spl.pos.isZeroLength())
-		if(hfinder)
+	if (persostart.isZeroLength() && !spl.pos.isZeroLength())
+	{
+		if (hfinder)
 			persostart = Vector3(spl.pos.x, hfinder->getHeightAt(spl.pos.x, spl.pos.z), spl.pos.z);
 		else
 			persostart = spl.pos;
+	}
 
 	//prepare road2
 	proceduralManager = new ProceduralManager(mSceneMgr, hfinder, collisions);
@@ -4354,24 +4328,23 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	//prepare for baking
 	SceneNode *bakeNode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
-	//load objects
-	//while (!feof(fd))
-	bool proroad=false;
+
 #ifdef USE_PAGED
 	treeLoader = 0;
 	Entity *curTree = 0;
-	String treename="";
+	String treename = "";
 #endif
 
 	ProceduralObject po;
 	po.loadingState = -1;
-	int r2oldmode=0;
-
+	int r2oldmode = 0;
 	int lastprogress = -1;
+	bool proroad = false;
+
 	while (!ds->eof())
 	{
 		int progress = ((float)(ds->tell()) / (float)(ds->size())) * 100.0f;
-		if(progress-lastprogress > 20)
+		if (progress-lastprogress > 20)
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(progress, _L("Loading Terrain"));
@@ -4389,8 +4362,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		size_t ll=ds->readLine(line, 1023);
 		if (line[0]=='/' || line[0]==';' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
-
-
+		
 		if (!strncmp(line,"collision-tris", 14))
 		{
 			long amount = Collisions::MAX_COLLISION_TRIS;
@@ -4420,7 +4392,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			Ogre::ColourValue c;
 			for (unsigned i=0;i < count+1;i++)
 			{
-
 				if (i == halfCount)
 					c = Ogre::ColourValue(1,0,0,1.0f);
 				else
@@ -4466,7 +4437,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			char tmp[256]="";
 			float x=0,y=0,z=0, rx=0, ry=0, rz=0;
 			int res = sscanf(line, "mpspawn %s %f %f %f %f %f %f", tmp, &x, &y, &z, &rx, &ry, &rz);
-			if(res < 7)
+			if (res < 7)
 			{
 				LOG("error reading mpspawn command!");
 				continue;
@@ -4476,11 +4447,12 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			netSpawnPos[String(tmp)] = spl;
 			continue;
 		}
+
 		//sandstorm cube texture
 		if (!strncmp(line,"sandstormcubemap", 16))
 		{
 			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
-		};
+		}
 		if (!strncmp("landuse-config", line, 14))
 		{
 			collisions->setupLandUse(line+15);
@@ -4489,7 +4461,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (!strncmp("gravity", line, 7))
 		{
 			int res = sscanf(line, "gravity %f", &gravity);
-			if(res < 1)
+			if (res < 1)
 			{
 				LOG("error reading gravity command!");
 			}
@@ -4504,30 +4476,31 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		}
 #ifdef USE_PAGED
 		//ugly stuff to parse trees :)
-		if(!strncmp("trees", line, 5))
+		if (!strncmp("trees", line, 5))
 		{
-			if(pagedMode==0)
-				continue;
-			char ColorMap[256]="";
-			char DensityMap[256]="";
-			char treemesh[256]="";
-			char treeCollmesh[256]="";
-			float gridspacing = 0;
-			float yawfrom=0, yawto=0, scalefrom=0, scaleto=0, highdens=1;
-			int minDist=90, maxDist=700;
+			if (pagedMode == 0) continue;
+			char ColorMap[256] = {};
+			char DensityMap[256] = {};
+			char treemesh[256] = {};
+			char treeCollmesh[256] = {};
+			float gridspacing = 0.0f;
+			float yawfrom = 0.0f, yawto = 0.0f;
+			float scalefrom = 0.0f, scaleto = 0.0f;
+			float highdens = 1.0f;
+			int minDist = 90, maxDist = 700;
 			sscanf(line, "trees %f, %f, %f, %f, %f, %d, %d, %s %s %s %f %s", &yawfrom, &yawto, &scalefrom, &scaleto, &highdens, &minDist, &maxDist, treemesh, ColorMap, DensityMap, &gridspacing, treeCollmesh);
-			if(strnlen(ColorMap, 3) == 0)
+			if (strnlen(ColorMap, 3) == 0)
 			{
 				LOG("tree ColorMap map zero!");
 				continue;
 			}
-			if(strnlen(DensityMap, 3) == 0)
+			if (strnlen(DensityMap, 3) == 0)
 			{
 				LOG("tree DensityMap zero!");
 				continue;
 			}
 			Forests::DensityMap *densityMap = Forests::DensityMap::load(DensityMap, CHANNEL_COLOR);
-			if(!densityMap)
+			if (!densityMap)
 			{
 				LOG("could not load densityMap: "+String(DensityMap));
 				continue;
@@ -4547,38 +4520,37 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			//Set up LODs
 			//trees->addDetailLevel<EntityPage>(50);
 			float min = minDist * pagedDetailFactor;
-			if(min<10) min = 10;
+			if (min<10) min = 10;
 			paged.geom->addDetailLevel<BatchPage>(min, min/2);
 			float max = maxDist * pagedDetailFactor;
-			if(max<10) max = 10;
+			if (max<10) max = 10;
 			paged.geom->addDetailLevel<ImpostorPage>(max, max/10);
 			TreeLoader2D *treeLoader = new TreeLoader2D(paged.geom, TBounds(0, 0, mapsizex, mapsizez));
 			paged.geom->setPageLoader(treeLoader);
 			treeLoader->setHeightFunction(&getTerrainHeight);
-			if(String(ColorMap) != "none")
+			if (String(ColorMap) != "none")
+			{
 				treeLoader->setColorMap(ColorMap);
+			}
 
 			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
 
-			float density = 0, yaw=0, scale=0;
-			int numTreesToPlace=0;
-			if(gridspacing > 0)
+			if (gridspacing > 0)
 			{
 				// grid style
-				for(float x=0;x<mapsizex;x+=gridspacing)
+				for(float x=0; x < mapsizex; x += gridspacing)
 				{
-					for(float z=0;z<mapsizez;z+=gridspacing)
+					for(float z=0; z < mapsizez; z += gridspacing)
 					{
-						density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
-						if(density < 0.8f) continue;
-						float nx=0, nz=0;
-						nx = x + gridspacing * 0.5f;
-						nz = z + gridspacing * 0.5f;
-						yaw = Math::RangeRandom(yawfrom, yawto);
-						scale = Math::RangeRandom(scalefrom, scaleto);
+						float density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
+						if (density < 0.8f) continue;
+						float nx = x + gridspacing * 0.5f;
+						float nz = z + gridspacing * 0.5f;
+						float yaw = Math::RangeRandom(yawfrom, yawto);
+						float scale = Math::RangeRandom(scalefrom, scaleto);
 						Vector3 pos = Vector3(nx, 0, nz);
 						treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
-						if(strlen(treeCollmesh))
+						if (strlen(treeCollmesh))
 						{
 							pos.y = hfinder->getHeightAt(pos.x, pos.z);
 							scale *= 0.1f;
@@ -4590,27 +4562,29 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			} else
 			{
 				float gridsize = 10;
-				if(gridspacing < 0 && gridspacing != 0)
+				if (gridspacing < 0 && gridspacing != 0)
+				{
 					gridsize = -gridspacing;
+				}
 				float hd = highdens;
 				// normal style, random
-				for(float x=0;x<mapsizex;x+=gridsize)
+				for(float x=0; x < mapsizex; x += gridsize)
 				{
-					for(float z=0;z<mapsizez;z+=gridsize)
+					for(float z=0; z < mapsizez; z += gridsize)
 					{
-						if(highdens < 0) hd = Math::RangeRandom(0, -highdens);
-						density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
-						numTreesToPlace = (int)((float)(hd) * density * pagedDetailFactor);
+						if (highdens < 0) hd = Math::RangeRandom(0, -highdens);
+						float density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
+						int numTreesToPlace = (int)((float)(hd) * density * pagedDetailFactor);
 						float nx=0, nz=0;
 						while(numTreesToPlace-->0)
 						{
 							nx = Math::RangeRandom(x, x + gridsize);
 							nz = Math::RangeRandom(z, z + gridsize);
-							yaw = Math::RangeRandom(yawfrom, yawto);
-							scale = Math::RangeRandom(scalefrom, scaleto);
+							float yaw = Math::RangeRandom(yawfrom, yawto);
+							float scale = Math::RangeRandom(scalefrom, scaleto);
 							Vector3 pos = Vector3(nx, 0, nz);
 							treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
-							if(strlen(treeCollmesh))
+							if (strlen(treeCollmesh))
 							{
 								pos.y = hfinder->getHeightAt(pos.x, pos.z);
 								collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
@@ -4627,18 +4601,17 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (!strncmp("grass", line, 5) || !strncmp("grass2", line, 6))
 		{
 			// is paged geometry disabled by configuration?
-			if(pagedMode==0)
-				continue;
-			int range=80;
+			if (pagedMode == 0) continue;
+			int range = 80;
 			float SwaySpeed=0.5, SwayLength=0.05, SwayDistribution=10.0, minx=0.2, miny=0.2, maxx=1, maxy=0.6, Density=0.6, minH=-9999, maxH=9999;
 			char grassmat[256]="";
 			char ColorMap[256]="";
 			char DensityMap[256]="";
 			int growtechnique = 0;
 			int techn = GRASSTECH_CROSSQUADS;
-			if(!strncmp("grass2", line, 6))
+			if (!strncmp("grass2", line, 6))
 				sscanf(line, "grass2 %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %d, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, &techn, grassmat, ColorMap, DensityMap);
-			else if(!strncmp("grass", line, 5))
+			else if (!strncmp("grass", line, 5))
 				sscanf(line, "grass %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, grassmat, ColorMap, DensityMap);
 
 			//Initialize the PagedGeometry engine
@@ -4670,20 +4643,20 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				grassdensityTextureFilename = String(DensityMap);
 
 				grassLayer->setDensity(Density * pagedDetailFactor);
-				if(techn>10)
+				if (techn>10)
 					grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn-10), true);
 				else
 					grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn), false);
 
 				grassLayer->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
 
-				if(strcmp(ColorMap,"none") != 0)
+				if (strcmp(ColorMap,"none") != 0)
 				{
 					grassLayer->setColorMap(ColorMap);
 					grassLayer->setColorMapFilter(MAPFILTER_BILINEAR);
 				}
 
-				if(strcmp(DensityMap,"none") != 0)
+				if (strcmp(DensityMap,"none") != 0)
 				{
 					grassLayer->setDensityMap(DensityMap);
 					grassLayer->setDensityMapFilter(MAPFILTER_BILINEAR);
@@ -4696,11 +4669,11 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 				grassLayer->setMaximumSize(maxx, maxy);
 
 				// growtechnique
-				if(growtechnique == 0)
+				if (growtechnique == 0)
 					grassLayer->setFadeTechnique(FADETECH_GROW);
-				else if(growtechnique == 1)
+				else if (growtechnique == 1)
 					grassLayer->setFadeTechnique(FADETECH_ALPHAGROW);
-				else if(growtechnique == 2)
+				else if (growtechnique == 2)
 					grassLayer->setFadeTechnique(FADETECH_ALPHA);
 				paged.geom = grass;
 				paged.loader = (void*)grassLoader;
@@ -4713,79 +4686,80 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			continue;
 		}
 #endif //USE_PAGED
-		//ugly stuff to parse procedural roads
-		if (!strncmp("begin_procedural_roads", line, 22))
-		{
-			proroad=true;
-			po = ProceduralObject();
-			po.loadingState = 1;
-			r2oldmode=1;
-			continue;
-		}
-		if (!strncmp("end_procedural_roads", line, 20))
-		{
-			proroad=false;
-			if(r2oldmode)
+
+		{ // ugly stuff to parse procedural roads
+			if (!strncmp("begin_procedural_roads", line, 22))
 			{
-				if(proceduralManager)
-					proceduralManager->addObject(po);
 				po = ProceduralObject();
+				po.loadingState = 1;
+				r2oldmode = 1;
+				proroad = true;
+				continue;
 			}
-			continue;
-		}
-		if (proroad)
-		{
-
-			float rwidth, bwidth, bheight;
-			//position x,y,z rotation rx,ry,rz, width, border width, border height, type
-			r=sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %s",&ox,&oy,&oz, &rx, &ry, &rz, &rwidth, &bwidth, &bheight, oname);
-			Vector3 pos=Vector3(ox, oy, oz);
-			Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-			int roadtype=Road2::ROAD_AUTOMATIC;
-			int pillartype = 0;
-			if (!strcmp(oname, "flat")) roadtype=Road2::ROAD_FLAT;
-			if (!strcmp(oname, "left")) roadtype=Road2::ROAD_LEFT;
-			if (!strcmp(oname, "right")) roadtype=Road2::ROAD_RIGHT;
-			if (!strcmp(oname, "both")) roadtype=Road2::ROAD_BOTH;
-			if (!strcmp(oname, "bridge")) {roadtype=Road2::ROAD_BRIDGE;pillartype=1;}
-			if (!strcmp(oname, "monorail")) {roadtype=Road2::ROAD_MONORAIL;pillartype=2;}
-			if (!strcmp(oname, "monorail2")) {roadtype=Road2::ROAD_MONORAIL;pillartype=0;}
-			if (!strcmp(oname, "bridge_no_pillars")) {roadtype=Road2::ROAD_BRIDGE;pillartype=0;}
-
-			if(r2oldmode)
+			if (!strncmp("end_procedural_roads", line, 20))
 			{
-				//fill object
-				ProceduralPoint pp;
-				pp.bheight = bheight;
-				pp.bwidth = bwidth;
-				pp.pillartype = pillartype;
-				pp.position = pos;
-				pp.rotation = rotation;
-				pp.type = roadtype;
-				pp.width = rwidth;
-
-				po.points.push_back(pp);
+				if (r2oldmode)
+				{
+					if (proceduralManager)
+						proceduralManager->addObject(po);
+					po = ProceduralObject();
+				}
+				proroad = false;
+				continue;
 			}
-			continue;
-		}
-		//end of the ugly (somewhat)
+			if (proroad)
+			{
+				float rwidth, bwidth, bheight;
+				//position x,y,z rotation rx,ry,rz, width, border width, border height, type
+				r=sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %s",&ox,&oy,&oz, &rx, &ry, &rz, &rwidth, &bwidth, &bheight, oname);
+				Vector3 pos=Vector3(ox, oy, oz);
+				Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
+				int roadtype=Road2::ROAD_AUTOMATIC;
+				int pillartype = 0;
+				if (!strcmp(oname, "flat")) roadtype=Road2::ROAD_FLAT;
+				if (!strcmp(oname, "left")) roadtype=Road2::ROAD_LEFT;
+				if (!strcmp(oname, "right")) roadtype=Road2::ROAD_RIGHT;
+				if (!strcmp(oname, "both")) roadtype=Road2::ROAD_BOTH;
+				if (!strcmp(oname, "bridge")) {roadtype=Road2::ROAD_BRIDGE;pillartype=1;}
+				if (!strcmp(oname, "monorail")) {roadtype=Road2::ROAD_MONORAIL;pillartype=2;}
+				if (!strcmp(oname, "monorail2")) {roadtype=Road2::ROAD_MONORAIL;pillartype=0;}
+				if (!strcmp(oname, "bridge_no_pillars")) {roadtype=Road2::ROAD_BRIDGE;pillartype=0;}
+
+				if (r2oldmode)
+				{
+					//fill object
+					ProceduralPoint pp;
+					pp.bheight = bheight;
+					pp.bwidth = bwidth;
+					pp.pillartype = pillartype;
+					pp.position = pos;
+					pp.rotation = rotation;
+					pp.type = roadtype;
+					pp.width = rwidth;
+
+					po.points.push_back(pp);
+				}
+				continue;
+			}
+		} //end of the ugly (somewhat)
+
 		strcpy(name, "generic");
 		memset(oname, 0, 255);
 		memset(type, 0, 255);
 		memset(name, 0, 255);
 		r=sscanf(line, "%f, %f, %f, %f, %f, %f, %s %s %s",&ox,&oy,&oz, &rx, &ry, &rz, oname, type, name);
-		if(r<6)
+		if (r<6)
 			continue;
-		if((!strcmp(oname, "truck")) || (!strcmp(oname, "load") || (!strcmp(oname, "machine")) || (!strcmp(oname, "boat")) || (!strcmp(oname, "truck2")) ))
+		if ((!strcmp(oname, "truck")) || (!strcmp(oname, "load") || (!strcmp(oname, "machine")) || (!strcmp(oname, "boat")) || (!strcmp(oname, "truck2")) ))
 		{
 			bool newFormat = (!strcmp(oname, "truck2"));
 
-			if(!strcmp(oname, "boat") && !w)
+			if (!strcmp(oname, "boat") && !w)
 				// no water so do not load boats!
 				continue;
 			String group="";
 			String truckname=String(type);
-			if(!CACHE.checkResourceLoaded(truckname, group))
+			if (!CACHE.checkResourceLoaded(truckname, group))
 			{
 				LOG("Error while loading Terrain: truck " + String(type) + " not found. ignoring.");
 				continue;
@@ -4833,7 +4807,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 					po.points.push_back(pp);
 
 					// finish it and start new object
-					if(proceduralManager)
+					if (proceduralManager)
 						proceduralManager->addObject(po);
 					po = ProceduralObject();
 					r2oldmode=1;
@@ -4876,8 +4850,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// ds closes automatically, so do not close it explicitly here:
 	//ds->close();
 
-	//finish the last road
-	if (r2oldmode!=0)
+	// finish the last road
+	if (r2oldmode != 0)
 	{
 		//fill object
 		ProceduralPoint pp;
@@ -4891,13 +4865,13 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		po.points.push_back(pp);
 
 		// finish it and start new object
-		if(proceduralManager)
+		if (proceduralManager)
 			proceduralManager->addObject(po);
 	}
 
 
-	//okay now bake everything
-	bakesg=mSceneMgr->createStaticGeometry("bakeSG");
+	// okay, now bake everything
+	bakesg = mSceneMgr->createStaticGeometry("bakeSG");
 	bakesg->setCastShadows(true);
 	bakesg->addSceneNode(bakeNode);
 	bakesg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -4916,8 +4890,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 #ifdef USE_MYGUI
 	// tell this the map, so it can change the drawing distance !
-	if(mtc)
+	if (mtc)
+	{
 		mtc->setStaticGeometry(bakesg);
+	}
 #endif //USE_MYGUI
 
 	collisions->printStats();
@@ -4926,7 +4902,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// we set the sky this late, so the user can configure it ...
 	if (SSETTING("Sky effects", "Caelum (best looking, slower)")!="Caelum (best looking, slower)")
 	{
-		if(strlen(sandstormcubemap)>0)
+		if (strlen(sandstormcubemap)>0)
 		{
 			// use custom
 			mSceneMgr->setSkyBox(true, sandstormcubemap, 100, true);
@@ -4937,7 +4913,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		}
 	}
 
-	if(debugCollisions)
+	if (debugCollisions)
 		collisions->createCollisionDebugVisualization();
 
 	// bake the decals
@@ -4946,7 +4922,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
 
-	if(bigMap)
+	if (bigMap)
 	{
 		// this has a slight offset in size, thus forces the icons to recalc their size -> correct size on screen
 		bigMap->updateRenderMetrics(mWindow);
@@ -4963,7 +4939,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		{
 			dg += (Ogre::Math::PI * 2) / (10+rad);
 			rad += 0.4f;
-			if(dg > 2 * Ogre::Math::PI)
+			if (dg > 2 * Ogre::Math::PI)
 			{
 				//rad += 10;
 				dg -= 2 * Ogre::Math::PI;
@@ -5129,10 +5105,10 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	if (CAMERA_MODE == CameraManager::CAMERA_FREE) return;
 
 	// hide any old dashes
-	if(previousTruck && previousTruck->dash)
+	if (previousTruck && previousTruck->dash)
 		previousTruck->dash->setVisible3d(false);
 	// show new
-	if(currentTruck && currentTruck->dash)
+	if (currentTruck && currentTruck->dash)
 		currentTruck->dash->setVisible3d(true);
 
 
@@ -5140,11 +5116,11 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	if (!currentTruck)
 	{
 		// get out
-		if(previousTruck && person)
+		if (previousTruck && person)
 			person->setPosition(previousTruck->getPosition());
 
 		// detach person from truck
-		if(person)
+		if (person)
 			person->setBeamCoupling(false);
 
 		//force feedback
@@ -5159,19 +5135,19 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 #endif //OIS_G27
 
 		// hide truckhud
-		if(ow) ow->truckhud->show(false);
+		if (ow) ow->truckhud->show(false);
 
 		//getting outside
 		Vector3 position = Vector3::ZERO;
-		if(previousTruck)
+		if (previousTruck)
 		{
 			previousTruck->prepareInside(false);
 
-			if(previousTruck->dash)
+			if (previousTruck->dash)
 				previousTruck->dash->setVisible(false);
 
 			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
-			if(previousTruck->cinecameranodepos[0] != -1)
+			if (previousTruck->cinecameranodepos[0] != -1)
 			{
 				// truck has a cinecam
 				position=previousTruck->nodes[previousTruck->cinecameranodepos[0]].AbsPosition;
@@ -5185,13 +5161,13 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			}
 		}
 		//position.y=hfinder->getHeightAt(position.x,position.z);
-		if(person && position != Vector3::ZERO)
+		if (person && position != Vector3::ZERO)
 		{
 			person->setPosition(position);
 			//person->setVisible(true);
 		}
-		if(ow) ow->showDashboardOverlays(false, currentTruck);
-		if(ow) ow->showEditorOverlay(false);
+		if (ow) ow->showDashboardOverlays(false, currentTruck);
+		if (ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_AIR);
 		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_PUMP);
@@ -5202,7 +5178,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		int t;
 		for (t=0; t<free_truck; t++)
 		{
-			if(!trucks[t]) continue;
+			if (!trucks[t]) continue;
 			trucks[t]->sleepcount=9;
 		} //make trucks synchronous
 
@@ -5215,7 +5191,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 
 		//person->setVisible(false);
-		if(ow &&!hidegui)
+		if (ow &&!hidegui)
 		{
 			ow->showDashboardOverlays(true, currentTruck);
 			ow->showEditorOverlay(currentTruck->editorId>=0);
@@ -5224,7 +5200,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		// mapmode change?
 #ifdef USE_MYGUI
 		// show minimap and put it into lower left corner
-		if(bigMap)
+		if (bigMap)
 		{
 			//bigMap->setVisibility(true);
 			bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
@@ -5251,9 +5227,9 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 
 		// attach person to truck
-		if(person)
+		if (person)
 			person->setBeamCoupling(true, currentTruck);
-		if(ow)
+		if (ow)
 		{
 			try
 			{
@@ -5287,16 +5263,14 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	}
 }
 
-
-
 bool RoRFrameListener::updateAnimatedObjects(float dt)
 {
-	if(animatedObjects.size() == 0)
+	if (animatedObjects.size() == 0)
 		return true;
 	std::vector<animated_object_t>::iterator it;
 	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
 	{
-		if(it->anim && it->speedfactor != 0)
+		if (it->anim && it->speedfactor != 0)
 		{
 			Real time = dt * it->speedfactor;
 			it->anim->addTime(time);
@@ -5308,7 +5282,7 @@ bool RoRFrameListener::updateAnimatedObjects(float dt)
 bool RoRFrameListener::updateTruckMirrors(float dt)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(!curr_truck) return false;
+	if (!curr_truck) return false;
 
 	for(std::vector<VideoCamera *>::iterator it=curr_truck->vidcams.begin(); it!=curr_truck->vidcams.end(); it++)
 	{
@@ -5324,13 +5298,13 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (dt==0) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
-	if(mWindow->isClosed())
+	if (mWindow->isClosed())
 		return false;
 
 	// update GUI
 	INPUTENGINE.Capture();
 
-	//if(collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
+	//if (collisions) 	printf("> ground model used: %s\n", collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
 #ifdef USE_MYGUI
@@ -5338,31 +5312,31 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		return true;
 #endif //MYGUI
 
-	if(shutdownall)
+	if (shutdownall)
 		return false;
 
-	if(shutdownall) // shortcut: press ESC in credits
+	if (shutdownall) // shortcut: press ESC in credits
 	{
 		parentState->exit();
 		return false;
 	}
 
 	// update OutProtocol
-	if(OutProtocol::getSingletonPtr())
+	if (OutProtocol::getSingletonPtr())
 		OutProtocol::getSingleton().update(dt);
 
 	// the truck we use got deleted D:
-	//if(current_truck != -1 && trucks[current_truck] == 0)
+	//if (current_truck != -1 && trucks[current_truck] == 0)
 	//	BeamFactory::getSingleton().setCurrentTruck(-1);
 
 	// update animated objects
 	updateAnimatedObjects(dt);
 
 	// update network gui if required, at most every 2 seconds
-	if(net)
+	if (net)
 	{
 		netcheckGUITimer += dt;
-		if(netcheckGUITimer > 2)
+		if (netcheckGUITimer > 2)
 		{
 			checkRemoteStreamResultsChanged();
 			netcheckGUITimer=0;
@@ -5371,7 +5345,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_SOCKETW
 #ifdef USE_MYGUI
 		// update net quality icon
-		if(getNetQualityChanged())
+		if (getNetQualityChanged())
 		{
 			GUI_Multiplayer::getSingleton().update();
 		}
@@ -5382,16 +5356,32 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_MUMBLE
 		MumbleIntegration::getSingleton().update(mCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
 #endif // USE_MUMBLE
-
 	}
 
 	CameraManager::getSingleton().update(dt); //antishaking
+
+	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
+
+	// environment map
+	if (envmap && curr_truck)
+	{
+		envmap->update(curr_truck->getPosition(), curr_truck);
+	}
+
+	// water
+	if (w)
+	{
+		if (curr_truck)
+			w->moveTo(mCamera, w->getHeightWaves(curr_truck->getPosition()));
+		else
+			w->moveTo(mCamera, w->getHeight());
+	}
 
 	// update mirrors after moving the camera as we use the camera position in mirrors
 	updateTruckMirrors(dt);
 
 	// update water after the camera!
-	if(loading_state==ALL_LOADED && w) w->framestep(dt);
+	if (loading_state==ALL_LOADED && w) w->framestep(dt);
 
 	//update visual - antishaking
 	if (loading_state==ALL_LOADED)
@@ -5399,24 +5389,23 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		BeamFactory::getSingleton().updateVisual(dt);
 
 		// add some example AI
-		if(loadedTerrain == "simple.terrn")
+		if (loadedTerrain == "simple.terrn")
 			BeamFactory::getSingleton().updateAI(dt);
 	}
 
-	if(!updateEvents(dt))
+	if (!updateEvents(dt))
 	{
 		LOG("exiting...");
 		return false;
 	}
 
 	// update gui 3d arrow
-	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(ow && dirvisible && loading_state==ALL_LOADED)
+	if (ow && dirvisible && loading_state==ALL_LOADED)
 	{
 		dirArrowNode->lookAt(dirArrowPointed, Node::TS_WORLD,Vector3::UNIT_Y);
 		char tmp[256];
 		Real distance = 0;
-		if(curr_truck && curr_truck->state == ACTIVATED)
+		if (curr_truck && curr_truck->state == ACTIVATED)
 			distance = curr_truck->getPosition().distance(dirArrowPointed);
 		else
 			distance = person->getPosition().distance(dirArrowPointed);
@@ -5435,7 +5424,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		// paged geometry
 		for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
 		{
-			if(it->geom) it->geom->update();
+			if (it->geom) it->geom->update();
 		}
 #endif //USE_PAGED
 		
@@ -5459,7 +5448,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif
 
 	// update network labels
-	if(net)
+	if (net)
 	{
 		CharacterFactory::getSingleton().updateLabels();
 	}
@@ -5470,26 +5459,29 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 bool RoRFrameListener::frameEnded(const FrameEvent& evt)
 {
 	// TODO: IMPROVE STATS
-	if(ow && mStatsOn) ow->updateStats();
+	if (ow && mStatsOn) ow->updateStats();
 
 	//		moveCamera();
 
 	// workaround to be able to show a single waiting sign before working on the files
-	//if(uiloader && uiloader->hasWork())
+	//if (uiloader && uiloader->hasWork())
 	//	uiloader->dowork();
 
-	if(heathaze)
+	if (heathaze)
+	{
 		heathaze->update();
+	}
+
 #ifdef USE_SOCKETW
-	if(net)
+	if (net)
 	{
 		// process all packets and streams received
 		NetworkStreamManager::getSingleton().update();
 	}
 #endif //SOCKETW
+
 	return true;
 }
-
 
 void RoRFrameListener::showLoad(int type, char* instance, char* box)
 {
@@ -5497,12 +5489,12 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	Beam **trucks     = BeamFactory::getSingleton().getTrucks();
 
 	//first, test if the place if clear, BUT NOT IN MULTIPLAYER
-	if(!net)
+	if (!net)
 	{
 		collision_box_t *spawnbox=collisions->getBox(instance, box);
 		for (int t=0; t<free_truck; t++)
 		{
-			if(!trucks[t]) continue;
+			if (!trucks[t]) continue;
 			for (int i=0; i<trucks[t]->free_node; i++)
 			{
 				if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
@@ -5529,8 +5521,8 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 
 void RoRFrameListener::setDirectionArrow(char *text, Vector3 position)
 {
-	if(!ow) return;
-	if(!text)
+	if (!ow) return;
+	if (!text)
 	{
 		dirArrowNode->setVisible(false);
 		dirvisible = false;
@@ -5556,10 +5548,10 @@ void RoRFrameListener::netDisconnectTruck(int number)
 	// TODO: fix that below!
 	//removeTruck(number);
 #ifdef USE_MYGUI
-	if(bigMap)
+	if (bigMap)
 	{
 		MapEntity *e = bigMap->getEntityByName("Truck"+TOSTRING(number));
-		if(e)
+		if (e)
 			e->setVisibility(false);
 	}
 #endif //USE_MYGUI
@@ -5569,7 +5561,7 @@ void RoRFrameListener::netDisconnectTruck(int number)
 /* --- Window Events ------------------------------------------ */
 void RoRFrameListener::windowResized(RenderWindow* rw)
 {
-	if(!rw)
+	if (!rw)
 		return;
 	LOG("*** windowResized");
 
@@ -5580,7 +5572,7 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 	screenWidth = width;
 	screenHeight = height;
 
-	if(ow) ow->windowResized(rw);
+	if (ow) ow->windowResized(rw);
 
 	//update mouse area
 	INPUTENGINE.windowResized(rw);
@@ -5607,10 +5599,10 @@ void RoRFrameListener::pauseSim(bool value)
 {
 	// TODO: implement this (how to do so?)
 	static int savedmode = -1;
-	if(value && loading_state == EDITOR_PAUSE)
+	if (value && loading_state == EDITOR_PAUSE)
 		// already paused
 		return;
-	if(value)
+	if (value)
 	{
 		savedmode = loading_state;
 		loading_state = EDITOR_PAUSE;
@@ -5641,31 +5633,31 @@ void RoRFrameListener::hideGUI(bool visible)
 	
 #ifdef USE_MYGUI
 	Console *c = Console::getSingletonPtrNoCreation();
-	if(c) c->setVisible(!visible);
+	if (c) c->setVisible(!visible);
 #endif // USE_MYGUI
 
-	if(visible)
+	if (visible)
 	{
-		if(ow) ow->showDashboardOverlays(false, curr_truck);
-		if(ow) ow->showEditorOverlay(false);
-		if(ow) ow->truckhud->show(false);
-		//if(bigMap) bigMap->setVisibility(false);
+		if (ow) ow->showDashboardOverlays(false, curr_truck);
+		if (ow) ow->showEditorOverlay(false);
+		if (ow) ow->truckhud->show(false);
+		//if (bigMap) bigMap->setVisibility(false);
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
-		if(net) GUI_Multiplayer::getSingleton().setVisible(false);
+		if (net) GUI_Multiplayer::getSingleton().setVisible(false);
 #endif // USE_SOCKETW
 #endif // USE_MYGUI
 	}
 	else
 	{
-		if(curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
+		if (curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
 		{
-			if(ow) ow->showDashboardOverlays(true, curr_truck);
-			//if(bigMap) bigMap->setVisibility(true);
+			if (ow) ow->showDashboardOverlays(true, curr_truck);
+			//if (bigMap) bigMap->setVisibility(true);
 		}
 #ifdef USE_SOCKETW
 #ifdef USE_MYGUI
-		if(net) GUI_Multiplayer::getSingleton().setVisible(true);
+		if (net) GUI_Multiplayer::getSingleton().setVisible(true);
 #endif // USE_MYGUI
 #endif // USE_SOCKETW
 	}
@@ -5693,7 +5685,7 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 {
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
-	if(BeamFactory::getSingleton().checkStreamsResultsChanged())
+	if (BeamFactory::getSingleton().checkStreamsResultsChanged())
 		GUI_Multiplayer::getSingleton().update();
 #endif // USE_SOCKETW
 #endif // USE_MYGUI
@@ -5713,7 +5705,7 @@ int RoRFrameListener::getNetQuality(bool ack)
 	int res = 0;
 	MUTEX_LOCK(&mutex_data);
 	res = net_quality;
-	if(ack) net_quality_changed=false;
+	if (ack) net_quality_changed=false;
 	MUTEX_UNLOCK(&mutex_data);
 	return res;
 }
@@ -5736,7 +5728,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	success = Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(curMaterialName,
 			 			MaterialManager::DEFAULT_SCHEME_NAME,
 			 			RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
-	if(!success)
+	if (!success)
 		return false;
 
 	// Setup custom shader sub render states according to current setup.
@@ -5761,7 +5753,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	*/
 #endif
 #ifdef RTSHADER_SYSTEM_BUILD_EXT_SHADERS
-	if(normalTextureName.empty())
+	if (normalTextureName.empty())
 	{
 		// SSLM_PerPixelLighting
 		RTShader::SubRenderState* perPixelLightModel = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::PerPixelLighting::Type);
@@ -5820,13 +5812,15 @@ void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTe
 	}
 }
 
-
 void RoRFrameListener::reloadCurrentTruck()
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if (!curr_truck) return;
 
-	if(BeamFactory::getSingleton().getTruckCount() + 1 >= MAX_TRUCKS)
+	// try to load the same truck again
+	Beam *newBeam = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, curr_truck->realtruckfilename);
+
+	if (!newBeam)
 	{
 #ifdef USE_MYGUI
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_ERROR, _L("unable to load new truck: limit reached. Please restart RoR"), "error.png");
@@ -5835,16 +5829,13 @@ void RoRFrameListener::reloadCurrentTruck()
 	}
 
 	// remove the old truck
-	curr_truck->state=RECYCLE;
-
-	// load the same truck again
-	Beam *newBeam = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, curr_truck->realtruckfilename);
+	curr_truck->state = RECYCLE;
 
 	// enter the new truck
 	BeamFactory::getSingleton().setCurrentTruck(newBeam->trucknum);
 
 	// copy over the most basic info
-	if(curr_truck->free_node == newBeam->free_node)
+	if (curr_truck->free_node == newBeam->free_node)
 	{
 		for(int i=0;i<curr_truck->free_node;i++)
 		{
@@ -5872,10 +5863,5 @@ void RoRFrameListener::reloadCurrentTruck()
 	// dislocate the old truck, so its out of sight
 	curr_truck->resetPosition(100000, 100000, false, 100000);
 	// note: in some point in the future we would delete the truck here,
-	// but since this function is buggy we dont do it yet.
-
-
-	// restore camera position
-	//camRotX = camRotX_saved;
-	//camRotY = camRotY_saved;
+	// but since this function is buggy we don't do it yet.
 }
