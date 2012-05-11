@@ -1632,7 +1632,12 @@ void Beam::updateTruckPosition()
 void Beam::resetAngle(float rot)
 {
 	// Set origin of rotation to camera node
-	Vector3 origin = nodes[cameranodepos[0]].AbsPosition;
+	Vector3 origin = nodes[0].AbsPosition;
+	
+	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	{
+		nodes[cameranodepos[0]].AbsPosition;
+	}
 
 	// Set up matrix for yaw rotation
 	Matrix3 matrix;
@@ -1863,9 +1868,12 @@ void Beam::SyncReset()
 	float yPos = lowestnode != -1 ? nodes[lowestnode].AbsPosition.y : 0;
 
 	Vector3 cur_position = nodes[0].AbsPosition;
-	Vector3 cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+	Vector3 cur_dir = nodes[0].AbsPosition;
+	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	{
+		cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
+	}
 	float cur_rot = atan2(cur_dir.dotProduct(Vector3::UNIT_X), cur_dir.dotProduct(-Vector3::UNIT_Z));
-
 	if (engine) engine->start();
 	for (i=0; i<free_node; i++)
 	{
@@ -2746,40 +2754,49 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		div++;
 	}
 
-	//roll
+	Vector3 cam_pos  = nodes[0].RelPosition;
+	Vector3 cam_roll = nodes[0].RelPosition;
+	Vector3 cam_dir  = nodes[0].RelPosition;
+
+	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	{
+		cam_pos  = nodes[cameranodepos[0]].RelPosition;
+		cam_roll = nodes[cameranoderoll[0]].RelPosition;
+		cam_dir  = nodes[cameranodedir[0]].RelPosition;
+	}
+
+	// roll
 	if (flag_state & ANIM_FLAG_ROLL)
 	{
-		Vector3 rollv=nodes[cameranodepos[0]].RelPosition-nodes[cameranoderoll[0]].RelPosition;
-		rollv.normalise();
-		float rollangle=asin(rollv.dotProduct(Vector3::UNIT_Y));
-		Vector3 dirv=nodes[cameranodepos[0]].RelPosition-nodes[cameranodedir[0]].RelPosition;
-		Vector3 upv=dirv.crossProduct(-rollv);
+		Vector3 rollv = (cam_pos - cam_roll).normalisedCopy();
+		Vector3 dirv  = (cam_pos - cam_dir ).normalisedCopy();
+		Vector3 upv   = dirv.crossProduct(-rollv);
+		float rollangle = asin(rollv.dotProduct(Vector3::UNIT_Y));
 		// rad to deg
-		rollangle = (rollangle * 57.2957795f);
-		//flip to other side when upside down
-		if (upv.y<0) rollangle= 180.0f - rollangle;
+		rollangle = Ogre::Math::RadiansToDegrees(rollangle);
+		// flip to other side when upside down
+		if (upv.y < 0) rollangle = 180.0f - rollangle;
 		cstate = rollangle / 180.0f;
-		// dataoutpu is -0.5 to 1.5, normalize to -1 to +1 without changing the zero position.
-		// this is vital for the animateor beams and does not effect the animated props
+		// data output is -0.5 to 1.5, normalize to -1 to +1 without changing the zero position.
+		// this is vital for the animator beams and does not effect the animated props
 		if (cstate >= 1.0f) cstate = cstate - 2.0f;
 		div++;
 	}
 
-	//pitch
+	// pitch
 	if (flag_state & ANIM_FLAG_PITCH)
 	{
-		Vector3 dirv=nodes[cameranodepos[0]].RelPosition-nodes[cameranodedir[0]].RelPosition;
-		dirv.normalise();
-		float pitchangle=asin(dirv.dotProduct(Vector3::UNIT_Y));
-		//radian to degrees with a max cstate of +/- 1.0
-		cstate = (( pitchangle * 57.29578f )  / 90.0f );
+		Vector3 dirv  = (cam_pos - cam_dir ).normalisedCopy();
+		float pitchangle = asin(dirv.dotProduct(Vector3::UNIT_Y));
+		// radian to degrees with a max cstate of +/- 1.0
+		cstate = (Ogre::Math::RadiansToDegrees(pitchangle) / 90.0f);
 		div++;
 	}
 
-	//airbrake
+	// airbrake
 	if (flag_state & ANIM_FLAG_AIRBRAKE)
 	{
-		float airbrake=airbrakeval;
+		float airbrake = airbrakeval;
 		// cstate limited to -1.0f
 		cstate -= airbrake / 5.0f;
 		div++;
@@ -5843,7 +5860,7 @@ void Beam::updateDashBoards(float &dt)
 		}
 
 		// water speed
-		if (cameranodepos[0] >= 0)
+		if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
 		{
 			Vector3 hdir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 			hdir.normalise();
@@ -6029,7 +6046,7 @@ void Beam::updateDashBoards(float &dt)
 
 Vector3 Beam::getGForces()
 {
-	if (cameranodepos[0] >= 0)
+	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
 	{
 		Vector3 acc      = cameranodeacc / cameranodecount;
 		cameranodeacc    = Vector3::ZERO;

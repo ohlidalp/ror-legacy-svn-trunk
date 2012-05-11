@@ -5160,7 +5160,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 			posnode_spawn_height = nodes[i].RelPosition.y;
 	}
 
-	if (freecamera > 0)
+	if (cameranodepos[0] > 0)
 	{
 		// store the y-difference between the trucks lowest node and the campos-node for the gwps system
 		posnode_spawn_height = nodes[cameranodepos[0]].RelPosition.y - posnode_spawn_height;
