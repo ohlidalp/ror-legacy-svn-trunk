@@ -17,13 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "OutProtocol.h"
 
 #include "BeamEngine.h"
 #include "BeamFactory.h"
 #include "RoRVersion.h"
 #include "Settings.h"
-
-#include "OutProtocol.h"
 
 using namespace Ogre;
 
@@ -153,7 +152,7 @@ bool OutProtocol::update(float dt)
 		gd.PLID        = 0;
 		gd.Speed       = fabs(truck->WheelSpeed);
 		gd.RPM         = truck->engine->getRPM();
-		gd.Turbo       = truck->engine->getTurboPSI();
+		gd.Turbo       = truck->engine->getTurboPSI() * 0.0689475729f;
 		gd.EngTemp     = 0; // TODO
 		gd.Fuel        = 0; // TODO
 		gd.OilPressure = 0; // TODO
