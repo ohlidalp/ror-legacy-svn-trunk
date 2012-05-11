@@ -723,7 +723,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_Hooks);
 
 	//aposition=Vector3::ZERO;
-	if (state==ACTIVATED) //force feedback sensors
+	if (state==ACTIVATED && currentcamera != -1) //force feedback sensors
 	{
 		if (doUpdate)
 		{
@@ -1271,7 +1271,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	//get current speed
 	float curspeed = 0;
-	if(freecamera > 0)
+	if(cameranodepos[0] > 0)
 		curspeed = nodes[cameranodepos[0]].Velocity.length();
 
 	bool tc_active=false;
