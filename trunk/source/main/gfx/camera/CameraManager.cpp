@@ -170,29 +170,6 @@ void CameraManager::update(float dt)
 	SoundScriptManager::getSingleton().setCamera(mCamera->getPosition(), mCamera->getDirection(), mCamera->getUp(), cameraSpeed);
 #endif // USE_OPENAL
 
-	////////////////////////////
-	// Work in progress (WIP) //
-	////////////////////////////
-
-	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-
-	// environment map
-	Envmap* envmap = mEfl->getEnvmap();
-	if (envmap && curr_truck)
-	{
-		envmap->update(curr_truck->getPosition(), curr_truck);
-	}
-
-	// water
-	Water* water = mEfl->getWater();
-	if (water)
-	{
-		if (curr_truck)
-			water->moveTo(mCamera, water->getHeightWaves(curr_truck->getPosition()));
-		else
-			water->moveTo(mCamera, water->getHeight());
-	}
-
 #if 0
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 

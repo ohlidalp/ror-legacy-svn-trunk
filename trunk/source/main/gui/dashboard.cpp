@@ -18,113 +18,48 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "dashboard.h"
-#include "TruckHUD.h"
+
 #include "Console.h"
 #include "ResourceBuffer.h"
+#include "TruckHUD.h"
 
-SceneManager* mScene;
-Overlay* dashOverlay;
-Overlay* needlesOverlay;
-Overlay* blendOverlay;
-Overlay* truckHUDOverlay;
+using namespace Ogre;
 
-class DashboardListener : public RenderTargetListener
+class DashboardListener;
+
+Dashboard::Dashboard(SceneManager *mSceneMgr) :
+	  mScene(mSceneMgr)
+	, rttTex(0)
 {
-private:
-	bool fpsDisplayed;
-	bool truckHUD;
-	bool consolevisible;
-	bool truckhHUDvisible;
-	Ogre::Overlay *fpsOverlay;
-public:
-	DashboardListener() : RenderTargetListener(), fpsOverlay(0)
-	{
-	}
+	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 
-	void preRenderTargetUpdate(const RenderTargetEvent& evt)
-	{
-		// Hide everything
-		mScene->setFindVisibleObjects(false);
+	mDashCam = mSceneMgr->createCamera("DashCam");
+	mDashCam->setNearClipDistance(1.0);
+	mDashCam->setFarClipDistance(10.0);
+	mDashCam->setPosition(Vector3(0.0, -10000.0, 0.0));
 
-		// hide fps stats
-		if(fpsOverlay)
-		{
-			fpsDisplayed = fpsOverlay->isVisible();
-			if(fpsDisplayed)
-				fpsOverlay->hide();
-		} else
-			// this must be here and not in the constructor, as upon construction time the overlaymanager is not working, somehow
-			fpsOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
+	mDashCam->setAspectRatio(2.0);
 
-		// hide truck HUD
-		truckhHUDvisible = truckHUDOverlay->isVisible();
-		if(truckhHUDvisible)
-			truckHUDOverlay->hide();
+	Viewport *v = rttTex->addViewport(mDashCam);
+	v->setClearEveryFrame(true);
+	v->setBackgroundColour(ColourValue::Black);
+	//v->setOverlaysEnabled(false);
 
-		//show overlay
-		dashOverlay->show();
-		needlesOverlay->show();
-		blendOverlay->show();
-	}
-	void postRenderTargetUpdate(const RenderTargetEvent& evt)
-	{
-		// Show everything
-		mScene->setFindVisibleObjects(true);
+	MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
+	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("dashtexture");
 
-		//show everything again, if it was displayed before hiding it...
-		if(fpsOverlay && fpsDisplayed)
-			fpsOverlay->show();
+	mDashboardListener = new DashboardListener(mSceneMgr);
 
-		if(truckHUDOverlay && truckhHUDvisible)
-			truckHUDOverlay->show();
+	rttTex->addListener(mDashboardListener);
 
-		//hide overlay
-		dashOverlay->hide();
-		needlesOverlay->hide();
-		blendOverlay->hide();
-	}
-
-};
-
-DashboardListener mDashboardListener;
-
-Dashboard::Dashboard(SceneManager *mSceneMgr, RenderWindow *mWindow)
-	{
-		mScene=mSceneMgr;
-		rttTex=0;
-
-		TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
-		rttTex = rttTexPtr->getBuffer()->getRenderTarget();
-		{
-			mDashCam = mSceneMgr->createCamera("DashCam");
-			mDashCam->setNearClipDistance(1.0);
-			mDashCam->setFarClipDistance(10.0);
-			mDashCam->setPosition(Vector3(0.0, -10000.0, 0.0));
-
-			mDashCam->setAspectRatio(2.0);
-
-			Viewport *v = rttTex->addViewport( mDashCam );
-			v->setClearEveryFrame( true );
-			v->setBackgroundColour( ColourValue::Black );
-
-			MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
-			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("dashtexture");
-
-			//v->setOverlaysEnabled(false);
-
-			rttTex->addListener(&mDashboardListener);
-
-		}
-		dashOverlay = OverlayManager::getSingleton().getByName("tracks/3D_DashboardOverlay");
-		needlesOverlay = OverlayManager::getSingleton().getByName("tracks/3D_NeedlesOverlay");
-		blendOverlay = OverlayManager::getSingleton().getByName("tracks/3D_BlendOverlay");
-		truckHUDOverlay = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
-
-//		dbdebugOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
-//		dbeditorOverlay = OverlayManager::getSingleton().getByName("tracks/EditorOverlay");
-
-	}
-
+	mDashboardListener->dashOverlay     = OverlayManager::getSingleton().getByName("tracks/3D_DashboardOverlay");
+	mDashboardListener->needlesOverlay  = OverlayManager::getSingleton().getByName("tracks/3D_NeedlesOverlay");
+	mDashboardListener->blendOverlay    = OverlayManager::getSingleton().getByName("tracks/3D_BlendOverlay");
+	mDashboardListener->truckHUDOverlay = OverlayManager::getSingleton().getByName("tracks/TruckInfoBox");
+//	mDashboardListener->dbdebugOverlay  = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
+//	mDashboardListener->dbeditorOverlay = OverlayManager::getSingleton().getByName("tracks/EditorOverlay");
+}
 
 void Dashboard::setEnable(bool en)
 {
@@ -133,5 +68,69 @@ void Dashboard::setEnable(bool en)
 
 void Dashboard::prepareShutdown()
 {
-	if (rttTex) rttTex->removeListener(&mDashboardListener);
+	if (rttTex) rttTex->removeListener(mDashboardListener);
+}
+
+DashboardListener::DashboardListener(Ogre::SceneManager *mSceneMgr) : 
+	  consolevisible(false)
+	, fpsDisplayed(false)
+	, fpsOverlay(0)
+	, mScene(mSceneMgr)
+	, truckHUD(false)
+	, truckhHUDvisible(false)
+{
+}
+
+void DashboardListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
+{
+	// Hide everything
+	mScene->setFindVisibleObjects(false);
+
+	// hide fps stats
+	if (fpsOverlay)
+	{
+		fpsDisplayed = fpsOverlay->isVisible();
+		if (fpsDisplayed)
+		{
+			fpsOverlay->hide();
+		}
+	} else
+	{
+		// this must be here and not in the constructor, as upon construction time the overlaymanager is not working, somehow
+		fpsOverlay = OverlayManager::getSingleton().getByName("Core/DebugOverlay");
+	}
+
+	// hide truck HUD
+	truckhHUDvisible = truckHUDOverlay->isVisible();
+	if (truckhHUDvisible)
+	{
+		truckHUDOverlay->hide();
+	}
+
+	//show overlay
+	dashOverlay->show();
+	needlesOverlay->show();
+	blendOverlay->show();
+}
+
+void DashboardListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
+{
+	// Show everything
+	mScene->setFindVisibleObjects(true);
+
+	//show everything again, if it was displayed before hiding it...
+	if (fpsOverlay && fpsDisplayed)
+	{
+		fpsOverlay->show();
+	}
+
+	if (truckHUDOverlay && truckhHUDvisible)
+	{
+		truckHUDOverlay->show();
+	}
+
+	//hide overlay
+	dashOverlay->hide();
+	needlesOverlay->hide();
+	blendOverlay->hide();
 }

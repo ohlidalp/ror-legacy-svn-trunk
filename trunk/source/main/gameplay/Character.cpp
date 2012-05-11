@@ -291,7 +291,7 @@ void Character::setAnimationMode(Ogre::String mode, float time)
 	}
 }
 
-void Character::update(float dt, bool inputDisabled)
+void Character::update(float dt)
 {
 	if(physicsEnabled && !remote)
 	{

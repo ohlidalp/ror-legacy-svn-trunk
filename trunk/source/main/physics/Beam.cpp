@@ -471,6 +471,7 @@ Beam::~Beam()
 	// TODO: IMPROVE below: delete/destroy prop entities, etc
 
 	deleting = true;
+	state = DELETED;
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);

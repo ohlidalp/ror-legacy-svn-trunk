@@ -23,26 +23,51 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
 
+/////////////////////////////////////////////////////////////////////////////
+// TODO: Rename these classes! Danger of confusion with 'class DashBoard'. //
+/////////////////////////////////////////////////////////////////////////////
 
-using namespace Ogre;
-
-extern SceneManager* mScene;
-
+class DashboardListener;
 
 class Dashboard
 {
-private:
-	Camera *mDashCam;
-	RenderTexture* rttTex;
-
 public:
 
-	Dashboard(SceneManager *mSceneMgr, RenderWindow *mWindow);
-void setEnable(bool en);
-void prepareShutdown();
+	Dashboard(Ogre::SceneManager *mSceneMgr);
 
+	void setEnable(bool en);
+	void prepareShutdown();
+
+private:
+
+	DashboardListener* mDashboardListener;
+	Ogre::Camera *mDashCam;
+	Ogre::RenderTexture* rttTex;
+	Ogre::SceneManager* mScene;
 };
 
+class DashboardListener : public Ogre::RenderTargetListener
+{
+	friend class Dashboard;
+public:
 
+	DashboardListener(Ogre::SceneManager *mSceneMgr);
 
-#endif
+	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+	void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+
+private:
+
+	Ogre::Overlay *fpsOverlay;
+	Ogre::Overlay* blendOverlay;
+	Ogre::Overlay* dashOverlay;
+	Ogre::Overlay* needlesOverlay;
+	Ogre::Overlay* truckHUDOverlay;
+	Ogre::SceneManager* mScene;
+	bool consolevisible;
+	bool fpsDisplayed;
+	bool truckHUD;
+	bool truckhHUDvisible;
+};
+
+#endif // __Dashboard_H__
