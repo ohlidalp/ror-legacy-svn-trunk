@@ -3172,7 +3172,7 @@ void Beam::truckTruckCollisions(Real dt)
 
 	pointCD->update(trucks, numtrucks);
 
-	if (num_active_trucks < 2) return;
+	if (disableTruckTruckSelfCollisions && num_active_trucks < 2) return;
 
 	float inverted_dt = 1.0f / dt;
 	
