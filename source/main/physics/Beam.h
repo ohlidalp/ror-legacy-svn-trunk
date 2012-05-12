@@ -249,6 +249,8 @@ public:
 	Ogre::Vector3 fusedrag;
 	
 	bool disableDrag;
+	bool disableTruckTruckCollisions;
+	bool disableTruckTruckSelfCollisions;
 	int currentcamera;
 	
 	int first_wheel_node;
