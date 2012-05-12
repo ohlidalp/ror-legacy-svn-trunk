@@ -1135,7 +1135,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("88Toyota"), wxT("Clutch force patches"), wxT("http://www.rigsofrods.com/members/24735-88Toyota"), x_row1, y);
 	addAboutEntry(wxT("synthead"), wxT("Minor Linux fixes"), wxT("http://www.rigsofrods.com/members/24570-synthead"), x_row1, y);
 	addAboutEntry(wxT("ulteq"),    wxT("sound engine, lots of fixes"), wxT("http://www.rigsofrods.com/members/52782-ulteq"), x_row1, y);
-	addAboutEntry(wxT("theshark"), wxT("various fixed"), wxT("http://www.rigsofrods.com/members/55599-theshark"), x_row1, y);
+	addAboutEntry(wxT("theshark"), wxT("various fixes"), wxT("http://www.rigsofrods.com/members/55599-theshark"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Core Content Contributors"), x_row1, y);
