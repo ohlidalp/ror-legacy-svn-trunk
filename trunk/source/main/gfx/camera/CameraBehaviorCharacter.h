@@ -27,7 +27,10 @@ class CameraBehaviorCharacter : public CameraBehaviorOrbit
 {
 public:
 
-	void update(cameraContext_t &ctx);
+	void update(CameraManager::cameraContext_t &ctx);
+
+	bool allowInteraction() { return false; }
+	bool switchBehavior() { return true; }
 };
 
 #endif // __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_

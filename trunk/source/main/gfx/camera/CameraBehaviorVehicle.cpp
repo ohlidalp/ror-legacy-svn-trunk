@@ -17,14 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorVehicleOrbit.h"
+#include "CameraBehaviorVehicle.h"
 
 #include "BeamFactory.h"
 #include "Settings.h"
 
 using namespace Ogre;
 
-CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
+CameraBehaviorVehicle::CameraBehaviorVehicle() :
 	  externalCameraMode(false)
 {
 	minCamDist = 8.0f;
@@ -33,7 +33,7 @@ CameraBehaviorVehicleOrbit::CameraBehaviorVehicleOrbit() :
 		externalCameraMode = true;
 }
 
-void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
+void CameraBehaviorVehicle::update(CameraManager::cameraContext_t &ctx)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(!curr_truck) return;
@@ -49,7 +49,7 @@ void CameraBehaviorVehicleOrbit::update(cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
-	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
+	camRatio = 1.0f / (curr_truck->tdt * 5.0f);
 
 	camCenterPosition = curr_truck->getPosition();
 

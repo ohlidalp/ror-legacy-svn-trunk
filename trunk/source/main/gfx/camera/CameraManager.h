@@ -22,16 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "DepthOfFieldEffect.h"
 #include "OIS.h"
-#include "Ogre.h"
 #include "Singleton.h"
-
-#include "CameraBehavior.h"
 
 #define MAIN_CAMERA CameraManager::getSingleton().getCamera()
 #define CAMERA_MODE CameraManager::getSingleton().getCameraMode()
-#define DEFAULT_INTERNAL_CAM_PITCH Ogre::Degree(-15)
+
+class CameraBehavior;
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
@@ -42,11 +39,19 @@ public:
 	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl,  HeightFinder *hf);
 	~CameraManager();
 
+	typedef struct cameraContext_t {
+		float dt;
+		Ogre::Degree rotationScale;
+		float translationScale;
+		Ogre::Camera *cam;
+		Ogre::SceneManager *scm;
+	} cameraContext_t;
+
 	enum CameraBehaviors
 	{
 		CAMERA_CHARACTER=0
-	  , CAMERA_VEHICLE_INTERNAL
-	  , CAMERA_VEHICLE_ORBIT
+	  , CAMERA_VEHICLE_CINECAM
+	  , CAMERA_VEHICLE
 	  , CAMERA_VEHICLE_SPLINE
 	  , CAMERA_END
 	  , CAMERA_FREE
@@ -60,12 +65,13 @@ public:
 	bool allowInteraction();
 
 	Ogre::Camera *getCamera() { return mCamera; };
-	int getCameraMode() { return mCamera->getPolygonMode(); };
+	int getCameraMode() { return currentBehaviorID; };
 	inline DOFManager *getDOFManager() { return mDOF; }
+
+	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 
 protected:
 
-	cameraContext_t ctx;
 	DOFManager *mDOF;
 	HeightFinder *mHfinder;
 	Ogre::Camera *mCamera;
@@ -73,6 +79,7 @@ protected:
 	Ogre::SceneManager *mSceneMgr;
 	Ogre::Vector3 mLastPosition;
 	RoRFrameListener *mEfl;
+	cameraContext_t ctx;
 	float mMoveScale, mRotScale;
 	float mMoveSpeed, mRotateSpeed;
 	

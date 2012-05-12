@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorCharacter::update(cameraContext_t &ctx)
+void CameraBehaviorCharacter::update(CameraManager::cameraContext_t &ctx)
 {
 	Character *person = RoRFrameListener::eflsingleton->person;
 

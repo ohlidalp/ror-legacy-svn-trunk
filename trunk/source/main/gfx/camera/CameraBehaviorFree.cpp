@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CameraManager.h"
 #include "Console.h"
+#include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
 #include "Settings.h"
 #include "language.h"
@@ -28,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorFree::activate(cameraContext_t &ctx)
+void CameraBehaviorFree::activate(CameraManager::cameraContext_t &ctx)
 {
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
 	if ( dof )
@@ -47,7 +48,7 @@ void CameraBehaviorFree::activate(cameraContext_t &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
+void CameraBehaviorFree::deactivate(CameraManager::cameraContext_t &ctx)
 {
 	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
 	if ( dof )
@@ -64,7 +65,7 @@ void CameraBehaviorFree::deactivate(cameraContext_t &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::update(cameraContext_t &ctx)
+void CameraBehaviorFree::update(CameraManager::cameraContext_t &ctx)
 {
 	Vector3 mTranslateVector = Vector3::ZERO;
 	Degree mRotX(0.0f);

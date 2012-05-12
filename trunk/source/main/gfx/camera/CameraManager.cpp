@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "Console.h"
+#include "DepthOfFieldEffect.h"
 #include "envmap.h"
 #include "heightfinder.h"
 #include "InputEngine.h"
@@ -38,9 +39,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorFree.h"
 #include "CameraBehaviorOrbit.h"
 #include "CameraBehaviorVehicleCineCam.h"
-#include "CameraBehaviorVehicleOrbit.h"
+#include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleSpline.h"
-#include "OverlayWrapper.h"
 
 using namespace Ogre;
 
@@ -71,7 +71,7 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	ctx.scm = mSceneMgr;
 	
 	switchBehavior(CAMERA_CHARACTER);
-	switchBehavior(CAMERA_VEHICLE_ORBIT);
+	switchBehavior(CAMERA_VEHICLE);
 	//switchBehavior(CAMERA_VEHICLE_SPLINE);
 }
 
@@ -83,8 +83,8 @@ CameraManager::~CameraManager()
 void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_INTERNAL, new CameraBehaviorVehicleCineCam()) );
-	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_ORBIT, new CameraBehaviorVehicleOrbit()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()) );
+	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE, new CameraBehaviorVehicle()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()) );
 	globalBehaviors.insert( std::pair<int, CameraBehavior*>(CAMERA_FIXED, new CameraBehaviorFixed()) );
@@ -98,13 +98,13 @@ void CameraManager::switchToNextBehavior()
 
 void CameraManager::switchBehavior(int newBehavior)
 {
-	if ( globalBehaviors.find(newBehavior) == globalBehaviors.end() )
+	if (globalBehaviors.find(newBehavior) == globalBehaviors.end())
 	{
 		return;
 	}
 
 	// deactivate old
-	if ( currentBehavior )
+	if (currentBehavior)
 	{
 		currentBehavior->deactivate(ctx);
 	}
@@ -124,7 +124,7 @@ void CameraManager::update(float dt)
 	mMoveScale = mMoveSpeed   * dt;
 	mRotScale  = mRotateSpeed * dt;
 
-	if(INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
+	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE))
 	{
 		switchToNextBehavior();
 	}
@@ -136,20 +136,20 @@ void CameraManager::update(float dt)
 	ctx.translationScale = mMoveScale;
 	ctx.rotationScale    = Degree(mRotScale);
 
-	if(!currentBehavior->allowInteraction())
+	if (!currentBehavior->allowInteraction())
 	{
-		if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+		if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 		{
 			ctx.rotationScale *= 3;
 			ctx.translationScale *= 3;
 		}
 
-		if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
+		if (INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
 		{
 			ctx.rotationScale *= 30;
 			ctx.translationScale *= 30;
 		}
-		if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+		if (INPUTENGINE.isKeyDown(OIS::KC_LMENU))
 		{
 			ctx.rotationScale *= 0.05;
 			ctx.translationScale *= 0.05;
@@ -157,7 +157,7 @@ void CameraManager::update(float dt)
 	}
 
 	// update current behavior
-	if(currentBehavior)
+	if (currentBehavior)
 	{
 		currentBehavior->update(ctx);
 	}
@@ -187,10 +187,10 @@ void CameraManager::update(float dt)
 				mCamera->setPosition(collisions->forcecampos);
 				mCamera->lookAt(person->getPosition()+Vector3(0.0,1.0,0.0));
 				float fov = FSETTING("FOV External", 60);
-				if(changeCamMode)
+				if (changeCamMode)
 					mCamera->setFOVy(Degree(fov+20));
 				collisions->forcecam=false;
-				if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
+				if (mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			}
 		}
 		else if (cameramode==CAMERA_FIX)
@@ -200,7 +200,7 @@ void CameraManager::update(float dt)
 			pz=((int)(person->getPosition().z)/100)*100;
 			Real h=hfinder->getHeightAt(px+50.0,pz+50.0);
 			Real random = Math::RangeRandom(0.0f, 1.0f);
-			if(w && random > 0.3f && !w->allowUnderWater())
+			if (w && random > 0.3f && !w->allowUnderWater())
 			{
 				// chance of 30% to get an underwater view?
 				if (w && w->getHeightWaves(Vector3(px+50.0,0,pz+50.0)) > h)
@@ -215,7 +215,7 @@ void CameraManager::update(float dt)
 			Radian fov = Radian(atan2(20.0f,real_camDist));
 			mCamera->setFOVy(fov);
 
-			if(mDOF)
+			if (mDOF)
 			{
 				mDOF->setFocusMode(DOFManager::Manual);
 				mDOF->setFocus(real_camDist);
@@ -226,7 +226,7 @@ void CameraManager::update(float dt)
 		else if (cameramode==CAMERA_VEHICLE_INTERNAL)
 		{
 			float fov = FSETTING("FOV Internal", 75);
-			if(changeCamMode)
+			if (changeCamMode)
 				mCamera->setFOVy(Degree(fov));
 			mCamera->setPosition(person->getPosition()+Vector3(0,1.7,0));
 			Vector3 dir=Vector3(cos(person->getAngle()), 0.0, sin(person->getAngle()));
@@ -239,7 +239,7 @@ void CameraManager::update(float dt)
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 			}
-			if(mDOF)
+			if (mDOF)
 			{
 				mDOF->setFocusMode(DOFManager::Auto);
 				mDOF->setLensFOV(Degree(fov));
@@ -256,11 +256,11 @@ void CameraManager::update(float dt)
 			{
 				mCamera->setPosition(collisions->forcecampos);
 				mCamera->lookAt(curr_truck->getPosition());
-				if(changeCamMode)
+				if (changeCamMode)
 					mCamera->setFOVy(Degree(80));
 				collisions->forcecam=false;
 
-				if(mDOF)
+				if (mDOF)
 				{
 					mDOF->setFocusMode(DOFManager::Auto);
 					mDOF->setLensFOV(Degree(80));
@@ -279,7 +279,7 @@ void CameraManager::update(float dt)
 					newposition=newposition+dir*450.0+Vector3(5.0, 0.0, 5.0);
 					Real h=hfinder->getHeightAt(newposition.x,newposition.z);
 					Real random = Math::RangeRandom(0.0f, 1.0f);
-					if(w && random > 0.3f && !w->allowUnderWater())
+					if (w && random > 0.3f && !w->allowUnderWater())
 					{
 						// chance of 30% to get an underwater view?
 						if (w && w->getHeightWaves(newposition)>h)
@@ -296,7 +296,7 @@ void CameraManager::update(float dt)
 				float real_camDist = (mCamera->getPosition()-curr_truck->getPosition()).length();
 				Radian fov = Radian(atan2(100.0f,real_camDist));
 				mCamera->setFOVy(fov);
-				if(mDOF)
+				if (mDOF)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(real_camDist);
@@ -317,7 +317,7 @@ void CameraManager::update(float dt)
 				float real_camDist = (mCamera->getPosition()-curr_truck->getPosition()).length();
 				Radian fov = Radian(atan2(20.0f,real_camDist));
 				mCamera->setFOVy(fov);
-				if(mDOF)
+				if (mDOF)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(real_camDist);
@@ -331,13 +331,13 @@ void CameraManager::update(float dt)
 
 			float fov = FSETTING("FOV Internal", 75);
 
-			if(changeCamMode)
+			if (changeCamMode)
 				mCamera->setFOVy(Degree(fov));
 
 			if (curr_truck->cinecameranodepos>=0) lastPosition=curr_truck->nodes[curr_truck->cinecameranodepos[currentcamera]].smoothpos;
 			else lastPosition=curr_truck->nodes[curr_truck->cameranodepos[currentcamera]].smoothpos;
 			mCamera->setPosition(lastPosition);
-			if(curr_truck->cablightNode)
+			if (curr_truck->cablightNode)
 				curr_truck->cablightNode->setPosition(lastPosition);
 			//old direction code
 			/*
@@ -400,10 +400,10 @@ void CameraManager::update(float dt)
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 				curr_truck->prepareInside(false);
-				if(ow) ow->showDashboardOverlays(true, curr_truck);
+				if (ow) ow->showDashboardOverlays(true, curr_truck);
 			}
 
-				if(mDOF)
+				if (mDOF)
 				{
 					mDOF->setFocusMode(DOFManager::Manual);
 					mDOF->setFocus(2);
@@ -418,7 +418,7 @@ void CameraManager::update(float dt)
 	// TODO: XXX: fix below
 	for (int i=0; i<free_truck; i++)
 	{
-		if(!trucks[i]) continue;
+		if (!trucks[i]) continue;
 		trucks[i]->setDetailLevel((mCamera->getPosition()-trucks[i]->getPosition()).length()>trucks[i]->fadeDist);
 	}
 	*/
@@ -491,9 +491,9 @@ void CameraManager::updateInput()
 				camRotX=pushcamRotX;
 				camRotY=pushcamRotY;
 				curr_truck->prepareInside(false);
-				if(ow) ow->showDashboardOverlays(true, curr_truck);
+				if (ow) ow->showDashboardOverlays(true, curr_truck);
 				curr_truck->currentcamera=-1;
-				//if(bigMap) bigMap->setVisibility(true);
+				//if (bigMap) bigMap->setVisibility(true);
 				curr_truck->changedCamera();
 			}
 			cameramode++;
@@ -505,11 +505,11 @@ void CameraManager::updateInput()
 				camRotX=0;
 				camRotY=DEFAULT_INTERNAL_CAM_PITCH;
 				curr_truck->prepareInside(true);
-				//if(bigMap) bigMap->setVisibility(false);
+				//if (bigMap) bigMap->setVisibility(false);
 				// airplane dashboard in the plane visible
-				if(ow)
+				if (ow)
 				{
-					if(curr_truck->driveable == AIRPLANE)
+					if (curr_truck->driveable == AIRPLANE)
 						ow->showDashboardOverlays(true, curr_truck);
 					else
 						ow->showDashboardOverlays(false, curr_truck);
@@ -525,14 +525,14 @@ void CameraManager::updateInput()
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
-		if(fov>10)
+		if (fov>10)
 			fov -= 2;
 		mCamera->setFOVy(Degree(fov));
 #ifdef USE_MYGUI
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 #endif // USE_MYGUI
 		// save the settings
-		if (cameramode == CAMERA_VEHICLE_INTERNAL)
+		if (cameramode == CAMERA_VEHICLE_CINECAM)
 			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
 		else if (cameramode == CAMERA_EXT)
 			SETTINGS.setSetting("FOV External", TOSTRING(fov));
@@ -541,14 +541,14 @@ void CameraManager::updateInput()
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
-		if(fov<160)
+		if (fov<160)
 			fov += 2;
 		mCamera->setFOVy(Degree(fov));
 #ifdef USE_MYGUI
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
 #endif // USE_MYGUI
 		// save the settings
-		if (cameramode == CAMERA_VEHICLE_INTERNAL)
+		if (cameramode == CAMERA_VEHICLE_CINECAM)
 			SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
 		else if (cameramode == CAMERA_EXT)
 			SETTINGS.setSetting("FOV External", TOSTRING(fov));
@@ -560,19 +560,19 @@ void CameraManager::updateInput()
 	}
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX))
 	{
-		if(cameramode == CAMERA_FREE)
+		if (cameramode == CAMERA_FREE)
 		{
 			// change to fixed free camera: that is working like fixed cam
 			cameramode = CAMERA_FREE_FIXED;
-			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
+			if (mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to fixed free camera mode");
 #ifdef USE_MYGUI
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("fixed free camera"), "camera_link.png", 3000);
 #endif // USE_MYGUI
-		} else if(cameramode == CAMERA_FREE_FIXED)
+		} else if (cameramode == CAMERA_FREE_FIXED)
 		{
 			cameramode = CAMERA_FREE;
-			if(mDOF) mDOF->setFocusMode(DOFManager::Auto);
+			if (mDOF) mDOF->setFocusMode(DOFManager::Auto);
 			LOG("switching to free camera mode from fixed mode");
 #ifdef USE_MYGUI
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);

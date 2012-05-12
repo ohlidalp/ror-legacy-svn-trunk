@@ -21,15 +21,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CAMERA_BEHAVIOR_H_
 
 #include "RoRPrerequisites.h"
-#include <OIS.h>
 
-typedef struct cameraContext_t {
-	float dt;
-	Ogre::Degree rotationScale;
-	float translationScale;
-	Ogre::Camera *cam;
-	Ogre::SceneManager *scm;
-} cameraContext_t;
+#include "CameraManager.h"
+#include <OIS.h>
 
 class CameraBehavior
 {
@@ -37,16 +31,17 @@ public:
 
 	virtual ~CameraBehavior() {};
 
-	virtual void update(cameraContext_t &ctx) = 0;
+	virtual void update(CameraManager::cameraContext_t &ctx) = 0;
 
 	virtual bool mouseMoved(const OIS::MouseEvent& _arg) = 0;
 	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 	virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
-	virtual void activate(cameraContext_t &ctx) = 0;
-	virtual void deactivate(cameraContext_t &ctx) = 0;
+	virtual void activate(CameraManager::cameraContext_t &ctx) = 0;
+	virtual void deactivate(CameraManager::cameraContext_t &ctx) = 0;
 
 	virtual bool allowInteraction() = 0;
+	virtual bool switchBehavior() = 0;
 
 protected:
 

@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CameraManager.h"
 #include "Console.h"
+#include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
 #include "Settings.h"
 #include "language.h"
@@ -42,7 +43,7 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 {
 }
 
-void CameraBehaviorOrbit::activate(cameraContext_t &ctx)
+void CameraBehaviorOrbit::activate(CameraManager::cameraContext_t &ctx)
 {
 	float fov = FSETTING("FOV External", 60);
 
@@ -59,11 +60,11 @@ void CameraBehaviorOrbit::activate(cameraContext_t &ctx)
 	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
 }
 
-void CameraBehaviorOrbit::deactivate(cameraContext_t &ctx)
+void CameraBehaviorOrbit::deactivate(CameraManager::cameraContext_t &ctx)
 {
 }
 
-void CameraBehaviorOrbit::update(cameraContext_t &ctx)
+void CameraBehaviorOrbit::update(CameraManager::cameraContext_t &ctx)
 {
 	Camera *cam = CameraManager::getSingleton().getCamera();
 
@@ -120,7 +121,7 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
 	{
 		camRotX = 0;
-		camRotY = DEFAULT_INTERNAL_CAM_PITCH;
+		camRotY = CameraManager::DEFAULT_INTERNAL_CAM_PITCH;
 		camDist = 20;
 	}
 
@@ -137,16 +138,6 @@ void CameraBehaviorOrbit::update(cameraContext_t &ctx)
 
 	camIdealPosition = camIdealPosition + camCenterPosition + camTranslation;
 	Vector3 newPosition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
-
-	/*
-	Real h=hfinder->getHeightAt(newposition.x,newposition.z);
-
-	if (w && !w->allowUnderWater() && w->getHeightWaves(newposition) > h)
-		h=w->getHeightWaves(newposition);
-
-	h+=1.0;
-	if (newposition.y<h) newposition.y=h;
-	*/
 
 	cam->setPosition(newPosition);
 	cam->lookAt(camCenterPosition);
