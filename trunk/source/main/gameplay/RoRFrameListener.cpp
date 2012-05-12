@@ -2185,9 +2185,14 @@ bool RoRFrameListener::updateEvents(float dt)
 							{
 								curr_truck->replaypos += INPUTENGINE.getMouseState().X.rel * 0.05f;
 							}
-							if (curr_truck->replaypos > 0) curr_truck->replaypos = 0;
-							if (curr_truck->replaypos < -curr_truck->replaylen) curr_truck->replaypos = -curr_truck->replaylen;
-
+							if (curr_truck->replaypos > 0)
+							{
+								curr_truck->replaypos = 0;
+							}
+							if (curr_truck->replaypos < -curr_truck->replaylen)
+							{
+								curr_truck->replaypos = -curr_truck->replaylen;
+							}
 						}
 					}
 				}
@@ -2198,9 +2203,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_SELECTROAD, 0.5f) && curr_truck->editorId>=0 && !curr_truck->replaymode)
 					{
 						if (road)
-						{
 							road->reset(curr_truck->nodes[curr_truck->editorId].AbsPosition);
-						}
 						else
 							road=new Road(mSceneMgr, curr_truck->nodes[curr_truck->editorId].AbsPosition);
 					}
@@ -2209,119 +2212,114 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEOBJECT) && curr_truck->editorId>=0 && !curr_truck->replaymode)
 					{
 						if (editor)
-						{
 							editor->toggleType();
-						}
 						else
 							editor=new Editor(mSceneMgr, this);
 					}
 
 					//this should not be there
-					if (editor && curr_truck->editorId>=0) editor->setPos(curr_truck->nodes[curr_truck->editorId].AbsPosition);
+					if (editor && curr_truck->editorId>=0)
+					{
+						editor->setPos(curr_truck->nodes[curr_truck->editorId].AbsPosition);
+					}
 
 					if (!curr_truck->replaymode)
-						{
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_LEFT))
-								curr_truck->leftMirrorAngle-=0.001;
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_RIGHT))
-								curr_truck->leftMirrorAngle+=0.001;
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_LEFT))
-								curr_truck->rightMirrorAngle-=0.001;
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_RIGHT))
-								curr_truck->rightMirrorAngle+=0.001;
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATELEFT, 0.1f))
-								{
-									float value = 0.5;
-									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
-									if (road) {road->dturn(+value);}
-									else if (editor) {editor->dturn(+1);}
-								}
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATERIGHT, 0.1f))
-								{
-									float value = 0.5;
-									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
-									if (road) {road->dturn(-value);}
-									else if (editor) {editor->dturn(-1);}
-								}
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHBACKWARD, 0.1f))
-								{
-									float value = 0.5;
-									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-									value = 4;
-									if (road) {road->dpitch(-value);}
-									else if (editor) {editor->dpitch(-1);}
-								}
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHFOREWARD, 0.1f))
-								{
-									float value = 0.5;
-									if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-									value = 4;
-									if (road) {road-> dpitch(value);}
-									else if (editor) {editor->dpitch(1);}
-								}
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEROADTYPE, 0.5f))
-								{
-									if (road)
-										road->toggleType();
-								}
-
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_BUILT, 0.5f))
-								{
-								if (road)
-									{
-										if (!editorfd)
-											{
-												String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
-												editorfd = fopen(editorfn.c_str(), "a");
-												fprintf(editorfd, " ==== new session\n");
-											}
-										road->append();
-										fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, road->curtype);
-										LOG(TOSTRING(road->rpos.x)+", "+
-										TOSTRING(road->rpos.y)+", "+
-										TOSTRING(road->rpos.z)+", "+
-										TOSTRING(road->rrot.x)+", "+
-										TOSTRING(road->rrot.y)+", "+
-										TOSTRING(road->rrot.z)+", "+road->curtype);
-
-										loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
-									}
-
-								if (editor)
-									{
-										if (!editorfd)
-											{
-												String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
-												editorfd = fopen(editorfn.c_str(), "a");
-												fprintf(editorfd, " ==== new session\n");
-											}
-
-										fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", editor->ppos.x, editor->ppos.y, editor->ppos.z, 0.0, editor->pturn, editor->ppitch, editor->curtype);
-										LOG(TOSTRING(editor->ppos.x)+", "+
-										TOSTRING(editor->ppos.y)+", "+
-										TOSTRING(editor->ppos.z)+", "+
-										TOSTRING(0)+", "+
-										TOSTRING(editor->pturn)+", "+
-										TOSTRING(editor->ppitch)+", "+editor->curtype);
-										loadObject(editor->curtype, editor->ppos.x, editor->ppos.y, editor->ppos.z, 0, editor->pturn, editor->ppitch, 0, "generic", false);
-									}
-							}
-						} // end of (!curr_truck->replaymode) block
-
-
-					// replay mode
-					if (curr_truck->replaymode)
 					{
-					}
-					else	// this else part is called when we are NOT in replaymode
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_LEFT))
+							curr_truck->leftMirrorAngle-=0.001;
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_RIGHT))
+							curr_truck->leftMirrorAngle+=0.001;
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_LEFT))
+							curr_truck->rightMirrorAngle-=0.001;
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_RIGHT))
+							curr_truck->rightMirrorAngle+=0.001;
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATELEFT, 0.1f))
+						{
+							float value = 0.5;
+							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
+							if (road) {road->dturn(+value);}
+							else if (editor) {editor->dturn(+1);}
+						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATERIGHT, 0.1f))
+						{
+							float value = 0.5;
+							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
+							if (road) {road->dturn(-value);}
+							else if (editor) {editor->dturn(-1);}
+						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHBACKWARD, 0.1f))
+						{
+							float value = 0.5;
+							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+								value = 4;
+							if (road) {road->dpitch(-value);}
+							else if (editor) {editor->dpitch(-1);}
+						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHFOREWARD, 0.1f))
+						{
+							float value = 0.5;
+							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+							value = 4;
+							if (road) {road-> dpitch(value);}
+							else if (editor) {editor->dpitch(1);}
+						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEROADTYPE, 0.5f))
+						{
+							if (road)
+								road->toggleType();
+						}
+
+						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_BUILT, 0.5f))
+						{
+							if (road)
+							{
+								if (!editorfd)
+								{
+									String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
+									editorfd = fopen(editorfn.c_str(), "a");
+									fprintf(editorfd, " ==== new session\n");
+								}
+								road->append();
+								fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, road->curtype);
+								LOG(TOSTRING(road->rpos.x)+", "+
+									TOSTRING(road->rpos.y)+", "+
+									TOSTRING(road->rpos.z)+", "+
+									TOSTRING(road->rrot.x)+", "+
+									TOSTRING(road->rrot.y)+", "+
+									TOSTRING(road->rrot.z)+", "+road->curtype);
+
+								loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
+							}
+
+							if (editor)
+							{
+								if (!editorfd)
+								{
+									String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
+									editorfd = fopen(editorfn.c_str(), "a");
+									fprintf(editorfd, " ==== new session\n");
+								}
+								fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", editor->ppos.x, editor->ppos.y, editor->ppos.z, 0.0, editor->pturn, editor->ppitch, editor->curtype);
+								LOG(TOSTRING(editor->ppos.x)+", "+
+									TOSTRING(editor->ppos.y)+", "+
+									TOSTRING(editor->ppos.z)+", "+
+									TOSTRING(0)+", "+
+									TOSTRING(editor->pturn)+", "+
+									TOSTRING(editor->ppitch)+", "+editor->curtype);
+								loadObject(editor->curtype, editor->ppos.x, editor->ppos.y, editor->ppos.z, 0, editor->pturn, editor->ppitch, 0, "generic", false);
+							}
+						}
+					} // end of (!curr_truck->replaymode) block
+
+					if (!curr_truck->replaymode)
 					{
 						// steering
 						float tmp_left_digital  = INPUTENGINE.getEventValue(EV_TRUCK_STEER_LEFT,  false, InputEngine::ET_DIGITAL);
@@ -2347,54 +2345,73 @@ bool RoRFrameListener::updateEvents(float dt)
 						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
 						float brake  = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
 
-						if (!arcadeControls)
+						// arcade controls are only working with auto-clutch!
+						if (!arcadeControls || curr_truck->engine->getAutoMode() > BeamEngine::SEMIAUTO)
 						{
 							// classic mode, realistic
-							if (curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+							if (curr_truck->engine)
+							{
+								curr_truck->engine->autoSetAcc(accval);
+							}
 							curr_truck->brake = brake*curr_truck->brakeforce;
 						} else
 						{
 							// start engine
-							if (accval > 0 && curr_truck->engine && !curr_truck->engine->running)
+							if (accval > 0 && curr_truck->engine && curr_truck->engine->contact && !curr_truck->engine->running)
 								curr_truck->engine->start();
 
-							// omg, arcade controls: hey - people wanted it x|
-							if (curr_truck->WheelSpeed >= 0 && curr_truck->engine->getGear() > 0)
+							// arcade controls: hey - people wanted it x|
+							if (curr_truck->engine->getGear() >= 0)
 							{
-								// we drive forward, everything is as its used to be: brake is brake and acc. is acc.
-								if (curr_truck->engine) curr_truck->engine->autoSetAcc(accval);
+								// neutral or drive forward, everything is as its used to be: brake is brake and accel. is accel.
+								if (curr_truck->engine)
+								{
+									curr_truck->engine->autoSetAcc(accval);
+								}
 								curr_truck->brake = brake*curr_truck->brakeforce;
-							} else if (curr_truck->WheelSpeed < 0 && curr_truck->engine->getGear() < 0)
+							} else
 							{
-								// we drive backwards, reverse controls: brake is acc. and acc. is brake.
-								if (curr_truck->engine) curr_truck->engine->autoSetAcc(brake);
+								// reverse gear, reverse controls: brake is accel. and accel. is brake.
+								if (curr_truck->engine)
+								{
+									curr_truck->engine->autoSetAcc(brake);
+								}
 								curr_truck->brake = accval*curr_truck->brakeforce;
 							}
 
-							// when in automatic mode: shift as well
 							// only when the truck really is not moving anymore
-							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f && curr_truck->engine && curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f)
 							{
 								// switching point, does the user want to drive forward from backward or the other way round? change gears?
-								if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() > 0)
+								if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() >= 0)
 								{
 									// we are on the brake, jump to reverse gear
-									curr_truck->engine->autoShiftSet(BeamEngine::REAR);
+									if(curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+									{
+										curr_truck->engine->autoShiftSet(BeamEngine::REAR);
+									} else
+									{
+										curr_truck->engine->setGear(-1);
+									}
 								} else if (brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
 								{
 									// we are on the gas pedal, jump to first gear when we were in rear gear
-									curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
+									if(curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+									{									
+										curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
+									} else
+									{
+										curr_truck->engine->setGear(1);
+									}
 								}
 							}
 						}
-
 #ifdef USE_OPENAL
 						if (curr_truck->brake > curr_truck->brakeforce/6.0)
 							SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_BRAKE);
 						else
 							SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_BRAKE);
 #endif //OPENAL
-
 						//IMI
 						// gear management -- it might should be transferred to a standalone function of Beam or RoRFrameListener
 						if (curr_truck->engine)
@@ -5415,7 +5432,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	// one of the input modes is immediate, so setup what is needed for immediate mouse/key movement
 	if (mTimeUntilNextToggle >= 0)
-		mTimeUntilNextToggle -= evt.timeSinceLastFrame;
+		mTimeUntilNextToggle -= dt;
 
 	// one of the input modes is immediate, so update the movement vector
 	if (loading_state==ALL_LOADED)
