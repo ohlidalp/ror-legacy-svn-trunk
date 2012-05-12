@@ -179,7 +179,8 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	m_pViewport->setBackgroundColour(ColourValue::Black);
 
 	// smooth over two frames
-	m_pRoot->setFrameSmoothingPeriod(2.0f);
+	// this will break the physics engine for some reason:
+	//m_pRoot->setFrameSmoothingPeriod(0.5f);
 
 	// init inputsystem
 
