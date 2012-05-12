@@ -1626,7 +1626,6 @@ void Beam::updateTruckPosition()
 		}
 		position = aposition / free_node;
 	}
-
 }
 
 void Beam::resetAngle(float rot)
@@ -1634,7 +1633,7 @@ void Beam::resetAngle(float rot)
 	// Set origin of rotation to camera node
 	Vector3 origin = nodes[0].AbsPosition;
 	
-	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		nodes[cameranodepos[0]].AbsPosition;
 	}
@@ -1869,7 +1868,7 @@ void Beam::SyncReset()
 
 	Vector3 cur_position = nodes[0].AbsPosition;
 	Vector3 cur_dir = nodes[0].AbsPosition;
-	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		cur_dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 	}
@@ -2153,21 +2152,19 @@ bool Beam::frameStep(Real dt)
 		} else
 		{
 			_waitForSync();
-
-			for (int t=0; t<numtrucks; t++)
-			{
-				if(!trucks[t]) continue;
-				trucks[t]->lastlastposition=trucks[t]->lastposition;
-				trucks[t]->lastposition=trucks[t]->position;
-			}
-
-			// smooth
+			
 			for (int t=0; t<numtrucks; t++)
 			{
 				if (!trucks[t]) continue;
-				if (trucks[t]->reset_requested) trucks[t]->SyncReset();
+
+				if (trucks[t]->reset_requested)
+				{
+					trucks[t]->SyncReset();
+				}
 				if (trucks[t]->state < SLEEPING)
 				{
+					trucks[t]->lastlastposition=trucks[t]->lastposition;
+					trucks[t]->lastposition=trucks[t]->position;
 					trucks[t]->updateTruckPosition();
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
@@ -2758,7 +2755,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	Vector3 cam_roll = nodes[0].RelPosition;
 	Vector3 cam_dir  = nodes[0].RelPosition;
 
-	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		cam_pos  = nodes[cameranodepos[0]].RelPosition;
 		cam_roll = nodes[cameranoderoll[0]].RelPosition;
@@ -5739,7 +5736,7 @@ void Beam::updateDashBoards(float &dt)
 	dash->setFloat(DD_ENGINE_SPEEDO_MPH, speed_mph);
 
 	// roll
-	if (cameranodepos[0] >= 0)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranoderoll[0]].RelPosition;
 		dir.normalise();
@@ -5763,7 +5760,7 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// pitch
-	if (cameranodepos[0] >= 0)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 		dir.normalise();
@@ -5844,7 +5841,7 @@ void Beam::updateDashBoards(float &dt)
 		}
 
 		// water depth display, only if we have a screw prop at least
-		if (cameranodepos[0] >= 0)
+		if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 		{
 			//position
 			Vector3 dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
@@ -5860,7 +5857,7 @@ void Beam::updateDashBoards(float &dt)
 		}
 
 		// water speed
-		if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+		if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 		{
 			Vector3 hdir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 			hdir.normalise();
@@ -6046,7 +6043,7 @@ void Beam::updateDashBoards(float &dt)
 
 Vector3 Beam::getGForces()
 {
-	if (cameranodepos[0] > 0 && cameranodepos[0] < MAX_NODES)
+	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
 		Vector3 acc      = cameranodeacc / cameranodecount;
 		cameranodeacc    = Vector3::ZERO;
