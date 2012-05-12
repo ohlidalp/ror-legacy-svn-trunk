@@ -21,14 +21,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorFixed::activate(cameraContext_t &ctx)
+void CameraBehaviorFixed::activate(CameraManager::cameraContext_t &ctx)
 {
 }
 
-void CameraBehaviorFixed::deactivate(cameraContext_t &ctx)
+void CameraBehaviorFixed::deactivate(CameraManager::cameraContext_t &ctx)
 {
 }
 
-void CameraBehaviorFixed::update(cameraContext_t &ctx)
+void CameraBehaviorFixed::update(CameraManager::cameraContext_t &ctx)
 {
 }

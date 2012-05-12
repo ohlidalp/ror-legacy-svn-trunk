@@ -19,14 +19,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorVehicleSpline.h"
 
-#include <Ogre.h>
+#include "BeamFactory.h"
 #include "CameraManager.h"
 #include "Console.h"
 #include "InputEngine.h"
 #include "language.h"
 #include "Settings.h"
-
-#include "BeamFactory.h"
 
 using namespace Ogre;
 
@@ -38,7 +36,7 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 {
 }
 
-void CameraBehaviorVehicleSpline::activate(cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::activate(CameraManager::cameraContext_t &ctx)
 {
 	CameraBehaviorOrbit::activate(ctx);
 
@@ -69,7 +67,7 @@ void CameraBehaviorVehicleSpline::updateSplineDisplay()
 	myManualObject->end();
 }
 
-void CameraBehaviorVehicleSpline::update(cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::update(CameraManager::cameraContext_t &ctx)
 {
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if(!curr_truck) return;

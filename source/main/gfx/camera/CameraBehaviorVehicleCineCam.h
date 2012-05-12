@@ -21,16 +21,21 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CAMERA_BEHAVIOR_VEHICLE_INTERNAL_H_
 
 #include "RoRPrerequisites.h"
-#include "CameraBehaviorVehicleOrbit.h"
+#include "CameraBehaviorVehicle.h"
 
-class CameraBehaviorVehicleCineCam : public CameraBehaviorVehicleOrbit
+class CameraBehaviorVehicleCineCam : public CameraBehaviorVehicle
 {
 public:
 
-	void activate(cameraContext_t &ctx);
-	void deactivate(cameraContext_t &ctx);
+	void update(CameraManager::cameraContext_t &ctx);
 
-	void update(cameraContext_t &ctx);
+	void activate(CameraManager::cameraContext_t &ctx);
+	void deactivate(CameraManager::cameraContext_t &ctx);
+
+	bool switchBehavior();
+
+protected:
+	int cameraPos;
 };
 
 #endif // __CAMERA_BEHAVIOR_VEHICLE_INTERNAL_H_

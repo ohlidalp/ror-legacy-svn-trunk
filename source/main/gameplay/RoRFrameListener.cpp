@@ -3041,7 +3041,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				if (mapMode==0)
 				{
 					bigMap->setVisibility(true);
-					if (CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
+					if (CAMERA_MODE != CameraManager::CAMERA_VEHICLE_CINECAM)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
@@ -5667,7 +5667,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	}
 	else
 	{
-		if (curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_INTERNAL)
+		if (curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_CINECAM)
 		{
 			if (ow) ow->showDashboardOverlays(true, curr_truck);
 			//if (bigMap) bigMap->setVisibility(true);
