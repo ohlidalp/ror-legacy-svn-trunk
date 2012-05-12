@@ -309,7 +309,7 @@ void SoundScriptManager::clearNonBaseTemplates()
 	{
 		if (it->second && !it->second->base_template)
 		{
-			delete(it->second);
+			//delete(it->second);
 			it->second = 0;
 			counter++;
 
