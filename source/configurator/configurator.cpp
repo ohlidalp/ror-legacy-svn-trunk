@@ -275,10 +275,12 @@ private:
 	wxTextCtrl *presel_map, *presel_truck;
 	wxCheckBox *particles;
 	wxCheckBox *heathaze;
-	wxCheckBox *hydrax;
-	wxCheckBox *rtshader;
+	//wxCheckBox *hydrax;
+	wxCheckBox *collisions;
+	wxCheckBox *selfcollisions;
+	//wxCheckBox *rtshader;
 	wxCheckBox *dismap;
-	wxCheckBox *autodl;
+	//wxCheckBox *autodl;
 	wxCheckBox *posstor;
 	wxCheckBox *extcam;
 	wxCheckBox *arcadeControls;
@@ -1132,6 +1134,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	addAboutEntry(wxT("cptf"),     wxT("Several Linux gcc fixes"), wxString(), x_row1, y);
 	addAboutEntry(wxT("88Toyota"), wxT("Clutch force patches"), wxT("http://www.rigsofrods.com/members/24735-88Toyota"), x_row1, y);
 	addAboutEntry(wxT("synthead"), wxT("Minor Linux fixes"), wxT("http://www.rigsofrods.com/members/24570-synthead"), x_row1, y);
+	addAboutEntry(wxT("ulteq"),    wxT("sound engine, lots of fixes"), wxT("http://www.rigsofrods.com/members/52782-ulteq"), x_row1, y);
+	addAboutEntry(wxT("theshark"), wxT("various fixed"), wxT("http://www.rigsofrods.com/members/55599-theshark"), x_row1, y);
 	y+=20;
 
 	addAboutTitle(_("Core Content Contributors"), x_row1, y);
@@ -1158,7 +1162,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 #endif //USE_OPENAL
 	addAboutEntry(wxT("MyGUI"),         wxT("GUI System"), wxT("http://www.mygui.info"), x_row1, y);
 	addAboutEntry(wxT("CrashRpt"),      wxT("Crash Reporting system"), wxT("http://code.google.com/p/crashrpt/"), x_row1, y);
-	addAboutEntry(wxT("Hydrax"),        wxT("Advanced Water System"), wxT("http://www.ogre3d.org/addonforums/viewforum.php?f=20"), x_row1, y);
+	//addAboutEntry(wxT("Hydrax"),        wxT("Advanced Water System"), wxT("http://www.ogre3d.org/addonforums/viewforum.php?f=20"), x_row1, y);
 	addAboutEntry(wxT("mofilereader"),  wxT("Used for Internationalization"), wxT("http://code.google.com/p/mofilereader/"), x_row1, y);
 	addAboutEntry(wxT("OIS"),           wxT("Used as Input System"), wxT("http://sourceforge.net/projects/wgois/"), x_row1, y);
 	addAboutEntry(wxT("pagedGeometry"), wxT("Used for foliage (grass, trees, etc)"), wxT("http://code.google.com/p/ogre-paged/"), x_row1, y);
@@ -1533,6 +1537,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	posstor = new wxCheckBox(advancedPanel, -1, _("Enable Position Storage"), wxPoint(x_row1, y));
 	posstor->SetToolTip(_("Can be used to quick save and load positions of trucks"));
 	y+=15;
+	/*
 	autodl = new wxCheckBox(advancedPanel, -1, _("Enable Auto-Downloader"), wxPoint(x_row1, y));
 	autodl->SetToolTip(_("This enables the automatic downloading of missing mods when using Multiplayer"));
 	autodl->Disable();
@@ -1545,8 +1550,17 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	rtshader->SetToolTip(_("Enables the Runtime Shader generation System. EXPERIMENTAL"));
 	rtshader->Disable();
 	y+=15;
+	*/
 	dismap=new wxCheckBox(advancedPanel, -1, _("Disable Overview Map"), wxPoint(x_row1, y));
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
+	y+=15;
+
+	collisions=new wxCheckBox(advancedPanel, -1, _("Disable Collisions"), wxPoint(x_row1, y));
+	collisions->SetToolTip(_(""));
+	y+=15;
+
+	selfcollisions=new wxCheckBox(advancedPanel, -1, _("Disable Self Collisions"), wxPoint(x_row1, y));
+	selfcollisions->SetToolTip(_(""));
 	y+=15;
 
 	// controls settings panel
@@ -2086,10 +2100,12 @@ void MyDialog::SetDefaults()
 	dcm->SetValue(false);
 	//wxCheckBox *dust;
 	heathaze->SetValue(false);
-	hydrax->SetValue(false);
-	rtshader->SetValue(false);
+	//hydrax->SetValue(false);
+	//rtshader->SetValue(false);
+	collisions->SetValue(false);
+	selfcollisions->SetValue(false);
 	dismap->SetValue(false);
-	autodl->SetValue(false);
+	//autodl->SetValue(false);
 	posstor->SetValue(false);
 	extcam->SetValue(false);
 	arcadeControls->SetValue(false);
@@ -2159,7 +2175,9 @@ void MyDialog::getSettingsControls()
 	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
 	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
 	settings["HeatHaze"] = "No"; //(heathaze->GetValue()) ? "Yes" : "No";
-	settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
+	settings["DisableCollisions"] = (collisions->GetValue()) ? "Yes" : "No";
+	settings["DisableSelfCollisions"] = (selfcollisions->GetValue()) ? "Yes" : "No";
+	//settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	//settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
 	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
 	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
@@ -2291,7 +2309,9 @@ void MyDialog::updateSettingsControls()
 
 	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
 	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
-	st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
+	st = settings["DisableCollisions"]; if (st.length()>0) collisions->SetValue(st=="Yes");
+	st = settings["DisableSelfCollisions"]; if (st.length()>0) selfcollisions->SetValue(st=="Yes");
+	//st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
 	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
 	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
