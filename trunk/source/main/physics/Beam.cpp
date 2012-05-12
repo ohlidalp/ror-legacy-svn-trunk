@@ -178,6 +178,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	, ttdt(0.1)
 	, watercontact(0)
 	, watercontactold(0)
+	, disableTruckTruckCollisions(false)
+	, disableTruckTruckSelfCollisions(false)
+	, pointCD(0)
 {
 
 	airbrakeval = 0;
@@ -236,6 +239,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	free_texcoord = 0;
 	free_wheel = 0;
 	free_wing = 0;
+
+	disableTruckTruckCollisions = BSETTING("DisableCollisions", false);
+	disableTruckTruckSelfCollisions = BSETTING("DisableSelfCollisions", false);
 
 	heathaze = !disable_smoke && BSETTING("HeatHaze", false);
 	hfinder = mfinder;
@@ -333,8 +339,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	}	
 
 	// you could disable the collision code here:
-	// pointCD = 0;
-	pointCD = new PointColDetector();
+	if(!disableTruckTruckCollisions)
+		pointCD = new PointColDetector();
 	
 	dustp   = DustManager::getSingleton().getDustPool("dust");
 	dripp   = DustManager::getSingleton().getDustPool("dripp");
@@ -3147,19 +3153,11 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 void Beam::truckTruckCollisions(Real dt)
 {
 	if(!pointCD) return;
+
 	BES_START(BES_CORE_Contacters);
 
 	Beam** trucks = BeamFactory::getSingleton().getTrucks();
 	int numtrucks = BeamFactory::getSingleton().getTruckCount();
-
-	////////////////////////////////////////////////////////////////////
-	// Is there any valid reason not to do this kind of optimization? //
-	////////////////////////////////////////////////////////////////////
-	// if (num_trucks < 2) return;
-	//
-	// pointCD->update(trucks, numtrucks);
-	//
-	// if (num_active_trucks < 2) return;
 
 	int num_trucks = 0;
 	int num_active_trucks = 0;
@@ -3170,7 +3168,7 @@ void Beam::truckTruckCollisions(Real dt)
 		if (trucks[t] && trucks[t]->state <  SLEEPING) num_active_trucks++;	
 	}
 
-	if (num_trucks < 2) return;
+	if (disableTruckTruckSelfCollisions && num_trucks < 2) return;
 
 	pointCD->update(trucks, numtrucks);
 
