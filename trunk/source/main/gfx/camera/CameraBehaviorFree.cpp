@@ -19,25 +19,23 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorFree.h"
 
-#include "CameraManager.h"
 #include "Console.h"
 #include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
+#include "Ogre.h"
 #include "Settings.h"
 #include "language.h"
-#include <Ogre.h>
 
 using namespace Ogre;
 
-void CameraBehaviorFree::activate(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorFree::activate(CameraManager::cameraContext &ctx)
 {
-	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if ( dof )
+	if ( ctx.mDOF )
 	{
-		dof->setFocusMode(DOFManager::Auto);
+		ctx.mDOF->setFocusMode(DOFManager::Auto);
 	}
 
-	ctx.cam->setFixedYawAxis(true, Vector3::UNIT_Y);
+	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
 
 	LOG("entering free camera mode");
 
@@ -48,12 +46,11 @@ void CameraBehaviorFree::activate(CameraManager::cameraContext_t &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::deactivate(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorFree::deactivate(CameraManager::cameraContext &ctx)
 {
-	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if ( dof )
+	if ( ctx.mDOF)
 	{
-		dof->setFocusMode(DOFManager::Manual);
+		ctx.mDOF->setFocusMode(DOFManager::Manual);
 	}
 
 	LOG("exiting free camera mode");
@@ -65,49 +62,49 @@ void CameraBehaviorFree::deactivate(CameraManager::cameraContext_t &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::update(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorFree::update(CameraManager::cameraContext &ctx)
 {
 	Vector3 mTranslateVector = Vector3::ZERO;
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT))
-		mTranslateVector.x -= ctx.translationScale;	// Move camera left
+		mTranslateVector.x -= ctx.mTransScale;	// Move camera left
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT))
-		mTranslateVector.x += ctx.translationScale;	// Move camera RIGHT
+		mTranslateVector.x += ctx.mTransScale;	// Move camera RIGHT
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD))
-		mTranslateVector.z -= ctx.translationScale;	// Move camera forward
+		mTranslateVector.z -= ctx.mTransScale;	// Move camera forward
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS))
-		mTranslateVector.z += ctx.translationScale;	// Move camera backward
+		mTranslateVector.z += ctx.mTransScale;	// Move camera backward
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP))
-		mRotY += ctx.rotationScale;
+		mRotY += ctx.mRotScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN))
-		mRotY -= ctx.rotationScale;
+		mRotY -= ctx.mRotScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP))
-		mTranslateVector.y += ctx.translationScale;	// Move camera up
+		mTranslateVector.y += ctx.mTransScale;	// Move camera up
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN))
-		mTranslateVector.y -= ctx.translationScale;	// Move camera down
+		mTranslateVector.y -= ctx.mTransScale;	// Move camera down
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT))
-		mRotX -= ctx.rotationScale;
+		mRotX -= ctx.mRotScale;
 
 	if(INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT))
-		mRotX += ctx.rotationScale;
+		mRotX += ctx.mRotScale;
 
-	ctx.cam->yaw(mRotX);
-	ctx.cam->pitch(mRotY);
+	ctx.mCamera->yaw(mRotX);
+	ctx.mCamera->pitch(mRotY);
 
-	ctx.cam->setFixedYawAxis(false);
+	ctx.mCamera->setFixedYawAxis(false);
 
-	Vector3 trans = ctx.cam->getOrientation() * mTranslateVector;
-	ctx.cam->setPosition(ctx.cam->getPosition() + trans);
+	Vector3 trans = ctx.mCamera->getOrientation() * mTranslateVector;
+	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + trans);
 }
 
 bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)

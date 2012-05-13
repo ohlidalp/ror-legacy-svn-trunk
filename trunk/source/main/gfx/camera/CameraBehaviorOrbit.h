@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CAMERA_BEHAVIOR_ORBIT_H_
 
 #include "RoRPrerequisites.h"
+
 #include "CameraBehavior.h"
 
 class CameraBehaviorOrbit : public CameraBehavior
@@ -29,14 +30,16 @@ public:
 
 	CameraBehaviorOrbit();
 
-	void update(CameraManager::cameraContext_t &ctx);
+	void update(CameraManager::cameraContext &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
-	void activate(CameraManager::cameraContext_t &ctx);
-	void deactivate(CameraManager::cameraContext_t &ctx);
+	void activate(CameraManager::cameraContext &ctx);
+	void deactivate(CameraManager::cameraContext &ctx);
+
+	bool allowInteraction() { return false; };
 
 protected:
 

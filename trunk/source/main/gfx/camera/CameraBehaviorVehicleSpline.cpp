@@ -19,11 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorVehicleSpline.h"
 
-#include "BeamFactory.h"
-#include "CameraManager.h"
+#include "Beam.h"
 #include "Console.h"
 #include "InputEngine.h"
 #include "language.h"
+#include "Ogre.h"
 #include "Settings.h"
 
 using namespace Ogre;
@@ -36,18 +36,20 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 {
 }
 
-void CameraBehaviorVehicleSpline::activate(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::activate(CameraManager::cameraContext &ctx)
 {
 	CameraBehaviorOrbit::activate(ctx);
 
-	if(!myManualObject)
+	if ( !myManualObject )
 	{
-		myManualObject =  ctx.scm->createManualObject();
-		myManualObjectNode = ctx.scm->getRootSceneNode()->createChildSceneNode();
+		myManualObject =  ctx.mSceneMgr->createManualObject();
+		myManualObjectNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
 
 		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
-		for(int i=0; i < splineDrawResolution; i++)
+		for (int i = 0; i < splineDrawResolution; i++)
+		{
 			myManualObject->position(0, 0, 0);
+		}
 		myManualObject->end();
 
 		myManualObjectNode->attachObject(myManualObject);
@@ -57,33 +59,29 @@ void CameraBehaviorVehicleSpline::activate(CameraManager::cameraContext_t &ctx)
 void CameraBehaviorVehicleSpline::updateSplineDisplay()
 {
 	myManualObject->beginUpdate(0);
-	for(int i = 0; i < splineDrawResolution; i++)
+	for (int i = 0; i < splineDrawResolution; i++)
 	{
-		float pos1d = i/(float)splineDrawResolution;
+		float pos1d = i / (float)splineDrawResolution;
 		Vector3 pos3d = spline->interpolate(pos1d);
 		myManualObject->position(pos3d);
-
 	}
 	myManualObject->end();
 }
 
-void CameraBehaviorVehicleSpline::update(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::update(CameraManager::cameraContext &ctx)
 {
-	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(!curr_truck) return;
-
-	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
+	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 	targetPitch = 0;
-	camRatio = 1.0f / (curr_truck->tdt * 4.0f);
+	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
 
-	if(curr_truck->free_camerarail > 0)
+	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
 		spline->clear();
-		for(int i = 0; i < curr_truck->free_camerarail; i++)
+		for (int i = 0; i < ctx.mCurrTruck->free_camerarail; i++)
 		{
-			spline->addPoint(curr_truck->nodes[ curr_truck->cameraRail[i] ].AbsPosition);
+			spline->addPoint(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]].AbsPosition);
 		}
 
 		updateSplineDisplay();
@@ -92,29 +90,25 @@ void CameraBehaviorVehicleSpline::update(CameraManager::cameraContext_t &ctx)
 	} else
 	{
 		// fallback :-/
-		camCenterPosition = curr_truck->getPosition();
+		camCenterPosition = ctx.mCurrTruck->getPosition();
 	}
-
-	CameraBehaviorOrbit::update(ctx);
 }
 
 bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
-	Camera *cam = CameraManager::getSingleton().getCamera();
 
-	if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right))
+	if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right) )
 	{
 		splinePos += (float)ms.X.rel * 0.001f;
-		if(splinePos < 0) splinePos = 0;
-		if(splinePos > 1) splinePos = 1;
+		if (splinePos < 0) splinePos = 0;
+		if (splinePos > 1) splinePos = 1;
 		return true;
-	}
-	else if(ms.buttonDown(OIS::MB_Right))
+	} else if ( ms.buttonDown(OIS::MB_Right) )
 	{
 		camRotX += Degree( (float)ms.X.rel * 0.13f);
 		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-		camDist += -(float)ms.Z.rel * 0.02f;
+		camDist +=        -(float)ms.Z.rel * 0.02f;
 		return true;
 	}
 	return false;

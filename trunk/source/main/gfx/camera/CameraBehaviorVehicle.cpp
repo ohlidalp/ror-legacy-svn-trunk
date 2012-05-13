@@ -19,13 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorVehicle.h"
 
-#include "BeamFactory.h"
+#include "Beam.h"
 #include "Settings.h"
 
 using namespace Ogre;
 
 CameraBehaviorVehicle::CameraBehaviorVehicle() :
-	  externalCameraMode(false)
+	externalCameraMode(false)
 {
 	minCamDist = 8.0f;
 
@@ -33,12 +33,9 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 		externalCameraMode = true;
 }
 
-void CameraBehaviorVehicle::update(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicle::update(CameraManager::cameraContext &ctx)
 {
-	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(!curr_truck) return;
-
-	Vector3 dir = curr_truck->nodes[curr_truck->cameranodepos[0]].smoothpos - curr_truck->nodes[curr_truck->cameranodedir[0]].smoothpos;
+	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();
 
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
@@ -49,9 +46,7 @@ void CameraBehaviorVehicle::update(CameraManager::cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
-	camRatio = 1.0f / (curr_truck->tdt * 5.0f);
+	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 5.0f);
 
-	camCenterPosition = curr_truck->getPosition();
-
-	CameraBehaviorOrbit::update(ctx);
+	camCenterPosition = ctx.mCurrTruck->getPosition();
 }
