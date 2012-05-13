@@ -23,12 +23,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorCharacter::update(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorCharacter::update(CameraManager::cameraContext &ctx)
 {
-	Character *person = RoRFrameListener::eflsingleton->person;
+	Character *person = ctx.mEfl->person;
 
-	targetDirection = -person->getAngle() - Math::HALF_PI;
-	camCenterPosition  =  person->getPosition() + Vector3(0.0f, 1.1f, 0.0f);
-
-	CameraBehaviorOrbit::update(ctx);
+	targetDirection   = -person->getAngle() - Math::HALF_PI;
+	camCenterPosition =  person->getPosition() + Vector3(0.0f, 1.1f, 0.0f);
 }

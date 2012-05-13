@@ -25,9 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OIS.h"
 #include "Singleton.h"
 
-#define MAIN_CAMERA CameraManager::getSingleton().getCamera()
-#define CAMERA_MODE CameraManager::getSingleton().getCameraMode()
-
 class CameraBehavior;
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
@@ -39,56 +36,54 @@ public:
 	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl,  HeightFinder *hf);
 	~CameraManager();
 
-	typedef struct cameraContext_t {
-		float dt;
-		Ogre::Degree rotationScale;
-		float translationScale;
-		Ogre::Camera *cam;
-		Ogre::SceneManager *scm;
+	typedef struct cameraContext {
+		Beam *mCurrTruck;
+		DOFManager *mDOF;
+		HeightFinder *mHfinder;
+		Ogre::Camera *mCamera;
+		Ogre::Degree mRotScale;
+		Ogre::SceneManager *mSceneMgr;
+		Ogre::Vector3 mLastPosition;
+		RoRFrameListener *mEfl;
+		float mDt;
+		float mTransScale;
 	} cameraContext_t;
 
-	enum CameraBehaviors
-	{
+	enum CameraBehaviors {
 		CAMERA_CHARACTER=0
-	  , CAMERA_VEHICLE_CINECAM
 	  , CAMERA_VEHICLE
+	  , CAMERA_VEHICLE_FIXED
 	  , CAMERA_VEHICLE_SPLINE
+	  , CAMERA_VEHICLE_CINECAM
 	  , CAMERA_END
 	  , CAMERA_FREE
-	  , CAMERA_FIXED
 	};
 	
-	void switchBehavior(int newBehavior);
-	void switchToNextBehavior();
 	void update(float dt);
 
-	bool allowInteraction();
-
-	Ogre::Camera *getCamera() { return mCamera; };
+	Ogre::Camera *getCamera() { return ctx.mCamera; };
 	int getCameraMode() { return currentBehaviorID; };
-	inline DOFManager *getDOFManager() { return mDOF; }
+
+	bool allowInteraction();
 
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 
 protected:
 
-	DOFManager *mDOF;
-	HeightFinder *mHfinder;
-	Ogre::Camera *mCamera;
-	Ogre::Radian pushcamRotX, pushcamRotY;
-	Ogre::SceneManager *mSceneMgr;
-	Ogre::Vector3 mLastPosition;
-	RoRFrameListener *mEfl;
 	cameraContext_t ctx;
-	float mMoveScale, mRotScale;
-	float mMoveSpeed, mRotateSpeed;
 	
+	float mTransScale, mTransSpeed;
+	float mRotScale, mRotateSpeed;
+
 	int currentBehaviorID;
 	CameraBehavior *currentBehavior;
 
 	std::map <int , CameraBehavior *> globalBehaviors;
 
 	void createGlobalBehaviors();
+
+	void switchBehavior(int newBehavior);
+	void switchToNextBehavior();
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);

@@ -5563,7 +5563,7 @@ int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, 
 
 void Beam::updateAI(float dt)
 {
-	if(driveable != TRUCK || CAMERA_MODE != CameraManager::CAMERA_FREE)
+	if(driveable != TRUCK || CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_FREE)
 		return;
 
 	// start engine if not running

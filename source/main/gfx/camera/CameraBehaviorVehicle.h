@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
 
 #include "RoRPrerequisites.h"
+
 #include "CameraBehaviorOrbit.h"
 
 class CameraBehaviorVehicle : public CameraBehaviorOrbit
@@ -29,10 +30,9 @@ public:
 
 	CameraBehaviorVehicle();
 
-	void update(CameraManager::cameraContext_t &ctx);
+	void update(CameraManager::cameraContext &ctx);
 
-	bool allowInteraction() { return false; }
-	bool switchBehavior() { return true; }
+	bool switchBehavior(CameraManager::cameraContext &ctx) { return true; };
 
 protected:
 

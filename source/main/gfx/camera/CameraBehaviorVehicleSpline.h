@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_
 
 #include "RoRPrerequisites.h"
+
 #include "CameraBehaviorVehicle.h"
 
 class CameraBehaviorVehicleSpline : public CameraBehaviorVehicle
@@ -29,8 +30,8 @@ public:
 
 	CameraBehaviorVehicleSpline();
 
-	void activate(CameraManager::cameraContext_t &ctx);
-	void update(CameraManager::cameraContext_t &ctx);
+	void activate(CameraManager::cameraContext &ctx);
+	void update(CameraManager::cameraContext &ctx);
 
 	void updateSplineDisplay();
 

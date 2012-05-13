@@ -1995,7 +1995,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerName", SSETTING("Server name", ""));
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
-			as->addData("Camera_Mode", TOSTRING(CAMERA_MODE));
+			as->addData("Camera_Mode", TOSTRING(CameraManager::getSingleton().getCameraMode()));
 			as->addData("Camera_Position", TOSTRING(mCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
@@ -2115,7 +2115,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED)
 	{
-		if (CAMERA_MODE != CameraManager::CAMERA_FREE)
+		if (CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_FREE)
 		{
 			if (!curr_truck)
 			{
@@ -3041,7 +3041,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				if (mapMode==0)
 				{
 					bigMap->setVisibility(true);
-					if (CAMERA_MODE != CameraManager::CAMERA_VEHICLE_CINECAM)
+					if (CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_VEHICLE_CINECAM)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
@@ -5119,7 +5119,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
 {
-	if (CAMERA_MODE == CameraManager::CAMERA_FREE) return;
+	if (CameraManager::getSingleton().getCameraMode() == CameraManager::CAMERA_FREE) return;
 
 	// hide any old dashes
 	if (previousTruck && previousTruck->dash)
@@ -5667,7 +5667,7 @@ void RoRFrameListener::hideGUI(bool visible)
 	}
 	else
 	{
-		if (curr_truck && CAMERA_MODE != CameraManager::CAMERA_VEHICLE_CINECAM)
+		if (curr_truck && CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_VEHICLE_CINECAM)
 		{
 			if (ow) ow->showDashboardOverlays(true, curr_truck);
 			//if (bigMap) bigMap->setVisibility(true);

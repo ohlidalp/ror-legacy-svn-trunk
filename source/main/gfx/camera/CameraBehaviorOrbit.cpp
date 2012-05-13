@@ -19,13 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorOrbit.h"
 
-#include "CameraManager.h"
-#include "Console.h"
 #include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
+#include "Ogre.h"
 #include "Settings.h"
-#include "language.h"
-#include <Ogre.h>
 
 using namespace Ogre;
 
@@ -43,31 +40,25 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 {
 }
 
-void CameraBehaviorOrbit::activate(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::activate(CameraManager::cameraContext &ctx)
 {
 	float fov = FSETTING("FOV External", 60);
 
-	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if ( dof )
+	if ( ctx.mDOF )
 	{
-		dof->setFocusMode(DOFManager::Manual);
-		dof->setLensFOV(Degree(fov));
+		ctx.mDOF->setFocusMode(DOFManager::Manual);
+		ctx.mDOF->setLensFOV(Degree(fov));
 	}
-
-	Camera *cam = CameraManager::getSingleton().getCamera();
-	cam->setFOVy(Degree(fov));
 
 	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
 }
 
-void CameraBehaviorOrbit::deactivate(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::deactivate(CameraManager::cameraContext &ctx)
 {
 }
 
-void CameraBehaviorOrbit::update(CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::update(CameraManager::cameraContext &ctx)
 {
-	Camera *cam = CameraManager::getSingleton().getCamera();
-
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 	{
 		if(camRotX > Degree(0))
@@ -78,45 +69,45 @@ void CameraBehaviorOrbit::update(CameraManager::cameraContext_t &ctx)
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT))
 	{
 		// Move camera left
-		camRotX -= ctx.rotationScale;
+		camRotX -= ctx.mRotScale;
 	}
 
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_RIGHT))
 	{
 		// Move camera right
-		camRotX += ctx.rotationScale;
+		camRotX += ctx.mRotScale;
 	}
 	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_UP)) && camRotY<Degree(88))
 	{
 		// Move camera up
-		camRotY += ctx.rotationScale;
+		camRotY += ctx.mRotScale;
 	}
 
 	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_DOWN)) && camRotY>Degree(-80))
 	{
 		// Move camera down
-		camRotY -= ctx.rotationScale;
+		camRotY -= ctx.mRotScale;
 	}
 
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN) && camDist>1)
 	{
 		// Move camera near
-		camDist -= ctx.translationScale;
+		camDist -= ctx.mTransScale;
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN_FAST) && camDist>1)
 	{
 		// Move camera near
-		camDist -= ctx.translationScale * 10;
+		camDist -= ctx.mTransScale * 10;
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT))
 	{
 		// Move camera far
-		camDist += ctx.translationScale;
+		camDist += ctx.mTransScale;
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT_FAST))
 	{
 		// Move camera far
-		camDist += ctx.translationScale * 10;
+		camDist += ctx.mTransScale * 10;
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
 	{
@@ -137,29 +128,26 @@ void CameraBehaviorOrbit::update(CameraManager::cameraContext_t &ctx)
 	float real_camdist = camIdealPosition.length();
 
 	camIdealPosition = camIdealPosition + camCenterPosition + camTranslation;
-	Vector3 newPosition = ( camIdealPosition + camRatio * cam->getPosition() ) / (camRatio+1.0f);
+	Vector3 newPosition = ( camIdealPosition + camRatio * ctx.mCamera->getPosition() ) / (camRatio+1.0f);
 
-	cam->setPosition(newPosition);
-	cam->lookAt(camCenterPosition);
+	ctx.mCamera->setPosition(newPosition);
+	ctx.mCamera->lookAt(camCenterPosition);
 
-	DOFManager *dof = CameraManager::getSingleton().getDOFManager();
-	if(dof)
+	if ( ctx.mDOF )
 	{
-		dof->setFocusMode(DOFManager::Manual);
-		dof->setFocus(real_camdist);
+		ctx.mDOF->setFocusMode(DOFManager::Manual);
+		ctx.mDOF->setLensFOV(Degree(real_camdist));
 	}
 }
 
 bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
-	Camera *cam = CameraManager::getSingleton().getCamera();
-
 	if(ms.buttonDown(OIS::MB_Right))
 	{
 		camRotX += Degree( (float)ms.X.rel * 0.13f);
 		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-		camDist += -(float)ms.Z.rel * 0.02f;
+		camDist +=        -(float)ms.Z.rel * 0.02f;
 		return true;
 	}
 	return false;

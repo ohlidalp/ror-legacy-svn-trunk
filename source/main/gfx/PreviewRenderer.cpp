@@ -114,7 +114,7 @@ void PreviewRenderer::render()
 
 	SceneNode *camNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
 
-	Camera *cam = MAIN_CAMERA; //RoRFrameListener::eflsingleton->getCamera();
+	Camera *cam = CameraManager::getSingleton().getCamera(); //RoRFrameListener::eflsingleton->getCamera();
 	cam->setLodBias(1000.0f);
 	cam->setAspectRatio(1.0f);
 

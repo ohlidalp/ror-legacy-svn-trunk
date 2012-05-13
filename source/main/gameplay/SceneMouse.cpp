@@ -215,7 +215,7 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	Camera *cam = MAIN_CAMERA;//CameraManager::getSingleton()->getCamera();
+	Camera *cam = CameraManager::getSingleton().getCamera();
 	Viewport *vp = cam->getViewport();
 	return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
 }
