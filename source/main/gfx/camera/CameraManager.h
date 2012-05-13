@@ -38,7 +38,6 @@ public:
 
 	typedef struct cameraContext {
 		Beam *mCurrTruck;
-		DOFManager *mDOF;
 		HeightFinder *mHfinder;
 		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;
@@ -50,15 +49,15 @@ public:
 	} cameraContext_t;
 
 	enum CameraBehaviors {
-		CAMERA_CHARACTER=0
-	  , CAMERA_VEHICLE
-	  , CAMERA_VEHICLE_FIXED
-	  , CAMERA_VEHICLE_SPLINE
-	  , CAMERA_VEHICLE_CINECAM
-	  , CAMERA_END
-	  , CAMERA_FREE
+		CAMERA_BEHAVIOR_CHARACTER=0,
+		CAMERA_BEHAVIOR_VEHICLE,
+		CAMERA_BEHAVIOR_VEHICLE_FIXED,
+		CAMERA_BEHAVIOR_VEHICLE_SPLINE,
+		CAMERA_BEHAVIOR_VEHICLE_CINECAM,
+		CAMERA_BEHAVIOR_END,
+		CAMERA_BEHAVIOR_FREE
 	};
-	
+
 	void update(float dt);
 
 	Ogre::Camera *getCamera() { return ctx.mCamera; };

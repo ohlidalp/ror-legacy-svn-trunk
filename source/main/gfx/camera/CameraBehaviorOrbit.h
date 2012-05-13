@@ -28,8 +28,6 @@ class CameraBehaviorOrbit : public ICameraBehavior
 {
 public:
 
-	CameraBehaviorOrbit();
-
 	void update(const CameraManager::cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
@@ -43,9 +41,11 @@ public:
 
 protected:
 
+	CameraBehaviorOrbit();
+
 	Ogre::Radian camRotX, camRotY;
 	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
-	float camDist, minCamDist, camRatio;
+	float camDist, minCamDist, maxCamDist, camRatio;
 	float targetDirection, targetPitch;
 };
 

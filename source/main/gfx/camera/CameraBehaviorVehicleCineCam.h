@@ -27,11 +27,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class CameraBehaviorVehicleCineCam : public CameraBehaviorVehicle
 {
 public:
+
+	CameraBehaviorVehicleCineCam();
 	
 	void update(const CameraManager::cameraContext_t &ctx);
-
-	void activate(const CameraManager::cameraContext_t &ctx);
-	void deactivate(const CameraManager::cameraContext_t &ctx);
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
 };

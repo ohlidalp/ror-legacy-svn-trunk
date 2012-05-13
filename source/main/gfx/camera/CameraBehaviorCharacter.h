@@ -28,7 +28,20 @@ class CameraBehaviorCharacter : public CameraBehaviorOrbit
 {
 public:
 
+	CameraBehaviorCharacter();
+
 	void update(const CameraManager::cameraContext_t &ctx);
+
+	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
+
+protected:
+
+	enum CameraModes {
+		FIRST_PERSON=0,
+		THIRD_PERSON=1
+	};
+
+	bool camMode;
 };
 
 #endif // __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_
