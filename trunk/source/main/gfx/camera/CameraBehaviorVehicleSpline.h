@@ -40,7 +40,7 @@ public:
 protected:
 
 	Ogre::ManualObject *myManualObject;
-	Ogre::SceneNode* myManualObjectNode;
+	Ogre::SceneNode* mySceneNode;
 	Ogre::SimpleSpline *spline;
 	float splinePos;
 	static const int splineDrawResolution = 20;

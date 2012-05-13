@@ -30,7 +30,7 @@ using namespace Ogre;
 
 CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 	  myManualObject(0)
-	, myManualObjectNode(0)
+	, mySceneNode(0)
 	, spline(new SimpleSpline())
 	, splinePos(0.5f)
 {
@@ -43,7 +43,7 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 	if ( !myManualObject )
 	{
 		myManualObject =  ctx.mSceneMgr->createManualObject();
-		myManualObjectNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		mySceneNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
 
 		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
 		for (int i = 0; i < splineDrawResolution; i++)
@@ -52,7 +52,7 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 		}
 		myManualObject->end();
 
-		myManualObjectNode->attachObject(myManualObject);
+		mySceneNode->attachObject(myManualObject);
 	}
 }
 

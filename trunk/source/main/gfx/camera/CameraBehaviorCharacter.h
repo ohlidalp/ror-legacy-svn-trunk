@@ -37,11 +37,12 @@ public:
 protected:
 
 	enum CameraModes {
-		FIRST_PERSON=0,
-		THIRD_PERSON=1
+		CHARACTER_FIRST_PERSON=0,
+		CHARACTER_THIRD_PERSON,
+		CHARACTER_END
 	};
 
-	bool camMode;
+	int camMode;
 };
 
 #endif // __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_

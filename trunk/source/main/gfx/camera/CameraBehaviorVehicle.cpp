@@ -25,7 +25,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicle::CameraBehaviorVehicle() :
-	  camPitching(true)
+	  CameraBehaviorOrbit()
+	, camPitching(true)
 {
 	camRotY = 0.6f;
 	minCamDist = 8.0f;
@@ -48,7 +49,7 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
-	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 5.0f);
+	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
 
 	camCenterPosition = ctx.mCurrTruck->getPosition();
 

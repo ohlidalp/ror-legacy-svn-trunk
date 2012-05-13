@@ -17,11 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorFixed.h"
+#include "CameraBehaviorVehicleStatic.h"
 
 using namespace Ogre;
 
-void CameraBehaviorFixed::update(const CameraManager::cameraContext_t &ctx)
+CameraBehaviorVehicleStatic::CameraBehaviorVehicleStatic()
+{
+	// TODO
+}
+
+void CameraBehaviorVehicleStatic::update(const CameraManager::cameraContext_t &ctx)
 {
 	// TODO
 }

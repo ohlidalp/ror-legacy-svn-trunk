@@ -32,8 +32,6 @@ void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 {
 	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
 
-	LOG("entering free camera mode");
-
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);
 
 #ifdef USE_MYGUI
@@ -43,7 +41,7 @@ void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
 {
-	LOG("exiting free camera mode");
+	ctx.mCamera->setFixedYawAxis(false);
 
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);
 
@@ -90,8 +88,6 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 
 	ctx.mCamera->yaw(mRotX);
 	ctx.mCamera->pitch(mRotY);
-
-	ctx.mCamera->setFixedYawAxis(false);
 
 	Vector3 trans = ctx.mCamera->getOrientation() * mTranslateVector;
 	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + trans);
