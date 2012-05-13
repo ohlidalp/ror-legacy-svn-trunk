@@ -43,7 +43,6 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 
 void CameraBehaviorOrbit::activate(const CameraManager::cameraContext_t &ctx)
 {
-	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
 }
 
 void CameraBehaviorOrbit::deactivate(const CameraManager::cameraContext_t &ctx)

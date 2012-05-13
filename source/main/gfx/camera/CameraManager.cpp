@@ -35,12 +35,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "water.h"
 
 #include "CameraBehaviorCharacter.h"
-#include "CameraBehaviorFixed.h"
 #include "CameraBehaviorFree.h"
 #include "CameraBehaviorOrbit.h"
-#include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicle.h"
+#include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleSpline.h"
+#include "CameraBehaviorVehicleStatic.h"
 
 #include "ICameraBehavior.h"
 
@@ -82,7 +82,7 @@ void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_FIXED, new CameraBehaviorFixed()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_STATIC, new CameraBehaviorVehicleStatic()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
@@ -134,19 +134,16 @@ void CameraManager::update(float dt)
 	{
 		switchToNextBehavior();
 	}
-#ifdef MYGUI
-	if (SceneMouse::getSingleton().isMouseGrabbed()) return; // freeze camera
-#endif //MYGUI
 
 	ctx.mCurrTruck  = BeamFactory::getSingleton().getCurrentTruck();
 	ctx.mDt         = dt;
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
-	if ( !ctx.mCurrTruck && currentBehaviorID != CAMERA_BEHAVIOR_CHARACTER )
+	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior))
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
-	} else if (ctx.mCurrTruck && currentBehaviorID == CAMERA_BEHAVIOR_CHARACTER)
+	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
 	}
