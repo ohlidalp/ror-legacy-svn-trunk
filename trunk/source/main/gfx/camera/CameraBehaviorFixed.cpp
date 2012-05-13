@@ -23,4 +23,5 @@ using namespace Ogre;
 
 void CameraBehaviorFixed::update(const CameraManager::cameraContext_t &ctx)
 {
+	// TODO
 }

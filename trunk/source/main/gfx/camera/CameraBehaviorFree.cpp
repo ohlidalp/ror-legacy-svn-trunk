@@ -30,11 +30,6 @@ using namespace Ogre;
 
 void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 {
-	if ( ctx.mDOF )
-	{
-		ctx.mDOF->setFocusMode(DOFManager::Auto);
-	}
-
 	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
 
 	LOG("entering free camera mode");
@@ -48,11 +43,6 @@ void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
 {
-	if ( ctx.mDOF)
-	{
-		ctx.mDOF->setFocusMode(DOFManager::Manual);
-	}
-
 	LOG("exiting free camera mode");
 
 	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);

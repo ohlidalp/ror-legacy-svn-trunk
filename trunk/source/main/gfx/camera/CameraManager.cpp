@@ -59,18 +59,13 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	createGlobalBehaviors();
 
 	ctx.mCamera = cam;
+	ctx.mCurrTruck = 0;
 	ctx.mEfl = efl;
 	ctx.mHfinder = hf;
 	ctx.mLastPosition = Vector3::ZERO;
 	ctx.mSceneMgr = scm;
-	
-	if ( BSETTING("DOF", false) )
-	{
-		ctx.mDOF = new DOFManager(scm, cam->getViewport(), Root::getSingletonPtr(), cam);
-		ctx.mDOF->setEnabled(true);
-	}
 
-	//switchBehavior(CAMERA_CHARACTER);
+	switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 }
 
 CameraManager::~CameraManager()
@@ -85,27 +80,31 @@ CameraManager::~CameraManager()
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE, new CameraBehaviorVehicle()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_FIXED, new CameraBehaviorFixed()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_FIXED, new CameraBehaviorFixed()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
 }
 
 void CameraManager::switchToNextBehavior()
 {
 	if ( !currentBehavior || currentBehavior->switchBehavior(ctx) )
 	{
-		int i = (currentBehaviorID + 1) % CAMERA_END;
+		int i = (currentBehaviorID + 1) % CAMERA_BEHAVIOR_END;
 		switchBehavior(i);
 	}
 }
 
-void CameraManager::switchBehavior(int newBehavior)
+void CameraManager::switchBehavior(int newBehaviorID)
 {
-	if ( globalBehaviors.find(newBehavior) == globalBehaviors.end() )
+	if (newBehaviorID == currentBehaviorID)
+	{
+		return;
+	}
+
+	if ( globalBehaviors.find(newBehaviorID) == globalBehaviors.end() )
 	{
 		return;
 	}
@@ -117,8 +116,8 @@ void CameraManager::switchBehavior(int newBehavior)
 	}
 
 	// set new
-	currentBehavior = globalBehaviors[newBehavior];
-	currentBehaviorID = newBehavior;
+	currentBehavior = globalBehaviors[newBehaviorID];
+	currentBehaviorID = newBehaviorID;
 
 	// activate new
 	currentBehavior->activate(ctx);
@@ -144,6 +143,14 @@ void CameraManager::update(float dt)
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
+	if ( !ctx.mCurrTruck && currentBehaviorID != CAMERA_BEHAVIOR_CHARACTER )
+	{
+		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
+	} else if (ctx.mCurrTruck && currentBehaviorID == CAMERA_BEHAVIOR_CHARACTER)
+	{
+		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
+	}
+
 	if ( currentBehavior )
 	{
 		currentBehavior->update(ctx);
@@ -160,15 +167,18 @@ void CameraManager::update(float dt)
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mouseMoved(_arg);
 }
 
 bool CameraManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mousePressed(_arg, _id);
 }
 
 bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
+	if ( !currentBehavior ) return false;
 	return currentBehavior->mouseReleased(_arg, _id);
 }

@@ -35,7 +35,7 @@ public:
 
 	void updateSplineDisplay();
 
-	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx);
 
 protected:
 

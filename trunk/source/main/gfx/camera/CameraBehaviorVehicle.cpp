@@ -25,12 +25,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicle::CameraBehaviorVehicle() :
-	externalCameraMode(false)
+	  camPitching(true)
 {
+	camRotY = 0.6f;
 	minCamDist = 8.0f;
+	maxCamDist = 20.0f;
 
-	if (SSETTING("External Camera Mode", "Pitching") == "Static")
-		externalCameraMode = true;
+	if ( SSETTING("External Camera Mode", "Pitching") == "Static" )
+		camPitching = false;
 }
 
 void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
@@ -41,7 +43,7 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 	targetPitch     = 0.0f;
 
-	if(!externalCameraMode)
+	if ( camPitching )
 	{
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
@@ -49,4 +51,6 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 5.0f);
 
 	camCenterPosition = ctx.mCurrTruck->getPosition();
+
+	CameraBehaviorOrbit::update(ctx);
 }

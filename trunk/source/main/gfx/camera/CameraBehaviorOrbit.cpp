@@ -28,9 +28,10 @@ using namespace Ogre;
 
 CameraBehaviorOrbit::CameraBehaviorOrbit() :
 	  camRotX(0.0f)
-	, camRotY(0.6f)
+	, camRotY(0.3f)
 	, camDist(5.0f)
 	, minCamDist(3.0f)
+	, maxCamDist(6.0f)
 	, camRatio(11.0f)
 	, camIdealPosition(Vector3::ZERO)
 	, camCenterPosition(Vector3::ZERO)
@@ -42,17 +43,7 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 
 void CameraBehaviorOrbit::activate(const CameraManager::cameraContext_t &ctx)
 {
-#if 0
-	float fov = FSETTING("FOV External", 60);
-
-	if ( ctx.mDOF )
-	{
-		ctx.mDOF->setFocusMode(DOFManager::Manual);
-		ctx.mDOF->setLensFOV(Degree(fov));
-	}
-
 	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
-#endif
 }
 
 void CameraBehaviorOrbit::deactivate(const CameraManager::cameraContext_t &ctx)
@@ -118,9 +109,9 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 		camDist = 20;
 	}
 
-	// set minimum distance
-	camDist = std::max(camDist, minCamDist);
-	
+	camDist = std::max(minCamDist, camDist);
+	camDist = std::min(camDist, maxCamDist);
+
 	camIdealPosition = camDist * 0.5f * Vector3( \
 			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
 			, sin(targetPitch     + camRotY.valueRadians()) \
@@ -134,18 +125,12 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 
 	ctx.mCamera->setPosition(newPosition);
 	ctx.mCamera->lookAt(camCenterPosition);
-
-	if ( ctx.mDOF )
-	{
-		ctx.mDOF->setFocusMode(DOFManager::Manual);
-		ctx.mDOF->setLensFOV(Degree(real_camdist));
-	}
 }
 
 bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
-	if(ms.buttonDown(OIS::MB_Right))
+	if ( ms.buttonDown(OIS::MB_Right) )
 	{
 		camRotX += Degree( (float)ms.X.rel * 0.13f);
 		camRotY += Degree(-(float)ms.Y.rel * 0.13f);

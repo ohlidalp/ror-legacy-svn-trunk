@@ -92,9 +92,11 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 		// fallback :-/
 		camCenterPosition = ctx.mCurrTruck->getPosition();
 	}
+
+	CameraBehaviorOrbit::update(ctx);
 }
 
-bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg)
+bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx)
 {
 	const OIS::MouseState ms = _arg.state;
 
