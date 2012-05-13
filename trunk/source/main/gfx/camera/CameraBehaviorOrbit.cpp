@@ -40,8 +40,9 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 {
 }
 
-void CameraBehaviorOrbit::activate(CameraManager::cameraContext &ctx)
+void CameraBehaviorOrbit::activate(const CameraManager::cameraContext_t &ctx)
 {
+#if 0
 	float fov = FSETTING("FOV External", 60);
 
 	if ( ctx.mDOF )
@@ -51,13 +52,14 @@ void CameraBehaviorOrbit::activate(CameraManager::cameraContext &ctx)
 	}
 
 	camCenterPosition = Vector3(0.0f, 3.0f, 0.0f);
+#endif
 }
 
-void CameraBehaviorOrbit::deactivate(CameraManager::cameraContext &ctx)
+void CameraBehaviorOrbit::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 }
 
-void CameraBehaviorOrbit::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 {
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 	{

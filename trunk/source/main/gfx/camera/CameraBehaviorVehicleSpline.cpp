@@ -36,7 +36,7 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 {
 }
 
-void CameraBehaviorVehicleSpline::activate(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
 {
 	CameraBehaviorOrbit::activate(ctx);
 
@@ -68,7 +68,7 @@ void CameraBehaviorVehicleSpline::updateSplineDisplay()
 	myManualObject->end();
 }
 
-void CameraBehaviorVehicleSpline::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();

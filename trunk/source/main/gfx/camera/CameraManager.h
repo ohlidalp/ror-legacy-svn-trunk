@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OIS.h"
 #include "Singleton.h"
 
-class CameraBehavior;
+class ICameraBehavior;
 
 class CameraManager : public RoRSingletonNoCreation < CameraManager >
 {
@@ -64,21 +64,19 @@ public:
 	Ogre::Camera *getCamera() { return ctx.mCamera; };
 	int getCameraMode() { return currentBehaviorID; };
 
-	bool allowInteraction();
-
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 
 protected:
-
-	cameraContext_t ctx;
 	
+	cameraContext_t ctx;
+
 	float mTransScale, mTransSpeed;
 	float mRotScale, mRotateSpeed;
 
 	int currentBehaviorID;
-	CameraBehavior *currentBehavior;
+	ICameraBehavior *currentBehavior;
 
-	std::map <int , CameraBehavior *> globalBehaviors;
+	std::map <int , ICameraBehavior *> globalBehaviors;
 
 	void createGlobalBehaviors();
 

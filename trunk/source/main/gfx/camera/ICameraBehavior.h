@@ -17,32 +17,30 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_H_
-#define __CAMERA_BEHAVIOR_H_
+#ifndef __I_CAMERA_BEHAVIOR_H_
+#define __I_CAMERA_BEHAVIOR_H_
 
 #include "RoRPrerequisites.h"
 
 #include "CameraManager.h"
 #include <OIS.h>
 
-class CameraBehavior
+class ICameraBehavior
 {
 public:
 
-	virtual ~CameraBehavior() {};
+	virtual ~ICameraBehavior() {}
 
-	virtual void update(CameraManager::cameraContext &ctx) = 0;
+	virtual void update(const CameraManager::cameraContext_t &ctx) = 0;
 
 	virtual bool mouseMoved(const OIS::MouseEvent& _arg) = 0;
 	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 	virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
-	virtual void activate(CameraManager::cameraContext &ctx) = 0;
-	virtual void deactivate(CameraManager::cameraContext &ctx) = 0;
+	virtual void activate(const CameraManager::cameraContext_t &ctx) = 0;
+	virtual void deactivate(const CameraManager::cameraContext_t &ctx) = 0;
 
-	virtual bool switchBehavior(CameraManager::cameraContext &ctx) = 0;
-
-	virtual bool allowInteraction() = 0;
+	virtual bool switchBehavior(const CameraManager::cameraContext_t &ctx) = 0;
 };
 
-#endif // __CAMERA_BEHAVIOR_H_
+#endif // __I_CAMERA_BEHAVIOR_H_

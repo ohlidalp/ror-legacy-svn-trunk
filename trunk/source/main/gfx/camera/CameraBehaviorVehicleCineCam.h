@@ -28,12 +28,12 @@ class CameraBehaviorVehicleCineCam : public CameraBehaviorVehicle
 {
 public:
 	
-	void update(CameraManager::cameraContext &ctx);
+	void update(const CameraManager::cameraContext_t &ctx);
 
-	void activate(CameraManager::cameraContext &ctx);
-	void deactivate(CameraManager::cameraContext &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx);
+	void deactivate(const CameraManager::cameraContext_t &ctx);
 
-	bool switchBehavior(CameraManager::cameraContext &ctx);
+	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
 };
 
 #endif // __CAMERA_BEHAVIOR_VEHICLE_INTERNAL_H_

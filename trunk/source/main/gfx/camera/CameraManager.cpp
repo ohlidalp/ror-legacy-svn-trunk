@@ -42,6 +42,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleSpline.h"
 
+#include "ICameraBehavior.h"
+
 using namespace Ogre;
 
 CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf) : 
@@ -53,42 +55,48 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	, mRotateSpeed(100.0f)
 {
 	setSingleton(this);
-	
+
+	createGlobalBehaviors();
+
 	ctx.mCamera = cam;
 	ctx.mEfl = efl;
 	ctx.mHfinder = hf;
 	ctx.mLastPosition = Vector3::ZERO;
 	ctx.mSceneMgr = scm;
-
+	
 	if ( BSETTING("DOF", false) )
 	{
 		ctx.mDOF = new DOFManager(scm, cam->getViewport(), Root::getSingletonPtr(), cam);
 		ctx.mDOF->setEnabled(true);
 	}
 
-	createGlobalBehaviors();
-
-	switchBehavior(CAMERA_CHARACTER);
+	//switchBehavior(CAMERA_CHARACTER);
 }
 
 CameraManager::~CameraManager()
 {
+	for (std::map <int , ICameraBehavior *>::iterator it = globalBehaviors.begin(); it != globalBehaviors.end(); ++it)
+	{
+		delete it->second;
+	}
 
+	globalBehaviors.clear();
 }
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()));
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_VEHICLE, new CameraBehaviorVehicle()));
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_FIXED, new CameraBehaviorFixed()));
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
-	globalBehaviors.insert(std::pair<int, CameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_CHARACTER, new CameraBehaviorCharacter()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE, new CameraBehaviorVehicle()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_FIXED, new CameraBehaviorFixed()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_FREE, new CameraBehaviorFree()));
 }
 
 void CameraManager::switchToNextBehavior()
 {
-	if ( currentBehavior->switchBehavior(ctx) )
+	if ( !currentBehavior || currentBehavior->switchBehavior(ctx) )
 	{
 		int i = (currentBehaviorID + 1) % CAMERA_END;
 		switchBehavior(i);
@@ -103,7 +111,10 @@ void CameraManager::switchBehavior(int newBehavior)
 	}
 
 	// deactivate old
-	currentBehavior->deactivate(ctx);
+	if ( currentBehavior )
+	{
+		currentBehavior->deactivate(ctx);
+	}
 
 	// set new
 	currentBehavior = globalBehaviors[newBehavior];
@@ -133,27 +144,10 @@ void CameraManager::update(float dt)
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
-	if ( !currentBehavior->allowInteraction() )
+	if ( currentBehavior )
 	{
-		if ( INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT) )
-		{
-			ctx.mRotScale *= 3;
-			ctx.mTransScale *= 3;
-		}
-
-		if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) )
-		{
-			ctx.mRotScale *= 30;
-			ctx.mTransScale *= 30;
-		}
-		if ( INPUTENGINE.isKeyDown(OIS::KC_LMENU) )
-		{
-			ctx.mRotScale *= 0.05;
-			ctx.mTransScale *= 0.05;
-		}
+		currentBehavior->update(ctx);
 	}
-
-	currentBehavior->update(ctx);
 
 #ifdef USE_OPENAL
 	// update audio listener position
@@ -177,9 +171,4 @@ bool CameraManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID
 bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
 	return currentBehavior->mouseReleased(_arg, _id);
-}
-
-bool CameraManager::allowInteraction()
-{
-	return currentBehavior->allowInteraction();
 }

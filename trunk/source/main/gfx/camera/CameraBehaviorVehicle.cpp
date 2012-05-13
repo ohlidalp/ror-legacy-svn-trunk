@@ -33,7 +33,7 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 		externalCameraMode = true;
 }
 
-void CameraBehaviorVehicle::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();

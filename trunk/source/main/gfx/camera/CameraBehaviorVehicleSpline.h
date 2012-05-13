@@ -30,8 +30,8 @@ public:
 
 	CameraBehaviorVehicleSpline();
 
-	void activate(CameraManager::cameraContext &ctx);
-	void update(CameraManager::cameraContext &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx);
+	void update(const CameraManager::cameraContext_t &ctx);
 
 	void updateSplineDisplay();
 

@@ -28,9 +28,7 @@ class CameraBehaviorCharacter : public CameraBehaviorOrbit
 {
 public:
 
-	void update(CameraManager::cameraContext &ctx);
-
-	bool switchBehavior(CameraManager::cameraContext &ctx) { return true; };
+	void update(const CameraManager::cameraContext_t &ctx);
 };
 
 #endif // __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_

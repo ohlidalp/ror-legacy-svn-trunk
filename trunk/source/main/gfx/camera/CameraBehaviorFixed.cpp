@@ -21,6 +21,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorFixed::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorFixed::update(const CameraManager::cameraContext_t &ctx)
 {
 }
