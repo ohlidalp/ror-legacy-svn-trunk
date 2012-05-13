@@ -28,7 +28,7 @@ class CameraBehaviorFixed : public CameraBehaviorFree
 {
 public:
 
-	void update(CameraManager::cameraContext &ctx);
+	void update(const CameraManager::cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg) { return false; };
 };

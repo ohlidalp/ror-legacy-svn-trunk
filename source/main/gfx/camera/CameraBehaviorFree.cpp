@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorFree::activate(CameraManager::cameraContext &ctx)
+void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 {
 	if ( ctx.mDOF )
 	{
@@ -46,7 +46,7 @@ void CameraBehaviorFree::activate(CameraManager::cameraContext &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::deactivate(CameraManager::cameraContext &ctx)
+void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 	if ( ctx.mDOF)
 	{
@@ -62,7 +62,7 @@ void CameraBehaviorFree::deactivate(CameraManager::cameraContext &ctx)
 #endif // USE_MYGUI
 }
 
-void CameraBehaviorFree::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 mTranslateVector = Vector3::ZERO;
 	Degree mRotX(0.0f);

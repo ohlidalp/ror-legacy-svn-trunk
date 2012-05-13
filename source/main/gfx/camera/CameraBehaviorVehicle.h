@@ -30,9 +30,7 @@ public:
 
 	CameraBehaviorVehicle();
 
-	void update(CameraManager::cameraContext &ctx);
-
-	bool switchBehavior(CameraManager::cameraContext &ctx) { return true; };
+	void update(const CameraManager::cameraContext_t &ctx);
 
 protected:
 

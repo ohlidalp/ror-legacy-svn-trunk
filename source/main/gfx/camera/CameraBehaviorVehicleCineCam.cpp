@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorVehicleCineCam::activate(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
 {
 	float fov = FSETTING("FOV Internal", 75);
 
@@ -38,17 +38,17 @@ void CameraBehaviorVehicleCineCam::activate(CameraManager::cameraContext &ctx)
 	ctx.mCamera->setFOVy(Degree(fov));
 }
 
-void CameraBehaviorVehicleCineCam::deactivate(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 
 }
 
-bool CameraBehaviorVehicleCineCam::switchBehavior(CameraManager::cameraContext &ctx)
+bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
 	return true;
 }
 
-void CameraBehaviorVehicleCineCam::update(CameraManager::cameraContext &ctx)
+void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
 {
 
 }

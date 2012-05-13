@@ -22,24 +22,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehavior.h"
+#include "ICameraBehavior.h"
 
-class CameraBehaviorOrbit : public CameraBehavior
+class CameraBehaviorOrbit : public ICameraBehavior
 {
 public:
 
 	CameraBehaviorOrbit();
 
-	void update(CameraManager::cameraContext &ctx);
+	void update(const CameraManager::cameraContext_t &ctx);
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
-	void activate(CameraManager::cameraContext &ctx);
-	void deactivate(CameraManager::cameraContext &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx);
+	void deactivate(const CameraManager::cameraContext_t &ctx);
 
-	bool allowInteraction() { return false; };
+	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
 
 protected:
 
