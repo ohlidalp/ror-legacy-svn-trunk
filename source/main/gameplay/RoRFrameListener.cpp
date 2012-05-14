@@ -2128,8 +2128,8 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (loading_state==ALL_LOADED)
 	{
 		if (CameraManager::singletonExists() &&
-			CameraManager::getSingleton().hasActiveBehavior() &&
-			CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_BEHAVIOR_FREE)
+			(!CameraManager::getSingleton().hasActiveBehavior() ||
+			CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_BEHAVIOR_FREE))
 		{
 			if (!curr_truck)
 			{
@@ -2945,11 +2945,10 @@ bool RoRFrameListener::updateEvents(float dt)
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_SKELETON))
 				{
 					if (curr_truck->skeleton)
-					{
 						curr_truck->hideSkeleton(true);
-					}
 					else
 						curr_truck->showSkeleton(true, true);
+
 					curr_truck->updateVisual();
 				}
 
@@ -2993,11 +2992,6 @@ bool RoRFrameListener::updateEvents(float dt)
 
 			}//end of truck!=-1
 		}
-
-
-		static unsigned char brushNum=0;
-
-
 
 #ifdef USE_CAELUM
 		if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
@@ -5133,11 +5127,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
 {
-	if (!CameraManager::singletonExists() ||
-		!CameraManager::getSingleton().hasActiveBehavior())
-	{
-		return;
-	}
 	// hide any old dashes
 	if (previousTruck && previousTruck->dash)
 		previousTruck->dash->setVisible3d(false);
@@ -5181,7 +5170,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 				previousTruck->dash->setVisible(false);
 
 			// this workaround enables trucks to spawn that have no cinecam. required for cmdline options
-			if (previousTruck->cinecameranodepos[0] != -1)
+			if (previousTruck->cinecameranodepos[0] != -1 && previousTruck->cameranodepos[0] != -1 && previousTruck->cameranoderoll[0] != -1)
 			{
 				// truck has a cinecam
 				position=previousTruck->nodes[previousTruck->cinecameranodepos[0]].AbsPosition;
@@ -5392,8 +5381,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif // USE_MUMBLE
 	}
 
-	if (CameraManager::singletonExists())
+	if (CameraManager::singletonExists() && loading_state == ALL_LOADED)
+	{
 		CameraManager::getSingleton().update(dt);
+	}
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
