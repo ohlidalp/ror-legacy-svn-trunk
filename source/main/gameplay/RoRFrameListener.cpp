@@ -2945,7 +2945,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					curr_truck->toggleCustomParticles();
 				}
 
-
 				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_SHOW_SKELETON))
 				{
 					if (curr_truck->skeleton)
@@ -3037,7 +3036,25 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif // USE_MYGUI
 			}
 		}
-#endif //CAELUM
+#endif // USE_CAELUM
+
+		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f))
+		{
+			static int mSceneDetailIndex;
+			mSceneDetailIndex = (mSceneDetailIndex + 1) % 3;
+			switch (mSceneDetailIndex)
+			{
+			case 0:
+				mCamera->setPolygonMode(Ogre::PM_SOLID);
+				break;
+			case 1:
+				mCamera->setPolygonMode(Ogre::PM_WIREFRAME);
+				break;
+			case 2:
+				mCamera->setPolygonMode(Ogre::PM_POINTS);
+				break;
+			}
+		}
 
 #ifdef USE_MYGUI
 		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
