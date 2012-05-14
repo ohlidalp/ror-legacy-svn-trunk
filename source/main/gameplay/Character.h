@@ -44,9 +44,8 @@ public:
 
 	void setOrientation(Ogre::Quaternion);
 	Ogre::Quaternion getOrientation();
-	Ogre::Vector3 getPosition();
 	void setPosition(Ogre::Vector3 pos);
-	float getAngle();
+	Ogre::Vector3 getPosition();
 	
 	void updateNetLabel();
 	void updateCharacterColour();
@@ -55,9 +54,10 @@ public:
 	int setBeamCoupling(bool enabled, Beam *truck=0);
 	
 	void update(float dt);
-	Ogre::SceneNode *getSceneNode();
+	Ogre::SceneNode *getSceneNode() { return personode; };
 
-	void setAngle(float angle) { persoangle = angle; };
+	float getAngle() { return persoangle; };
+	void setAngle(float angle);
 	void setColour(int number) { this->colourNumber = number; };
 
 	static unsigned int characterCounter;
