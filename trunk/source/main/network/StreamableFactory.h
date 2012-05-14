@@ -20,21 +20,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of August 2009
 
-#ifndef STREAMABLEFACTORY_H__
-#define STREAMABLEFACTORY_H__
+#ifndef __StreamableFactory_H_
+#define __StreamableFactory_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "pthread.h"
+
+#include "NetworkStreamManager.h"
+#include "StreamableFactoryInterface.h"
+
+#include <pthread.h>
+
 #ifdef USE_SOCKETW
 #include "SocketW.h"
 #endif //SOCKETW
-#include "rornet.h"
-#include "NetworkStreamManager.h"
-#include "StreamableFactoryInterface.h"
-#include <map>
-
-#include <Ogre.h>
 
 template<class T, class X> class StreamableFactory : public StreamableFactoryInterface
 {
@@ -363,6 +361,4 @@ private:
 
 };
 
-
-
-#endif //STREAMABLEFACTORY_H__
+#endif // __StreamableFactory_H_

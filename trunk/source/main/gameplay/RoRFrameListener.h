@@ -23,11 +23,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "BeamData.h" // for localizer_t
-#include "Character.h"
-#include "ForceFeedback.h"
+#include "Ogre.h"
+
+#include <pthread.h>
 
 // Forward declarations
+class Character;
 class Envmap;
+class ForceFeedback;
 
 namespace MOC
 {

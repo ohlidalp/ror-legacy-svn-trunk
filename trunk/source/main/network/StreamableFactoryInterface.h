@@ -20,16 +20,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 22th of December 2009
 
-#ifndef STREAMABLEFACTORYINTERFACE_H__
-#define STREAMABLEFACTORYINTERFACE_H__
+#ifndef __StreamableFactoryInterface_H_
+#define __StreamableFactoryInterface_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "pthread.h"
+
 #include "rornet.h"
-#include "Streamable.h"
-#include "NetworkStreamManager.h"
-#include <map>
+
+class Streamable;
 
 typedef struct stream_reg_t
 {
@@ -45,10 +43,10 @@ typedef struct stream_del_t
 	int streamid;
 } stream_del_t;
 
-
 class StreamableFactoryInterface
 {
 public:
+
 	virtual void netUserAttributesChanged(int source, int streamid) = 0;
 	virtual Streamable *createRemoteInstance(stream_reg_t *reg) = 0;
 	virtual void createRemote(int sourceid, int streamid, stream_register_t *reg, int colour) = 0;
@@ -57,6 +55,4 @@ public:
 	virtual void removeInstance(stream_del_t *del) = 0;
 };
 
-
-
-#endif //STREAMABLEFACTORYINTERFACE_H__
+#endif // __StreamableFactoryInterface_H_

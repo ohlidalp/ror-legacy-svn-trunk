@@ -25,6 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "heightfinder.h"
 #include "Landusemap.h"
 #include "language.h"
+#include "MovableText.h"
 #include "RoRFrameListener.h"
 #include "Scripting.h"
 #include "Settings.h"

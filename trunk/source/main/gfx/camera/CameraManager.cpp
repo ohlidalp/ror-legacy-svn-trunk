@@ -59,6 +59,7 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	createGlobalBehaviors();
 
 	ctx.mCamera = cam;
+	ctx.mCharacter = efl->person;
 	ctx.mCurrTruck = 0;
 	ctx.mEfl = efl;
 	ctx.mHfinder = hf;

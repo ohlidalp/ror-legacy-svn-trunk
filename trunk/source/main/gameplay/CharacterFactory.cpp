@@ -21,14 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of August 2009
 
 #include "CharacterFactory.h"
-#include "Streamable.h"
-#include "Character.h"
 
-#include "Ogre.h"
-#include "network.h"
-#include "utils.h"
-#include "sha1.h"
-#include "pthread.h"
+#include "Character.h"
 
 using namespace Ogre;
 

@@ -17,63 +17,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_SOCKETW
+#ifndef __Network_H_
+#define __Network_H_
 
-#ifndef __Network_H__
-#define __Network_H__
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-using namespace Ogre;
 
-#include "SocketW.h"
+#include "BeamData.h"
 #include "rornet.h"
-#include "pthread.h"
-#include "Beam.h"
-#include "BeamEngine.h"
-#include "SoundScriptManager.h"
+#include "SocketW.h"
 
+#include <pthread.h>
 
 class Network
 {
-private:
-	SWInetSocket socket;
-	static unsigned int myuid;
-	int myauthlevel;
-	pthread_t sendthread;
-	pthread_t receivethread;
-	pthread_t downloadthread;
-	static Timer timer;
-	int last_time;
-	int speed_time;
-	int speed_bytes_sent, speed_bytes_sent_tmp, speed_bytes_recv, speed_bytes_recv_tmp;
-	char* send_buffer;
-	int send_buffer_len;
-	oob_t send_oob;
-	pthread_mutex_t dl_data_mutex;
-	pthread_mutex_t send_work_mutex;
-	pthread_cond_t send_work_cv;
-	client_t clients[MAX_PEERS];
-	pthread_mutex_t clients_mutex;
-	Ogre::UTFString mySname;
-	long mySport;
-	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
-	pthread_mutex_t msgsend_mutex;
-	RoRFrameListener *mefl;
-	Ogre::UTFString nickname;
-	int rconauthed;
-	bool shutdown;
-	user_info_t userdata;
-	Ogre::UTFString getUserChatName(client_t *c);
-	void calcSpeed();
-	std::map<int, float> lagDataClients;
-	//std::map<Ogre::String, Ogre::String> downloadingMods;
-	void updatePlayerList();
-	server_info_t server_settings;
-	bool initiated;
 public:
 
-	Network(std::string servername, long sport, RoRFrameListener *efl);
+	Network(Ogre::String servername, long sport, RoRFrameListener *efl);
 	~Network();
 
 	// messaging functions
@@ -85,7 +45,7 @@ public:
 	// methods
 	bool connect();
 	void disconnect();
-	void netFatalError(UTFString error, bool exit=true);
+	void netFatalError(Ogre::UTFString error, bool exit=true);
 
 	void sendthreadstart();
 	void receivethreadstart();
@@ -104,13 +64,47 @@ public:
 
 	static unsigned int getUID() { return myuid; };
 
-	
 	static void debugPacket(const char *name, header_t *header, char *buffer);
-protected:
+
+private:
+
+	Ogre::UTFString mySname;
+	Ogre::UTFString nickname;
+	RoRFrameListener *mefl;
+	SWInetSocket socket;
+	bool initiated;
+	bool shutdown;
+	char sendthreadstart_buffer[MAX_MESSAGE_LENGTH];
+	char* send_buffer;
+	client_t clients[MAX_PEERS];
+	int last_time;
+	int myauthlevel;
+	int rconauthed;
+	int send_buffer_len;
+	int speed_bytes_sent, speed_bytes_sent_tmp, speed_bytes_recv, speed_bytes_recv_tmp;
+	int speed_time;
+	long mySport;
+	oob_t send_oob;
+	pthread_cond_t send_work_cv;
+	pthread_mutex_t clients_mutex;
+	pthread_mutex_t dl_data_mutex;
+	pthread_mutex_t msgsend_mutex;
+	pthread_mutex_t send_work_mutex;
+	pthread_t downloadthread;
+	pthread_t receivethread;
+	pthread_t sendthread;
+	server_info_t server_settings;
+	static Ogre::Timer timer;
+	static unsigned int myuid;
+	std::map<int, float> lagDataClients;
+	user_info_t userdata;
+
+	void calcSpeed();
+	void updatePlayerList();
+
+	Ogre::UTFString getUserChatName(client_t *c);
 };
 
-
-#endif
+#endif // __Network_H_
 
 #endif // USE_SOCKETW
-

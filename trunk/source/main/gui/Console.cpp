@@ -20,36 +20,31 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "Console.h"
-#include "Scripting.h"
-#include "InputEngine.h"
-#include "OgreLogManager.h"
-#include "gui_manager.h"
-#include "gui_menu.h"
-#include "OverlayWrapper.h"
-#include "ChatSystem.h"
-#include "HighScoreWindow.h"
-
-#include "Settings.h"
-#include "RoRFrameListener.h"
-#include "network.h"
-#include "heightfinder.h"
 
 #include "Beam.h"
 #include "BeamFactory.h"
-
+#include "Character.h"
+#include "ChatSystem.h"
+#include "gui_manager.h"
+#include "gui_menu.h"
+#include "heightfinder.h"
+#include "HighScoreWindow.h"
 #include "language.h"
+#include "network.h"
+#include "OverlayWrapper.h"
+#include "RoRFrameListener.h"
+#include "Scripting.h"
+#include "Settings.h"
 #include "utils.h"
-
-#include "libircclient.h"
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_LINUX
 #include <iconv.h>
 #endif // LINUX
 
-using namespace std;
+using namespace Ogre;
 
 // the delimiters that decide where a word is finished
-const Ogre::UTFString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
+const UTFString Console::wordDelimiters = " \\\"\'|.,`!;<>~{}()+&%$@";
 const char *builtInCommands[] = {"/help", "/log", "/pos", "/goto", "/terrainheight", "/ver", "/save", "/whisper", "/as", NULL};
 
 // class
@@ -62,7 +57,7 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 
 	memset(&lines, 0, sizeof(lines));
 
-	mHistory.push_back(Ogre::UTFString());
+	mHistory.push_back(UTFString());
 
 	// and the textbox inside
 	mCommandEdit = mMainWidget->createWidget<MyGUI::EditBox>("EditBoxChat", 0, 0, 304, lineheight * 1.2f,  MyGUI::Align::Default, "ConsoleInput");
@@ -117,12 +112,12 @@ Console::Console() : net(0), netChat(0), top_border(20), bottom_border(100), mes
 
 	MyGUI::Gui::getInstance().eventFrameStart += MyGUI::newDelegate( this, &Console::frameEntered );
 
-	Ogre::LogManager::getSingleton().getDefaultLog()->addListener(this);
+	LogManager::getSingleton().getDefaultLog()->addListener(this);
 }
 
 Console::~Console()
 {
-	Ogre::LogManager::getSingleton().getDefaultLog()->removeListener(this);
+	LogManager::getSingleton().getDefaultLog()->removeListener(this);
 	MyGUI::Gui::getInstance().eventFrameStart -= MyGUI::newDelegate( this, &Console::frameEntered );
 }
 
@@ -146,7 +141,7 @@ bool Console::getVisible()
 }
 
 
-void Console::select(Ogre::UTFString start)
+void Console::select(UTFString start)
 {
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mCommandEdit);
 	mCommandEdit->setEnabled(true);
@@ -279,7 +274,7 @@ void Console::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, My
 
 void Console::findCurrentWord()
 {
-	Ogre::UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
+	UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
 	autoCompletionCursor = (int)mCommandEdit->getTextCursor();
 
 	// look for word start
@@ -347,17 +342,17 @@ void Console::initOrWalkAutoCompletion()
 		// Auto-completion for the network usernames
 		if(net && netChat)
 		{
-			std::vector<Ogre::UTFString> names;
+			std::vector<UTFString> names;
 			int res = netChat->getChatUserNames(names);
 
 			for(unsigned int i = 0; i < names.size(); i++)
 			{
-				// TODO: case insensitive comparison between Ogre::UTFString
+				// TODO: case insensitive comparison between UTFString
 
-				Ogre::UTFString a = names[i].substr(0, autoCompletionWord.size());
+				UTFString a = names[i].substr(0, autoCompletionWord.size());
 				//std::transform(a.begin(), a.end(), a.begin(), tolower);
 
-				Ogre::UTFString b = autoCompletionWord;
+				UTFString b = autoCompletionWord;
 				//std::transform(b.begin(), b.end(), b.begin(), tolower);
 
 				if(a == b)
@@ -373,7 +368,7 @@ void Console::initOrWalkAutoCompletion()
 		{
 			for(int i = 0; builtInCommands[i]; i++)
 			{
-				Ogre::UTFString us = Ogre::UTFString(builtInCommands[i]);
+				UTFString us = UTFString(builtInCommands[i]);
 				if(us.substr(0, autoCompletionWord.size()) == autoCompletionWord)
 				{
 					autoCompleteChoices.push_back(us);
@@ -446,18 +441,18 @@ void Console::abortAutoCompletion()
 	autoCompleteChoices.clear();
 	mAutoCompleteList->removeAllItems();
 	mAutoCompleteList->setVisible(false);
-	autoCompletionWord = Ogre::UTFString();
+	autoCompletionWord = UTFString();
 }
 
 void Console::finalizeAutoCompletion()
 {
 	// now add the word we chose
-	Ogre::UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
+	UTFString line = convertFromMyGUIString(mCommandEdit->getCaption());
 
 	// construct final string
-	Ogre::UTFString strA = line.substr(0, autoCompletionWordStart) + autoCompleteChoices[autoCompleteIndex];
-	Ogre::UTFString strB = line.substr(autoCompletionWordEnd + 1);
-	Ogre::UTFString str  = strA + strB;
+	UTFString strA = line.substr(0, autoCompletionWordStart) + autoCompleteChoices[autoCompleteIndex];
+	UTFString strB = line.substr(autoCompletionWordEnd + 1);
+	UTFString str  = strA + strB;
 	// and set the text
 	mCommandEdit->setCaption(convertToMyGUIString(str));
 
@@ -471,7 +466,7 @@ void Console::finalizeAutoCompletion()
 
 void Console::eventCommandAccept(MyGUI::Edit* _sender)
 {
-	Ogre::UTFString msg = convertFromMyGUIString(_sender->getCaption());
+	UTFString msg = convertFromMyGUIString(_sender->getCaption());
 
 	// did we do auto completion?!
 	if(autoCompleteIndex != -1)
@@ -643,7 +638,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 		String command = (angelscriptMode ? msg : msg.substr(1));
 
-		Ogre::StringUtil::trim(command);
+		StringUtil::trim(command);
 		if(command.empty()) return;
 
 		String nmsg = ChatSystem::scriptCommandColour + ">>> " + ChatSystem::normalColour + command;
@@ -673,12 +668,12 @@ void Console::setNetChat(ChatSystem *c)
 }
 
 #if OGRE_VERSION < ((1 << 16) | (8 << 8 ) | 0)
-void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName)
+void Console::messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName)
 #else
-void Console::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
+void Console::messageLogged( const String& message, LogMessageLevel lml, bool maskDebug, const String &logName, bool& skipThisMessage)
 #endif // OGRE_VERSION
 {
-	Ogre::String msg = message;
+	String msg = message;
 	//this->print(logName+": "+message);
 	// strip script engine things
 	if(message.substr(0,4) == "SE| ")
@@ -801,7 +796,7 @@ void Console::updateGUILines( float dt )
 		msg_t &m = messages[msgid];
 
 		// check if TTL expired
-		unsigned long t = Ogre::Root::getSingleton().getTimer()->getMilliseconds() - m.time;
+		unsigned long t = Root::getSingleton().getTimer()->getMilliseconds() - m.time;
 		if(t > m.ttl && !inputMode)
 		{
 			// expired, take the next message instead, when not in input mode
@@ -847,7 +842,7 @@ void Console::updateGUIVisual( float dt )
 			//MyGUI::RotatingSkin* rotatingIcon = lines[i].iconctrl->getSubWidgetMain()->castType<MyGUI::RotatingSkin>();
 			//rotatingIcon->setAngle(rotatingIcon->getAngle() + Math::PI / 360.0f);
 
-			unsigned long ot = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+			unsigned long ot = Root::getSingleton().getTimer()->getMilliseconds();
 			unsigned long t = ot - lines[i].msg->time;
 			if(t > lines[i].msg->ttl && !inputMode)
 			{
@@ -932,13 +927,13 @@ int Console::messageUpdate( float dt )
 	return r;
 }
 
-void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::String icon, unsigned long ttl, bool forcevisible )
+void Console::putMessage( int type, int sender_uid, UTFString txt, String icon, unsigned long ttl, bool forcevisible )
 {
 	msg_t t;
 
 	t.type       = type;
 	t.sender_uid = sender_uid;
-	t.time       = Ogre::Root::getSingleton().getTimer()->getMilliseconds();
+	t.time       = Root::getSingleton().getTimer()->getMilliseconds();
 	t.ttl        = ttl;
 	t.forcevisible = forcevisible;
 	//strncpy(t.txt,  txt.c_str(), 2048);
@@ -952,7 +947,7 @@ void Console::putMessage( int type, int sender_uid, Ogre::UTFString txt, Ogre::S
 void Console::saveChat(String filename)
 {
 	// use C++ for easier wstring usage ... :-/
-	ofstream f(filename.c_str(), ios_base::app|ios_base::out); // in append mode
+	std::ofstream f(filename.c_str(), std::ios_base::app|std::ios_base::out); // in append mode
 	if(!f.is_open())
 	{
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("Unable to open file ") + filename, "error.png");
@@ -960,10 +955,10 @@ void Console::saveChat(String filename)
 	}
 
 	// now save the chat
-	f << " ==== " << endl;
+	f << " ==== " << std::endl;
 	for(unsigned int i = 0; i < message_counter; i++)
 	{
-		f << messages[i].time << " | " << messages[i].txt << endl;
+		f << messages[i].time << " | " << messages[i].txt << std::endl;
 	}
 	f.close();
 	
@@ -1004,7 +999,7 @@ void Console::outputCurrentTerrainHeight()
 	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
 }
 
-void Console::jumpToPosition( Ogre::Vector3 pos )
+void Console::jumpToPosition( Vector3 pos )
 {
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
 	if(!b && RoRFrameListener::eflsingleton->person)

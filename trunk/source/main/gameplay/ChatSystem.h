@@ -17,18 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef ChatSystem_H_
-#define ChatSystem_H_
+#ifndef __ChatSystem_H_
+#define __ChatSystem_H_
 
 #include "RoRPrerequisites.h"
 
-#include <Ogre.h>
-#include <OgreVector3.h>
 #include "Streamable.h"
-#include "MovableText.h"
 #include "StreamableFactory.h"
-#include "Console.h"
 
 class ChatSystem : public Streamable
 {
@@ -36,6 +31,7 @@ class ChatSystem : public Streamable
 	friend class Network;
 
 public:
+
 	ChatSystem(Network *net, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~ChatSystem();
 
@@ -52,6 +48,7 @@ public:
 	static const Ogre::UTFString commandColour, normalColour, whisperColour, scriptCommandColour;
 
 protected:
+
 	Network *net;
 	int source;
 	int streamid;
@@ -67,7 +64,9 @@ protected:
 class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >
 {
 	friend class Network;
+
 public:
+
 	ChatSystemFactory(Network *net);
 	~ChatSystemFactory();
 
@@ -78,6 +77,7 @@ public:
 	ChatSystem *getFirstChatSystem();
 
 protected:
+
 	Network *net;
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid) {};
@@ -86,4 +86,4 @@ protected:
 	bool syncRemoteStreams();
 };
 
-#endif
+#endif // __ChatSystem_H_

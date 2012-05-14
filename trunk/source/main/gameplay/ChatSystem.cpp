@@ -20,17 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ChatSystem.h"
 
-#include "water.h"
 #include "collisions.h"
-#include "heightfinder.h"
-#include "MapControl.h"
-#include "InputEngine.h"
-#include "network.h"
-#include "NetworkStreamManager.h"
-#include "ColoredTextAreaOverlayElement.h"
+#include "Console.h"
 #include "language.h"
-#include "utils.h"
+#include "network.h"
 #include "PlayerColours.h"
+#include "utils.h"
 
 #ifdef USE_MYGUI
 #include "gui_mp.h"
@@ -103,10 +98,10 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 ///////////////////////////////////
 // ChatSystem
 
-const Ogre::UTFString ChatSystem::commandColour       = U("#941e8d");
-const Ogre::UTFString ChatSystem::normalColour        = U("#000000");
-const Ogre::UTFString ChatSystem::whisperColour       = U("#967417");
-const Ogre::UTFString ChatSystem::scriptCommandColour = U("#32436f");
+const UTFString ChatSystem::commandColour       = U("#941e8d");
+const UTFString ChatSystem::normalColour        = U("#000000");
+const UTFString ChatSystem::whisperColour       = U("#967417");
+const UTFString ChatSystem::scriptCommandColour = U("#32436f");
 
 
 
@@ -204,13 +199,13 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 #endif //USE_MYGUI
 }
 
-void ChatSystem::sendChat(Ogre::UTFString chatline)
+void ChatSystem::sendChat(UTFString chatline)
 {
 	const char *utf8_line = chatline.asUTF8_c_str();
 	this->addPacket(MSG2_UTF_CHAT, (unsigned int)strlen(utf8_line), (char *)utf8_line);
 }
 
-int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
+int ChatSystem::getChatUserNames(std::vector<UTFString> &names)
 {
 #ifdef USE_SOCKETW
 	client_t c[MAX_PEERS];
@@ -226,7 +221,7 @@ int ChatSystem::getChatUserNames(std::vector<Ogre::UTFString> &names)
 #endif // USE_SOCKETW
 }
 
-void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString chatline)
+void ChatSystem::sendPrivateChat(UTFString targetUsername, UTFString chatline)
 {
 #ifdef USE_SOCKETW
 	// first: find id to username:
@@ -259,7 +254,7 @@ void ChatSystem::sendPrivateChat(Ogre::UTFString targetUsername, Ogre::UTFString
 
 
 
-void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre::UTFString username)
+void ChatSystem::sendPrivateChat(int target_uid, UTFString chatline, UTFString username)
 {
 #ifdef USE_SOCKETW
 	char buffer[MAX_MESSAGE_LENGTH] = "";
@@ -289,19 +284,19 @@ void ChatSystem::sendPrivateChat(int target_uid, Ogre::UTFString chatline, Ogre:
 #endif // USE_SOCKETW
 }
 
-Ogre::UTFString ChatSystem::getColouredName(client_t &c)
+UTFString ChatSystem::getColouredName(client_t &c)
 {
 	return getColouredName(c.user);
 }
 
-Ogre::UTFString ChatSystem::getColouredName(user_info_t &u)
+UTFString ChatSystem::getColouredName(user_info_t &u)
 {
 	return ChatSystem::getColouredName(UTFString(u.username), u.authstatus, u.colournum);
 }
 
-Ogre::UTFString ChatSystem::getColouredName(Ogre::UTFString nick, int auth, int colourNumber)
+UTFString ChatSystem::getColouredName(UTFString nick, int auth, int colourNumber)
 {
-	Ogre::ColourValue col_val = PlayerColours::getSingleton().getColour(colourNumber);
+	ColourValue col_val = PlayerColours::getSingleton().getColour(colourNumber);
 	char tmp[255] = "";
 	sprintf(tmp, "#%02X%02X%02X", (unsigned int)(col_val.r * 255.0f), (unsigned int)(col_val.g * 255.0f), (unsigned int)(col_val.b * 255.0f));
 

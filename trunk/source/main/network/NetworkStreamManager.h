@@ -20,26 +20,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of August 2009
 
-#ifndef NETWORKSTREAMMANAGER_H__
-#define NETWORKSTREAMMANAGER_H__
+#ifndef __NetworkStreamManager_H_
+#define __NetworkStreamManager_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
+
+#include <pthread.h>
+#include "rornet.h"
 #include "Singleton.h"
-#include "pthread.h"
+#include "StreamableFactoryInterface.h"
+
 #ifdef USE_SOCKETW
 #include "SocketW.h"
 #endif //SOCKETW
-#include "rornet.h"
-#include <map>
-
-
-#include "StreamableFactoryInterface.h"
 
 class NetworkStreamManager : public RoRSingleton< NetworkStreamManager >
 {
 	friend class Network;
+
 public:
+
 	NetworkStreamManager();
 	~NetworkStreamManager();
 	
@@ -65,6 +65,7 @@ public:
 	void addFactory(StreamableFactoryInterface *factory);
 
 protected:
+
 	pthread_mutex_t stream_mutex;
 	pthread_mutex_t send_work_mutex;
 	pthread_cond_t send_work_cv;
@@ -81,6 +82,4 @@ protected:
 	void receiveStreams();
 };
 
-
-
-#endif //NETWORKSTREAMMANAGER_H__
+#endif // __NetworkStreamManager_H_

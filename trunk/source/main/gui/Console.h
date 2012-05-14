@@ -17,29 +17,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-// this must be outside of the other macro
-#ifdef USE_MYGUI
-# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c,d,e,f); }
-# define CONSOLE_PUTMESSAGE_SHORT(a,b,c) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c); }
+#ifndef USE_MYGUI
+#ifndef __Console_H__
+#define __Console_H__
+#define CONSOLE_PUTMESSAGE(a,b,c,d,e,f)
+#define CONSOLE_PUTMESSAGE_SHORT(a,b,c)
+#endif // __CONSOLE_H__
 #else
-# define CONSOLE_PUTMESSAGE(a,b,c,d,e,f)
-# define CONSOLE_PUTMESSAGE_SHORT(a,b,c)
-#endif // USE_MYGUI
-
-#ifdef USE_MYGUI
-
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+#define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c,d,e,f); }
+#define CONSOLE_PUTMESSAGE_SHORT(a,b,c) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c); }
+
 #include "RoRPrerequisites.h"
-#include "Singleton.h"
-#include "mygui/BaseLayout.h"
 
 #include "InterThreadStoreVector.h"
-
-#include <OgreLog.h>
-#include <OgreUTFString.h>
+#include "mygui/BaseLayout.h"
+#include "Singleton.h"
 
 typedef struct msg_t {
 	char type;
@@ -189,7 +184,5 @@ protected:
 #endif // OGRE_VERSION
 };
 
-#endif // __CONSOLE_H__
-
-#endif //MYGUI
-
+#endif // __Console_H__
+#endif // USE_MYGUI

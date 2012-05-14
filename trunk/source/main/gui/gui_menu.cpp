@@ -23,16 +23,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_menu.h"
 
 #include "BeamFactory.h"
+#include "Character.h"
 #include "ChatSystem.h"
+#include "Console.h"
+#include "gui_friction.h"
+#include "gui_manager.h"
+#include "language.h"
+#include "network.h"
 #include "RoRFrameListener.h"
 #include "Savegame.h"
 #include "SelectorWindow.h"
 #include "Settings.h"
 #include "TextureToolWindow.h"
-#include "gui_friction.h"
-#include "gui_manager.h"
-#include "language.h"
-#include "network.h"
 #include "utils.h"
 
 using namespace Ogre;

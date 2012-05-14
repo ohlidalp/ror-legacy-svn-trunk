@@ -38,6 +38,7 @@ public:
 
 	typedef struct cameraContext {
 		Beam *mCurrTruck;
+		Character *mCharacter;
 		HeightFinder *mHfinder;
 		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;

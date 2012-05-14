@@ -1,4 +1,4 @@
-/*
+/*/
 This source file is part of Rigs of Rods
 Copyright 2005-2012 Pierre-Michel Ricordel
 Copyright 2007-2012 Thomas Fischer
@@ -17,23 +17,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "Character.h"
 
-#include "water.h"
+#include "BeamFactory.h"
+#include "CameraManager.h"
 #include "collisions.h"
 #include "heightfinder.h"
+#include "InputEngine.h"
 #include "MapControl.h"
 #include "MapEntity.h"
-#include "InputEngine.h"
 #include "network.h"
 #include "NetworkStreamManager.h"
-#include "BeamFactory.h"
-#include "RoRFrameListener.h"
-#include "ColoredTextAreaOverlayElement.h"
 #include "PlayerColours.h"
-
 #include "utils.h"
+#include "water.h"
 
 using namespace Ogre;
 
@@ -297,9 +294,8 @@ void Character::update(float dt)
 {
 	if(physicsEnabled && !remote)
 	{
-		// disable character movement when using the free camera mode or when chatting
-		// OLD!
-		//if(RoRFrameListener::eflsingleton && (RoRFrameListener::eflsingleton->cameramode == CAMERA_FREE || RoRFrameListener::eflsingleton->isUserChatting())) return;
+		// disable character movement when using the free camera mode or when the menu is opened
+		if(!CameraManager::singletonExists() || CameraManager::getSingleton().getCameraMode() == CameraManager::CAMERA_BEHAVIOR_FREE) return;
 
 		// small hack: if not visible do not apply physics
 		//mode perso

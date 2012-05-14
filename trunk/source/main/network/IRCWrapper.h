@@ -22,17 +22,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef USE_SOCKETW
 
-#ifndef IRCWRAPPER_H__
-#define IRCWRAPPER_H__
+#ifndef __IRCWrapper_H_
+#define __IRCWrapper_H_
 
 #include "RoRPrerequisites.h"
 
 #include "InterThreadStoreVector.h"
 
-#include <pthread.h>
-#include <string>
-
 #include <libircclient.h>
+#include <pthread.h>
 
 enum message_types {
 	MT_Channel,             // someone said something in a channel
@@ -60,11 +58,11 @@ enum message_types {
 
 typedef struct message_t
 {
-	int         type;
-	std::string channel;
-	std::string nick;
-	std::string message;
-	std::string arg;
+	int type;
+	Ogre::String channel;
+	Ogre::String nick;
+	Ogre::String message;
+	Ogre::String arg;
 } message_t;
 
 class IRCWrapper : public InterThreadStoreVector<message_t>
@@ -78,14 +76,14 @@ public:
 	void process(); // update function
 	virtual void processIRCEvent(message_t &msg) = 0; // single event
 
-	int sendMessage(std::string msg, std::string channelOrNick = std::string());
-	int sendMeMessage(std::string msg, std::string channelOrNick = std::string());
-	int changeNick(std::string newNick);
-	int joinChannel(std::string channel, std::string channelKey);
-	int leaveChannel(std::string channel);
-	int quit(std::string reason);
+	int sendMessage(Ogre::String msg, Ogre::String channelOrNick = Ogre::String());
+	int sendMeMessage(Ogre::String msg, Ogre::String channelOrNick = Ogre::String());
+	int changeNick(Ogre::String newNick);
+	int joinChannel(Ogre::String channel, Ogre::String channelKey);
+	int leaveChannel(Ogre::String channel);
+	int quit(Ogre::String reason);
 
-	std::string getLastErrorMessage();
+	Ogre::String getLastErrorMessage();
 
 	// TODO:
 	// inviteChannel
@@ -99,7 +97,7 @@ public:
 
 	int authenticate();
 
-	std::string serverName, serverPassword, nick, userName, realName, channel, channelKey;
+	Ogre::String serverName, serverPassword, nick, userName, realName, channel, channelKey;
 	unsigned int serverPort, retryCounter;
 	bool reJoin, reConnect, wasConnected;
 
@@ -107,9 +105,8 @@ public:
 protected:
 	pthread_t ircthread;
 
-	int processAuthenticationResults(std::string &results);
+	int processAuthenticationResults(Ogre::String &results);
 };
 
-#endif //IRCWRAPPER_H__
-
-#endif //USE_SOCKETW
+#endif // __IRCWrapper_H_
+#endif // USE_SOCKETW

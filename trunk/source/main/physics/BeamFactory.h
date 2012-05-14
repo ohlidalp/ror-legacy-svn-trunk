@@ -26,9 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "Beam.h"
-#include "pthread.h"
 #include "StreamableFactory.h"
 #include "TwoDReplay.h"
+
+#include <pthread.h>
 
 class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 {

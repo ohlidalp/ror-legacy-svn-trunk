@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 30th of April 2010 by Thomas Fischer
-#ifndef RORPREREQUISITES_H__
-#define RORPREREQUISITES_H__
+#ifndef __RoRPrerequisites_H_
+#define __RoRPrerequisites_H_
 
 // Defines whether Checked Iterators are enabled. If defined as 1, unsafe iterator use causes a runtime error. If defined as 0, checked iterators are disabled.
 // TBD - tdev
@@ -106,25 +106,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // BITMASK(2) = 0x00000002 = 0b00....0010
 
 class AeroEngine;
-class Airfoil;
 class Airbrake;
-class Autopilot;
+class Airfoil;
 class AppState;
+class Autopilot;
 class Axle;
 class Beam;
 class BeamEngine;
 class BeamThreadStats;
 class Buoyance;
+class Cache_Entry;
+class Character;
 class ChatSystem;
 class CmdKeyInertia;
-class Cache_Entry;
 class Collisions;
 class ColoredTextAreaOverlayElement;
 class Dashboard;
 class DashBoard;
 class DashBoardManager;
-class DotSceneLoader;
 class DOFManager;
+class DotSceneLoader;
 class DustPool;
 class Editor;
 class Flexable;
@@ -132,14 +133,14 @@ class FlexAirfoil;
 class FlexBody;
 class FlexMesh;
 class FlexObj;
-class HeatHaze;
 class HDRListener;
+class HeatHaze;
 class HeightFinder;
-class MaterialReplacer;
-class MaterialFunctionMapper;
 class MapControl;
 class MapEntity;
 class MapTextureCreator;
+class MaterialFunctionMapper;
+class MaterialReplacer;
 class MeshObject;
 class Mirrors;
 class Network;
@@ -151,21 +152,21 @@ class Rail;
 class RailGroup;
 class Replay;
 class RigsOfRods;
-class Road;
 class Road2;
+class Road;
 class RoRFrameListener;
-class Screwprop;
 class ScopeLog;
+class Screwprop;
 class Skidmark;
 class Skin;
 class SlideNode;
+class SoundManager;
 class SoundScriptInstance;
 class SoundScriptManager;
-class SoundManager;
-class Turboprop;
 class TorqueCurve;
-class TruckHUD;
 class TruckEditor;
+class TruckHUD;
+class Turboprop;
 class VideoCamera;
 class Water;
 
@@ -224,4 +225,4 @@ enum VisibilityMasks {
 	HIDE_MIRROR       = BITMASK(3),
 };
 
-#endif //RORPREREQUISITES_H__
+#endif // __RoRPrerequisites_H_

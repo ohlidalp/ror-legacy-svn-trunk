@@ -20,44 +20,44 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 17th of August 2009
 
-#ifndef CHARACTERFACTORY_H__
-#define CHARACTERFACTORY_H__
+#ifndef __CharacterFactory_H_
+#define __CharacterFactory_H_
 
 #include "RoRPrerequisites.h"
 
-#include "OgrePrerequisites.h"
-#include "StreamableFactory.h"
-#include <map>
 #include "Character.h"
+#include "StreamableFactory.h"
 
 class CharacterFactory : public StreamableFactory < CharacterFactory, Character >
 {
 	friend class Network;
+
 public:
+
 	CharacterFactory(Ogre::Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
 	~CharacterFactory();
 
 	Character *createLocal(int playerColour);
-
 	Character *createRemoteInstance(stream_reg_t *reg);
+
 	void setNetwork(Network *net) { this->net = net; };
 
 	void updateCharacters(float dt);
 	void updateLabels();
+
 protected:
-	Ogre::Camera *cam;
+
 	Collisions *c;
-	Network *net;
 	HeightFinder *h;
-	Water *w;
 	MapControl *m;
+	Network *net;
+	Ogre::Camera *cam;
 	Ogre::SceneManager *scm;
+	Water *w;
 
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);
 	void localUserAttributesChanged(int newid);
 };
 
-
-
-#endif //CHARACTERFACTORY_H__
+#endif // __CharacterFactory_H_

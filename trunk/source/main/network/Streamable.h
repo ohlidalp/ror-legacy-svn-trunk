@@ -26,9 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "rornet.h"
-#include <map>
 #include <pthread.h>
-
 
 typedef struct recvPacket_t
 {
