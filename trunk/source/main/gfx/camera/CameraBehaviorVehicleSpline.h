@@ -32,7 +32,7 @@ public:
 
 	void update(const CameraManager::cameraContext_t &ctx);
 	
-	bool mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx);
+	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 
 	void activate(const CameraManager::cameraContext_t &ctx);
 

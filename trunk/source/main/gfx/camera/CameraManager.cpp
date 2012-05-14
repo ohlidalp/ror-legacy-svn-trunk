@@ -166,17 +166,17 @@ void CameraManager::update(float dt)
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	if ( !currentBehavior ) return false;
-	return currentBehavior->mouseMoved(_arg);
+	return currentBehavior->mouseMoved(ctx, _arg);
 }
 
 bool CameraManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
 	if ( !currentBehavior ) return false;
-	return currentBehavior->mousePressed(_arg, _id);
+	return currentBehavior->mousePressed(ctx, _arg, _id);
 }
 
 bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
 	if ( !currentBehavior ) return false;
-	return currentBehavior->mouseReleased(_arg, _id);
+	return currentBehavior->mouseReleased(ctx, _arg, _id);
 }

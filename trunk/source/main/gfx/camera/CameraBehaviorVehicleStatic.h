@@ -32,9 +32,9 @@ public:
 
 	void update(const CameraManager::cameraContext_t &ctx);
 
-	bool mouseMoved(const OIS::MouseEvent& _arg) { return false; };
-	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
-	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg) { return false; };
+	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 	void activate(const CameraManager::cameraContext_t &ctx) {};
 	void deactivate(const CameraManager::cameraContext_t &ctx) {};
