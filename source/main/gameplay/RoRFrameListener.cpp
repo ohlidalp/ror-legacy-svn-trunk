@@ -216,34 +216,46 @@ void RoRFrameListener::updateRacingGUI()
 
 void RoRFrameListener::updateIO(float dt)
 {
-	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-	if (b && b->driveable == TRUCK)
+	Beam *current_truck = BeamFactory::getSingleton().getCurrentTruck();
+	if (current_truck && current_truck->driveable == TRUCK)
 	{
 #ifdef USE_OIS_G27
-		//logitech G27 LEDs tachometer
+		// logitech G27 LEDs tachometer
 		if (leds)
 		{
-			leds->play(b->engine->getRPM(),
-				b->engine->getMaxRPM()*0.75,
-				b->engine->getMaxRPM());
+			leds->play(current_truck->engine->getRPM(),
+				current_truck->engine->getMaxRPM()*0.75,
+				current_truck->engine->getMaxRPM());
 		}
 #endif //OIS_G27
 
 		// force feedback
 		if (forcefeedback)
 		{
-			Vector3 udir=b->nodes[b->cameranodepos[0]].RelPosition-b->nodes[b->cameranodedir[0]].RelPosition;
-			Vector3 uroll=b->nodes[b->cameranodepos[0]].RelPosition-b->nodes[b->cameranoderoll[0]].RelPosition;
+			int cameranodepos = 0;
+			int cameranodedir = 0;
+			int cameranoderoll = 0;
+
+			if (current_truck->cameranodepos[0] >= 0 && current_truck->cameranodepos[0] < MAX_NODES)
+				cameranodepos = current_truck->cameranodepos[0];
+			if (current_truck->cameranodedir[0] >= 0 && current_truck->cameranodedir[0] < MAX_NODES)
+				cameranodedir = current_truck->cameranodedir[0];
+			if (current_truck->cameranoderoll[0] >= 0 && current_truck->cameranoderoll[0] < MAX_NODES)
+				cameranoderoll = current_truck->cameranoderoll[0];
+
+			Vector3 udir = current_truck->nodes[cameranodepos].RelPosition-current_truck->nodes[cameranodedir].RelPosition;
+			Vector3 uroll = current_truck->nodes[cameranodepos].RelPosition-current_truck->nodes[cameranoderoll].RelPosition;
+			
 			udir.normalise();
 			uroll.normalise();
-			forcefeedback->setForces(-b->ffforce.dotProduct(uroll)/10000.0,
-				b->ffforce.dotProduct(udir)/10000.0,
-				b->WheelSpeed,
-				b->hydrodircommand,
-				b->ffhydro);
+
+			forcefeedback->setForces(-current_truck->ffforce.dotProduct(uroll)/10000.0,
+				current_truck->ffforce.dotProduct(udir)/10000.0,
+				current_truck->WheelSpeed,
+				current_truck->hydrodircommand,
+				current_truck->ffhydro);
 		}
 	}
-
 }
 
 void RoRFrameListener::updateGUI(float dt)
@@ -2125,9 +2137,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					person->setPhysicsEnabled(true);
 				}
-
-			}
-			else //we are in a vehicle
+			} else // we are in a vehicle
 			{
 				// get commands
 				// -- here we should define a maximum numbers per trucks. Some trucks does not have that much commands
@@ -5123,7 +5133,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTruck)
 {
-	if (!CameraManager::singletonExists ||
+	if (!CameraManager::singletonExists() ||
 		!CameraManager::getSingleton().hasActiveBehavior())
 	{
 		return;
