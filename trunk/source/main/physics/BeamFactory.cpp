@@ -247,7 +247,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		mfinder,
 		w,
 		pcam,
-		false, // networked
+		true, // networked
 		net!=0, // networking
 		0,
 		false,
