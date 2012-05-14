@@ -79,7 +79,7 @@ int Savegame::save(Ogre::String &filename)
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if(CameraManager::getSingleton().getCamera())
+			if(CameraManager::singletonExists() && CameraManager::getSingleton().getCamera())
 			{
 				Vector3 pos = CameraManager::getSingleton().getCamera()->getPosition();
 				// WARNING: breaks if Real == double!

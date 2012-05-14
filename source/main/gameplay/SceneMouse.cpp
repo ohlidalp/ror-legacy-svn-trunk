@@ -91,7 +91,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 
 	// check if handled by the camera
-	if(CameraManager::getSingleton().mouseMoved(_arg))
+	if(!CameraManager::singletonExists() || CameraManager::getSingleton().mouseMoved(_arg))
 		return true;
 
 	// experimental mouse hack
@@ -215,7 +215,11 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	Camera *cam = CameraManager::getSingleton().getCamera();
-	Viewport *vp = cam->getViewport();
-	return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
+	if (CameraManager::singletonExists())
+	{
+		Camera *cam = CameraManager::getSingleton().getCamera();
+		Viewport *vp = cam->getViewport();
+		return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
+	}
+	return Ray();
 }

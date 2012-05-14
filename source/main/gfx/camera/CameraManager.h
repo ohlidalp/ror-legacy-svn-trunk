@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_MANAGER_H_
-#define __CAMERA_MANAGER_H_
+#ifndef __CAMERA_MODE_H_
+#define __CAMERA_MODE_H_
 
 #include "RoRPrerequisites.h"
 
@@ -60,13 +60,15 @@ public:
 
 	void update(float dt);
 
+	bool hasActiveBehavior() { return currentBehavior!=0; };
+
 	Ogre::Camera *getCamera() { return ctx.mCamera; };
 	int getCameraMode() { return currentBehaviorID; };
 
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 
 protected:
-	
+
 	cameraContext_t ctx;
 
 	float mTransScale, mTransSpeed;
@@ -87,4 +89,4 @@ protected:
 	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
 };
 
-#endif // __CAMERA_MANAGER_H_
+#endif // __CAMERA_MODE_H_

@@ -36,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFree.h"
-#include "CameraBehaviorOrbit.h"
+#include "CameraBehavior.h"
 #include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleSpline.h"
@@ -64,8 +64,6 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	ctx.mHfinder = hf;
 	ctx.mLastPosition = Vector3::ZERO;
 	ctx.mSceneMgr = scm;
-
-	switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 }
 
 CameraManager::~CameraManager()
@@ -151,6 +149,9 @@ void CameraManager::update(float dt)
 	if ( currentBehavior )
 	{
 		currentBehavior->update(ctx);
+	} else
+	{
+		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	}
 
 #ifdef USE_OPENAL

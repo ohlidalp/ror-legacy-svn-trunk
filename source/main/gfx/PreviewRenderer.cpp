@@ -44,6 +44,8 @@ PreviewRenderer::~PreviewRenderer()
 
 void PreviewRenderer::render()
 {
+	if (!CameraManager::singletonExists()) return;
+
 	LOG("starting previewRenderer...");
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
 	SceneManager *sceneMgr = RoRFrameListener::eflsingleton->getSceneMgr();

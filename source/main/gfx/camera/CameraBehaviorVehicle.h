@@ -22,15 +22,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehaviorOrbit.h"
+#include "CameraBehavior.h"
 
-class CameraBehaviorVehicle : public CameraBehaviorOrbit
+class CameraBehaviorVehicle : public CameraBehavior
 {
 public:
 
 	CameraBehaviorVehicle();
 
 	void update(const CameraManager::cameraContext_t &ctx);
+
+	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
 
 protected:
 
