@@ -3229,13 +3229,13 @@ bool RoRFrameListener::updateEvents(float dt)
 
 			} else if (loading_state==RELOADING)
 			{
-				Cache_Entry *selt = SelectorWindow::getSingleton().getSelection();
+				Cache_Entry *selection = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				Beam *localTruck = 0;
-				if (selt)
+				if (selection)
 				{
 					//we load an extra truck
-					String selected = selt->fname;
+					String selected = selection->fname;
 					std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 					std::vector<Ogre::String> *configptr = &config;
 					if (config.size() == 0) configptr = 0;
