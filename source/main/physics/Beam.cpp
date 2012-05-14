@@ -324,12 +324,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	
 	beamsRoot=parent->createChildSceneNode();
 	deletion_sceneNodes.push_back(netLabelNode);
-
-	if (networked)
-	{
-		state = NETWORKED; //required for proper loading
-	}
-
 	// skidmark stuff
 	useSkidmarks = BSETTING("Skidmarks", false);
 
@@ -370,7 +364,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	// setup replay mode
 	bool enablereplay = BSETTING("Replay mode", false);
 
-	if (enablereplay && state != NETWORKED && !networking)
+	if (enablereplay && !networked && !networking)
 	{
 		replaylen = ISETTING("Replay length", 10000);
 		replay = new Replay(this, replaylen);
@@ -448,7 +442,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	// start network stuff
 	if (networked)
 	{
-		state=NETWORKED;
+		state = NETWORKED;
 		// malloc memory
 		oob1=(oob_t*)malloc(sizeof(oob_t));
 		oob2=(oob_t*)malloc(sizeof(oob_t));
@@ -457,8 +451,8 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 		netb2=(char*)malloc(netbuffersize);
 		netb3=(char*)malloc(netbuffersize);
 		nettimer = new Timer();
-		net_toffset=0;
-		netcounter=0;
+		net_toffset = 0;
+		netcounter = 0;
 		// init mutex
 		pthread_mutex_init(&net_mutex, NULL);
 		if (engine)
@@ -906,12 +900,15 @@ void Beam::checkBeamMaterial()
 
 void Beam::activate()
 {
-	if (state!=NETWORKED && state!=RECYCLE) state=ACTIVATED;
+	if (state < NETWORKED)
+	{
+		state=ACTIVATED;
+	}
 }
 
 void Beam::desactivate()
 {
-	if (state!=NETWORKED && state!=RECYCLE)
+	if (state < NETWORKED)
 	{
 		state=DESACTIVATED;
 		sleepcount=0;
@@ -3218,7 +3215,7 @@ void Beam::truckTruckCollisions(Real dt)
 		//also consider changing the parallel "ifs" inside PointColDetector
 		//see "pointCD" above.
 		//Performance some times forces ugly architectural designs....
-		if (!trucks[t] || trucks[t]->state==SLEEPING || trucks[t]->state==RECYCLE || trucks[t]->state==NETWORKED) continue;
+		if (!trucks[t] || trucks[t]->state >= SLEEPING) continue;
 
 		trwidth=trucks[t]->collrange;
 
@@ -5267,7 +5264,7 @@ void Beam::updateNetworkInfo()
 #ifdef USE_SOCKETW
 	if(!net) return;
 	bool remote = (state == NETWORKED);
-	if(remote)
+	if (remote)
 	{
 		client_t *c = net->getClientInfo(sourceid);
 		if(!c) return;

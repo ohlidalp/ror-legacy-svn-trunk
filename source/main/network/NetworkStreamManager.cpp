@@ -20,13 +20,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of August 2009
 
 #include "NetworkStreamManager.h"
-#include "Streamable.h"
 
-#include "Ogre.h"
 #include "network.h"
-#include "utils.h"
-#include "sha1.h"
 #include "language.h"
+#include "Streamable.h"
+#include "StreamableFactoryInterface.h"
 
 using namespace Ogre;
 
@@ -74,7 +72,7 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	// increase stream counter
 	streamid++;
 	MUTEX_UNLOCK(&stream_mutex);
-#endif //SOCKETW
+#endif // USE_SOCKETW
 }
 
 void NetworkStreamManager::addRemoteStream(Streamable *stream, int rsource, int rstreamid)
@@ -151,7 +149,7 @@ void NetworkStreamManager::removeUser(int sourceID)
 	}
 	MUTEX_UNLOCK(&stream_mutex);
 }
-#endif //SOCKETW
+#endif // USE_SOCKETW
 
 void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
 {
@@ -232,7 +230,7 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 void NetworkStreamManager::sendStreams(Network *net, void *socket)
 {
 }
-#endif //SOCKETW
+#endif // USE_SOCKETW
 
 #ifdef USE_SOCKETW
 void NetworkStreamManager::update()
@@ -240,7 +238,7 @@ void NetworkStreamManager::update()
 	syncRemoteStreams();
 	receiveStreams();
 }
-#endif //SOCKETW
+#endif // USE_SOCKETW
 
 void NetworkStreamManager::syncRemoteStreams()
 {

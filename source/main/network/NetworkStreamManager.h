@@ -26,13 +26,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include <pthread.h>
+
 #include "rornet.h"
 #include "Singleton.h"
-#include "StreamableFactoryInterface.h"
 
 #ifdef USE_SOCKETW
 #include "SocketW.h"
-#endif //SOCKETW
+#endif // USE_SOCKETW
+
+class Streamable;
+class StreamableFactoryInterface;
 
 class NetworkStreamManager : public RoRSingleton< NetworkStreamManager >
 {

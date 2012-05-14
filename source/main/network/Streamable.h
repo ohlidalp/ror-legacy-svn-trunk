@@ -20,8 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of August 2009
 
-#ifndef STREAMABLE_H__
-#define STREAMABLE_H__
+#ifndef __Streamable_H_
+#define __Streamable_H_
 
 #include "RoRPrerequisites.h"
 
@@ -35,13 +35,15 @@ typedef struct recvPacket_t
 } recvPacket_t;
 
 /**
- * This class defines a standart interface and a buffer between the actual network code and the class that handles it.
- * The buffer must be decoupled from the separatly running network thread.
+ * This class defines a standard interface and a buffer between the actual network code and the class that handles it.
+ * The buffer must be decoupled from the separately running network thread.
  */
 class Streamable
 {
 	friend class NetworkStreamManager;
+
 public:
+
 	unsigned int getStreamID() { return this->streamid; };
 	unsigned int getSourceID() { return this->sourceid; };
 	void setStreamID(unsigned int id) { this->streamid=id; };
@@ -93,9 +95,9 @@ protected:
 	void unlockReceiveQueue();
 
 private:
+
 	std::map < int, stream_register_t > mStreamableResults;
 	bool isOrigin, streamResultsChanged;
-
 };
 
-#endif //STREAMABLE_H__
+#endif // __Streamable_H_
