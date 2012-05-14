@@ -79,7 +79,7 @@ SoundScriptManager::SoundScriptManager() :
 		return;
 	}
 
-	disabled = sound_manager->isDisabled();
+	disabled = sound_manager->isDisabled() || BSETTING("regen-cache-only", false);
 
 	if (disabled)
 	{
