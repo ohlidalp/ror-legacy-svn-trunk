@@ -28,10 +28,6 @@ using namespace Ogre;
 CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	  CameraBehaviorVehicle()
 {
-	camDist = 0.1f;
-	camRatio = 0.01f;
-	minCamDist = 0.0f;
-	maxCamDist = 0.5f;
 }
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
@@ -39,17 +35,19 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
 				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
 
-	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	targetPitch     = 0.0f;
+	Vector3 roll = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
+				  - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranoderoll[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
 
-	if ( camPitching )
-	{
-		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
-	}
+	Vector3 up = dir.crossProduct(roll);
 
-	camCenterPosition = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos;
+	roll = up.crossProduct(dir);
 
 	CameraBehavior::update(ctx);
+
+	Quaternion orientation = Quaternion(camRotX, up) * Quaternion(Degree(180.0) + camRotY, roll) * Quaternion(roll, up, dir);
+	
+	ctx.mCamera->setPosition(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos);
+	ctx.mCamera->setOrientation(orientation);
 }
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
@@ -59,7 +57,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 	ctx.mCamera->setFOVy(Degree(fov));
 
 	camRotX = 0.0f;
-	camRotY = 0.15f;
+	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -80,7 +78,6 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 	float fov = FSETTING("FOV External", 60);
 
 	ctx.mCamera->setFOVy(Degree(fov));
-	ctx.mCamera->roll(Radian(0));
 
 	ctx.mCurrTruck->prepareInside(false);
 
