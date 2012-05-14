@@ -22,44 +22,39 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "IRCWrapper.h"
 
-#include <Ogre.h> // for Ogre::String
-#include <OgreLogManager.h> // for LOG()
+#include "errorutils.h"
+#include "ImprovedConfigFile.h"
+#include "rornet.h"
+#include "RoRVersion.h"
+#include "Settings.h"
+#include "utils.h"
 
 #ifdef USE_CURL
 #define CURL_STATICLIB
 #include <stdio.h>
 #include <curl/curl.h>
-//#include <curl/types.h>
 #include <curl/easy.h>
 #endif //USE_CURL
-
-#include "rornet.h"
-#include "Settings.h"
-#include "errorutils.h"
-#include "ImprovedConfigFile.h"
-#include "utils.h"
-#include "RoRVersion.h"
-
-using namespace std; // primary for string
 
 // some function forward declarations
 void *s_ircthreadstart(void* arg);
 
+using namespace Ogre;
 // some utils
 // helps to fill our struct
 message_t constructMessage(int type, const char *channel, const char *nick, const char *message, const char *arg = 0)
 {
 	message_t t;
 	t.type    = type;
-	t.channel = std::string();
-	t.nick    = std::string();
-	t.message = std::string();
-	t.arg     = std::string();
+	t.channel = String();
+	t.nick    = String();
+	t.message = String();
+	t.arg     = String();
 
-	if(channel) t.channel = std::string(channel);
-	if(nick)    t.nick    = std::string(nick);
-	if(message) t.message = std::string(message);
-	if(arg)     t.arg     = std::string(arg);
+	if(channel) t.channel = String(channel);
+	if(nick)    t.nick    = String(nick);
+	if(message) t.message = String(message);
+	if(arg)     t.arg     = String(arg);
 	return t;
 }
 
@@ -124,7 +119,7 @@ void IRCWrapper::process()
 	}
 }
 
-int IRCWrapper::sendMessage(std::string msg, std::string channelOrNick)
+int IRCWrapper::sendMessage(String msg, String channelOrNick)
 {
 	if(!irc_session) return 1;
 	if(channelOrNick.empty())
@@ -133,7 +128,7 @@ int IRCWrapper::sendMessage(std::string msg, std::string channelOrNick)
 	return irc_cmd_msg(irc_session, channelOrNick.c_str(), msg.c_str());
 }
 
-int IRCWrapper::sendMeMessage(std::string msg, std::string channelOrNick)
+int IRCWrapper::sendMeMessage(String msg, String channelOrNick)
 {
 	if(!irc_session) return 1;
 	if(channelOrNick.empty())
@@ -142,13 +137,13 @@ int IRCWrapper::sendMeMessage(std::string msg, std::string channelOrNick)
 	return irc_cmd_me(irc_session, channelOrNick.c_str(), msg.c_str());
 }
 
-int IRCWrapper::changeNick(std::string newNick)
+int IRCWrapper::changeNick(String newNick)
 {
 	if(!irc_session) return 1;
 	return irc_cmd_nick(irc_session, newNick.c_str());
 }
 
-int IRCWrapper::joinChannel(std::string channel, std::string channelKeyStr)
+int IRCWrapper::joinChannel(String channel, String channelKeyStr)
 {
 	if(!irc_session) return 1;
 	const char *channelKey = channelKeyStr.c_str();
@@ -156,22 +151,22 @@ int IRCWrapper::joinChannel(std::string channel, std::string channelKeyStr)
 	return irc_cmd_join (irc_session, channel.c_str(), channelKey);
 }
 
-int IRCWrapper::leaveChannel(std::string channel)
+int IRCWrapper::leaveChannel(String channel)
 {
 	if(!irc_session) return 1;
 	return irc_cmd_part (irc_session, channel.c_str());
 }
 
-int IRCWrapper::quit(std::string reason)
+int IRCWrapper::quit(String reason)
 {
 	if(!irc_session) return 1;
 	return irc_cmd_quit (irc_session, reason.c_str());
 }
 
-std::string IRCWrapper::getLastErrorMessage()
+String IRCWrapper::getLastErrorMessage()
 {
 	if(!irc_session) return "not connected";
-	return std::string(irc_strerror(irc_errno(irc_session)));
+	return String(irc_strerror(irc_errno(irc_session)));
 }
 
 
@@ -239,7 +234,7 @@ int IRCWrapper::authenticate()
 	char *curl_err_str[CURL_ERROR_SIZE];
 	memset(curl_err_str, 0, CURL_ERROR_SIZE);
 
-	string url = "http://" + string(REPO_SERVER) + "/auth_lobby/";
+	String url = "http://" + String(REPO_SERVER) + "/auth_lobby/";
 	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
 
 	/* send all data to this function  */
@@ -271,14 +266,14 @@ int IRCWrapper::authenticate()
 
 	//printf("%lu bytes retrieved\n", (long)chunk.size);
 
-	string result;
+	String result;
 
 	curl_formfree(formpost);
 
 	if(chunk.memory)
 	{
-		// convert memory into std::string now
-		result = string(chunk.memory);
+		// convert memory into String now
+		result = String(chunk.memory);
 
 		// then free
 		free(chunk.memory);
@@ -301,9 +296,9 @@ int IRCWrapper::authenticate()
 #endif //USE_CURL
 }
 
-int IRCWrapper::processAuthenticationResults(std::string &results)
+int IRCWrapper::processAuthenticationResults(String &results)
 {
-	Ogre::ImprovedConfigFile cfg;
+	ImprovedConfigFile cfg;
 	cfg.loadFromString(results, "=", true);
 
 	// TODO: improve the checks if the config is valid or not ...
@@ -350,7 +345,7 @@ bool isSelf(IRCWrapper * ctx, const char *origin)
 	if(!origin) return false;
 
 	// we store the nickname without the host information, so cut off the host to find out if its us
-	std::string org = std::string(origin);
+	String org = String(origin);
 	size_t s = org.find("!");
 	if(s != org.npos)
 	{
@@ -373,7 +368,7 @@ void addlog (const char * fmt, ...)
 #endif
 	va_end (va_alist);
 
-	LOG("IRC| " + string(buf));
+	LOG("IRC| " + String(buf));
 }
 
 void dump_event (irc_session_t * session, const char * event, const char * origin, const char ** params, unsigned int count)
@@ -745,7 +740,7 @@ void *s_ircthreadstart(void* arg)
 
 	if (irc_connect (ctx->irc_session, serverName, ctx->serverPort, serverPassword, nick, userName, realName))
 	{
-		LOG ("Could not connect: " + Ogre::String(irc_strerror (irc_errno(ctx->irc_session))));
+		LOG ("Could not connect: " + String(irc_strerror (irc_errno(ctx->irc_session))));
 		return 0;
 	}
 

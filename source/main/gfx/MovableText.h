@@ -30,6 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __include_MovableText_H__
 
 #include "RoRPrerequisites.h"
+#include "Ogre.h"
 
 namespace Ogre {
 

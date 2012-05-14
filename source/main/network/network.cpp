@@ -20,34 +20,31 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_SOCKETW
 
 #include "network.h"
-#include "NetworkStreamManager.h"
-#include "RoRFrameListener.h"
-#include "Console.h"
-#include "CacheSystem.h"
+
 #include "BeamFactory.h"
 #include "CharacterFactory.h"
 #include "ChatSystem.h"
-#include "Scripting.h"
-#include "turboprop.h"
-#include "sha1.h"
-#include "Settings.h"
-#include "utils.h"
-#include "language.h"
+#include "Console.h"
 #include "errorutils.h"
-#include "RoRVersion.h"
-
-#include "gui_mp.h"
 #include "gui_menu.h"
+#include "gui_mp.h"
+#include "language.h"
+#include "RoRFrameListener.h"
+#include "RoRVersion.h"
+#include "Scripting.h"
+#include "Settings.h"
+#include "sha1.h"
+#include "utils.h"
 
 #ifdef USE_CRASHRPT
 # include "crashrpt.h"
 #endif
 
-using namespace RoR; //CSHA1
-
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 //#include <CFUserNotification.h>
 #endif
+
+using namespace Ogre;
 
 Network *net_instance;
 
@@ -226,10 +223,10 @@ bool Network::connect()
 	memset(sha1pwresult, 0, 250);
 	if(strnlen(pwbuffer, 250)>0)
 	{
-		CSHA1 sha1;
+		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)pwbuffer, (uint32_t)strnlen(pwbuffer, 250));
 		sha1.Final();
-		sha1.ReportHash(sha1pwresult, CSHA1::REPORT_HEX_SHORT);
+		sha1.ReportHash(sha1pwresult, RoR::CSHA1::REPORT_HEX_SHORT);
 	}
 
 	String usertokenhash = SSETTING("User Token Hash", "");
@@ -722,10 +719,10 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 	memset(sha1result, 0, 250);
 	if(buffer)
 	{
-		CSHA1 sha1;
+		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)buffer, header->size);
 		sha1.Final();
-		sha1.ReportHash(sha1result, CSHA1::REPORT_HEX_SHORT);
+		sha1.ReportHash(sha1result, RoR::CSHA1::REPORT_HEX_SHORT);
 	}
 
 	char tmp[256]="";
@@ -735,6 +732,4 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 	//LOG(hex);
 }
 
-#endif //SOCKETW
-
-
+#endif // USE_SOCKETW

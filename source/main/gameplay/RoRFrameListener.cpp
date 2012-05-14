@@ -29,9 +29,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "AdvancedScreen.h"
 #include "autopilot.h"
+#include "Beam.h"
+#include "BeamEngine.h"
 #include "BeamFactory.h"
 #include "CameraManager.h"
 #include "CacheSystem.h"
+#include "Character.h"
 #include "CharacterFactory.h"
 #include "ChatSystem.h"
 #include "CollisionTools.h"
@@ -43,6 +46,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "errorutils.h"
 #include "ExtinguishableFireAffector.h"
 #include "FlexAirfoil.h"
+#include "ForceFeedback.h"
 #include "GlowMaterialListener.h"
 #include "hdrlistener.h"
 #include "Heathaze.h"
@@ -63,6 +67,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRVersion.h"
 #include "SceneMouse.h"
 #include "ScopeLog.h"
+#include "SoundScriptManager.h"
 #include "screwprop.h"
 #include "Scripting.h"
 #include "Settings.h"
@@ -859,9 +864,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	trucked = 0;
 #endif
 
-	// init camera manager after mygui
-	new CameraManager(scm, mCamera, this, hfinder);
-
 	gameStartTime = getTimeStamp();
 
 	//network
@@ -1121,10 +1123,12 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	} else
 #endif //SOCKETW
-	{
-		// no network
-		person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
-	}
+	
+	// no network
+	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
+	
+	// init camera manager after mygui and after we have a character
+	new CameraManager(mSceneMgr, mCamera, this, hfinder);
 
 	person->setVisible(false);
 
@@ -3215,13 +3219,13 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 			} else if (loading_state==TERRAIN_LOADED)
 			{
-				Cache_Entry *selt = SelectorWindow::getSingleton().getSelection();
+				Cache_Entry *selection = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
 				if (config.size() == 0) configptr = 0;
-				if (selt)
-					initTrucks(true, selt->fname, selt->fext, configptr, false, skin);
+				if (selection)
+					initTrucks(true, selection->fname, selection->fext, configptr, false, skin);
 
 			} else if (loading_state==RELOADING)
 			{
@@ -3239,8 +3243,6 @@ bool RoRFrameListener::updateEvents(float dt)
 					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin, freeTruckPosition);
 					freeTruckPosition=false; // reset this, only to be used once
 				}
-
-
 
 				if (bigMap && localTruck)
 				{

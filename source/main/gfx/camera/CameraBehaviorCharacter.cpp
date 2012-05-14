@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorCharacter.h"
 
-#include "RoRFrameListener.h"
+#include "Character.h"
 
 using namespace Ogre;
 
@@ -32,10 +32,8 @@ CameraBehaviorCharacter::CameraBehaviorCharacter() :
 
 void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 {
-	Character *person = ctx.mEfl->person;
-
-	targetDirection   = -person->getAngle() - Math::HALF_PI;
-	camCenterPosition =  person->getPosition() + camPositionOffset;
+	targetDirection   = -ctx.mCharacter->getAngle() - Math::HALF_PI;
+	camCenterPosition =  ctx.mCharacter->getPosition() + camPositionOffset;
 
 	CameraBehavior::update(ctx);
 }
@@ -68,13 +66,12 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{
 		const OIS::MouseState ms = _arg.state;
-		Character *person = ctx.mEfl->person;
-		float angle = person->getAngle();
+		float angle = ctx.mCharacter->getAngle();
 		
 		camRotY += Degree((float)ms.Y.rel * 0.13f);
 		angle += ms.X.rel * 0.01f;
 
-		person->setAngle(angle);
+		ctx.mCharacter->setAngle(angle);
 
 		return true;
 	}

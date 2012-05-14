@@ -17,12 +17,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef INTERTHREADSTORE_H__
-#define INTERTHREADSTORE_H__
+#ifndef __InterThreadStoreVector_H_
+#define __InterThreadStoreVector_H_
 
 #include "RoRPrerequisites.h"
-#include <pthread.h>
 
+#include <pthread.h>
 
 /// this class is a helper to exchange data in a class between different threads, it can be pushed and pulled in various threads
 template <class T>
@@ -72,4 +72,4 @@ protected:
 	std::vector < T > store;
 };
 
-#endif //INTERTHREADSTORE_H__
+#endif // __InterThreadStoreVector_H_

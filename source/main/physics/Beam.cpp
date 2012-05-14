@@ -55,6 +55,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "Skidmark.h"
 #include "SlideNode.h"
+#include "SoundScriptManager.h"
 #include "turbojet.h"
 #include "turboprop.h"
 #include "water.h"
