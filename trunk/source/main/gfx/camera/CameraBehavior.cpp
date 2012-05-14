@@ -17,21 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehaviorOrbit.h"
+#include "CameraBehavior.h"
 
-#include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
 #include "Ogre.h"
-#include "Settings.h"
 
 using namespace Ogre;
 
-CameraBehaviorOrbit::CameraBehaviorOrbit() :
+CameraBehavior::CameraBehavior() :
 	  camRotX(0.0f)
 	, camRotY(0.3f)
 	, camDist(5.0f)
-	, minCamDist(3.0f)
-	, maxCamDist(6.0f)
+	, minCamDist(0.0f)
+	, maxCamDist(0.0f)
 	, camRatio(11.0f)
 	, camIdealPosition(Vector3::ZERO)
 	, camCenterPosition(Vector3::ZERO)
@@ -41,15 +39,7 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 {
 }
 
-void CameraBehaviorOrbit::activate(const CameraManager::cameraContext_t &ctx)
-{
-}
-
-void CameraBehaviorOrbit::deactivate(const CameraManager::cameraContext_t &ctx)
-{
-}
-
-void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 {
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 	{
@@ -108,8 +98,10 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 		camDist = 20;
 	}
 
-	camDist = std::max(minCamDist, camDist);
-	camDist = std::min(camDist, maxCamDist);
+	if ( minCamDist > 0 )
+		camDist = std::max(minCamDist, camDist);
+	if ( maxCamDist > 0 )
+		camDist = std::min(camDist, maxCamDist);
 
 	camIdealPosition = camDist * 0.5f * Vector3( \
 			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
@@ -126,9 +118,10 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->lookAt(camCenterPosition);
 }
 
-bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
+bool CameraBehavior::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
+
 	if ( ms.buttonDown(OIS::MB_Right) )
 	{
 		camRotX += Degree( (float)ms.X.rel * 0.13f);
@@ -136,5 +129,6 @@ bool CameraBehaviorOrbit::mouseMoved(const OIS::MouseEvent& _arg)
 		camDist +=        -(float)ms.Z.rel * 0.02f;
 		return true;
 	}
+
 	return false;
 }

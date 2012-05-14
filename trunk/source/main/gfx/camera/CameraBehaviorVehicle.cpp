@@ -25,12 +25,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicle::CameraBehaviorVehicle() :
-	  CameraBehaviorOrbit()
+	  CameraBehavior()
 	, camPitching(true)
 {
 	camRotY = 0.6f;
 	minCamDist = 8.0f;
-	maxCamDist = 20.0f;
+	maxCamDist = 0.0f;
 
 	if ( SSETTING("External Camera Mode", "Pitching") == "Static" )
 		camPitching = false;
@@ -53,5 +53,11 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 
 	camCenterPosition = ctx.mCurrTruck->getPosition();
 
-	CameraBehaviorOrbit::update(ctx);
+	CameraBehavior::update(ctx);
+}
+
+bool CameraBehaviorVehicle::switchBehavior(const CameraManager::cameraContext_t &ctx)
+{
+	// TODO: rear chase, front chase, ...
+	return true;
 }

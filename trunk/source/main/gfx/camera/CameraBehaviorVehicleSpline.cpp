@@ -38,7 +38,7 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 
 void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
 {
-	CameraBehaviorOrbit::activate(ctx);
+	CameraBehavior::activate(ctx);
 
 	if ( !myManualObject )
 	{
@@ -93,7 +93,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 		camCenterPosition = ctx.mCurrTruck->getPosition();
 	}
 
-	CameraBehaviorOrbit::update(ctx);
+	CameraBehavior::update(ctx);
 }
 
 bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx)

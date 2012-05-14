@@ -30,12 +30,14 @@ public:
 
 	CameraBehaviorVehicleSpline();
 
-	void activate(const CameraManager::cameraContext_t &ctx);
 	void update(const CameraManager::cameraContext_t &ctx);
+	
+	bool mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx);
+
+	void activate(const CameraManager::cameraContext_t &ctx);
+
 
 	void updateSplineDisplay();
-
-	bool mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx);
 
 protected:
 

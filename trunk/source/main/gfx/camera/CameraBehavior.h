@@ -17,33 +17,34 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_
-#define __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_
+#ifndef __CAMERA_BEHAVIOR_ORBIT_H_
+#define __CAMERA_BEHAVIOR_ORBIT_H_
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehavior.h"
+#include "ICameraBehavior.h"
 
-class CameraBehaviorCharacter : public CameraBehavior
+class CameraBehavior : public ICameraBehavior
 {
 public:
 
-	CameraBehaviorCharacter();
+	CameraBehavior();
 
 	void update(const CameraManager::cameraContext_t &ctx);
 
-	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx) {};
+	void deactivate(const CameraManager::cameraContext_t &ctx) {};
+
+	bool mouseMoved(const OIS::MouseEvent& _arg);
+	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
 protected:
 
-	enum CameraModes {
-		CHARACTER_FIRST_PERSON=0,
-		CHARACTER_THIRD_PERSON,
-		CHARACTER_END
-	};
-
-	int camMode;
-	Ogre::Vector3 camPositionOffset;
+	Ogre::Radian camRotX, camRotY;
+	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
+	float camDist, minCamDist, maxCamDist, camRatio;
+	float targetDirection, targetPitch;
 };
 
-#endif // __CAMERA_BEHAVIOR_CHARACTER_ORBIT_H_
+#endif // __CAMERA_BEHAVIOR_ORBIT_H_
