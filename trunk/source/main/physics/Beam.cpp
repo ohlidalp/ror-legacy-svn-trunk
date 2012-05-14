@@ -1353,8 +1353,21 @@ float Beam::getTotalMass(bool withLocked)
 {
 	if (!withLocked) return totalmass; // already computed in calc_masses2
 
-	bool found = true;
 	float mass = 0.0f;
+	
+	std::list<Beam*> linkedBeams = getAllLinkedBeams();
+
+	for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		mass += dynamic_cast<Beam*>(*it)->totalmass;
+
+	return mass;
+}
+
+std::list<Beam*> Beam::getAllLinkedBeams()
+{
+	std::list<Beam*> result;
+
+	bool found = true;
 	std::map< Beam*, bool> lookup_table;
 	std::pair<std::map< Beam*, bool>::iterator, bool> ret;
 
@@ -1376,13 +1389,13 @@ float Beam::getTotalMass(bool withLocked)
 						found = found || ret.second;
 					}
 				}
-				mass += it_beam->first->totalmass;
 				it_beam->second = true;
+				result.push_back(it_beam->first);
 			}
 		}
 	}
 
-	return mass;
+	return result;
 }
 
 int Beam::getWheelNodeCount()
@@ -4253,7 +4266,7 @@ void Beam::preMapLabelRenderUpdate(bool mode, float charheight)
 	}
 }
 
-void Beam::showSkeleton(bool meshes, bool newMode)
+void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 {
 	if(lockSkeletonchange)
 		return;
@@ -4334,16 +4347,21 @@ void Beam::showSkeleton(bool meshes, bool newMode)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
 
-	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
-			it->lockTruck->showSkeleton();
+	if (linked)
+	{
+		// apply to the locked truck
+		std::list<Beam*> linkedBeams = getAllLinkedBeams();
+
+		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+			dynamic_cast<Beam*>(*it)->showSkeleton(meshes, newMode , false);
+	}
 
 	lockSkeletonchange=false;
 
 	TRIGGER_EVENT(SE_TRUCK_SKELETON_TOGGLE, trucknum);
 }
 
-void Beam::hideSkeleton(bool newMode)
+void Beam::hideSkeleton(bool newMode, bool linked)
 {
 	if(lockSkeletonchange)
 		return;
@@ -4418,9 +4436,14 @@ void Beam::hideSkeleton(bool newMode)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
 
-	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
-			it->lockTruck->hideSkeleton();
+	if (linked)
+	{
+		// apply to the locked truck
+		std::list<Beam*> linkedBeams = getAllLinkedBeams();
+
+		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+			dynamic_cast<Beam*>(*it)->showSkeleton(newMode , false);
+	}
 
 	lockSkeletonchange=false;
 }
@@ -4503,7 +4526,7 @@ void Beam::setMeshWireframe(SceneNode *node, bool value)
 	}
 }
 
-void Beam::setMeshVisibility(bool visible)
+void Beam::setMeshVisibility(bool visible, bool linked)
 {
 	int i=0;
 	for(i=0;i<free_prop;i++)
@@ -4528,10 +4551,14 @@ void Beam::setMeshVisibility(bool visible)
 	if(cabMesh) cabNode->setVisible(visible);
 	meshesVisible = visible;
 
-	// apply to the locked truck
-	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-		if (it->lockTruck && it->lockTruck->getTruckName() != getTruckName())
-			it->lockTruck->setMeshVisibility(visible);
+	if (linked)
+	{
+		// apply to the locked truck
+		std::list<Beam*> linkedBeams = getAllLinkedBeams();
+
+		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+			dynamic_cast<Beam*>(*it)->setMeshVisibility(visible, false);
+	}
 }
 
 void Beam::cabFade(float amount)

@@ -148,8 +148,8 @@ public:
 	//v=0: full detail
 	//v=1: no beams
 	void setDetailLevel(int v);
-	void showSkeleton(bool meshes=true, bool newMode=false);
-	void hideSkeleton(bool newMode=false);
+	void showSkeleton(bool meshes=true, bool newMode=false, bool linked=true);
+	void hideSkeleton(bool newMode=false, bool linked=true);
 	void resetAutopilot();
 	void disconnectAutopilot();
 	void scaleTruck(float value);
@@ -287,7 +287,10 @@ public:
 
 	Ogre::String realtruckfilename;
 
-
+	/*
+	 *@return Returns a list of all connected (hooked) beams 
+	 */
+	std::list<Beam*> getAllLinkedBeams();
 
 	// this must be in the header as the network stuff is using it...
 	bool getBrakeLightVisible();
@@ -317,7 +320,7 @@ public:
 	bool abs_state;
 	float abs_timer;
 
-	void setMeshVisibility(bool visible);
+	void setMeshVisibility(bool visible, bool linked=true);
 	bool meshesVisible;
 	bool inRange(float num, float min, float max);
 
