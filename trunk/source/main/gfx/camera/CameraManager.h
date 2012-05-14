@@ -66,8 +66,6 @@ public:
 	Ogre::Camera *getCamera() { return ctx.mCamera; };
 	int getCameraMode() { return currentBehaviorID; };
 
-	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
-
 protected:
 
 	cameraContext_t ctx;

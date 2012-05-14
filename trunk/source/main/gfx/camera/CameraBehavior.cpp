@@ -43,7 +43,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 {
 	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
 	{
-		if(camRotX > Degree(0))
+		if ( camRotX > Degree(0) )
 			camRotX = Degree(0);
 		else
 			camRotX = Degree(180);
@@ -93,9 +93,9 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
 	{
-		camRotX = 0;
-		camRotY = CameraManager::DEFAULT_INTERNAL_CAM_PITCH;
-		camDist = 20;
+		camRotX =  0.0f;
+		camRotY =  0.0f;
+		camDist = 20.0f;
 	}
 
 	if ( minCamDist > 0.0f )

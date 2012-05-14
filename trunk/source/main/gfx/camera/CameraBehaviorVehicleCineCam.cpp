@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "OverlayWrapper.h"
+#include "Settings.h"
 
 using namespace Ogre;
 
@@ -28,7 +29,9 @@ CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	  CameraBehaviorVehicle()
 {
 	camDist = 0.1f;
-	camRatio = 0.0f;
+	camRatio = 0.01f;
+	minCamDist = 0.0f;
+	maxCamDist = 0.5f;
 }
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
@@ -37,7 +40,7 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
 
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	targetPitch = 0.0f;
+	targetPitch     = 0.0f;
 
 	if ( camPitching )
 	{
@@ -51,8 +54,12 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
 {
-	camRotX = 0;
-	camRotY = Degree(CameraManager::DEFAULT_INTERNAL_CAM_PITCH).valueRadians();
+	float fov = FSETTING("FOV Internal", 75);
+
+	ctx.mCamera->setFOVy(Degree(fov));
+
+	camRotX = 0.0f;
+	camRotY = 0.15f;
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -70,6 +77,11 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
 {
+	float fov = FSETTING("FOV External", 60);
+
+	ctx.mCamera->setFOVy(Degree(fov));
+	ctx.mCamera->roll(Radian(0));
+
 	ctx.mCurrTruck->prepareInside(false);
 
 	if ( ctx.mOverlayWrapper )
