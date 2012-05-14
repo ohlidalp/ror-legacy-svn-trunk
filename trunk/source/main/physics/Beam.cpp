@@ -1353,12 +1353,12 @@ float Beam::getTotalMass(bool withLocked)
 {
 	if (!withLocked) return totalmass; // already computed in calc_masses2
 
-	float mass = 0.0f;
+	float mass = totalmass;
 	
 	std::list<Beam*> linkedBeams = getAllLinkedBeams();
 
 	for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-		mass += dynamic_cast<Beam*>(*it)->totalmass;
+		mass += (*it)->totalmass;
 
 	return mass;
 }
@@ -1386,11 +1386,14 @@ std::list<Beam*> Beam::getAllLinkedBeams()
 					if (it_hook->lockTruck)
 					{
 						ret = lookup_table.insert(std::pair< Beam*, bool>(it_hook->lockTruck, false));
-						found = found || ret.second;
+						if (ret.second)
+						{
+							result.push_back(it_hook->lockTruck);
+							found = true;
+						}
 					}
 				}
 				it_beam->second = true;
-				result.push_back(it_beam->first);
 			}
 		}
 	}
@@ -4346,14 +4349,14 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
-
+	
 	if (linked)
 	{
 		// apply to the locked truck
 		std::list<Beam*> linkedBeams = getAllLinkedBeams();
 
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-			dynamic_cast<Beam*>(*it)->showSkeleton(meshes, newMode , false);
+			(*it)->showSkeleton(meshes, newMode, false);
 	}
 
 	lockSkeletonchange=false;
@@ -4442,7 +4445,7 @@ void Beam::hideSkeleton(bool newMode, bool linked)
 		std::list<Beam*> linkedBeams = getAllLinkedBeams();
 
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-			dynamic_cast<Beam*>(*it)->showSkeleton(newMode , false);
+			(*it)->hideSkeleton(newMode, false);
 	}
 
 	lockSkeletonchange=false;
@@ -4557,7 +4560,7 @@ void Beam::setMeshVisibility(bool visible, bool linked)
 		std::list<Beam*> linkedBeams = getAllLinkedBeams();
 
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-			dynamic_cast<Beam*>(*it)->setMeshVisibility(visible, false);
+			(*it)->setMeshVisibility(visible, false);
 	}
 }
 
