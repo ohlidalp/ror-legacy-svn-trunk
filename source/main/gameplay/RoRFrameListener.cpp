@@ -1128,7 +1128,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 	
 	// init camera manager after mygui and after we have a character
-	new CameraManager(mSceneMgr, mCamera, this, hfinder);
+	new CameraManager(mSceneMgr, mCamera, this, hfinder, person, ow);
 
 	person->setVisible(false);
 
@@ -5389,6 +5389,15 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	{
 		CameraManager::getSingleton().update(dt);
 	}
+
+#ifdef USE_OPENAL
+	// update audio listener position
+	static Vector3 lastCameraPosition;
+	Vector3 cameraSpeed = (mCamera->getPosition() - lastCameraPosition) / dt;
+	lastCameraPosition = mCamera->getPosition();
+
+	SoundScriptManager::getSingleton().setCamera(mCamera->getPosition(), mCamera->getDirection(), mCamera->getUp(), cameraSpeed);
+#endif // USE_OPENAL
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 

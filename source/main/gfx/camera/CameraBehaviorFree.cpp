@@ -20,35 +20,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorFree.h"
 
 #include "Console.h"
-#include "DepthOfFieldEffect.h"
 #include "InputEngine.h"
-#include "Ogre.h"
-#include "Settings.h"
 #include "language.h"
+#include "Ogre.h"
 
 using namespace Ogre;
-
-void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
-{
-	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
-
-	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);
-
-#ifdef USE_MYGUI
-	MyGUI::PointerManager::getInstance().setVisible(false);
-#endif // USE_MYGUI
-}
-
-void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
-{
-	ctx.mCamera->setFixedYawAxis(false);
-
-	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);
-
-#ifdef USE_MYGUI
-	MyGUI::PointerManager::getInstance().setVisible(true);
-#endif // USE_MYGUI
-}
 
 void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 {
@@ -91,6 +67,28 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 trans = ctx.mCamera->getOrientation() * mTranslateVector;
 	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + trans);
+}
+
+void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
+{
+	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
+
+	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000, false);
+
+#ifdef USE_MYGUI
+	MyGUI::PointerManager::getInstance().setVisible(false);
+#endif // USE_MYGUI
+}
+
+void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
+{
+	ctx.mCamera->setFixedYawAxis(false);
+
+	CONSOLE_PUTMESSAGE(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("normal camera"), "camera.png", 3000, false);
+
+#ifdef USE_MYGUI
+	MyGUI::PointerManager::getInstance().setVisible(true);
+#endif // USE_MYGUI
 }
 
 bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
