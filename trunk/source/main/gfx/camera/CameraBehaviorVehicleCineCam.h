@@ -36,6 +36,10 @@ public:
 	void deactivate(const CameraManager::cameraContext_t &ctx);
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
+
+protected:
+
+	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 };
 
 #endif // __CAMERA_BEHAVIOR_VEHICLE_INTERNAL_H_
