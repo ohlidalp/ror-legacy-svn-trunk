@@ -76,8 +76,8 @@ public:
 	void process(); // update function
 	virtual void processIRCEvent(message_t &msg) = 0; // single event
 
-	int sendMessage(Ogre::String msg, Ogre::String channelOrNick = Ogre::String());
-	int sendMeMessage(Ogre::String msg, Ogre::String channelOrNick = Ogre::String());
+	int sendMessage(Ogre::String msg, Ogre::String channelOrNick = "");
+	int sendMeMessage(Ogre::String msg, Ogre::String channelOrNick = "");
 	int changeNick(Ogre::String newNick);
 	int joinChannel(Ogre::String channel, Ogre::String channelKey);
 	int leaveChannel(Ogre::String channel);

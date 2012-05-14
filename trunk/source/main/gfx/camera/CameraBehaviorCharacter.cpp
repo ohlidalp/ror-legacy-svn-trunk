@@ -65,7 +65,7 @@ bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_
 		camRotY = 0.1f;
 		camDist = 0.1f;
 		camRatio = 0.0f;
-		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
+		camPositionOffset = Vector3(0.1f, 1.82f, 0.0f);
 	} else if ( camMode == CHARACTER_THIRD_PERSON )
 	{
 		camRotY = 0.3f;
