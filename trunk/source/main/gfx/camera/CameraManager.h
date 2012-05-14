@@ -71,6 +71,8 @@ protected:
 
 	cameraContext_t ctx;
 
+	int mSceneDetailIndex;
+
 	float mTransScale, mTransSpeed;
 	float mRotScale, mRotateSpeed;
 

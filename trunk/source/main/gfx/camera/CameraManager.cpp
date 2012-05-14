@@ -133,6 +133,23 @@ void CameraManager::update(float dt)
 		switchToNextBehavior();
 	}
 
+	if ( INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_RENDER_MODE, 0.5f) )
+	{
+		mSceneDetailIndex = (mSceneDetailIndex + 1) % 3 ;
+		switch (mSceneDetailIndex)
+		{
+		case 0:
+			ctx.mCamera->setPolygonMode(Ogre::PM_SOLID);
+			break;
+		case 1:
+			ctx.mCamera->setPolygonMode(Ogre::PM_WIREFRAME);
+			break;
+		case 2:
+			ctx.mCamera->setPolygonMode(Ogre::PM_POINTS);
+			break;
+		}
+	}
+
 	ctx.mCurrTruck  = BeamFactory::getSingleton().getCurrentTruck();
 	ctx.mDt         = dt;
 	ctx.mRotScale   = Degree(mRotScale);
