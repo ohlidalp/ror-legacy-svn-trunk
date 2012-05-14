@@ -98,9 +98,9 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 		camDist = 20;
 	}
 
-	if ( minCamDist > 0 )
+	if ( minCamDist > 0.0f )
 		camDist = std::max(minCamDist, camDist);
-	if ( maxCamDist > 0 )
+	if ( maxCamDist > 0.0f )
 		camDist = std::min(camDist, maxCamDist);
 
 	camIdealPosition = camDist * 0.5f * Vector3( \
@@ -112,7 +112,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 	float real_camdist = camIdealPosition.length();
 
 	camIdealPosition = camIdealPosition + camCenterPosition + camTranslation;
-	Vector3 newPosition = ( camIdealPosition + camRatio * ctx.mCamera->getPosition() ) / (camRatio+1.0f);
+	Vector3 newPosition = (camIdealPosition + camRatio * ctx.mCamera->getPosition()) / (camRatio + 1.0f);
 
 	ctx.mCamera->setPosition(newPosition);
 	ctx.mCamera->lookAt(camCenterPosition);

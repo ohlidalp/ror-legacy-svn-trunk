@@ -1,4 +1,4 @@
-/*
+/*/
 This source file is part of Rigs of Rods
 Copyright 2005-2012 Pierre-Michel Ricordel
 Copyright 2007-2012 Thomas Fischer
@@ -20,14 +20,65 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicleCineCam.h"
 
 #include "Beam.h"
-#include "DepthOfFieldEffect.h"
-#include "Settings.h"
+#include "OverlayWrapper.h"
 
 using namespace Ogre;
 
-CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam()
+CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
+	  CameraBehaviorVehicle()
 {
+	camDist = 0.1f;
 	camRatio = 0.0f;
+}
+
+void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
+{
+	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
+				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
+
+	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+	targetPitch = 0.0f;
+
+	if ( camPitching )
+	{
+		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
+	}
+
+	camCenterPosition = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos;
+
+	CameraBehavior::update(ctx);
+}
+
+void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
+{
+	camRotX = 0;
+	camRotY = Degree(CameraManager::DEFAULT_INTERNAL_CAM_PITCH).valueRadians();
+
+	ctx.mCurrTruck->prepareInside(true);
+
+	if ( ctx.mOverlayWrapper )
+	{
+		if(ctx.mCurrTruck->driveable == AIRPLANE)
+			ctx.mOverlayWrapper->showDashboardOverlays(true, ctx.mCurrTruck);
+		else
+			ctx.mOverlayWrapper->showDashboardOverlays(false, ctx.mCurrTruck);
+	}
+
+	ctx.mCurrTruck->currentcamera = 0;
+	ctx.mCurrTruck->changedCamera();
+}
+
+void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
+{
+	ctx.mCurrTruck->prepareInside(false);
+
+	if ( ctx.mOverlayWrapper )
+	{
+		ctx.mOverlayWrapper->showDashboardOverlays(true, ctx.mCurrTruck);
+	}
+
+	ctx.mCurrTruck->currentcamera= - 1;
+	ctx.mCurrTruck->changedCamera();
 }
 
 bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
@@ -35,20 +86,9 @@ bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraCon
 	if ( ctx.mCurrTruck->currentcamera < ctx.mCurrTruck->freecinecamera-1 )
 	{
 		ctx.mCurrTruck->currentcamera++;
-
-		// TODO
-
+		ctx.mCurrTruck->changedCamera();
 		return false;
 	}
 	
-	// TODO
-
-	ctx.mCurrTruck->currentcamera = -1;
-
 	return true;
-}
-
-void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
-{
-	// TODO
 }

@@ -38,29 +38,6 @@ void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 	CameraBehavior::update(ctx);
 }
 
-// TODO: First-person mouse interaction
-
-bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
-{
-	camMode = (camMode + 1) % CHARACTER_END;
-
-	if ( camMode == CHARACTER_FIRST_PERSON )
-	{
-		camRotY = 0.1f;
-		camDist = 0.1;
-		camRatio = 0.0f;
-		camPositionOffset = Vector3(0.1f, 1.82f, 0.0f);
-	} else if ( camMode == CHARACTER_THIRD_PERSON )
-	{
-		camRotY = 0.3f;
-		camDist = 5.0f;
-		camRatio = 11.0f;
-		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
-	}
-
-	return false;
-}
-
 bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	if ( camMode == CHARACTER_FIRST_PERSON )
@@ -77,4 +54,25 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	}
 
 	return CameraBehavior::mouseMoved(ctx, _arg);
+}
+
+bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
+{
+	camMode = (camMode + 1) % CHARACTER_END;
+
+	if ( camMode == CHARACTER_FIRST_PERSON )
+	{
+		camRotY = 0.1f;
+		camDist = 0.1f;
+		camRatio = 0.0f;
+		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
+	} else if ( camMode == CHARACTER_THIRD_PERSON )
+	{
+		camRotY = 0.3f;
+		camDist = 5.0f;
+		camRatio = 11.0f;
+		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
+	}
+
+	return false;
 }

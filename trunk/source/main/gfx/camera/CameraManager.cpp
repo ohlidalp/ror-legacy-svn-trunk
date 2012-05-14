@@ -17,22 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "CameraManager.h"
 
 #include "BeamFactory.h"
-#include "Console.h"
-#include "DepthOfFieldEffect.h"
-#include "envmap.h"
-#include "heightfinder.h"
 #include "InputEngine.h"
-#include "language.h"
-#include "Ogre.h"
-#include "RoRFrameListener.h"
-#include "Settings.h"
-#include "SoundScriptManager.h"
-#include "SkyManager.h"
-#include "water.h"
 
 #include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFree.h"
@@ -46,7 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf) : 
+CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf, Character *ps, OverlayWrapper *ow) : 
 	  currentBehavior(0)
 	, currentBehaviorID(-1)
 	, mTransScale(1.0f)
@@ -59,11 +47,11 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	createGlobalBehaviors();
 
 	ctx.mCamera = cam;
-	ctx.mCharacter = efl->person;
+	ctx.mCharacter = ps;
 	ctx.mCurrTruck = 0;
 	ctx.mEfl = efl;
 	ctx.mHfinder = hf;
-	ctx.mLastPosition = Vector3::ZERO;
+	ctx.mOverlayWrapper = ow;
 	ctx.mSceneMgr = scm;
 }
 
@@ -171,14 +159,6 @@ void CameraManager::update(float dt)
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	}
-
-#ifdef USE_OPENAL
-	// update audio listener position
-	Vector3 cameraSpeed = (ctx.mCamera->getPosition() - ctx.mLastPosition) / dt;
-	ctx.mLastPosition = ctx.mCamera->getPosition();
-
-	SoundScriptManager::getSingleton().setCamera(ctx.mCamera->getPosition(), ctx.mCamera->getDirection(), ctx.mCamera->getUp(), cameraSpeed);
-#endif // USE_OPENAL
 }
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)

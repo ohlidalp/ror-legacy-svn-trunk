@@ -36,38 +36,6 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 {
 }
 
-void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
-{
-	CameraBehavior::activate(ctx);
-
-	if ( !myManualObject )
-	{
-		myManualObject =  ctx.mSceneMgr->createManualObject();
-		mySceneNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
-
-		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
-		for (int i = 0; i < splineDrawResolution; i++)
-		{
-			myManualObject->position(0, 0, 0);
-		}
-		myManualObject->end();
-
-		mySceneNode->attachObject(myManualObject);
-	}
-}
-
-void CameraBehaviorVehicleSpline::updateSplineDisplay()
-{
-	myManualObject->beginUpdate(0);
-	for (int i = 0; i < splineDrawResolution; i++)
-	{
-		float pos1d = i / (float)splineDrawResolution;
-		Vector3 pos3d = spline->interpolate(pos1d);
-		myManualObject->position(pos3d);
-	}
-	myManualObject->end();
-}
-
 void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
@@ -96,6 +64,26 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 	CameraBehavior::update(ctx);
 }
 
+void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
+{
+	CameraBehavior::activate(ctx);
+
+	if ( !myManualObject )
+	{
+		myManualObject =  ctx.mSceneMgr->createManualObject();
+		mySceneNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
+
+		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
+		for (int i = 0; i < splineDrawResolution; i++)
+		{
+			myManualObject->position(0, 0, 0);
+		}
+		myManualObject->end();
+
+		mySceneNode->attachObject(myManualObject);
+	}
+}
+
 bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
@@ -114,4 +102,16 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 		return true;
 	}
 	return false;
+}
+
+void CameraBehaviorVehicleSpline::updateSplineDisplay()
+{
+	myManualObject->beginUpdate(0);
+	for (int i = 0; i < splineDrawResolution; i++)
+	{
+		float pos1d = i / (float)splineDrawResolution;
+		Vector3 pos3d = spline->interpolate(pos1d);
+		myManualObject->position(pos3d);
+	}
+	myManualObject->end();
 }
