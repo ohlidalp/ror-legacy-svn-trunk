@@ -242,9 +242,11 @@ bool Character::getVisible()
 	return personode->getAttachedObject(0)->getVisible();
 }
 
-float Character::getAngle()
+void Character::setAngle(float angle)
 {
-	return persoangle;
+	persoangle = angle;
+	personode->resetOrientation();
+	personode->yaw(-Radian(persoangle));
 }
 
 void Character::setCollisions(Collisions *c)
@@ -311,7 +313,7 @@ void Character::update(float dt)
 		Vector3 position3=position+Vector3(0, 0.25, 0);
 		if (collisions->collisionCorrect(&position))
 		{
-			if (persovspeed<0) persovspeed=0.0;
+			if (persovspeed<0) persovspeed=0.0f;
 			if (collisions->collisionCorrect(&position2) && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
 			else perso_canjump=true;
 		}
@@ -331,7 +333,7 @@ void Character::update(float dt)
 					if (collisions->collisionCorrect(&cposition))
 					{
 						position=cposition;
-						if (persovspeed<0) persovspeed=0.0;
+						if (persovspeed<0) persovspeed=0.0f;
 						perso_canjump=true;
 						/*if (collisions->collisionCorrect(&cposition2))
 						{
@@ -351,7 +353,7 @@ void Character::update(float dt)
 		if (position.y<pheight)
 		{
 			position.y=pheight;
-			persovspeed=0.0;
+			persovspeed=0.0f;
 			perso_canjump=true;
 		}
 		//water stuff
@@ -362,7 +364,7 @@ void Character::update(float dt)
 			if (position.y<wheight-1.8)
 			{
 				position.y=wheight-1.8;
-				persovspeed=0.0;
+				persovspeed=0.0f;
 			};
 		}
 
@@ -382,7 +384,7 @@ void Character::update(float dt)
 		}
 
 		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_RIGHT);
-		if (tmpJoy > 0.0)
+		if (tmpJoy > 0.0f)
 		{
 			persoangle += dt * 2.0 * tmpJoy;
 			personode->resetOrientation();
@@ -395,7 +397,7 @@ void Character::update(float dt)
 		}
 
 		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_LEFT);
-		if (tmpJoy > 0.0)
+		if (tmpJoy > 0.0f)
 		{
 			persoangle -= dt * 2.0 * tmpJoy;
 			personode->resetOrientation();
@@ -406,32 +408,38 @@ void Character::update(float dt)
 				idleanim=false;
 			}
 		}
-
-		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
-		if (tmpJoy > 0.0)
-		{
-			// animation missing for that
-			position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle-Math::PI/2), 0.0, sin(persoangle-Math::PI/2));
-		}
-
-		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
-		if (tmpJoy > 0.0)
-		{
-			// animation missing for that
-			position+=dt*persospeed*1.5*tmpJoy*Vector3(cos(persoangle+Math::PI/2), 0.0, sin(persoangle+Math::PI/2));
-		}
-
-		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
-		if(tmpJoy>1) tmpJoy = 1;
+				
 		float tmpRun = INPUTENGINE.getEventValue(EV_CHARACTER_RUN);
-		float tmpBack  = INPUTENGINE.getEventValue(EV_CHARACTER_BACKWARDS) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_DOWN);
-		if(tmpBack>1) tmpBack = 1;
-		if (tmpJoy > 0.0 || tmpRun > 0.0)
+		float accel = 1.0f;
+
+		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
+		if (tmpJoy > 0.0f)
 		{
-			float accel = 1.0 * tmpJoy;
-			float time = dt*accel*persospeed;
-			if (tmpRun > 0)
-				accel = 3.0 * tmpRun;
+			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			// animation missing for that
+			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle-Math::PI/2), 0.0f, sin(persoangle-Math::PI/2));
+		}
+
+		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
+		if (tmpJoy > 0.0f)
+		{
+			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			// animation missing for that
+			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle+Math::PI/2), 0.0f, sin(persoangle+Math::PI/2));
+		}
+
+		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
+		float tmpBack  = INPUTENGINE.getEventValue(EV_CHARACTER_BACKWARDS) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_DOWN);
+		
+		tmpJoy  = std::min(tmpJoy, 1.0f);
+		tmpBack = std::min(tmpBack, 1.0f);
+
+		if (tmpJoy > 0.0f || tmpRun > 0.0f)
+		{
+			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			
+			float time = dt*tmpJoy*persospeed;
+
 			if(isswimming)
 			{
 				setAnimationMode("Swim_loop", time);
@@ -450,7 +458,7 @@ void Character::update(float dt)
 			}
 			// 0.005f fixes character getting stuck on meshes
 			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle), 0.01f, sin(persoangle));
-		} else if (tmpBack > 0.0)
+		} else if (tmpBack > 0.0f)
 		{
 			float time = -dt*persospeed;
 			if(isswimming)
@@ -487,7 +495,7 @@ void Character::update(float dt)
 		Vector3 rposition=position;
 		if (collisions->collisionCorrect(&position) || collisions->collisionCorrect(&position2))
 		{
-		if (persovspeed<0) persovspeed=0.0;
+		if (persovspeed<0) persovspeed=0.0f;
 		Vector3 corr=rposition-position; corr.y=0;
 		if (corr.squaredLength()>0 && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
 		perso_canjump=true;
@@ -506,9 +514,9 @@ void Character::update(float dt)
 		int res = beamCoupling->calculateDriverPos(pos, rot);
 		if(!res)
 		{
-			setPosition(pos + rot * Vector3(0,-0.6f,-0.1f)); // hack to position the character right perfect on the default seat
+			setPosition(pos + rot * Vector3(0.0f,-0.6f,-0.1f)); // hack to position the character right perfect on the default seat
 			setOrientation(rot);
-			setAnimationMode("driving", 0);
+			setAnimationMode("driving");
 			Real lenght = persoanim->getAnimationState("driving")->getLength();
 			float timePos = ((angle + 1.0f) * 0.5f) * lenght;
 			//LOG("angle: " + TOSTRING(angle) + " / " + TOSTRING(timePos));
@@ -540,11 +548,6 @@ void Character::updateMapIcon()
 void Character::move(Ogre::Vector3 v)
 {
 	personode->translate(v);
-}
-
-Ogre::SceneNode *Character::getSceneNode()
-{
-	return personode;
 }
 
 void Character::sendStreamSetup()
