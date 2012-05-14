@@ -3226,6 +3226,8 @@ bool RoRFrameListener::updateEvents(float dt)
 				if (config.size() == 0) configptr = 0;
 				if (selection)
 					initTrucks(true, selection->fname, selection->fext, configptr, false, skin);
+				else
+					initTrucks(false, "");
 
 			} else if (loading_state==RELOADING)
 			{
