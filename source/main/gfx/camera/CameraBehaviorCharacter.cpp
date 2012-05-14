@@ -62,3 +62,22 @@ bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_
 
 	return false;
 }
+
+bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+{
+	if ( camMode == CHARACTER_FIRST_PERSON )
+	{
+		const OIS::MouseState ms = _arg.state;
+		Character *person = ctx.mEfl->person;
+		float angle = person->getAngle();
+		
+		camRotY += Degree((float)ms.Y.rel * 0.13f);
+		angle += ms.X.rel * 0.01f;
+
+		person->setAngle(angle);
+
+		return true;
+	}
+
+	return CameraBehavior::mouseMoved(ctx, _arg);
+}

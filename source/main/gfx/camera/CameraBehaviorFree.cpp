@@ -93,13 +93,12 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + trans);
 }
 
-bool CameraBehaviorFree::mouseMoved(const OIS::MouseEvent& _arg)
+bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
-	Camera *cam = CameraManager::getSingleton().getCamera();
 
-	cam->yaw(Degree(-(float)ms.X.rel * 0.13f));
-	cam->pitch(Degree(-(float)ms.Y.rel * 0.13f));
+	ctx.mCamera->yaw(Degree(-(float)ms.X.rel * 0.13f));
+	ctx.mCamera->pitch(Degree(-(float)ms.Y.rel * 0.13f));
 
 	return true;
 }

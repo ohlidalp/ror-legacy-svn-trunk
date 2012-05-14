@@ -33,9 +33,9 @@ public:
 
 	virtual void update(const CameraManager::cameraContext_t &ctx) = 0;
 
-	virtual bool mouseMoved(const OIS::MouseEvent& _arg) = 0;
-	virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
-	virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
+	virtual bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg) = 0;
+	virtual bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
+	virtual bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
 	virtual void activate(const CameraManager::cameraContext_t &ctx) = 0;
 	virtual void deactivate(const CameraManager::cameraContext_t &ctx) = 0;

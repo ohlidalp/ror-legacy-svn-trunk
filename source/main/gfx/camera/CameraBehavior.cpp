@@ -118,7 +118,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->lookAt(camCenterPosition);
 }
 
-bool CameraBehavior::mouseMoved(const OIS::MouseEvent& _arg)
+bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 

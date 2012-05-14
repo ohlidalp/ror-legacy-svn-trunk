@@ -96,7 +96,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 	CameraBehavior::update(ctx);
 }
 
-bool CameraBehaviorVehicleSpline::mouseMoved(const OIS::MouseEvent& _arg, const CameraManager::cameraContext_t &ctx)
+bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
