@@ -79,7 +79,7 @@ void *s_receivethreadstart(void* vid)
 Timer Network::timer = Ogre::Timer();
 unsigned int Network::myuid=0;
 
-Network::Network(std::string servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
+Network::Network(String servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
 {
 	// update factories network objects
 

@@ -109,4 +109,5 @@ protected:
 };
 
 #endif // __IRCWrapper_H_
+
 #endif // USE_SOCKETW
