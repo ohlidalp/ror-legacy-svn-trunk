@@ -18,12 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "SceneMouse.h"
-#include "RoRFrameListener.h"
+
 #include "Beam.h"
 #include "BeamFactory.h"
-#include <Ogre.h>
-
 #include "CameraManager.h"
+#include "RoRFrameListener.h"
 
 #ifdef USE_MYGUI
 # include <MyGUI.h>
@@ -31,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-SceneMouse::SceneMouse(Ogre::SceneManager *scm) :
+SceneMouse::SceneMouse(SceneManager *scm) :
 	  scm(scm)
 {
 	setSingleton(this);
@@ -49,7 +48,7 @@ SceneMouse::SceneMouse(Ogre::SceneManager *scm) :
 	pickLineMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1);
 	pickLineMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1);
 
-	pickLine->begin("PickLineMaterial", Ogre::RenderOperation::OT_LINE_LIST);
+	pickLine->begin("PickLineMaterial", RenderOperation::OT_LINE_LIST);
 	pickLine->position(0, 0, 0);
 	pickLine->position(0, 0, 0);
 	pickLine->end();
@@ -67,11 +66,11 @@ SceneMouse::~SceneMouse()
 void SceneMouse::releaseMousePick()
 {
 	// hide mouse line
-	if(pickLineNode)
+	if (pickLineNode)
 		pickLineNode->setVisible(false);
 
 	// remove forces
-	if(grab_truck)
+	if (grab_truck)
 		grab_truck->mouseMove(minnode, Vector3::ZERO, 0);
 
 	// reset the variables
@@ -91,11 +90,11 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 
 	// check if handled by the camera
-	if(!CameraManager::singletonExists() || CameraManager::getSingleton().mouseMoved(_arg))
+	if (!CameraManager::singletonExists() || CameraManager::getSingleton().mouseMoved(_arg))
 		return true;
 
 	// experimental mouse hack
-	if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 0)
+	if (ms.buttonDown(OIS::MB_Left) && mouseGrabState == 0)
 	{
 		lastMouseY = ms.Y.abs;
 		lastMouseX = ms.X.abs;
@@ -108,15 +107,15 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		grab_truck = NULL;
 		for(int i = 0; i < trucksnum; i++)
 		{
-			if(!trucks[i]) continue;
-			if(trucks[i] && (trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED))
+			if (!trucks[i]) continue;
+			if (trucks[i] && (trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED))
 			{
 				minnode = -1;
 				// walk all nodes
 				for (int j = 0; j < trucks[i]->free_node; j++)
 				{
 					// check if the mouse grab mode is ok
-					if(trucks[i]->nodes[j].mouseGrabMode == 1) continue;
+					if (trucks[i]->nodes[j].mouseGrabMode == 1) continue;
 
 					// check if our ray intersects with the node
 					std::pair<bool, Real> pair = mouseRay.intersects(Sphere(trucks[i]->nodes[j].smoothpos, 0.1f));
@@ -134,11 +133,11 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 				}
 			}
 			
-			if(grab_truck) break;
+			if (grab_truck) break;
 		}
 
 		// check if we hit a node
-		if(grab_truck && minnode != -1)
+		if (grab_truck && minnode != -1)
 		{
 			mouseGrabState = 1;
 			pickLineNode->setVisible(true);
@@ -151,7 +150,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 				}
 			}
 		}
-	} else if(ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
+	} else if (ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
 	{
 		// force applying and so forth happens in update()
 		lastMouseY = ms.Y.abs;
@@ -159,7 +158,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		// not fixed
 		return false;
 
-	} else if(!ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
+	} else if (!ms.buttonDown(OIS::MB_Left) && mouseGrabState == 1)
 	{
 		releaseMousePick();
 		// not fixed
@@ -171,7 +170,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 
 void SceneMouse::update(float dt)
 {
-	if(mouseGrabState == 1 && grab_truck)
+	if (mouseGrabState == 1 && grab_truck)
 	{
 		// get values
 		Ray mouseRay = getMouseRay();
@@ -186,7 +185,6 @@ void SceneMouse::update(float dt)
 		// add forces
 		grab_truck->mouseMove(minnode, lastgrabpos, mouseGrabForce);
 	}
-
 }
 
 bool SceneMouse::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
@@ -196,15 +194,16 @@ bool SceneMouse::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _i
 
 bool SceneMouse::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id)
 {
-	if(mouseGrabState == 1)
+	if (mouseGrabState == 1)
+	{
 		releaseMousePick();
+	}
 
 	return true;
 }
 
 bool SceneMouse::keyPressed(const OIS::KeyEvent& _arg)
 {
-	// return false, not handled
 	return false;
 }
 
@@ -215,11 +214,8 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	if (CameraManager::singletonExists())
-	{
-		Camera *cam = CameraManager::getSingleton().getCamera();
-		Viewport *vp = cam->getViewport();
-		return cam->getCameraToViewportRay((float)lastMouseX/(float)vp->getActualWidth(),(float)lastMouseY/(float)vp->getActualHeight());
-	}
-	return Ray();
+	Camera *cam = RoRFrameListener::eflsingleton->getCamera();
+	Viewport *vp = cam->getViewport();
+
+	return cam->getCameraToViewportRay((float)lastMouseX / (float)vp->getActualWidth(), (float)lastMouseY / (float)vp->getActualHeight());
 }

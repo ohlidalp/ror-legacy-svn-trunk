@@ -295,7 +295,7 @@ void Character::update(float dt)
 	if(physicsEnabled && !remote)
 	{
 		// disable character movement when using the free camera mode or when the menu is opened
-		if(!CameraManager::singletonExists() || CameraManager::getSingleton().getCameraMode() == CameraManager::CAMERA_BEHAVIOR_FREE) return;
+		if(!CameraManager::singletonExists() || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_FREE) return;
 
 		// small hack: if not visible do not apply physics
 		//mode perso
