@@ -279,8 +279,6 @@ void BeamFactory::localUserAttributesChanged(int new_id)
 {
 	lockStreams();
 	std::map < int, std::map < unsigned int, Beam *> > &streamables = getStreams();
-	std::map < int, std::map < unsigned int, Beam *> >::iterator it1;
-	std::map < unsigned int, Beam *>::iterator it2;
 
 	if (streamables.find(-1) != streamables.end())
 	{

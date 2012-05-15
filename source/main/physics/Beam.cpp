@@ -252,8 +252,6 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	mrtime = 0.0;
 
-	networking = networking;
-
 	origin = Vector3::ZERO;
 
 	previousCrank = 0.0f;
