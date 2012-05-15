@@ -61,10 +61,11 @@ public:
 
 	void update(float dt);
 
-	bool hasActiveBehavior() { return currentBehavior!=0; };
+	void switchBehavior(int newBehavior);
+	void switchToNextBehavior();
 
-	Ogre::Camera *getCamera() { return ctx.mCamera; };
-	int getCameraMode() { return currentBehaviorID; };
+	bool hasActiveBehavior() { return currentBehavior!=0; };
+	int getCameraBehavior() { return currentBehaviorID; };
 
 protected:
 
@@ -79,9 +80,6 @@ protected:
 	std::map <int , ICameraBehavior *> globalBehaviors;
 
 	void createGlobalBehaviors();
-
-	void switchBehavior(int newBehavior);
-	void switchToNextBehavior();
 
 	bool mouseMoved(const OIS::MouseEvent& _arg);
 	bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);

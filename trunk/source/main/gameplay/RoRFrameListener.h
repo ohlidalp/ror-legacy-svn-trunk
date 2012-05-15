@@ -293,6 +293,7 @@ public: // public methods
 
 	Ogre::RenderWindow *getRenderWindow() { return mWindow; };
 	Ogre::SceneManager *getSceneMgr() { return mSceneMgr; };
+	Ogre::Camera *getCamera() { return mCamera; };
 	Ogre::String saveTerrainMesh();
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };

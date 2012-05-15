@@ -2011,7 +2011,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerName", SSETTING("Server name", ""));
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
-			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraMode()) : "None");
+			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
 			as->addData("Camera_Position", TOSTRING(mCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
@@ -2133,7 +2133,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	{
 		if (CameraManager::singletonExists() &&
 			(!CameraManager::getSingleton().hasActiveBehavior() ||
-			CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_BEHAVIOR_FREE))
+			CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE))
 		{
 			if (!curr_truck)
 			{
@@ -3070,7 +3070,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					bigMap->setVisibility(true);
 					if (CameraManager::singletonExists() &&
 						CameraManager::getSingleton().hasActiveBehavior() &&
-						CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+						CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 					{
 						//make it small again
 						bigMap->updateRenderMetrics(mWindow);
@@ -5709,7 +5709,7 @@ void RoRFrameListener::hideGUI(bool visible)
 		if (curr_truck
 			&& CameraManager::singletonExists()
 			&& CameraManager::getSingleton().hasActiveBehavior()
-			&& CameraManager::getSingleton().getCameraMode() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+			&& CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 		{
 			if (ow) ow->showDashboardOverlays(true, curr_truck);
 			//if (bigMap) bigMap->setVisibility(true);

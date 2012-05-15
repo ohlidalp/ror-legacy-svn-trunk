@@ -39,6 +39,7 @@ public:
 
 protected:
 
+	float fovInternal, fovExternal;
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 };
 

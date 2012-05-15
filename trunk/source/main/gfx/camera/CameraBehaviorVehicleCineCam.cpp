@@ -28,6 +28,8 @@ using namespace Ogre;
 CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	  CameraBehaviorVehicle()
 {
+	fovInternal = FSETTING("FOV Internal", 75);
+	fovExternal = FSETTING("FOV External", 60);
 }
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
@@ -52,9 +54,13 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
 {
-	float fov = FSETTING("FOV Internal", 75);
+	if (ctx.mCurrTruck->freecinecamera <= 0)
+	{
+		CameraManager::getSingleton().switchToNextBehavior();
+		return;
+	}
 
-	ctx.mCamera->setFOVy(Degree(fov));
+	ctx.mCamera->setFOVy(Degree(fovInternal));
 
 	camRotX = 0.0f;
 	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
@@ -75,9 +81,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
 {
-	float fov = FSETTING("FOV External", 60);
-
-	ctx.mCamera->setFOVy(Degree(fov));
+	ctx.mCamera->setFOVy(Degree(fovExternal));
 
 	ctx.mCurrTruck->prepareInside(false);
 
