@@ -23,6 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Scripting.h"
 #include "InputEngine.h"
 
+using namespace Ogre;
+
 LobbyGUI::LobbyGUI() : current_tab(0), rotatingWait(0)
 {
 	initialiseByAttributes(this);
@@ -54,7 +56,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	MyGUI::UString message = _sender->getCaption();
 	if(!sendMessage(message))
 	{
-		std::string fmt = "<" + nick + "> " + message;
+		String fmt = "<" + nick + "> " + message;
 		addTextToChatWindow(fmt);
 	} else
 	{
@@ -64,7 +66,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 }
 */
 
-void LobbyGUI::addTab(Ogre::String name)
+void LobbyGUI::addTab(String name)
 {
 	/*
 	<Widget type="TabItem" skin="" position="2 24 304 193">
@@ -80,9 +82,9 @@ void LobbyGUI::addTab(Ogre::String name)
 	</Widget>
 	*/
 
-	Ogre::String realName = name;
+	String realName = name;
 
-	name = Ogre::StringUtil::replaceAll(name, "#", "##");
+	name = StringUtil::replaceAll(name, "#", "##");
 
 	tabctx_t *t = &tabs[name];
 
@@ -138,68 +140,68 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	{
 	case MT_Channel:
 		{
-			std::string fmt = "<" + msg.nick + "> " + msg.message;
+			String fmt = "<" + msg.nick + "> " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_JoinChannelSelf:
 		{
-			std::string fmt = "joined channel " + msg.channel + " as " + msg.nick + "";
+			String fmt = "joined channel " + msg.channel + " as " + msg.nick + "";
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_JoinChannelOther:
 		{
-			std::string fmt = "*** " + msg.nick + " has joined " + msg.channel;
+			String fmt = "*** " + msg.nick + " has joined " + msg.channel;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_PartChannelOther:
 		{
-			std::string fmt = "*** " + msg.nick + " has left " + msg.channel;
+			String fmt = "*** " + msg.nick + " has left " + msg.channel;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_QuitOther:
 		{
-			std::string fmt = "*** " + msg.nick + " has quit (" + msg.message + ")";
+			String fmt = "*** " + msg.nick + " has quit (" + msg.message + ")";
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_PartChannelSelf:
 		{
-			std::string fmt = "*** you left the channel " + msg.channel;
+			String fmt = "*** you left the channel " + msg.channel;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_ChangedChannelTopic:
 		{
-			std::string fmt = "*** " + msg.nick + " has changed the channel topic of " + msg.channel + " to " + msg.message;
+			String fmt = "*** " + msg.nick + " has changed the channel topic of " + msg.channel + " to " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_WeGotKicked:
 		{
-			std::string fmt = "*** we got kicked from " + msg.channel + " with the reason " + msg.message;
+			String fmt = "*** we got kicked from " + msg.channel + " with the reason " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_SomeoneGotKicked:
 		{
-			std::string fmt = "*** " + msg.nick + " got kicked from " + msg.channel + " with the reason " + msg.message;
+			String fmt = "*** " + msg.nick + " got kicked from " + msg.channel + " with the reason " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_GotPrivateMessage:
 		{
-			std::string fmt = "(private) <" + msg.nick + "> " + msg.message;
+			String fmt = "(private) <" + msg.nick + "> " + msg.message;
 			addTextToChatWindow(fmt, msg.nick);
 		}
 		break;
 	case MT_GotNotice:
 	case MT_VerboseMessage:
 		{
-			std::string fmt;
+			String fmt;
 			if(msg.nick.empty())
 				fmt = "(NOTICE) " + msg.message;
 			else
@@ -209,19 +211,19 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 		break;
 	case MT_GotInvitation:
 		{
-			std::string fmt = "*** " + msg.nick + " invited you to channel " + msg.message;
+			String fmt = "*** " + msg.nick + " invited you to channel " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_TopicInfo:
 		{
-			std::string fmt = "*** Topic is " + msg.message;
+			String fmt = "*** Topic is " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
 	case MT_ErrorAuth:
 		{
-			std::string fmt = "*** ERROR: " + msg.message;
+			String fmt = "*** ERROR: " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
@@ -229,13 +231,13 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	case MT_NameList:
 		{
 			/*
-			Ogre::StringVector v = Ogre::StringUtil::split(msg.message, " ");
+			StringVector v = StringUtil::split(msg.message, " ");
 			for(int i=0; i<v.size(); i++)
 			{
 
 			}
 			*/
-			std::string fmt = "*** Users are: " + msg.message;
+			String fmt = "*** Users are: " + msg.message;
 			addTextToChatWindow(fmt, msg.channel);
 		}
 		break;
@@ -259,16 +261,16 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	}
 }
 
-void LobbyGUI::addTextToChatWindow(std::string txt, std::string channel)
+void LobbyGUI::addTextToChatWindow(String txt, String channel)
 {
 	//catch special case that channel is empty -> Status Channel
 	if(channel.empty())
 		channel = "Status";
-	Ogre::String realchannel = channel;
+	String realchannel = channel;
 
 	// escape #
-	channel =Ogre::StringUtil::replaceAll(channel, "#", "##");
-	txt = Ogre::StringUtil::replaceAll(txt, "#", "##");
+	channel =StringUtil::replaceAll(channel, "#", "##");
+	txt = StringUtil::replaceAll(txt, "#", "##");
 
 
 	if(tabs.find(channel) == tabs.end())
@@ -307,7 +309,7 @@ void LobbyGUI::update(float dt)
 		// rotate the hour glass
 		float angle = rotatingWait->getAngle();
 		angle += dt * 0.001f;
-		if(angle > 2 * Ogre::Math::PI) angle -= 2 * Ogre::Math::PI; // prevent overflowing
+		if(angle > 2 * Math::PI) angle -= 2 * Math::PI; // prevent overflowing
 		rotatingWait->setAngle(angle);
 	}
 
@@ -366,9 +368,9 @@ void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, M
 void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	if(!current_tab) return;
-	Ogre::String command = _sender->getCaption();
+	String command = _sender->getCaption();
 
-	Ogre::StringUtil::trim(command);
+	StringUtil::trim(command);
 
 	if(command.empty())
 	{
@@ -377,7 +379,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	}
 
 	// unescape #
-	command = Ogre::StringUtil::replaceAll(command, "##", "#");
+	command = StringUtil::replaceAll(command, "##", "#");
 
 	if(current_tab->name.substr(0, 1) == "#")
 	{
@@ -387,7 +389,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 		if(command.substr(0, 1) == "/")
 		{
 			// command there!
-			Ogre::StringVector v = Ogre::StringUtil::split(command, " ");
+			StringVector v = StringUtil::split(command, " ");
 
 			if(v.size() >= 2 && v[0] == "/me")
 				sendMeMessage(v[1], v.size()>2?v[2]:current_tab->name);
@@ -413,7 +415,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 			sendMessage(command, current_tab->realName);
 		}
 		// add our message to the textbox
-		std::string fmt = "<" + nick + "> " + command;
+		String fmt = "<" + nick + "> " + command;
 		addTextToChatWindow(fmt, current_tab->realName); // use realName here!
 	}
 
@@ -427,7 +429,7 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 {
 	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
-	Ogre::String n = _sender->getItemNameAt(_index);
+	String n = _sender->getItemNameAt(_index);
 	if(!tab) return;
 	if(tabs.find(n) == tabs.end())
 		return;
@@ -438,6 +440,5 @@ void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 
 	current_tab = &tabs[n];
 }
-
 
 #endif // USE_MYGUI

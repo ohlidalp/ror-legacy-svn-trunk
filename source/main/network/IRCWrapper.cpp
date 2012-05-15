@@ -751,5 +751,4 @@ void *s_ircthreadstart(void* arg)
 	return 0;
 }
 
-
 #endif // USE_SOCKETW

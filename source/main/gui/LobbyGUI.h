@@ -85,7 +85,7 @@ protected:
 	bool waitingAnimation;
 
 	void processIRCEvent(message_t &msg);
-	void addTextToChatWindow(std::string, std::string channel);
+	void addTextToChatWindow(Ogre::String, Ogre::String channel);
 	void addTab(Ogre::String name);
 
 	void eventCommandAccept(MyGUI::Edit* _sender);
