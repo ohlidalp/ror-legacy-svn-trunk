@@ -179,7 +179,7 @@ bool OutProtocol::update(float dt)
 
 		gd.Throttle = truck->engine->getAcc();
 		gd.Brake    = truck->brake / truck->brakeforce;
-		gd.Clutch   = truck->engine->getClutch(); // 0-1
+		gd.Clutch   = 1 - truck->engine->getClutch(); // 0-1
 
 		strncpy(gd.Display1, truck->realtruckname.c_str(), 15);
 		if ( truck->realtruckname.length() > 15 )
