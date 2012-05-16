@@ -59,7 +59,7 @@ BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow*
 	for (int t=0; t < MAX_TRUCKS; t++)
 		trucks[t] = 0;
 
-	if (SSETTING("Threads", "2 (Hyper-Threading or Dual core CPU)") == "2 (Hyper-Threading or Dual core CPU)")
+	if (BSETTING("Multi-threading", true))
 		Beam::thread_mode = THREAD_MULTI;
 
 	if (BSETTING("2DReplay", false))
