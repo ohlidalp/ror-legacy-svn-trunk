@@ -237,94 +237,96 @@ public:
 
 //	void checkLinuxPaths();
 	MyApp *app;
+
 private:
+
 	//bool postinstall;
-	Ogre::Root *ogreRoot;
-	wxPanel *graphicsPanel;
-	wxPanel *gamePanel;
-	wxPanel *debugPanel;
-	wxPanel *settingsPanel;
-	wxPanel *rsPanel;
-	wxTextCtrl *gputext;
-	wxValueChoice *renderer;
-	std::vector<wxStaticText *>  renderer_text;
-	std::vector<std::string>     renderer_name;
-	std::vector<wxValueChoice *> renderer_choice;
-	wxValueChoice *textfilt;
-	wxValueChoice *inputgrab;
-	wxValueChoice *sky;
-	wxValueChoice *shadow;
-	wxCheckBox *shadowOptimizations;
-	wxSlider *sightRange;
-	wxStaticText *sightRangeText;
-	wxValueChoice *water;
-	wxCheckBox *waves;
-	wxCheckBox *replaymode;
-	wxCheckBox *dtm;
-	wxCheckBox *advanced_logging;
-	wxCheckBox *ingame_console;
-	wxCheckBox *dofdebug;
-	wxCheckBox *nocrashrpt;
-	wxCheckBox *debug_vidcam;
-	wxCheckBox *debug_envmap;
-	wxCheckBox *debug_triggers;
-	wxCheckBox *beam_break_debug;
-	wxCheckBox *beam_deform_debug;
-	wxCheckBox *dcm;
-	wxTextCtrl *fovint, *fovext;
-	wxTextCtrl *presel_map, *presel_truck;
-	wxCheckBox *particles;
-	wxCheckBox *heathaze;
-	//wxCheckBox *hydrax;
-	wxCheckBox *collisions;
-	wxCheckBox *selfcollisions;
-	//wxCheckBox *rtshader;
-	wxCheckBox *dismap;
-	//wxCheckBox *autodl;
-	wxCheckBox *posstor;
-	wxCheckBox *extcam;
-	wxCheckBox *arcadeControls;
-	wxCheckBox *mirror;
-	wxCheckBox *envmap;
-	wxCheckBox *sunburn;
-	wxCheckBox *hdr;
-	wxCheckBox *glow;
-	wxCheckBox *dof;
-	wxCheckBox *mblur;
-	wxCheckBox *skidmarks;
-	wxCheckBox *creaksound;
-	wxValueChoice *sound;
-	wxSlider *soundVolume;
-	wxStaticText *soundVolumeText;
-	wxValueChoice *thread;
-	wxSlider *fpsLimiter;
-	wxStaticText *fpsLimiterText;
-	wxValueChoice *flaresMode;
-	wxValueChoice *languageMode;
-	wxValueChoice *vegetationMode;
-	wxValueChoice *screenShotFormat;
-	wxValueChoice *gearBoxMode;
-	wxCheckBox *ffEnable;
-	wxSlider *ffOverall;
-	wxStaticText *ffOverallText;
-	wxSlider *ffHydro;
-	wxStaticText *ffHydroText;
-	wxSlider *ffCenter;
-	wxStaticText *ffCenterText;
-	wxSlider *ffCamera;
-	wxStaticText *ffCameraText;
-	wxTimer *timer1;
-	wxNotebook *nbook;
-	wxScrolledWindow *aboutPanel;
-	//wxStaticText *controlText;
-	//wxComboBox *ctrlTypeCombo;
 	//wxButton *btnRemap;
-	wxButton *btnUpdate, *btnToken;
+	//wxCheckBox *autodl;
+	//wxCheckBox *hydrax;
+	//wxCheckBox *rtshader;
+	//wxComboBox *ctrlTypeCombo;
+	//wxStaticText *controlText;
 	KeySelectDialog *kd;
+	Ogre::Root *ogreRoot;
 	int controlItemCounter;
+	std::map<int,wxTreeItemId> treeItems;
+	std::vector<std::string>     renderer_name;
+	std::vector<wxStaticText *>  renderer_text;
+	std::vector<wxValueChoice *> renderer_choice;
 	wxButton *btnAddKey;
 	wxButton *btnDeleteKey;
-	std::map<int,wxTreeItemId> treeItems;
+	wxButton *btnUpdate, *btnToken;
+	wxCheckBox *advanced_logging;
+	wxCheckBox *arcadeControls;
+	wxCheckBox *beam_break_debug;
+	wxCheckBox *beam_deform_debug;
+	wxCheckBox *collisions;
+	wxCheckBox *creaksound;
+	wxCheckBox *dcm;
+	wxCheckBox *debug_envmap;
+	wxCheckBox *debug_triggers;
+	wxCheckBox *debug_vidcam;
+	wxCheckBox *dismap;
+	wxCheckBox *dof;
+	wxCheckBox *dofdebug;
+	wxCheckBox *dtm;
+	wxCheckBox *envmap;
+	wxCheckBox *extcam;
+	wxCheckBox *ffEnable;
+	wxCheckBox *glow;
+	wxCheckBox *hdr;
+	wxCheckBox *heathaze;
+	wxCheckBox *ingame_console;
+	wxCheckBox *mblur;
+	wxCheckBox *mirror;
+	wxCheckBox *nocrashrpt;
+	wxCheckBox *particles;
+	wxCheckBox *posstor;
+	wxCheckBox *replaymode;
+	wxCheckBox *selfcollisions;
+	wxCheckBox *shadowOptimizations;
+	wxCheckBox *skidmarks;
+	wxCheckBox *sunburn;
+	wxCheckBox *thread;
+	wxCheckBox *waves;
+	wxNotebook *nbook;
+	wxPanel *debugPanel;
+	wxPanel *gamePanel;
+	wxPanel *graphicsPanel;
+	wxPanel *rsPanel;
+	wxPanel *settingsPanel;
+	wxScrolledWindow *aboutPanel;
+	wxSlider *ffCamera;
+	wxSlider *ffCenter;
+	wxSlider *ffHydro;
+	wxSlider *ffOverall;
+	wxSlider *fpsLimiter;
+	wxSlider *sightRange;
+	wxSlider *soundVolume;
+	wxStaticText *ffCameraText;
+	wxStaticText *ffCenterText;
+	wxStaticText *ffHydroText;
+	wxStaticText *ffOverallText;
+	wxStaticText *fpsLimiterText;
+	wxStaticText *sightRangeText;
+	wxStaticText *soundVolumeText;
+	wxTextCtrl *fovint, *fovext;
+	wxTextCtrl *gputext;
+	wxTextCtrl *presel_map, *presel_truck;
+	wxTimer *timer1;
+	wxValueChoice *flaresMode;
+	wxValueChoice *gearBoxMode;
+	wxValueChoice *inputgrab;
+	wxValueChoice *languageMode;
+	wxValueChoice *renderer;
+	wxValueChoice *screenShotFormat;
+	wxValueChoice *shadow;
+	wxValueChoice *sky;
+	wxValueChoice *sound;
+	wxValueChoice *textfilt;
+	wxValueChoice *vegetationMode;
+	wxValueChoice *water;
 
 #ifdef NETWORK
 	wxCheckBox *network_enable;
@@ -1351,15 +1353,14 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 
 	mblur=new wxCheckBox(graphicsPanel, -1, _("Motion blur"), wxPoint(x_row1, y));
 	mblur->SetToolTip(_("Requires a recent video card. Adds a motion blur effect."));
-	mblur->Disable();
 
 	skidmarks=new wxCheckBox(graphicsPanel, -1, _("Skidmarks"), wxPoint(x_row2, y));
 	skidmarks->SetToolTip(_("Adds tire tracks to the ground."));
 	skidmarks->Disable();
 	y+=15;
 
-	envmap=new wxCheckBox(graphicsPanel, -1, _("High quality reflective effects"), wxPoint(x_row1, y));
-	envmap->SetToolTip(_("Enable high quality reflective effects. Causes a slowdown."));
+	envmap=new wxCheckBox(graphicsPanel, -1, _("HQ reflections"), wxPoint(x_row1, y));
+	envmap->SetToolTip(_("Enables high quality reflective effects. Causes a slowdown."));
 	y+=15;
 
 	glow=new wxCheckBox(graphicsPanel, -1, _("Glow"), wxPoint(x_row1, y));
@@ -1367,7 +1368,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	glow->Disable();
 
 	dof=new wxCheckBox(graphicsPanel, -1, _("DOF"), wxPoint(x_row2, y));
-	dof->SetToolTip(_("Adds a nice Depth of field effect to the scene."));
+	dof->SetToolTip(_("Adds a nice depth of field effect to the scene."));
 	y+=25;
 
 	dText = new wxStaticText(graphicsPanel, -1, _("Screenshot Format:"), wxPoint(10, y));
@@ -1492,15 +1493,6 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	y+=35;
 #endif //USE_OPENAL
 
-	// Threads
-	dText = new wxStaticText(advancedPanel, -1, _("Thread number:"), wxPoint(10, y+3));
-	thread=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
-	thread->AppendValueItem(wxT("1 (Single Core CPU)"), _("1 (Single Core CPU)"));
-	thread->AppendValueItem(wxT("2 (Hyper-Threading or Dual core CPU)"), _("2 (Hyper-Threading or Dual core CPU)"));
-	//thread->AppendValueItem(wxT("3 (multi core CPU, one thread per truck)"), _("3 (multi core CPU, one thread per truck)"));
-	thread->SetToolTip(_("If you have a Hyper-Threading, or Dual core or multiprocessor computer,\nyou will have a huge gain in speed by choosing the second option.\nBut this mode has some camera shaking issues.\n"));
-	y+=35;
-
 	// Lights
 	dText = new wxStaticText(advancedPanel, -1, _("Light source effects:"), wxPoint(10, y+3));
 	flaresMode=new wxValueChoice(advancedPanel, -1, wxPoint(x_row1, y), wxSize(280, -1), 0);
@@ -1555,12 +1547,16 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	dismap->SetToolTip(_("Disabled the map. This is for testing purposes only, you should not gain any FPS with that."));
 	y+=15;
 
-	collisions=new wxCheckBox(advancedPanel, -1, _("Disable Collisions"), wxPoint(x_row1, y));
-	collisions->SetToolTip(_(""));
+	thread=new wxCheckBox(advancedPanel, -1, _("Disable multi-threading"), wxPoint(x_row1, y));
+	thread->SetToolTip(_("Disables the separate physics thread (might be an option to avoid camera stuttering)."));
 	y+=15;
 
-	selfcollisions=new wxCheckBox(advancedPanel, -1, _("Disable Self Collisions"), wxPoint(x_row1, y));
-	selfcollisions->SetToolTip(_(""));
+	collisions=new wxCheckBox(advancedPanel, -1, _("Disable inter-vehicle collisions"), wxPoint(x_row1, y));
+	collisions->SetToolTip(_("Disables the inter-vehicle collision completely."));
+	y+=15;
+
+	selfcollisions=new wxCheckBox(advancedPanel, -1, _("Adaptive inter-vehicle collisions"), wxPoint(x_row1, y));
+	selfcollisions->SetToolTip(_("Disables self-collision with only one activated vehicle (up to 100% FPS increase in single threading mode)."));
 	y+=15;
 
 	// controls settings panel
@@ -2056,74 +2052,64 @@ void MyDialog::updateRendersystems(Ogre::RenderSystem *rs)
 
 void MyDialog::SetDefaults()
 {
+	wxScrollEvent dummye;
+	//autodl->SetValue(false);
+	//hydrax->SetValue(false);
+	//rtshader->SetValue(false);
+	//update textboxes
+	//wxCheckBox *dust;
+	OnScrollForceFeedback(dummye);
+	advanced_logging->SetValue(false);
+	arcadeControls->SetValue(false);
+	beam_break_debug->SetValue(false);
+	beam_deform_debug->SetValue(false);
+	collisions->SetValue(false);
+	dcm->SetValue(false);
+	debug_envmap->SetValue(false);
+	debug_triggers->SetValue(false);
+	debug_vidcam->SetValue(false);
+	dismap->SetValue(false);
+	dof->SetValue(false);
+	dofdebug->SetValue(false);
+	dtm->SetValue(false);
+	envmap->SetValue(true);
+	extcam->SetValue(false);
+	ffCamera->SetValue(0);
+	ffCenter->SetValue(50);
+	ffEnable->SetValue(true);
+	ffHydro->SetValue(100);
+	ffOverall->SetValue(100);
+	flaresMode->SetSelection(2);         // all trucks
+	fovext->SetValue(wxT("60"));
+	fovint->SetValue(wxT("75"));
+	fpsLimiter->SetValue(200);           // 200 = unlimited
+	gearBoxMode->SetSelection(0);
+	glow->SetValue(false);
+	hdr->SetValue(false);
+	heathaze->SetValue(false);
+	ingame_console->SetValue(false);
 	inputgrab->SetSelection(0);          // All
-	textfilt->SetSelection(3);           // anisotropic
-	sky->SetSelection(1);                // caelum
+	mblur->SetValue(false);
+	mirror->SetValue(true);
+	nocrashrpt->SetValue(false);
+	particles->SetValue(true);
+	posstor->SetValue(false);
+	presel_map->SetValue(wxString());
+	presel_truck->SetValue(wxString());
+	replaymode->SetValue(false);
+	screenShotFormat->SetSelection(0);
+	selfcollisions->SetValue(true);
 	shadow->SetSelection(1);             // texture shadows
 	shadowOptimizations->SetValue(true);
 	sightRange->SetValue(5000);          // 5k = unlimited
+	skidmarks->SetValue(false);
+	sky->SetSelection(1);                // caelum
+	sunburn->SetValue(false);
+	textfilt->SetSelection(3);           // anisotropic
+	thread->SetValue(false);
+	vegetationMode->SetSelection(3);     // Full
 	water->SetSelection(0);              // basic water
 	waves->SetValue(false);              // no waves
-	vegetationMode->SetSelection(3);     // Full
-	particles->SetValue(true);
-	flaresMode->SetSelection(2);         // all trucks
-	fpsLimiter->SetValue(200);           // 200 = unlimited
-
-	ffEnable->SetValue(true);
-	ffOverall->SetValue(100);
-	ffHydro->SetValue(100);
-	ffCenter->SetValue(50);
-	ffCamera->SetValue(0);
-
-	//update textboxes
-	wxScrollEvent dummye;
-	OnScrollForceFeedback(dummye);
-
-	screenShotFormat->SetSelection(0);
-	gearBoxMode->SetSelection(0);
-
-	replaymode->SetValue(false);
-	dtm->SetValue(false);
-	presel_map->SetValue(wxString());
-	presel_truck->SetValue(wxString());
-	fovint->SetValue(wxT("75"));
-	fovext->SetValue(wxT("60"));
-	advanced_logging->SetValue(false);
-	ingame_console->SetValue(false);
-	dofdebug->SetValue(false);
-	nocrashrpt->SetValue(false);
-	debug_triggers->SetValue(false);
-	debug_vidcam->SetValue(false);
-	debug_envmap->SetValue(false);
-	beam_break_debug->SetValue(false);
-	beam_deform_debug->SetValue(false);
-	dcm->SetValue(false);
-	//wxCheckBox *dust;
-	heathaze->SetValue(false);
-	//hydrax->SetValue(false);
-	//rtshader->SetValue(false);
-	collisions->SetValue(false);
-	selfcollisions->SetValue(false);
-	dismap->SetValue(false);
-	//autodl->SetValue(false);
-	posstor->SetValue(false);
-	extcam->SetValue(false);
-	arcadeControls->SetValue(false);
-	mirror->SetValue(true);
-	envmap->SetValue(true);
-	sunburn->SetValue(false);
-	hdr->SetValue(false);
-	glow->SetValue(false);
-	dof->SetValue(false);
-	mblur->SetValue(false);
-	skidmarks->SetValue(false);
-#ifdef USE_OPENAL
-	creaksound->SetValue(true);
-	sound->SetSelection(1);//default
-	soundVolume->SetValue(100);
-#endif // USE_OPENAL
-
-	thread->SetSelection(1); //2 CPUs is now the norm (incl. HyperThreading)
 
 #ifdef NETWORK
 	network_enable->SetValue(false);
@@ -2134,103 +2120,89 @@ void MyDialog::SetDefaults()
 	usertoken->SetValue(wxString());
 #endif
 
+#ifdef USE_OPENAL
+	creaksound->SetValue(true);
+	sound->SetSelection(1); // default
+	soundVolume->SetValue(100);
+#endif // USE_OPENAL
+
 	// update settings
 	getSettingsControls();
 }
 
 void MyDialog::getSettingsControls()
 {
-	char tmp[255]="";
-
-	settings["Texture Filtering"] = textfilt->getSelectedValueAsSTDString();
-	settings["Input Grab"] = inputgrab->getSelectedValueAsSTDString();
-	settings["Sky effects"] = sky->getSelectedValueAsSTDString();
-	settings["Shadow technique"] = shadow->getSelectedValueAsSTDString();
-	
-	
-	sprintf(tmp, "%d", sightRange->GetValue());
-	settings["SightRange"] = tmp;
-	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
-
-	settings["Preselected Map"] = conv(presel_map->GetValue());
-	settings["Preselected Truck"] = conv(presel_truck->GetValue());
-
-	settings["FOV Internal"] = conv(fovint->GetValue());
-	settings["FOV External"] = conv(fovext->GetValue());
-
-	settings["Water effects"] = water->getSelectedValueAsSTDString();
-
-	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
-	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
-	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
-	settings["Advanced Logging"] = (advanced_logging->GetValue()) ? "Yes" : "No";
-	settings["Enable Ingame Console"] = (ingame_console->GetValue()) ? "Yes" : "No";
-	settings["DOFDebug"] = (dofdebug->GetValue()) ? "Yes" : "No";
-	settings["NoCrashRpt"] = (nocrashrpt->GetValue()) ? "Yes" : "No";
-	settings["Trigger Debug"] = (debug_triggers->GetValue()) ? "Yes" : "No";
-	settings["VideoCameraDebug"] = (debug_vidcam->GetValue()) ? "Yes" : "No";
-	settings["EnvMapDebug"] = (debug_envmap->GetValue()) ? "Yes" : "No";
-	settings["Beam Break Debug"] = (beam_break_debug->GetValue()) ? "Yes" : "No";
-	settings["Beam Deform Debug"] = (beam_deform_debug->GetValue()) ? "Yes" : "No";
-	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
-	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
-	settings["HeatHaze"] = "No"; //(heathaze->GetValue()) ? "Yes" : "No";
-	settings["DisableCollisions"] = (collisions->GetValue()) ? "Yes" : "No";
-	settings["DisableSelfCollisions"] = (selfcollisions->GetValue()) ? "Yes" : "No";
+	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
 	//settings["Hydrax"] = (hydrax->GetValue()) ? "Yes" : "No";
 	//settings["Use RTShader System"] = (rtshader->GetValue()) ? "Yes" : "No";
-	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
-	//settings["AutoDownload"] = (autodl->GetValue()) ? "Yes" : "No";
-	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
-	settings["GearboxMode"]= gearBoxMode->getSelectedValueAsSTDString();
-	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
+	settings["Advanced Logging"] = (advanced_logging->GetValue()) ? "Yes" : "No";
 	settings["ArcadeControls"] = (arcadeControls->GetValue()) ? "Yes" : "No";
-	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
-	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-	settings["Sunburn"] = "No"; //(sunburn->GetValue()) ? "Yes" : "No";
-	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
-	settings["Glow"] = "No"; //(glow->GetValue()) ? "Yes" : "No";
+	settings["Beam Break Debug"] = (beam_break_debug->GetValue()) ? "Yes" : "No";
+	settings["Beam Deform Debug"] = (beam_deform_debug->GetValue()) ? "Yes" : "No";
+	settings["Configurator Size"] = TOSTRING(this->GetSize().x) + ", " + TOSTRING(this->GetSize().y);
 	settings["DOF"] = (dof->GetValue()) ? "Yes" : "No";
-	settings["Motion blur"] = "No"; //(mblur->GetValue()) ? "Yes" : "No";
-	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
+	settings["DOFDebug"] = (dofdebug->GetValue()) ? "Yes" : "No";
+	settings["Debug Collisions"] = (dcm->GetValue()) ? "Yes" : "No";
+	settings["Debug Truck Mass"] = (dtm->GetValue()) ? "Yes" : "No";
+	settings["DisableCollisions"] = (collisions->GetValue()) ? "Yes" : "No";
+	settings["DisableSelfCollisions"] = (selfcollisions->GetValue()) ? "Yes" : "No";
+	settings["Enable Ingame Console"] = (ingame_console->GetValue()) ? "Yes" : "No";
+	settings["EnvMapDebug"] = (debug_envmap->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-#ifdef USE_OPENAL
-	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
-	settings["AudioDevice"] = sound->getSelectedValueAsSTDString();
-	sprintf(tmp, "%d", soundVolume->GetValue());
-	settings["Sound Volume"] = tmp;
-#endif //USE_OPENAL
-	settings["Threads"] = thread->getSelectedValueAsSTDString();
-	sprintf(tmp, "%d", fpsLimiter->GetValue());
-	settings["FPS-Limiter"] = tmp;
+	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
+	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
+	settings["FOV External"] = conv(fovext->GetValue());
+	settings["FOV Internal"] = conv(fovint->GetValue());
+	settings["FPS-Limiter"] = TOSTRING(fpsLimiter->GetValue());
+	settings["Force Feedback Camera"] = TOSTRING(ffCamera->GetValue());
+	settings["Force Feedback Centering"] = TOSTRING(ffCenter->GetValue());
+	settings["Force Feedback Gain"] = TOSTRING(ffOverall->GetValue());
+	settings["Force Feedback Stress"] = TOSTRING(ffHydro->GetValue());
 	settings["Force Feedback"] = (ffEnable->GetValue()) ? "Yes" : "No";
-	sprintf(tmp, "%d", ffOverall->GetValue());
-	settings["Force Feedback Gain"] = tmp;
-	sprintf(tmp, "%d", ffHydro->GetValue());
-	settings["Force Feedback Stress"] = tmp;
-	sprintf(tmp, "%d", ffCenter->GetValue());
-	settings["Force Feedback Centering"] = tmp;
-	sprintf(tmp, "%d", ffCamera->GetValue());
-	settings["Force Feedback Camera"] = tmp;
-
+	settings["GearboxMode"]= gearBoxMode->getSelectedValueAsSTDString();
+	settings["Glow"] = "No"; //(glow->GetValue()) ? "Yes" : "No";
+	settings["HDR"] = (hdr->GetValue()) ? "Yes" : "No";
+	settings["HeatHaze"] = "No"; //(heathaze->GetValue()) ? "Yes" : "No";
+	settings["Input Grab"] = inputgrab->getSelectedValueAsSTDString();
 	settings["Lights"] = flaresMode->getSelectedValueAsSTDString();
-
-	settings["Vegetation"] = vegetationMode->getSelectedValueAsSTDString();
-
+	settings["Mirrors"] = (mirror->GetValue()) ? "Yes" : "No";
+	settings["Motion blur"] = (mblur->GetValue()) ? "Yes" : "No";
+	settings["Multi-threading"] = (thread->GetValue()) ? "No" : "Yes";
+	settings["NoCrashRpt"] = (nocrashrpt->GetValue()) ? "Yes" : "No";
+	settings["Particles"] = (particles->GetValue()) ? "Yes" : "No";
+	settings["Position Storage"] = (posstor->GetValue()) ? "Yes" : "No";
+	settings["Preselected Map"] = conv(presel_map->GetValue());
+	settings["Preselected Truck"] = conv(presel_truck->GetValue());
+	settings["Replay mode"] = (replaymode->GetValue()) ? "Yes" : "No";
 	settings["Screenshot Format"] = screenShotFormat->getSelectedValueAsSTDString();
-
-	wxSize s = this->GetSize();
-	sprintf(tmp, "%d, %d", s.x, s.y);
-	settings["Configurator Size"] = tmp;
+	settings["Shadow optimizations"] = (shadowOptimizations->GetValue()) ? "Yes" : "No";
+	settings["Shadow technique"] = shadow->getSelectedValueAsSTDString();
+	settings["SightRange"] = TOSTRING(sightRange->GetValue());
+	settings["Skidmarks"] = "No"; //(skidmarks->GetValue()) ? "Yes" : "No";
+	settings["Sky effects"] = sky->getSelectedValueAsSTDString();
+	settings["Sunburn"] = "No"; //(sunburn->GetValue()) ? "Yes" : "No";
+	settings["Texture Filtering"] = textfilt->getSelectedValueAsSTDString();
+	settings["Trigger Debug"] = (debug_triggers->GetValue()) ? "Yes" : "No";
+	settings["Vegetation"] = vegetationMode->getSelectedValueAsSTDString();
+	settings["VideoCameraDebug"] = (debug_vidcam->GetValue()) ? "Yes" : "No";
+	settings["Water effects"] = water->getSelectedValueAsSTDString();
+	settings["Waves"] = (waves->GetValue()) ? "Yes" : "No";
+	settings["disableOverViewMap"] = (dismap->GetValue()) ? "Yes" : "No";
 
 #ifdef NETWORK
 	settings["Network enable"] = (network_enable->GetValue()) ? "Yes" : "No";
 	settings["Nickname"] = conv(nickname->GetValue().SubString(0,20));
 	settings["Server name"] = conv(servername->GetValue());
-	settings["Server port"] = conv(serverport->GetValue());
 	settings["Server password"] = conv(serverpassword->GetValue());
+	settings["Server port"] = conv(serverport->GetValue());
 	settings["User Token"] = conv(usertoken->GetValue());
 #endif
+
+#ifdef USE_OPENAL
+	settings["AudioDevice"] = sound->getSelectedValueAsSTDString();
+	settings["Creak Sound"] = (creaksound->GetValue()) ? "No" : "Yes";
+	settings["Sound Volume"] = TOSTRING(soundVolume->GetValue());
+#endif //USE_OPENAL
 
 	// save language, if one is set
 	if(avLanguages.size() > 0 && languageMode->GetSelection() > 0)
@@ -2292,42 +2264,40 @@ void MyDialog::updateSettingsControls()
 	sound->setSelectedValue(settings["AudioDevice"]);
 #endif //USE_OPENAL
 
-	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
-	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
-	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
+	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
+	//st = settings["Glow"]; if (st.length()>0) glow->SetValue(st=="Yes");
+	//st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
+	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
+	//st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
+	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
+	st = settings["Advanced Logging"]; if (st.length()>0) advanced_logging->SetValue(st=="Yes");
+	st = settings["ArcadeControls"]; if (st.length()>0) arcadeControls->SetValue(st=="Yes");
 	st = settings["Beam Break Debug"]; if (st.length()>0) beam_break_debug->SetValue(st=="Yes");
 	st = settings["Beam Deform Debug"]; if (st.length()>0) beam_deform_debug->SetValue(st=="Yes");
-	st = settings["Debug Truck Mass"]; if (st.length()>0) dtm->SetValue(st=="Yes");
-	st = settings["Advanced Logging"]; if (st.length()>0) advanced_logging->SetValue(st=="Yes");
-	st = settings["Enable Ingame Console"]; if (st.length()>0) ingame_console->SetValue(st=="Yes");
+	st = settings["DOF"]; if (st.length()>0) dof->SetValue(st=="Yes");
 	st = settings["DOFDebug"]; if (st.length()>0) dofdebug->SetValue(st=="Yes");
-	st = settings["NoCrashRpt"]; if (st.length()>0) nocrashrpt->SetValue(st=="Yes");
-	st = settings["Trigger Debug"]; if (st.length()>0) debug_triggers->SetValue(st=="Yes");
-	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
-	st = settings["EnvMapDebug"]; if (st.length()>0) debug_envmap->SetValue(st=="Yes");
 	st = settings["Debug Collisions"]; if (st.length()>0) dcm->SetValue(st=="Yes");
-
-	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
-	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
+	st = settings["Debug Truck Mass"]; if (st.length()>0) dtm->SetValue(st=="Yes");
 	st = settings["DisableCollisions"]; if (st.length()>0) collisions->SetValue(st=="Yes");
 	st = settings["DisableSelfCollisions"]; if (st.length()>0) selfcollisions->SetValue(st=="Yes");
-	//st = settings["Hydrax"]; if (st.length()>0) hydrax->SetValue(st=="Yes");
-	//st = settings["Use RTShader System"]; if (st.length()>0) rtshader->SetValue(st=="Yes");
-	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
-	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
-	st = settings["ArcadeControls"]; if (st.length()>0) arcadeControls->SetValue(st=="Yes");
-	//st = settings["AutoDownload"]; if (st.length()>0) autodl->SetValue(st=="Yes");
-	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
-	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
+	st = settings["Enable Ingame Console"]; if (st.length()>0) ingame_console->SetValue(st=="Yes");
+	st = settings["EnvMapDebug"]; if (st.length()>0) debug_envmap->SetValue(st=="Yes");
 	st = settings["Envmap"]; if (st.length()>0) envmap->SetValue(st=="Yes");
-	//st = settings["Sunburn"]; if (st.length()>0) sunburn->SetValue(st=="Yes");
+	st = settings["External Camera Mode"]; if (st.length()>0) extcam->SetValue(st=="Static");
 	st = settings["HDR"]; if (st.length()>0) hdr->SetValue(st=="Yes");
-	//st = settings["Glow"]; if (st.length()>0) glow->SetValue(st=="Yes");
-	st = settings["DOF"]; if (st.length()>0) dof->SetValue(st=="Yes");
-	//st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
-	//st = settings["Skidmarks"]; if (st.length()>0) skidmarks->SetValue(st=="Yes");
-
-	thread->setSelectedValue(settings["Threads"]);
+	st = settings["HeatHaze"]; if (st.length()>0) heathaze->SetValue(st=="Yes");
+	st = settings["Mirrors"]; if (st.length()>0) mirror->SetValue(st=="Yes");
+	st = settings["Motion blur"]; if (st.length()>0) mblur->SetValue(st=="Yes");
+	st = settings["Multi-threading"]; if (st.length()>0) thread->SetValue(st=="No");
+	st = settings["NoCrashRpt"]; if (st.length()>0) nocrashrpt->SetValue(st=="Yes");
+	st = settings["Particles"]; if (st.length()>0) particles->SetValue(st=="Yes");
+	st = settings["Position Storage"]; if (st.length()>0) posstor->SetValue(st=="Yes");
+	st = settings["Replay mode"]; if (st.length()>0) replaymode->SetValue(st=="Yes");
+	st = settings["Shadow optimizations"]; if (st.length()>0) shadowOptimizations->SetValue(st=="Yes");
+	st = settings["Trigger Debug"]; if (st.length()>0) debug_triggers->SetValue(st=="Yes");
+	st = settings["VideoCameraDebug"]; if (st.length()>0) debug_vidcam->SetValue(st=="Yes");
+	st = settings["Waves"]; if (st.length()>0) waves->SetValue(st=="Yes");
+	st = settings["disableOverViewMap"]; if (st.length()>0) dismap->SetValue(st=="Yes");
 
 	double flt = 0;
 	st = settings["Force Feedback"]; if (st.length()>0) ffEnable->SetValue(st=="Yes");
@@ -2558,13 +2528,12 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 		// error starting
 		return;
 	}
-	// intentionally leak the process handle so the
-	// process object is not destroyed
-	// do NOT wait for the process to finish
-	// close handle properly to prevent the warning
-	//CloseHandle( pi.hProcess );
-	//CloseHandle( pi.hThread );	
+	// Wait until child process exits.
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 #endif
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	execl("./RoR.bin", "", (char *) 0);
 #endif
@@ -2574,7 +2543,6 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 	LSOpenFSRef(&ref, NULL);
 	//execl("./RoR.app/Contents/MacOS/RoR", "", (char *) 0);
 #endif
-
 	Destroy();
 	exit(0);
 }
