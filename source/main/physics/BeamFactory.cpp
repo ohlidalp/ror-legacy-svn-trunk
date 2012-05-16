@@ -253,7 +253,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		false,
 		3,
 		&truckconfig,
-		false);
+		0);
 
 	trucks[truck_num] = b;
 
@@ -668,7 +668,7 @@ void BeamFactory::removeInstance(Beam *b)
 	if (b == 0) return;
 	// hide the truck
 	b->deleteNetTruck();
-	_deleteTruck(b);
+	//_deleteTruck(b);
 }
 
 void BeamFactory::removeInstance(stream_del_t *del)
