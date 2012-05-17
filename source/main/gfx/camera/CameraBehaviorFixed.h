@@ -17,20 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_STATIC_H_
-#define __CAMERA_BEHAVIOR_STATIC_H_
+#ifndef __CAMERA_BEHAVIOR_FIXED_H_
+#define __CAMERA_BEHAVIOR_FIXED_H_
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehaviorVehicle.h"
+#include "ICameraBehavior.h"
 
-class CameraBehaviorVehicleStatic : public CameraBehaviorVehicle
+class CameraBehaviorFixed : public ICameraBehavior
 {
 public:
 
-	CameraBehaviorVehicleStatic();
-
-	void update(const CameraManager::cameraContext_t &ctx);
+	void update(const CameraManager::cameraContext_t &ctx) {};
 
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg) { return false; };
 	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
@@ -38,8 +36,9 @@ public:
 
 	void activate(const CameraManager::cameraContext_t &ctx) {};
 	void deactivate(const CameraManager::cameraContext_t &ctx) {};
+	void reset(const CameraManager::cameraContext_t &ctx) {};
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
 };
 
-#endif // __CAMERA_BEHAVIOR_STATIC_H_
+#endif // __CAMERA_BEHAVIOR_FIXED_H_

@@ -22,9 +22,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "InputEngine.h"
 
-#include "CameraBehaviorCharacter.h"
-#include "CameraBehaviorFree.h"
 #include "CameraBehavior.h"
+#include "CameraBehaviorCharacter.h"
+#include "CameraBehaviorFixed.h"
+#include "CameraBehaviorFree.h"
 #include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleSpline.h"
@@ -74,6 +75,7 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FIXED, new CameraBehaviorFixed()));
 }
 
 void CameraManager::switchToNextBehavior()
@@ -118,20 +120,30 @@ void CameraManager::update(float dt)
 	mTransScale = mTransSpeed  * dt;
 	mRotScale   = mRotateSpeed * dt;
 
-	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
-	{
-		switchToNextBehavior();
-	}
-
 	ctx.mCurrTruck  = BeamFactory::getSingleton().getCurrentTruck();
 	ctx.mDt         = dt;
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
+	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
+	{
+		switchToNextBehavior();
+	}
+
+	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX) )
+	{
+		switchBehavior(CAMERA_BEHAVIOR_FIXED);
+	}
+
+	if ( !ctx.mCurrTruck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE) )
+	{
+		switchBehavior(CAMERA_BEHAVIOR_FREE);
+	}
+
 	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
-	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
+	} else if ( ctx.mCurrTruck && currentBehaviorID != CAMERA_BEHAVIOR_FIXED && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
 	}

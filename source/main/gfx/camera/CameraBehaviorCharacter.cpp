@@ -47,7 +47,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		float angle = ctx.mCharacter->getAngle();
 		
 		camRotY += Degree(ms.Y.rel * 0.13f);
-		angle   +=        ms.X.rel * 0.01f;
+		angle   +=        ms.X.rel * 0.13f;
 
 		ctx.mCharacter->setAngle(angle);
 
