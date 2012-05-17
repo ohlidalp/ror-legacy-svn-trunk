@@ -42,6 +42,11 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 	Vector3 roll = (currTruck->nodes[currTruck->cameranodepos[currTruck->currentcamera]].smoothpos
 				  - currTruck->nodes[currTruck->cameranoderoll[currTruck->currentcamera]].smoothpos).normalisedCopy();
 
+	if ( currTruck->revroll[currTruck->currentcamera] )
+	{
+		roll = -roll;
+	}
+
 	Vector3 up = dir.crossProduct(roll);
 
 	roll = up.crossProduct(dir);
