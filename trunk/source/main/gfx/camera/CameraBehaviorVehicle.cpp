@@ -29,7 +29,6 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 	, camPitching(true)
 {
 	camRotY = 0.5f;
-	camDistMin = 8.0f;
 
 	if ( SSETTING("External Camera Mode", "Pitching") == "Static" )
 		camPitching = false;
@@ -48,6 +47,8 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 	
+	camIntertia = 1.0f / (ctx.mDt * 4.0f);
+
 	camLookAt = ctx.mCurrTruck->getPosition();
 
 	CameraBehavior::update(ctx);
@@ -55,5 +56,6 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx)
 {
-	// initialize camDistMin based on the vehicle bounding box
+	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
+	camDist = camDistMin * 1.5f;
 }
