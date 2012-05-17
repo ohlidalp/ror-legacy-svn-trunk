@@ -1653,7 +1653,7 @@ void Beam::resetAngle(float rot)
 	
 	if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 	{
-		nodes[cameranodepos[0]].AbsPosition;
+		origin = nodes[cameranodepos[0]].AbsPosition;
 	}
 
 	// Set up matrix for yaw rotation
@@ -2152,8 +2152,9 @@ bool Beam::frameStep(Real dt)
 				if(!trucks[t]) continue;
 
 				if (trucks[t]->reset_requested)
+				{
 					trucks[t]->SyncReset();
-
+				}
 				if (trucks[t]->state < SLEEPING)
 				{
 					trucks[t]->lastlastposition=trucks[t]->lastposition;
@@ -2161,7 +2162,9 @@ bool Beam::frameStep(Real dt)
 					trucks[t]->updateTruckPosition();
 				}
 				if (floating_origin_enable && trucks[t]->nodes[0].RelPosition.length()>100.0)
+				{
 					trucks[t]->moveOrigin(trucks[t]->nodes[0].RelPosition);
+				}
 			}
 
 			ffforce = affforce / steps;
