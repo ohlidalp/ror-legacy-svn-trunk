@@ -40,9 +40,9 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 {
 	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();
-	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	targetPitch = 0;
-	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
+	//targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+	//targetPitch = 0;
+	//camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
 
 	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
@@ -54,11 +54,11 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 		updateSplineDisplay();
 
-		camCenterPosition = spline->interpolate(splinePos);
+		//camCenterPosition = spline->interpolate(splinePos);
 	} else
 	{
 		// fallback :-/
-		camCenterPosition = ctx.mCurrTruck->getPosition();
+		//camCenterPosition = ctx.mCurrTruck->getPosition();
 	}
 
 	CameraBehavior::update(ctx);

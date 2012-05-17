@@ -41,9 +41,9 @@ public:
 
 protected:
 
+	Ogre::Vector3 camLookAt;
 	Ogre::Radian camRotX, camRotY;
-	Ogre::Vector3 camIdealPosition, camCenterPosition, camTranslation;
-	float camDist, minCamDist, maxCamDist, camRatio;
+	float camDist, camDistMin, camDistMax, camIntertia;
 	float targetDirection, targetPitch;
 };
 

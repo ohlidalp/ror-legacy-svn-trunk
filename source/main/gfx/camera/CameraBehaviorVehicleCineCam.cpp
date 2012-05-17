@@ -34,6 +34,8 @@ CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
 {
+	CameraBehavior::update(ctx);
+
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
 				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
 
@@ -44,10 +46,8 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 	roll = up.crossProduct(dir);
 
-	CameraBehavior::update(ctx);
-
 	Quaternion orientation = Quaternion(camRotX, up) * Quaternion(Degree(180.0) + camRotY, roll) * Quaternion(roll, up, dir);
-	
+
 	ctx.mCamera->setPosition(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos);
 	ctx.mCamera->setOrientation(orientation);
 }

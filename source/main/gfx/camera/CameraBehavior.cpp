@@ -25,15 +25,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehavior::CameraBehavior() :
-	  camRotX(0.0f)
+	  camDist(5.0f)
+	, camDistMax(0.0f)
+	, camDistMin(0.0f)
+	, camLookAt(Vector3::ZERO)
+	, camIntertia(11.0f)
+	, camRotX(0.0f)
 	, camRotY(0.3f)
-	, camDist(5.0f)
-	, minCamDist(0.0f)
-	, maxCamDist(0.0f)
-	, camRatio(11.0f)
-	, camIdealPosition(Vector3::ZERO)
-	, camCenterPosition(Vector3::ZERO)
-	, camTranslation(Vector3::ZERO)
 	, targetDirection(0.0f)
 	, targetPitch(0.0f)
 {
@@ -41,81 +39,77 @@ CameraBehavior::CameraBehavior() :
 
 void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 {
-	if (INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK))
+	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK) )
 	{
 		if ( camRotX > Degree(0) )
+		{
 			camRotX = Degree(0);
-		else
+		} else
+		{
 			camRotX = Degree(180);
+		}
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT))
+
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_LEFT) )
 	{
-		// Move camera left
 		camRotX -= ctx.mRotScale;
 	}
-
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_RIGHT))
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_RIGHT) )
 	{
-		// Move camera right
 		camRotX += ctx.mRotScale;
 	}
-	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_UP)) && camRotY<Degree(88))
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_UP) && camRotY < Degree(88) )
 	{
-		// Move camera up
 		camRotY += ctx.mRotScale;
 	}
-
-	if ((INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_DOWN)) && camRotY>Degree(-80))
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ROTATE_DOWN) && camRotY > Degree(-80) )
 	{
-		// Move camera down
 		camRotY -= ctx.mRotScale;
 	}
 
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN) && camDist>1)
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN) && camDist > 1 )
 	{
-		// Move camera near
 		camDist -= ctx.mTransScale;
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN_FAST) && camDist>1)
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_IN_FAST) && camDist > 1 )
 	{
-		// Move camera near
 		camDist -= ctx.mTransScale * 10;
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT))
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT) )
 	{
-		// Move camera far
 		camDist += ctx.mTransScale;
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT_FAST))
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_ZOOM_OUT_FAST) )
 	{
-		// Move camera far
 		camDist += ctx.mTransScale * 10;
 	}
-	if (INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET))
+
+	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET) )
 	{
-		camRotX =  0.0f;
-		camRotY =  0.0f;
-		camDist = 20.0f;
+		camRotX = 0.0f;
+		camRotY = 0.0f;
+		camDist = 5.0f;
 	}
 
-	if ( minCamDist > 0.0f )
-		camDist = std::max(minCamDist, camDist);
-	if ( maxCamDist > 0.0f )
-		camDist = std::min(camDist, maxCamDist);
+	if ( camDistMin > 0.0f )
+	{
+		camDist = std::max(camDistMin, camDist);
+	}
+	if ( camDistMax > 0.0f )
+	{
+		camDist = std::min(camDist, camDistMax);
+	}
 
-	camIdealPosition = camDist * 0.5f * Vector3( \
+	Vector3 desiredPosition = camLookAt + camDist * 0.5f * Vector3( \
 			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
 			, sin(targetPitch     + camRotY.valueRadians()) \
 			, cos(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
 			);
 
-	float real_camdist = camIdealPosition.length();
+	Vector3 position = (desiredPosition + ctx.mCamera->getPosition() * camIntertia) / (1.0f + camIntertia);
 
-	camIdealPosition = camIdealPosition + camCenterPosition + camTranslation;
-	Vector3 newPosition = (camIdealPosition + camRatio * ctx.mCamera->getPosition()) / (camRatio + 1.0f);
-
-	ctx.mCamera->setPosition(newPosition);
-	ctx.mCamera->lookAt(camCenterPosition);
+	ctx.mCamera->setPosition(position);
+	ctx.mCamera->lookAt(camLookAt);
 }
 
 bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
@@ -124,9 +118,9 @@ bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const
 
 	if ( ms.buttonDown(OIS::MB_Right) )
 	{
-		camRotX += Degree( (float)ms.X.rel * 0.13f);
-		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-		camDist +=        -(float)ms.Z.rel * 0.02f;
+		camRotX += Degree( ms.X.rel * 0.13f);
+		camRotY += Degree(-ms.Y.rel * 0.13f);
+		camDist +=        -ms.Z.rel * 0.02f;
 		return true;
 	}
 
