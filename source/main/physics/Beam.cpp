@@ -1879,7 +1879,7 @@ void Beam::SyncReset()
 	if(hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
-	origin=Vector3::ZERO; //to fix
+	origin=Vector3::ZERO;
 	if(pointCD) pointCD->reset();
 
 	float yPos = nodes[lowestnode].AbsPosition.y;
