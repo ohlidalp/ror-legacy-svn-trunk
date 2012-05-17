@@ -28,9 +28,8 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 	  CameraBehavior()
 	, camPitching(true)
 {
-	camRotY = 0.6f;
-	minCamDist = 8.0f;
-	maxCamDist = 0.0f;
+	camRotY = 0.5f;
+	camDistMin = 8.0f;
 
 	if ( SSETTING("External Camera Mode", "Pitching") == "Static" )
 		camPitching = false;
@@ -48,16 +47,13 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	{
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
-
-	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
-
-	camCenterPosition = ctx.mCurrTruck->getPosition();
+	
+	camLookAt = ctx.mCurrTruck->getPosition();
 
 	CameraBehavior::update(ctx);
 }
 
-bool CameraBehaviorVehicle::switchBehavior(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx)
 {
-	// TODO: rear chase, front chase, ...
-	return true;
+	// initialize camDistMin based on the vehicle bounding box
 }

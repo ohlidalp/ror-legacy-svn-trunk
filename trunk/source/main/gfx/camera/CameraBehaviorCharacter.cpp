@@ -32,8 +32,8 @@ CameraBehaviorCharacter::CameraBehaviorCharacter() :
 
 void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 {
-	targetDirection   = -ctx.mCharacter->getAngle() - Math::HALF_PI;
-	camCenterPosition =  ctx.mCharacter->getPosition() + camPositionOffset;
+	targetDirection = -ctx.mCharacter->getAngle() - Math::HALF_PI;
+	camLookAt       =  ctx.mCharacter->getPosition() + camPositionOffset;
 
 	CameraBehavior::update(ctx);
 }
@@ -45,8 +45,8 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		const OIS::MouseState ms = _arg.state;
 		float angle = ctx.mCharacter->getAngle();
 		
-		camRotY += Degree((float)ms.Y.rel * 0.13f);
-		angle += ms.X.rel * 0.01f;
+		camRotY += Degree(ms.Y.rel * 0.13f);
+		angle   +=        ms.X.rel * 0.01f;
 
 		ctx.mCharacter->setAngle(angle);
 
@@ -59,18 +59,19 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
 	camMode = (camMode + 1) % CHARACTER_END;
+	camRotX =  0.0f;
 
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{
 		camRotY = 0.1f;
 		camDist = 0.1f;
-		camRatio = 0.0f;
-		camPositionOffset = Vector3(0.1f, 1.82f, 0.0f);
+		camIntertia = 0.0f;
+		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
 	} else if ( camMode == CHARACTER_THIRD_PERSON )
 	{
 		camRotY = 0.3f;
 		camDist = 5.0f;
-		camRatio = 11.0f;
+		camIntertia = 11.0f;
 		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
 	}
 

@@ -318,13 +318,13 @@ SerializedRig::SerializedRig()
 	advanced_total_drag=0;
 	freecamera=0;
 	hasEmissivePass=0;
-	cabMesh = 0;
-	cabNode = 0;
+	cabMesh=0;
+	cabNode=0;
 	cameranodepos[0]=-1;
 	cameranodedir[0]=-1;
 	cameranoderoll[0]=-1;
 	freePositioned=false;
-	lowestnode = -1;
+	lowestnode=0;
 	beamsRoot=0;
 
 	virtuallyLoaded=false;
@@ -6618,9 +6618,8 @@ void SerializedRig::calcBox()
 	maxy=nodes[0].AbsPosition.y;
 	minz=nodes[0].AbsPosition.z;
 	maxz=nodes[0].AbsPosition.z;
-	lowestnode=-1;
-	int i;
-	for (i=1; i<free_node; i++)
+	lowestnode=0;
+	for (int i=1; i < free_node; i++)
 	{
 		if (nodes[i].AbsPosition.x>maxx) maxx=nodes[i].AbsPosition.x;
 		if (nodes[i].AbsPosition.x<minx) minx=nodes[i].AbsPosition.x;

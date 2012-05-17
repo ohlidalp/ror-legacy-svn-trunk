@@ -1882,7 +1882,7 @@ void Beam::SyncReset()
 	origin=Vector3::ZERO; //to fix
 	if(pointCD) pointCD->reset();
 
-	float yPos = lowestnode != -1 ? nodes[lowestnode].AbsPosition.y : 0;
+	float yPos = nodes[lowestnode].AbsPosition.y;
 
 	Vector3 cur_position = nodes[0].AbsPosition;
 	Vector3 cur_dir = nodes[0].AbsPosition;
