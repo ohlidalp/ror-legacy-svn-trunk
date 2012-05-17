@@ -2149,7 +2149,6 @@ void MyDialog::getSettingsControls()
 	settings["Enable Ingame Console"] = (ingame_console->GetValue()) ? "Yes" : "No";
 	settings["EnvMapDebug"] = (debug_envmap->GetValue()) ? "Yes" : "No";
 	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
-	settings["Envmap"] = (envmap->GetValue()) ? "Yes" : "No";
 	settings["External Camera Mode"] = (extcam->GetValue()) ? "Static" : "Pitching";
 	settings["FOV External"] = conv(fovext->GetValue());
 	settings["FOV Internal"] = conv(fovint->GetValue());
@@ -2528,8 +2527,6 @@ void MyDialog::OnButPlay(wxCommandEvent& event)
 		// error starting
 		return;
 	}
-	// Wait until child process exits.
-	WaitForSingleObject(pi.hProcess, INFINITE);
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 #endif
