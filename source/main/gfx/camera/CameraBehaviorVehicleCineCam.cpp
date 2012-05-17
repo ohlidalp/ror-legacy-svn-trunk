@@ -36,11 +36,11 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 {
 	CameraBehavior::update(ctx);
 
-	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
-				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
+	Vector3 dir = (currTruck->nodes[currTruck->cameranodepos[currTruck->currentcamera]].smoothpos
+				 - currTruck->nodes[currTruck->cameranodedir[currTruck->currentcamera]].smoothpos).normalisedCopy();
 
-	Vector3 roll = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
-				  - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranoderoll[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
+	Vector3 roll = (currTruck->nodes[currTruck->cameranodepos[currTruck->currentcamera]].smoothpos
+				  - currTruck->nodes[currTruck->cameranoderoll[currTruck->currentcamera]].smoothpos).normalisedCopy();
 
 	Vector3 up = dir.crossProduct(roll);
 
@@ -48,13 +48,15 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 	Quaternion orientation = Quaternion(camRotX, up) * Quaternion(Degree(180.0) + camRotY, roll) * Quaternion(roll, up, dir);
 
-	ctx.mCamera->setPosition(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos);
+	ctx.mCamera->setPosition(currTruck->nodes[currTruck->cinecameranodepos[currTruck->currentcamera]].smoothpos);
 	ctx.mCamera->setOrientation(orientation);
 }
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
 {
-	if (ctx.mCurrTruck->freecinecamera <= 0)
+	CameraBehaviorVehicle::activate(ctx);
+
+	if ( currTruck->freecinecamera <= 0 )
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
 		return;
@@ -62,46 +64,50 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 	ctx.mCamera->setFOVy(Degree(fovInternal));
 
-	camRotX = 0.0f;
-	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
+	reset(ctx);
 
-	ctx.mCurrTruck->prepareInside(true);
+	currTruck->prepareInside(true);
 
 	if ( ctx.mOverlayWrapper )
 	{
-		if(ctx.mCurrTruck->driveable == AIRPLANE)
-			ctx.mOverlayWrapper->showDashboardOverlays(true, ctx.mCurrTruck);
+		if ( currTruck->driveable == AIRPLANE )
+			ctx.mOverlayWrapper->showDashboardOverlays(true, currTruck);
 		else
-			ctx.mOverlayWrapper->showDashboardOverlays(false, ctx.mCurrTruck);
+			ctx.mOverlayWrapper->showDashboardOverlays(false, currTruck);
 	}
 
-	ctx.mCurrTruck->currentcamera = 0;
-	ctx.mCurrTruck->changedCamera();
+	currTruck->currentcamera = 0;
+	currTruck->changedCamera();
 }
 
 void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 	ctx.mCamera->setFOVy(Degree(fovExternal));
 
-	ctx.mCurrTruck->prepareInside(false);
+	currTruck->prepareInside(false);
 
 	if ( ctx.mOverlayWrapper )
 	{
-		ctx.mOverlayWrapper->showDashboardOverlays(true, ctx.mCurrTruck);
+		ctx.mOverlayWrapper->showDashboardOverlays(true, currTruck);
 	}
 
-	ctx.mCurrTruck->currentcamera= - 1;
-	ctx.mCurrTruck->changedCamera();
+	currTruck->currentcamera = -1;
+	currTruck->changedCamera();
+}
+
+void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &ctx)
+{
+	camRotX = 0.0f;
+	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
 }
 
 bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
-	if ( ctx.mCurrTruck->currentcamera < ctx.mCurrTruck->freecinecamera-1 )
+	if ( currTruck->currentcamera < currTruck->freecinecamera-1 )
 	{
-		ctx.mCurrTruck->currentcamera++;
-		ctx.mCurrTruck->changedCamera();
+		currTruck->currentcamera++;
+		currTruck->changedCamera();
 		return false;
 	}
-	
 	return true;
 }

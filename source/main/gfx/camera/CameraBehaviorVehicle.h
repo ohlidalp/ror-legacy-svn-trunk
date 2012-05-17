@@ -33,11 +33,13 @@ public:
 	void update(const CameraManager::cameraContext_t &ctx);
 
 	void activate(const CameraManager::cameraContext_t &ctx);
+	void reset(const CameraManager::cameraContext_t &ctx);
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
 
 protected:
 
+	Beam *currTruck;
 	bool camPitching;
 };
 

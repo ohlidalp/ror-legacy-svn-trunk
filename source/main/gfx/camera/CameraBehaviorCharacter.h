@@ -34,6 +34,8 @@ public:
 
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 
+	void reset(const CameraManager::cameraContext_t &ctx);
+
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
 
 protected:
