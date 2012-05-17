@@ -28,16 +28,16 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 	  CameraBehavior()
 	, camPitching(true)
 {
-	camRotY = 0.5f;
-
 	if ( SSETTING("External Camera Mode", "Pitching") == "Static" )
+	{
 		camPitching = false;
+	}
 }
 
 void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 {
-	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos
-				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
+	Vector3 dir = (currTruck->nodes[currTruck->cameranodepos[0]].smoothpos
+				 - currTruck->nodes[currTruck->cameranodedir[0]].smoothpos).normalisedCopy();
 
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
 	targetPitch     = 0.0f;
@@ -46,16 +46,22 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	{
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
-	
-	camIntertia = 1.0f / (ctx.mDt * 4.0f);
 
-	camLookAt = ctx.mCurrTruck->getPosition();
+	camLookAt = currTruck->getPosition();
 
 	CameraBehavior::update(ctx);
 }
 
 void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx)
 {
-	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
+	currTruck = ctx.mCurrTruck;
+	camDistMin = currTruck->getMinimalCameraRadius() * 2.0f;
+	reset(ctx);
+}
+
+void CameraBehaviorVehicle::reset(const CameraManager::cameraContext_t &ctx)
+{
+	camRotX = 0.0f;
+	camRotY = 0.5f;
 	camDist = camDistMin * 1.5f;
 }

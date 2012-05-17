@@ -34,7 +34,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf, Character *ps, OverlayWrapper *ow) : 
+CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf, Character *ps, OverlayWrapper *ow, DOFManager *dof) : 
 	  currentBehavior(0)
 	, currentBehaviorID(-1)
 	, mTransScale(1.0f)
@@ -49,6 +49,7 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	ctx.mCamera = cam;
 	ctx.mCharacter = ps;
 	ctx.mCurrTruck = 0;
+	ctx.mDof = dof;
 	ctx.mEfl = efl;
 	ctx.mHfinder = hf;
 	ctx.mOverlayWrapper = ow;
@@ -127,7 +128,7 @@ void CameraManager::update(float dt)
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
-	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior))
+	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )

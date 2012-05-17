@@ -146,6 +146,7 @@ protected:
 	AppState *parentState;
 	Collisions *collisions;
 	Dashboard *dashboard;
+	DOFManager *dof;
 	Editor *editor;
 	Envmap *envmap;
 	FILE *editorfd;

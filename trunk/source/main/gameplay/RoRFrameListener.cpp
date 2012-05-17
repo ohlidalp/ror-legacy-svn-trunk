@@ -40,6 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CollisionTools.h"
 #include "dashboard.h"
 #include "DashBoardManager.h"
+#include "DepthOfFieldEffect.h"
 #include "DustManager.h"
 #include "editor.h"
 #include "envmap.h"
@@ -171,8 +172,6 @@ inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 		return 1;
 	return RoRFrameListener::hfinder->getHeightAt(x, z);
 }
-
-
 
 void RoRFrameListener::startTimer()
 {
@@ -744,6 +743,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	editor(0),
 	editorfd(0),
 	envmap(0),
+	dof(0),
 	flaresMode(3), // on by default
 	forcefeedback(0),
 	freeTruckPosition(false),
@@ -929,7 +929,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	else if (lightsMode == "All vehicles, all lights")
 		flaresMode = 4;
 
-
 	// heathaze effect
 	if (BSETTING("HeatHaze", false))
 	{
@@ -937,9 +936,14 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		heathaze->setEnable(true);
 	}
 
-	// no more force feedback
-	// useforce=(SSETTING("Controler Force Feedback")=="Enable");
-	// force feedback is ...back :)
+	// depth of field effect
+	if (BSETTING("DOF", false))
+	{
+		//dof = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
+		//dof->setEnabled(true);
+	}
+
+	// force feedback
 	if (BSETTING("Force Feedback", true))
 	{
 		//check if a device has been detected
@@ -1128,7 +1132,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 	
 	// init camera manager after mygui and after we have a character
-	new CameraManager(mSceneMgr, mCamera, this, hfinder, person, ow);
+	new CameraManager(mSceneMgr, mCamera, this, hfinder, person, ow, dof);
 
 	person->setVisible(false);
 
@@ -4110,11 +4114,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 	// first compositor: HDR!
 	// HDR if wished
-	bool useHDR = (BSETTING("HDR", false));
-	if (useHDR)
+	if (BSETTING("HDR", false))
+	{
 		initHDR();
-
-
+	}
 
 	if (BSETTING("Glow", false))
 	{

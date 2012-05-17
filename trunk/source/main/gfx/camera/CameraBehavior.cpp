@@ -86,9 +86,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 
 	if ( INPUTENGINE.getEventBoolValue(EV_CAMERA_RESET) )
 	{
-		camRotX = 0.0f;
-		camRotY = 0.0f;
-		camDist = 5.0f;
+		reset(ctx);
 	}
 
 	if ( camDistMin > 0.0f )

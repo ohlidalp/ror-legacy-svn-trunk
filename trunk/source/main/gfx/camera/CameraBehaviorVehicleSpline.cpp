@@ -20,7 +20,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicleSpline.h"
 
 #include "Beam.h"
-#include "Console.h"
 #include "InputEngine.h"
 #include "language.h"
 #include "Ogre.h"
@@ -40,9 +39,9 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 {
 	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
 	dir.normalise();
-	//targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	//targetPitch = 0;
-	//camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
+	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+	targetPitch = 0;
+	camIntertia = 1.0f / (ctx.mDt * 4.0f);
 
 	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
@@ -54,11 +53,11 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 		updateSplineDisplay();
 
-		//camCenterPosition = spline->interpolate(splinePos);
+		camLookAt = spline->interpolate(splinePos);
 	} else
 	{
 		// fallback :-/
-		//camCenterPosition = ctx.mCurrTruck->getPosition();
+		camLookAt = ctx.mCurrTruck->getPosition();
 	}
 
 	CameraBehavior::update(ctx);
@@ -90,15 +89,15 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 
 	if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right) )
 	{
-		splinePos += (float)ms.X.rel * 0.001f;
-		if (splinePos < 0) splinePos = 0;
-		if (splinePos > 1) splinePos = 1;
+		splinePos += ms.X.rel * 0.001f;
+		splinePos  = std::max(0.0f, splinePos);
+		splinePos  = std::min(splinePos, 1.0f);
 		return true;
 	} else if ( ms.buttonDown(OIS::MB_Right) )
 	{
-		camRotX += Degree( (float)ms.X.rel * 0.13f);
-		camRotY += Degree(-(float)ms.Y.rel * 0.13f);
-		camDist +=        -(float)ms.Z.rel * 0.02f;
+		camRotX += Degree( ms.X.rel * 0.13f);
+		camRotY += Degree(-ms.Y.rel * 0.13f);
+		camDist +=        -ms.Z.rel * 0.02f;
 		return true;
 	}
 	return false;

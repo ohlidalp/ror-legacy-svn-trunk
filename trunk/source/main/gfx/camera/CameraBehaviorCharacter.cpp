@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorCharacter.h"
 
 #include "Character.h"
+#include "mygui/BaseLayout.h"
 
 using namespace Ogre;
 
@@ -56,9 +57,8 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	return CameraBehavior::mouseMoved(ctx, _arg);
 }
 
-bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 {
-	camMode = (camMode + 1) % CHARACTER_END;
 	camRotX =  0.0f;
 
 	if ( camMode == CHARACTER_FIRST_PERSON )
@@ -67,13 +67,26 @@ bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_
 		camDist = 0.1f;
 		camIntertia = 0.0f;
 		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
+#ifdef USE_MYGUI
+		MyGUI::PointerManager::getInstance().setVisible(false);
+#endif // USE_MYGUI
 	} else if ( camMode == CHARACTER_THIRD_PERSON )
 	{
 		camRotY = 0.3f;
 		camDist = 5.0f;
 		camIntertia = 11.0f;
 		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
+#ifdef USE_MYGUI
+		MyGUI::PointerManager::getInstance().setVisible(true);
+#endif // USE_MYGUI
 	}
+}
+
+bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
+{
+	camMode = (camMode + 1) % CHARACTER_END;
+
+	reset(ctx);
 
 	return false;
 }

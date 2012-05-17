@@ -34,6 +34,7 @@ public:
 
 	void activate(const CameraManager::cameraContext_t &ctx);
 	void deactivate(const CameraManager::cameraContext_t &ctx);
+	void reset(const CameraManager::cameraContext_t &ctx);
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
 

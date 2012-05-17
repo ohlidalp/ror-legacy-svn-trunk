@@ -28,14 +28,15 @@ class CameraBehaviorFree : public ICameraBehavior
 {
 public:
 
-	void activate(const CameraManager::cameraContext_t &ctx);
-	void deactivate(const CameraManager::cameraContext_t &ctx);
-
 	void update(const CameraManager::cameraContext_t &ctx);
 
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+
+	void activate(const CameraManager::cameraContext_t &ctx);
+	void deactivate(const CameraManager::cameraContext_t &ctx);
+	void reset(const CameraManager::cameraContext_t &ctx) {};
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
 };
