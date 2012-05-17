@@ -27,7 +27,7 @@ using namespace Ogre;
 
 void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 {
-	Vector3 mTrans = Vector3::ZERO;
+	Vector3 mTrans(Vector3::ZERO);
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
 
@@ -81,6 +81,16 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans);
 }
 
+bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+{
+	const OIS::MouseState ms = _arg.state;
+
+	ctx.mCamera->yaw(Degree(-ms.X.rel * 0.13f));
+	ctx.mCamera->pitch(Degree(-ms.Y.rel * 0.13f));
+
+	return true;
+}
+
 void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
 {
 	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
@@ -97,12 +107,3 @@ void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
 #endif // USE_MYGUI
 }
 
-bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
-{
-	const OIS::MouseState ms = _arg.state;
-
-	ctx.mCamera->yaw(Degree(-ms.X.rel * 0.13f));
-	ctx.mCamera->pitch(Degree(-ms.Y.rel * 0.13f));
-
-	return true;
-}
