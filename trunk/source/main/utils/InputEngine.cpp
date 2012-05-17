@@ -793,7 +793,7 @@ eventInfo_t eventInfo[] = {
 	{
 		"COMMON_TOGGLE_MAT_DEBUG",
 		EV_COMMON_TOGGLE_MAT_DEBUG,
-		"Keyboard EXPL+CTRL+F",
+		"",
 		_L("debug purpose - dont use")
 	},
 	{
