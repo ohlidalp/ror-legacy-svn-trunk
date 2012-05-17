@@ -1132,7 +1132,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 	
 	// init camera manager after mygui and after we have a character
-	new CameraManager(mSceneMgr, mCamera, this, hfinder, person, ow, dof);
+	new CameraManager(mSceneMgr, mCamera, this, person, ow, dof);
 
 	person->setVisible(false);
 

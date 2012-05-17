@@ -39,7 +39,6 @@ public:
 
 protected:
 
-	Beam *currTruck;
 	bool camPitching;
 };
 

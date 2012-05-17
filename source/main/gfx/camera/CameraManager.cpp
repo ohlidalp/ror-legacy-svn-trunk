@@ -26,16 +26,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFixed.h"
 #include "CameraBehaviorFree.h"
+#include "CameraBehaviorStatic.h"
 #include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleSpline.h"
-#include "CameraBehaviorVehicleStatic.h"
 
 #include "ICameraBehavior.h"
 
 using namespace Ogre;
 
-CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, HeightFinder *hf, Character *ps, OverlayWrapper *ow, DOFManager *dof) : 
+CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, Character *ps, OverlayWrapper *ow, DOFManager *dof) : 
 	  currentBehavior(0)
 	, currentBehaviorID(-1)
 	, mTransScale(1.0f)
@@ -52,7 +52,6 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 	ctx.mCurrTruck = 0;
 	ctx.mDof = dof;
 	ctx.mEfl = efl;
-	ctx.mHfinder = hf;
 	ctx.mOverlayWrapper = ow;
 	ctx.mSceneMgr = scm;
 }
@@ -71,7 +70,7 @@ void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_STATIC, new CameraBehaviorVehicleStatic()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_STATIC, new CameraBehaviorStatic()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
@@ -143,9 +142,12 @@ void CameraManager::update(float dt)
 	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
-	} else if ( ctx.mCurrTruck && currentBehaviorID != CAMERA_BEHAVIOR_FIXED && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
+	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
-		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
+		if ( currentBehaviorID != CAMERA_BEHAVIOR_STATIC && currentBehaviorID != CAMERA_BEHAVIOR_FIXED )
+		{
+			switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
+		}
 	}
 
 	if ( currentBehavior )

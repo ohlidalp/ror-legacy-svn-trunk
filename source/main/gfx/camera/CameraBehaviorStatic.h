@@ -22,13 +22,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehaviorVehicle.h"
+#include "ICameraBehavior.h"
 
-class CameraBehaviorVehicleStatic : public CameraBehaviorVehicle
+class CameraBehaviorStatic : public ICameraBehavior
 {
 public:
-
-	CameraBehaviorVehicleStatic();
 
 	void update(const CameraManager::cameraContext_t &ctx);
 
@@ -38,6 +36,7 @@ public:
 
 	void activate(const CameraManager::cameraContext_t &ctx) {};
 	void deactivate(const CameraManager::cameraContext_t &ctx) {};
+	void reset(const CameraManager::cameraContext_t &ctx) {};
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
 };
