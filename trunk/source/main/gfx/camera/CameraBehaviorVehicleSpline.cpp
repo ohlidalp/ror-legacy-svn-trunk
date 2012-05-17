@@ -28,7 +28,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
-	  myManualObject(0)
+	  CameraBehaviorVehicle()
+	, myManualObject(0)
 	, mySceneNode(0)
 	, spline(new SimpleSpline())
 	, splinePos(0.5f)
@@ -65,7 +66,13 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
 {
-	CameraBehavior::activate(ctx);
+	if ( ctx.mCurrTruck->free_camerarail <= 0 )
+	{
+		CameraManager::getSingleton().switchToNextBehavior();
+		return;
+	}
+
+	CameraBehaviorVehicle::activate(ctx);
 
 	if ( !myManualObject )
 	{

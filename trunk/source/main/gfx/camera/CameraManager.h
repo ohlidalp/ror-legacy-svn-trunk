@@ -33,14 +33,13 @@ class CameraManager : public RoRSingletonNoCreation < CameraManager >
 
 public:
 
-	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl,  HeightFinder *hf, Character *ps, OverlayWrapper *ow, DOFManager *dof);
+	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl, Character *ps, OverlayWrapper *ow, DOFManager *dof);
 	~CameraManager();
 
 	typedef struct cameraContext {
 		Beam *mCurrTruck;
 		Character *mCharacter;
 		DOFManager *mDof;
-		HeightFinder *mHfinder;
 		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;
 		Ogre::SceneManager *mSceneMgr;
@@ -53,7 +52,7 @@ public:
 	enum CameraBehaviors {
 		CAMERA_BEHAVIOR_CHARACTER=0,
 		CAMERA_BEHAVIOR_VEHICLE,
-		CAMERA_BEHAVIOR_VEHICLE_STATIC,
+		CAMERA_BEHAVIOR_STATIC,
 		CAMERA_BEHAVIOR_VEHICLE_SPLINE,
 		CAMERA_BEHAVIOR_VEHICLE_CINECAM,
 		CAMERA_BEHAVIOR_END,
