@@ -112,7 +112,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 		desiredPosition.y = std::max(h, desiredPosition.y);
 	}
 
-	Vector3 camTrans = (desiredPosition - ctx.mCamera->getPosition()) 0.1f;
+	Vector3 camTrans = (desiredPosition - ctx.mCamera->getPosition()) * 0.1f;
 
 	ctx.mCamera->move(camTrans);
 	ctx.mCamera->lookAt(camLookAt);
