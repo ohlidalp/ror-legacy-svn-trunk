@@ -27,10 +27,11 @@ using namespace Ogre;
 
 CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	  CameraBehaviorVehicle()
+	, currTruck(0)
 	, lastCineCam(0)
 {
-	fovInternal = FSETTING("FOV Internal", 75);
-	fovExternal = FSETTING("FOV External", 60);
+	fovInternal = Degree(FSETTING("FOV Internal", 75.0f));
+	fovExternal = Degree(FSETTING("FOV External", 60.0f));
 }
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
@@ -60,12 +61,12 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset)
 {
-	if ( ctx.mCurrTruck->freecinecamera <= 0 )
+	if ( !ctx.mCurrTruck || ctx.mCurrTruck->freecinecamera <= 0 )
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
 		return;
 	}
-
+	
 	if ( reset )
 	{
 		lastCineCam = 0;
@@ -74,7 +75,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 	currTruck = ctx.mCurrTruck;
 
-	ctx.mCamera->setFOVy(Degree(fovInternal));
+	ctx.mCamera->setFOVy(fovInternal);
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -93,7 +94,12 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 	// Do not use ctx.mCurrTruck in here (could be null)
-	ctx.mCamera->setFOVy(Degree(fovExternal));
+	if ( !currTruck )
+	{
+		return;
+	}
+
+	ctx.mCamera->setFOVy(fovExternal);
 		
 	currTruck->prepareInside(false);
 
@@ -116,7 +122,7 @@ void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &c
 
 bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
-	if ( ctx.mCurrTruck->currentcamera < ctx.mCurrTruck->freecinecamera-1 )
+	if ( ctx.mCurrTruck && ctx.mCurrTruck->currentcamera < ctx.mCurrTruck->freecinecamera-1 )
 	{
 		ctx.mCurrTruck->currentcamera++;
 		ctx.mCurrTruck->changedCamera();

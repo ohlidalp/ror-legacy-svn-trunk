@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorFree.h"
 
+#include "heightfinder.h"
 #include "InputEngine.h"
 #include "mygui/BaseLayout.h"
 #include "Ogre.h"
@@ -78,7 +79,16 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->yaw(mRotX);
 	ctx.mCamera->pitch(mRotY);
 
-	ctx.mCamera->setPosition(ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans);
+	Vector3 camPosition = ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans;
+
+	if ( ctx.mHfinder )
+	{
+		float h = ctx.mHfinder->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
+
+		camPosition.y = std::max(h, camPosition.y);
+	}
+
+	ctx.mCamera->setPosition(camPosition);
 }
 
 bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)

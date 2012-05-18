@@ -66,13 +66,11 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset)
 {
-	if ( ctx.mCurrTruck->free_camerarail <= 0 )
+	if ( !ctx.mCurrTruck || ctx.mCurrTruck->free_camerarail <= 0 )
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
 		return;
 	}
-
-	CameraBehaviorVehicle::activate(ctx, reset);
 
 	if ( !myManualObject )
 	{

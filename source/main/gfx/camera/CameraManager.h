@@ -40,6 +40,7 @@ public:
 		Beam *mCurrTruck;
 		Character *mCharacter;
 		DOFManager *mDof;
+		HeightFinder *mHfinder;
 		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;
 		Ogre::SceneManager *mSceneMgr;
@@ -51,8 +52,8 @@ public:
 
 	enum CameraBehaviors {
 		CAMERA_BEHAVIOR_CHARACTER=0,
-		CAMERA_BEHAVIOR_VEHICLE,
 		CAMERA_BEHAVIOR_STATIC,
+		CAMERA_BEHAVIOR_VEHICLE,
 		CAMERA_BEHAVIOR_VEHICLE_SPLINE,
 		CAMERA_BEHAVIOR_VEHICLE_CINECAM,
 		CAMERA_BEHAVIOR_END,

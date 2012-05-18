@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "InputEngine.h"
+#include "RoRFrameListener.h"
 
 #include "CameraBehavior.h"
 #include "CameraBehaviorCharacter.h"
@@ -71,8 +72,8 @@ CameraManager::~CameraManager()
 void CameraManager::createGlobalBehaviors()
 {
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_STATIC, new CameraBehaviorStatic()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
@@ -144,6 +145,7 @@ void CameraManager::update(float dt)
 
 	ctx.mCurrTruck  = BeamFactory::getSingleton().getCurrentTruck();
 	ctx.mDt         = dt;
+	ctx.mHfinder    = RoRFrameListener::hfinder;
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
@@ -157,7 +159,7 @@ void CameraManager::update(float dt)
 		toggleBehavior(CAMERA_BEHAVIOR_FIXED);
 	}
 
-	if ( !ctx.mCurrTruck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE) )
+	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE) )
 	{
 		toggleBehavior(CAMERA_BEHAVIOR_FREE);
 	}
@@ -167,7 +169,7 @@ void CameraManager::update(float dt)
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
-		if ( currentBehaviorID != CAMERA_BEHAVIOR_STATIC && currentBehaviorID != CAMERA_BEHAVIOR_FIXED )
+		if ( currentBehaviorID != CAMERA_BEHAVIOR_STATIC && currentBehaviorID < CAMERA_BEHAVIOR_END )
 		{
 			switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
 		}

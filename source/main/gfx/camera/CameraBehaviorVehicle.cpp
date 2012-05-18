@@ -47,6 +47,8 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
+	camIntertia = 1.0f / (ctx.mDt * 4.0f);
+
 	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
 
 	camLookAt = ctx.mCurrTruck->getPosition();
@@ -56,7 +58,10 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, bool reset)
 {
-	if ( reset )
+	if ( !ctx.mCurrTruck )
+	{
+		CameraManager::getSingleton().switchToNextBehavior();
+	} else if ( reset )
 	{
 		this->reset(ctx);
 	}
