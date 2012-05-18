@@ -655,7 +655,7 @@ bool MyApp::extractZipFiles(const wxString& aZipFile, const wxString& aTargetDir
 		wxFileInputStream in(aZipFile);
 		if (!in)
 		{
-			wxLogError(_T("Can not open file '")+aZipFile+_T("'."));
+			wxLogError(_T("Can not open file '")+aZipFile+wxT("'."));
 			ret = false;
 			break;
 		}
@@ -677,7 +677,7 @@ bool MyApp::extractZipFiles(const wxString& aZipFile, const wxString& aTargetDir
 				zip.OpenEntry(*entry.get());
 				if (!zip.CanRead())
 				{
-					wxLogError(_T("Can not read zip entry '") + entry->GetName() + _T("'."));
+					wxLogError(_T("Can not read zip entry '") + entry->GetName() + wxT("'."));
 					ret = false;
 					break;
 				}
@@ -686,7 +686,7 @@ bool MyApp::extractZipFiles(const wxString& aZipFile, const wxString& aTargetDir
 
 				if (!file)
 				{
-					wxLogError(_T("Can not create file '")+name+_T("'."));
+					wxLogError(_T("Can not create file '")+name+wxT("'."));
 					ret = false;
 					break;
 				}
