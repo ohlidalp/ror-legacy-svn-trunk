@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehavior.h"
 
 #include "InputEngine.h"
+#include "heightfinder.h"
 #include "Ogre.h"
 
 using namespace Ogre;
@@ -98,15 +99,22 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 		camDist = std::min(camDist, camDistMax);
 	}
 
-	Vector3 desiredPosition = camLookAt + camDist * 0.5f * Vector3( \
-			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
-			, sin(targetPitch     + camRotY.valueRadians()) \
-			, cos(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians()) \
+	Vector3 desiredPosition = camLookAt + camDist * 0.5f * Vector3(
+			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians())
+			, sin(targetPitch     + camRotY.valueRadians())
+			, cos(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians())
 			);
 
-	Vector3 position = (desiredPosition + ctx.mCamera->getPosition() * camIntertia) / (1.0f + camIntertia);
+	if ( ctx.mHfinder )
+	{
+		float h = ctx.mHfinder->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
 
-	ctx.mCamera->setPosition(position);
+		desiredPosition.y = std::max(h, desiredPosition.y);
+	}
+
+	Vector3 camTrans = (desiredPosition - ctx.mCamera->getPosition()) 0.1f;
+
+	ctx.mCamera->move(camTrans);
 	ctx.mCamera->lookAt(camLookAt);
 }
 

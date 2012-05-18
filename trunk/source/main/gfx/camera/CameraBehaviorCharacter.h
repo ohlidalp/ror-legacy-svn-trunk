@@ -34,6 +34,7 @@ public:
 
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 
+	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
 	void reset(const CameraManager::cameraContext_t &ctx);
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
@@ -41,8 +42,8 @@ public:
 protected:
 
 	enum CameraModes {
-		CHARACTER_FIRST_PERSON=0,
-		CHARACTER_THIRD_PERSON,
+		CHARACTER_THIRD_PERSON=0,
+		CHARACTER_FIRST_PERSON,
 		CHARACTER_END
 	};
 

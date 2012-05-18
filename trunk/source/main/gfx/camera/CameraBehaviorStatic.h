@@ -34,11 +34,15 @@ public:
 	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
-	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true) {};
-	void deactivate(const CameraManager::cameraContext_t &ctx) {};
+	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
+	void deactivate(const CameraManager::cameraContext_t &ctx);
 	void reset(const CameraManager::cameraContext_t &ctx) {};
 
 	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
+
+protected:
+
+	Ogre::Radian fovPreviously;
 };
 
 #endif // __CAMERA_BEHAVIOR_STATIC_H_

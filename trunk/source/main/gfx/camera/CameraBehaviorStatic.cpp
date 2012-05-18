@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Character.h"
 #include "DepthOfFieldEffect.h"
 #include "heightfinder.h"
-#include "RoRFrameListener.h"
+#include "Ogre.h"
 
 using namespace Ogre;
 
@@ -44,9 +44,9 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	camPosition.z = ((int)(lookAt.z) / 100) * 100 + 50;
 	camPosition.y =        lookAt.y;
 
-	if ( RoRFrameListener::hfinder )
+	if ( ctx.mHfinder)
 	{
-		float h = RoRFrameListener::hfinder->getHeightAt(camPosition.x, camPosition.z);
+		float h = ctx.mHfinder->getHeightAt(camPosition.x, camPosition.z);
 
 		camPosition.y = std::max(h, camPosition.y);
 	}
@@ -66,4 +66,14 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 		ctx.mDof->setFocus(camDist);
 		ctx.mDof->setLensFOV(Radian(fov));
 	}
+}
+
+void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+{
+	fovPreviously = ctx.mCamera->getFOVy();
+}
+
+void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
+{
+	ctx.mCamera->setFOVy(fovPreviously);
 }

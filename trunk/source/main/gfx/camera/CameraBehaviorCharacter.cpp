@@ -49,6 +49,9 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		camRotY += Degree(ms.Y.rel * 0.13f);
 		angle   +=        ms.X.rel * 0.01f;
 
+		camRotY  = Radian(std::min(+Math::HALF_PI * 0.65f, camRotY.valueRadians()));
+		camRotY  = Radian(std::max(camRotY.valueRadians(), -Math::HALF_PI * 0.9f));
+
 		ctx.mCharacter->setAngle(angle);
 
 #ifdef USE_MYGUI
@@ -59,6 +62,15 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	}
 
 	return CameraBehavior::mouseMoved(ctx, _arg);
+}
+
+void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+{
+	if ( reset )
+	{
+		camMode = CHARACTER_THIRD_PERSON;
+		this->reset(ctx);
+	}
 }
 
 void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
@@ -82,9 +94,7 @@ void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 
 bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
-	camMode = (camMode + 1) % CHARACTER_END;
-
 	reset(ctx);
 
-	return false;
+	return ++camMode >= CHARACTER_END;
 }
