@@ -30,7 +30,7 @@ using namespace Ogre;
 void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 lookAt(Vector3::ZERO);
-	Vector3 camPosition(0.0f, 0.0f, 5.0f);
+	Vector3 camPosition(Vector3::ZERO);
 
 	if ( ctx.mCurrTruck )
 	{
@@ -42,14 +42,16 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 
 	camPosition.x = ((int)(lookAt.x) / 100) * 100 + 50;
 	camPosition.z = ((int)(lookAt.z) / 100) * 100 + 50;
+	camPosition.y =        lookAt.y;
 
 	if ( RoRFrameListener::hfinder )
 	{
-		camPosition.y += RoRFrameListener::hfinder->getHeightAt(camPosition.x, camPosition.z);
-	} else
-	{
-		camPosition.y += lookAt.y;
+		float h = RoRFrameListener::hfinder->getHeightAt(camPosition.x, camPosition.z);
+
+		camPosition.y = std::max(h, camPosition.y);
 	}
+
+	camPosition.y += 5.0f;
 	
 	float camDist = camPosition.distance(lookAt);
 	float fov = atan2(20.0f, camDist);

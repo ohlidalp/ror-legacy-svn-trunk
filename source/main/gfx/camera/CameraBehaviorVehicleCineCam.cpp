@@ -27,6 +27,7 @@ using namespace Ogre;
 
 CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	  CameraBehaviorVehicle()
+	, lastCineCam(0)
 {
 	fovInternal = FSETTING("FOV Internal", 75);
 	fovExternal = FSETTING("FOV External", 60);
@@ -57,7 +58,7 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 	ctx.mCamera->setOrientation(orientation);
 }
 
-void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset)
 {
 	if ( ctx.mCurrTruck->freecinecamera <= 0 )
 	{
@@ -65,11 +66,15 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 		return;
 	}
 
+	if ( reset )
+	{
+		lastCineCam = 0;
+		this->reset(ctx);
+	}
+
 	currTruck = ctx.mCurrTruck;
 
 	ctx.mCamera->setFOVy(Degree(fovInternal));
-
-	reset(ctx);
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -81,7 +86,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 			ctx.mOverlayWrapper->showDashboardOverlays(false, ctx.mCurrTruck);
 	}
 
-	ctx.mCurrTruck->currentcamera = 0;
+	ctx.mCurrTruck->currentcamera = lastCineCam;
 	ctx.mCurrTruck->changedCamera();
 }
 
@@ -96,6 +101,8 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 	{
 		ctx.mOverlayWrapper->showDashboardOverlays(true, currTruck);
 	}
+
+	lastCineCam = currTruck->currentcamera;
 
 	currTruck->currentcamera = -1;
 	currTruck->changedCamera();

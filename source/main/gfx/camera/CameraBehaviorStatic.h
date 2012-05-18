@@ -34,7 +34,7 @@ public:
 	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
-	void activate(const CameraManager::cameraContext_t &ctx) {};
+	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true) {};
 	void deactivate(const CameraManager::cameraContext_t &ctx) {};
 	void reset(const CameraManager::cameraContext_t &ctx) {};
 

@@ -33,6 +33,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ICameraBehavior.h"
 
+#include <stack>
+
 using namespace Ogre;
 
 CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, Character *ps, OverlayWrapper *ow, DOFManager *dof) : 
@@ -86,7 +88,7 @@ void CameraManager::switchToNextBehavior()
 	}
 }
 
-void CameraManager::switchBehavior(int newBehaviorID)
+void CameraManager::switchBehavior(int newBehaviorID, bool reset)
 {
 	if (newBehaviorID == currentBehaviorID)
 	{
@@ -109,7 +111,28 @@ void CameraManager::switchBehavior(int newBehaviorID)
 	currentBehaviorID = newBehaviorID;
 
 	// activate new
-	currentBehavior->activate(ctx);
+	currentBehavior->activate(ctx, reset);
+}
+
+void CameraManager::toggleBehavior(int behavior)
+{
+	static std::stack<int> precedingBehaviors;
+
+	if ( behavior != currentBehaviorID && (precedingBehaviors.empty() || precedingBehaviors.top() != behavior))
+	{
+		if ( currentBehaviorID >= 0 )
+		{
+			precedingBehaviors.push(currentBehaviorID);
+		}
+		switchBehavior(behavior);
+	} else if ( !precedingBehaviors.empty() )
+	{
+		switchBehavior(precedingBehaviors.top(), false);
+		precedingBehaviors.pop();
+	} else
+	{
+		switchToNextBehavior();
+	}
 }
 
 void CameraManager::update(float dt)
@@ -124,19 +147,19 @@ void CameraManager::update(float dt)
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 
-	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
+	if ( currentBehaviorID < CAMERA_BEHAVIOR_END && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
 	{
 		switchToNextBehavior();
 	}
 
 	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX) )
 	{
-		switchBehavior(CAMERA_BEHAVIOR_FIXED);
+		toggleBehavior(CAMERA_BEHAVIOR_FIXED);
 	}
 
 	if ( !ctx.mCurrTruck && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE) )
 	{
-		switchBehavior(CAMERA_BEHAVIOR_FREE);
+		toggleBehavior(CAMERA_BEHAVIOR_FREE);
 	}
 
 	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )

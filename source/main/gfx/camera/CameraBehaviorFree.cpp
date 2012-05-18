@@ -88,22 +88,9 @@ bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, c
 	ctx.mCamera->yaw(Degree(-ms.X.rel * 0.13f));
 	ctx.mCamera->pitch(Degree(-ms.Y.rel * 0.13f));
 
-	return true;
-}
-
-void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx)
-{
-	ctx.mCamera->setFixedYawAxis(true, Vector3::UNIT_Y);
 #ifdef USE_MYGUI
 	MyGUI::PointerManager::getInstance().setVisible(false);
-#endif // USE_MYGUI
-}
 
-void CameraBehaviorFree::deactivate(const CameraManager::cameraContext_t &ctx)
-{
-	ctx.mCamera->setFixedYawAxis(false);
-#ifdef USE_MYGUI
-	MyGUI::PointerManager::getInstance().setVisible(true);
 #endif // USE_MYGUI
+	return true;
 }
-

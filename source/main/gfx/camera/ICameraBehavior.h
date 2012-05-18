@@ -37,7 +37,7 @@ public:
 	virtual bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 	virtual bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
-	virtual void activate(const CameraManager::cameraContext_t &ctx) = 0;
+	virtual void activate(const CameraManager::cameraContext_t &ctx, bool reset = true) = 0;
 	virtual void deactivate(const CameraManager::cameraContext_t &ctx) = 0;
 	virtual void reset(const CameraManager::cameraContext_t &ctx) = 0;
 

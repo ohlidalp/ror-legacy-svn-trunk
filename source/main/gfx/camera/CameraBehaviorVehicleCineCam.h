@@ -32,7 +32,7 @@ public:
 	
 	void update(const CameraManager::cameraContext_t &ctx);
 
-	void activate(const CameraManager::cameraContext_t &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
 	void deactivate(const CameraManager::cameraContext_t &ctx);
 	void reset(const CameraManager::cameraContext_t &ctx);
 
@@ -41,6 +41,7 @@ public:
 protected:
 
 	Beam *currTruck;
+	int lastCineCam;
 	float fovInternal, fovExternal;
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 };
