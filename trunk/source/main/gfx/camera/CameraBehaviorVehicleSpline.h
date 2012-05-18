@@ -34,7 +34,7 @@ public:
 	
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 
-	void activate(const CameraManager::cameraContext_t &ctx);
+	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
 
 
 	void updateSplineDisplay();

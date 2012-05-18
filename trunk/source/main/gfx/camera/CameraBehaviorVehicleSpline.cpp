@@ -64,7 +64,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 	CameraBehavior::update(ctx);
 }
 
-void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset)
 {
 	if ( ctx.mCurrTruck->free_camerarail <= 0 )
 	{
@@ -72,7 +72,7 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 		return;
 	}
 
-	CameraBehaviorVehicle::activate(ctx);
+	CameraBehaviorVehicle::activate(ctx, reset);
 
 	if ( !myManualObject )
 	{
@@ -100,14 +100,10 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 		splinePos  = std::max(0.0f, splinePos);
 		splinePos  = std::min(splinePos, 1.0f);
 		return true;
-	} else if ( ms.buttonDown(OIS::MB_Right) )
+	} else
 	{
-		camRotX += Degree( ms.X.rel * 0.13f);
-		camRotY += Degree(-ms.Y.rel * 0.13f);
-		camDist +=        -ms.Z.rel * 0.02f;
-		return true;
+		return CameraBehavior::mouseMoved(ctx, _arg);
 	}
-	return false;
 }
 
 void CameraBehaviorVehicleSpline::updateSplineDisplay()

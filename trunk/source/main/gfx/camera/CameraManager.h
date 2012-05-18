@@ -62,8 +62,9 @@ public:
 
 	void update(float dt);
 
-	void switchBehavior(int newBehavior);
+	void switchBehavior(int newBehavior, bool reset = true);
 	void switchToNextBehavior();
+	void toggleBehavior(int behavior);
 
 	bool hasActiveBehavior() { return currentBehavior!=0; };
 	int getCameraBehavior() { return currentBehaviorID; };

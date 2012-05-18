@@ -51,6 +51,10 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 
 		ctx.mCharacter->setAngle(angle);
 
+#ifdef USE_MYGUI
+		MyGUI::PointerManager::getInstance().setVisible(false);
+#endif // USE_MYGUI
+
 		return true;
 	}
 
@@ -67,18 +71,12 @@ void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 		camDist = 0.1f;
 		camIntertia = 0.0f;
 		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
-#ifdef USE_MYGUI
-		MyGUI::PointerManager::getInstance().setVisible(false);
-#endif // USE_MYGUI
 	} else if ( camMode == CHARACTER_THIRD_PERSON )
 	{
 		camRotY = 0.3f;
 		camDist = 5.0f;
 		camIntertia = 11.0f;
 		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
-#ifdef USE_MYGUI
-		MyGUI::PointerManager::getInstance().setVisible(true);
-#endif // USE_MYGUI
 	}
 }
 
