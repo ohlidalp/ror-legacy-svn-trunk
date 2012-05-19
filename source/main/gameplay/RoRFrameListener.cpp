@@ -5431,9 +5431,21 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	// environment map
-	if (envmap && curr_truck)
+	if (envmap)
 	{
-		envmap->update(curr_truck->getPosition(), curr_truck);
+		if (curr_truck)
+		{
+			envmap->update(curr_truck->getPosition(), curr_truck);
+#ifdef USE_CAELUM
+			if (SkyManager::singletonExists())
+			{
+				SkyManager::getSingleton().notifyCameraChanged(mCamera);
+			}
+#endif // USE_CAELUM
+		} else
+		{
+			envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+		}
 	}
 
 	// water
