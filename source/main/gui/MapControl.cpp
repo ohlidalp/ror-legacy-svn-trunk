@@ -27,10 +27,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 MapControl::MapControl(int mapsizex, int mapsizez) :
-	  mapsizex(mapsizex)
-	, mapsizez(mapsizez)
-	, h(100.0f)
+	  h(100.0f)
 	, mAlpha(1.0f)
+	, mapsizex(mapsizex)
+	, mapsizez(mapsizez)
 	, rWinHeight(1)
 	, rWinWidth(1)
 	, w(100.0f)
