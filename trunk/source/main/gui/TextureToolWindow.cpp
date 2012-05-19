@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Console.h"
 #include "Ogre.h"
-//#include "Settings.h"
+#include "Settings.h"
 #include "language.h"
 #include "utils.h"
 
