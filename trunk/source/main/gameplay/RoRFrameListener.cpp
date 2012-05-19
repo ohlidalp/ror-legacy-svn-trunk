@@ -939,8 +939,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	// depth of field effect
 	if (BSETTING("DOF", false))
 	{
-		//dof = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
-		//dof->setEnabled(true);
+		dof = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
+		dof->setEnabled(true);
 	}
 
 	// force feedback

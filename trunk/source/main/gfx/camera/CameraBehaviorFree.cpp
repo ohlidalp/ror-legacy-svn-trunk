@@ -20,6 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorFree.h"
 
 #include "Console.h"
+#include "DepthOfFieldEffect.h"
 #include "heightfinder.h"
 #include "InputEngine.h"
 #include "language.h"
@@ -125,6 +126,10 @@ bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, c
 
 void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
+	if ( ctx.mDof )
+	{
+		ctx.mDof->setFocusMode(DOFManager::Auto);
+	}
 #ifdef USE_MYGUI
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 #endif // USE_MYGUI
