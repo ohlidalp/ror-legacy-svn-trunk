@@ -19,7 +19,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MapTextureCreator.h"
 
-#include "heightfinder.h"
 #include "ResourceBuffer.h"
 #include "RoRFrameListener.h"
 #include "water.h"
@@ -32,15 +31,15 @@ MapTextureCreator::MapTextureCreator(SceneManager *mgr, Camera *maincam, RoRFram
 	  mSceneManager(mgr)
 	, mMainCam(mMainCam)
 	, mEfl(efl)
-	, mCamDir(Quaternion::ZERO)
-	, mCamPos(Vector3::ZERO)
+	, mCamOrientation(Quaternion::ZERO)
+	, mCamLookAt(Vector3::ZERO)
 	, mCamera(NULL)
 	, mMaterial(NULL)
 	, mRttTex(NULL)
 	, mStatics(NULL)
 	, mTextureUnitState(NULL)
 	, mViewport(NULL)
-	, mZoom(3.0f)
+	, mCamZoom(3.0f)
 {
 	mCounter++;
 	init();
@@ -80,30 +79,30 @@ bool MapTextureCreator::init()
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
 	mCamera->setFOVy(Radian(Math::HALF_PI));
-	mCamera->setNearClipDistance(mZoom);
+	mCamera->setNearClipDistance(mCamZoom);
 
 	return true;
 }
 
-void MapTextureCreator::setCameraMode(PolygonMode pm)
+void MapTextureCreator::setCameraMode(PolygonMode polygonMode)
 {
-	mCamera->setPolygonMode(pm);
+	mCamera->setPolygonMode(polygonMode);
 }
 
-void MapTextureCreator::setCameraZoom(float z)
+void MapTextureCreator::setCameraZoom(Real zoom)
 {
-	mZoom = std::max(0.3f, z);
+	mCamZoom = std::max(0.3f, zoom);
 }
 
-void MapTextureCreator::setCamPosition(Vector3 pos, Quaternion direction)
+void MapTextureCreator::setCamera(Vector3 lookAt, Quaternion orientation)
 {
-	mCamPos = pos;
-	mCamDir = direction;
+	mCamLookAt = lookAt;
+	mCamOrientation = orientation;
 }
 
-void MapTextureCreator::setStaticGeometry(StaticGeometry *geo)
+void MapTextureCreator::setStaticGeometry(StaticGeometry *staticGeometry)
 {
-	mStatics = geo;
+	mStatics = staticGeometry;
 }
 
 void MapTextureCreator::update()
@@ -112,20 +111,17 @@ void MapTextureCreator::update()
 
 	float width = mEfl->mapsizex;
 	float height = mEfl->mapsizez;
-	float zoomFactor = mZoom * ((width + height) / 2.0f) * 0.002f;
-	
-	mCamPos = Vector3(mEfl->mapsizex / 2.0f, mEfl->hfinder->getHeightAt(mEfl->mapsizex / 2.0f, mEfl->mapsizez / 2.0f) , mEfl->mapsizez / 2.0f);
-	mCamDir = Quaternion(Degree(0), Vector3::UNIT_X);
+	float zoomFactor = mCamZoom * ((width + height) / 2.0f) * 0.002f;
 
-	mCamera->setNearClipDistance(mZoom);
-	mCamera->setPosition(mCamPos + Vector3(0.0f, zoomFactor, 0.0f));
-	if ( mCamDir != Quaternion::ZERO )
+	mCamera->setNearClipDistance(mCamZoom);
+	mCamera->setPosition(mCamLookAt + Vector3(0.0f, zoomFactor, 0.0f));
+	if ( mCamOrientation != Quaternion::ZERO )
 	{
-		mCamera->setOrientation(mCamDir);
+		mCamera->setOrientation(mCamOrientation);
 	}
-	mCamera->lookAt(mCamPos - Vector3(0.0f, zoomFactor, 0.0f));
+	mCamera->lookAt(mCamLookAt);
 
-	float f = std::max(20.0f, 50.0f - mZoom);
+	float f = std::max(20.0f, 50.0f - mCamZoom);
 
 	if ( mStatics )
 	{
