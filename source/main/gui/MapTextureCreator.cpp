@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MapTextureCreator.h"
 
+#include "heightfinder.h"
 #include "ResourceBuffer.h"
 #include "RoRFrameListener.h"
 #include "water.h"
@@ -31,21 +32,23 @@ MapTextureCreator::MapTextureCreator(SceneManager *mgr, Camera *maincam, RoRFram
 	  mSceneManager(mgr)
 	, mMainCam(mMainCam)
 	, mEfl(efl)
-	, mCamdir(Quaternion::ZERO)
+	, mCamDir(Quaternion::ZERO)
+	, mCamPos(Vector3::ZERO)
 	, mCamera(NULL)
-	, mCampos(Vector3::ZERO)
 	, mMaterial(NULL)
 	, mRttTex(NULL)
 	, mStatics(NULL)
 	, mTextureUnitState(NULL)
 	, mViewport(NULL)
+	, mZoom(3.0f)
 {
 	mCounter++;
+	init();
 }
 
 bool MapTextureCreator::init()
 {
-	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex" + TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	
 	if ( texture.isNull() ) return false;;
 
@@ -55,29 +58,48 @@ bool MapTextureCreator::init()
 
 	mRttTex->setAutoUpdated(true);
 
-	mCamera = mSceneManager->createCamera("MapRenderCam");
+	mCamera = mSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
 
 	mViewport = mRttTex->addViewport(mCamera);
-	mViewport->setBackgroundColour(ColourValue::White);
+	mViewport->setBackgroundColour(ColourValue::Black);
 	mViewport->setOverlaysEnabled(false);
 
-	mMaterial = MaterialManager::getSingleton().create("MapRttMat"+TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	mMaterial = MaterialManager::getSingleton().create("MapRttMat" + TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 	if ( mMaterial.isNull() ) return false;
 
-	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex"+TOSTRING(mCounter));
+	mTextureUnitState = mMaterial->getTechnique(0)->getPass(0)->createTextureUnitState("MapRttTex" + TOSTRING(mCounter));
 
 	mRttTex->addListener(this);
 
-	mCamera->setFarClipDistance(0);
-	mCamera->setAspectRatio(1.0);
+	mCamera->setPosition(0.0f, 1000.0f, 0.0f);
+	mCamera->lookAt(Vector3::ZERO);
+
+	mCamera->setFarClipDistance(0.0f);
+	mCamera->setAspectRatio(1.0f);
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
 	mCamera->setFOVy(Radian(Math::HALF_PI));
+	mCamera->setNearClipDistance(mZoom);
 
 	return true;
 }
 
+void MapTextureCreator::setCameraMode(PolygonMode pm)
+{
+	mCamera->setPolygonMode(pm);
+}
+
+void MapTextureCreator::setCameraZoom(float z)
+{
+	mZoom = std::max(0.3f, z);
+}
+
+void MapTextureCreator::setCamPosition(Vector3 pos, Quaternion direction)
+{
+	mCamPos = pos;
+	mCamDir = direction;
+}
 
 void MapTextureCreator::setStaticGeometry(StaticGeometry *geo)
 {
@@ -86,114 +108,56 @@ void MapTextureCreator::setStaticGeometry(StaticGeometry *geo)
 
 void MapTextureCreator::update()
 {
-	if ( !mRttTex && !init() ) return;
+	if ( !mRttTex ) return;
 
 	float width = mEfl->mapsizex;
 	float height = mEfl->mapsizez;
+	float zoomFactor = mZoom * ((width + height) / 2.0f) * 0.002f;
 	
-	mCamera->setOrthoWindow(1024, 1024);
-	mCamera->setPosition(width*0.5f, 100.0f, height*0.5f);
-	mCamera->lookAt(width*0.5f + 0.0001f, 0.0f, height*0.5f);
+	mCamPos = Vector3(mEfl->mapsizex / 2.0f, mEfl->hfinder->getHeightAt(mEfl->mapsizex / 2.0f, mEfl->mapsizez / 2.0f) , mEfl->mapsizez / 2.0f);
+	mCamDir = Quaternion(Degree(0), Vector3::UNIT_X);
 
-	mRttTex->update();
-#if 0
-	// 1 = max out = total overview
+	mCamera->setNearClipDistance(mZoom);
+	mCamera->setPosition(mCamPos + Vector3(0.0f, zoomFactor, 0.0f));
+	if ( mCamDir != Quaternion::ZERO )
+	{
+		mCamera->setOrientation(mCamDir);
+	}
+	mCamera->lookAt(mCamPos - Vector3(0.0f, zoomFactor, 0.0f));
 
-	float width = mEfl->mapsizex;
-	float height = mEfl->mapsizez;
+	float f = std::max(20.0f, 50.0f - mZoom);
 
-	//LOG(TOSTRING(mZoom));
-	mCamera->setOrthoWindow(1024, 1024);
-	mCamera->setPosition(width*0.5f, 100, height*0.5f);
-	mCamera->lookAt(width*0.5f + 0.0001f, 0, height*0.5f);
-	//mCamera->setOrientation(Quaternion(Radian(0), Vector3::UNIT_Z));
-
-
-	/*
-	// this is bugged, so deactivated for now
-	float f = 50-mZoom;
-	if(f<20)
-		f=20;
-	for (int i=0; i<mEfl->getTruckCount(); i++)
-		mEfl->getTruck(i)->preMapLabelRenderUpdate(true, f);
-	*/
-
-	if (mStatics)
+	if ( mStatics )
 	{
 		mStatics->setRenderingDistance(0);
 	}
-	// thats a huge workaround to be able to not use the normal LOD
-
-	setFogVisible(false);
 
 	mRttTex->update();
 
-	setFogVisible(true);
+	Water *w = mEfl->getWater();
 
-	if (mEfl->getWater())
+	if ( w )
 	{
-		mEfl->getWater()->setVisible(false);
+		w->setVisible(false);
 	}
-	if (mStatics)
+	if ( mStatics )
 	{
 		mStatics->setRenderingDistance(1000);
 	}
-	if (mEfl->getWater())
+	if ( w )
 	{
-		mEfl->getWater()->setVisible(true);
+		w->setVisible(true);
 	}
-	/*
-	// deactivated for the moment
-	for (int i=0; i<mEfl->getTruckCount(); i++)
-		mEfl->getTruck(i)->preMapLabelRenderUpdate(false);
-	*/
-#endif
-}
-
-void MapTextureCreator::setFogVisible(bool value)
-{
-#if 0
-	return;
-	int fogmode = 0; //mEfl->getFogMode();
-	//LOG("fogswitch: "+TOSTRING(fogmode)+" / "+TOSTRING(value));
-	if(!fogmode || fogmode == 2)
-		return;
-
-	// this refuses to work, somehow:
-	if(fogmode == 1)
-	{
-		// TODO: tofix: caelum
-		// USE_CAELUM
-		if(value)
-			static_cast<Caelum::StoredImageSkyColourModel *>(mEfl->getCaelumModel())->setFogDensity(mEfl->getFogDensity());
-		else
-			static_cast<Caelum::StoredImageSkyColourModel *>(mEfl->getCaelumModel())->setFogDensity(0);
-
-		// force Caelum to update
-		if(value)
-			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()+1);
-		else
-			mEfl->getCaelumSystem()->setLocalTime(mEfl->getCaelumSystem()->getLocalTime()-1);
-	}
-	else if(fogmode == 3)
-	{
-		if(value)
-			mSceneManager->setFog(FOG_LINEAR, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
-		else
-			mSceneManager->setFog(FOG_NONE, mSceneManager->getFogColour(), mEfl->getFogDensity(), mSceneManager->getFogStart(), mSceneManager->getFogEnd());
-	}
-
-#endif //0
 }
 
 String MapTextureCreator::getMaterialName()
 {
-	return "MapRttMat"+TOSTRING(mCounter);
+	return "MapRttMat" + TOSTRING(mCounter);
 }
 
 String MapTextureCreator::getRTName()
 {
-	return "MapRttTex"+TOSTRING(mCounter);
+	return "MapRttTex" + TOSTRING(mCounter);
 }
 
 void MapTextureCreator::preRenderTargetUpdate(const RenderTargetEvent& evt)
