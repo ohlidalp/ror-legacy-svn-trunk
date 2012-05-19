@@ -17,34 +17,33 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __EnvironmentMap_H_
-#define __EnvironmentMap_H_
+#ifndef __Environment_Map_H_
+#define __Environment_Map_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
 
 class Envmap
 {
-private:
-	Ogre::Camera *camera[6];
-	Ogre::RenderTarget *rt[6];
-	Ogre::TexturePtr texture;
-	Ogre::RenderTexture* rttTex;
-	Ogre::SceneNode *snode;
-	int round;
-	bool isDynamic;
-	Ogre::SceneNode *debug_sn;
-
 public:
+		
+	Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic);
 
-	bool inited;
-	Envmap(Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, Ogre::Camera *incam, bool dynamic);
-	void removeEnvMapFromTruckMaterial(Ogre::String truckMaterial);
-	void addEnvMapToTruckMaterial(Ogre::String truckMaterial);
+	void prepareShutdown() {};
+
 	void update(Ogre::Vector3 center, Beam *beam=0);
-	void forceUpdate(Ogre::Vector3 center);
-	void prepareShutdown();
 
+private:
+
+	void forceUpdate(Ogre::Vector3 center);
+
+	static const unsigned int NUM_FACES = 6;
+
+	Ogre::Camera *mCameras[NUM_FACES];
+	Ogre::RenderTarget *mRenderTargets[NUM_FACES];
+	Ogre::SceneNode *mDebugSceneNode;
+	bool mInitiated;
+	bool mIsDynamic;
+	int mRound;
 };
 
-#endif // __EnvironmentMap_H_
+#endif // __Environment_Map_H_

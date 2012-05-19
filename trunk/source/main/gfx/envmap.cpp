@@ -20,73 +20,69 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "envmap.h"
 
 #include "Beam.h"
+#include "Ogre.h"
 #include "Settings.h"
 #include "SkyManager.h"
 
 using namespace Ogre;
 
-Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bool dynamic) :
-	  debug_sn(0)
-	, isDynamic(dynamic)
-	, inited(false)
-	, round(0)
+Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
+	  mDebugSceneNode(0)
+	, mIsDynamic(dynamic)
+	, mInitiated(false)
+	, mRound(0)
 {
-	texture = TextureManager::getSingleton().createManual("EnvironmentTexture",
+	TexturePtr texture = TextureManager::getSingleton().createManual("EnvironmentTexture",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_CUBE_MAP, 256, 256, 0,
 		PF_R8G8B8, TU_RENDERTARGET);
 
-	for (int face = 0; face < 6; face++)
+	for (int face=0; face < NUM_FACES; face++)
 	{
-		rt[face] = texture->getBuffer(face)->getRenderTarget();
-		// rt->addListener(this);
+		mRenderTargets[face] = texture->getBuffer(face)->getRenderTarget();
 
-		char name[256];
-		sprintf(name, "EnvironmentCamera-%i\n", face);
-		camera[face] = mSceneMgr->createCamera(name);
-		camera[face]->setAspectRatio(1.0);
-		camera[face]->setProjectionType(PT_PERSPECTIVE);
-		camera[face]->setFOVy(Degree(90));
-		camera[face]->setNearClipDistance(0.1); //why this does not work, I wonder.
-		camera[face]->setFarClipDistance(incam->getFarClipDistance());
-		//ent->getParentSceneNode()->attachObject(camera[face]);
+		mCameras[face] = scm->createCamera("EnvironmentCamera-" + TOSTRING(face));
+		mCameras[face]->setAspectRatio(1.0);
+		mCameras[face]->setProjectionType(PT_PERSPECTIVE);
+		mCameras[face]->setFOVy(Degree(90));
+		mCameras[face]->setNearClipDistance(0.1); //why this does not work, I wonder.
+		mCameras[face]->setFarClipDistance(cam->getFarClipDistance());
 
-		Viewport *v = rt[face]->addViewport(camera[face]);
+		Viewport *v = mRenderTargets[face]->addViewport(mCameras[face]);
 		v->setOverlaysEnabled(false);
 		v->setClearEveryFrame(true);
-		v->setBackgroundColour(incam->getViewport()->getBackgroundColour());
-		rt[face]->setAutoUpdated(false);
+		v->setBackgroundColour(cam->getViewport()->getBackgroundColour());
+		mRenderTargets[face]->setAutoUpdated(false);
 
 		switch (face)
 		{
 		case 0:
-			camera[face]->setDirection(-1, 0, 0);   // <-- should be +X
+			mCameras[face]->setDirection(-1, 0, 0);   // <-- should be +X
 			break;
 		case 1:
-			camera[face]->setDirection(1, 0, 0);   // <-- should be -X
+			mCameras[face]->setDirection(1, 0, 0);   // <-- should be -X
 			break;
 		case 2:
-			camera[face]->setDirection(0, 0, 1);
-			camera[face]->pitch(Degree(90));
+			mCameras[face]->setDirection(0, 0, 1);
+			mCameras[face]->pitch(Degree(90));
 			break;
 		case 3:
-			camera[face]->setDirection(0, 0, 1);
-			camera[face]->pitch(Degree(-90));
+			mCameras[face]->setDirection(0, 0, 1);
+			mCameras[face]->pitch(Degree(-90));
 			break;
 		case 4:
-			camera[face]->setDirection(0, 0, 1);
+			mCameras[face]->setDirection(0, 0, 1);
 			break;
 		case 5:
-			camera[face]->setDirection(0, 0, -1);
+			mCameras[face]->setDirection(0, 0, -1);
 			break;
 		}
 	}
-
-	bool debug = BSETTING("EnvMapDebug", false);
-	if(debug)
+	
+	if (BSETTING("EnvMapDebug", false))
 	{
 		// create fancy mesh for debugging the envmap
 		Overlay *overlay = OverlayManager::getSingleton().create("EnvMapDebugOverlay");
-		if(overlay)
+		if (overlay)
 		{
 			Vector3 position = Vector3::ZERO;
 			Vector3 scale = Vector3(1,1,1);
@@ -188,20 +184,20 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 			mesh->_setBoundingSphereRadius(10);
 			mesh->load();
 
-			Entity *e = mSceneMgr->createEntity(mesh->getName());
+			Entity *e = scm->createEntity(mesh->getName());
 			e->setCastShadows(false);
 			e->setRenderQueueGroup(RENDER_QUEUE_OVERLAY-1);
 			e->setVisible(true);
 
 			e->setMaterialName("tracks/EnvMapDebug");
-			debug_sn = new SceneNode(mSceneMgr);
-			debug_sn->attachObject(e);
-			debug_sn->setPosition(Vector3(0, 0, -5));
-			debug_sn->setFixedYawAxis(true, Vector3::UNIT_Y);
-			debug_sn->setVisible(true);
-			debug_sn->_update(true, true);
-			debug_sn->_updateBounds();
-			overlay->add3D(debug_sn);
+			mDebugSceneNode = new SceneNode(scm);
+			mDebugSceneNode->attachObject(e);
+			mDebugSceneNode->setPosition(Vector3(0, 0, -5));
+			mDebugSceneNode->setFixedYawAxis(true, Vector3::UNIT_Y);
+			mDebugSceneNode->setVisible(true);
+			mDebugSceneNode->_update(true, true);
+			mDebugSceneNode->_updateBounds();
+			overlay->add3D(mDebugSceneNode);
 			overlay->show();
 			
 			// example update
@@ -210,56 +206,54 @@ Envmap::Envmap(SceneManager *mSceneMgr, RenderWindow *mWindow, Camera *incam, bo
 	}
 }
 
-void Envmap::update(Vector3 center, Beam *beam)
+void Envmap::update(Ogre::Vector3 center, Beam *beam/* =0 */)
 {
-	if (!isDynamic)
+	if (!mIsDynamic)
 	{
-		if (inited) return;
-		else
-		{
-			//capture all images at once
-			for (int i=0; i<6; i++)
-			{
-				camera[i]->setPosition(center);
-				rt[i]->update();
-			}
-			inited=true;
-		}
+		if (mInitiated) return;
+		else forceUpdate(center);
 	}
-	for (int i=0; i<6; i++) camera[i]->setPosition(center);
-	
+	for (int i=0; i < NUM_FACES; i++)
+	{
+		mCameras[i]->setPosition(center);
+	}
+
 	// try to hide all flexbodies and cabs prior render, and then show them again after done
 	// but only if they are visible ...
-	bool togglemeshes = (beam)?(beam->meshesVisible):false;
-	if(beam && togglemeshes)
+	bool toggleMeshes = beam && beam->meshesVisible;
+
+	if (toggleMeshes)
+	{
 		beam->setMeshVisibility(false);
+	}
 
 	// caelum needs to know that we changed the cameras
 #ifdef USE_CAELUM
-	if(SkyManager::getSingletonPtr())
-		SkyManager::getSingleton().notifyCameraChanged(camera[round]);
+	if (SkyManager::singletonExists())
+	{
+		SkyManager::getSingleton().notifyCameraChanged(mCameras[mRound]);
+	}
 #endif // USE_CAELUM
-	rt[round]->update();
+	mRenderTargets[mRound]->update();
 
-	if(beam && togglemeshes)
+	if (toggleMeshes)
+	{
 		beam->setMeshVisibility(true);
-	round++;
-	if (round >= 6)
-		round = 0;
+	}
+
+	mRound = (mRound + 1) % NUM_FACES;
 }
 
 void Envmap::forceUpdate(Vector3 center)
 {
-	if (isDynamic) return;
-	//capture all images at once
-	for (int i=0; i<6; i++)
-	{
-		camera[i]->setPosition(center);
-		rt[i]->update();
-	}
-	inited=true;
-}
+	if (mInitiated) return;
 
-void Envmap::prepareShutdown()
-{
+	// capture all images at once
+	for (int i=0; i < NUM_FACES; i++)
+	{
+		mCameras[i]->setPosition(center);
+		mRenderTargets[i]->update();
+	}
+
+	mInitiated = true;
 }
