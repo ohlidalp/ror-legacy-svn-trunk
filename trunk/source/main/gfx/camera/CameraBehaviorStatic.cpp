@@ -21,10 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "Character.h"
-#include "Console.h"
 #include "DepthOfFieldEffect.h"
 #include "heightfinder.h"
-#include "language.h"
 #include "Ogre.h"
 
 using namespace Ogre;

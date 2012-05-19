@@ -17,11 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __TRUCKHUD_H__
-#define __TRUCKHUD_H__
+#ifndef __TRUCKHUD_H_
+#define __TRUCKHUD_H_
 
 #include "RoRPrerequisites.h"
-#include "Beam.h"
 
 class TruckHUD
 {
@@ -29,6 +28,7 @@ public:
 
 	TruckHUD();
 	~TruckHUD();
+
 	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);
 	void show(bool value);
 	bool isVisible();
@@ -53,5 +53,4 @@ protected:
 	static const unsigned int COMMANDS_VISIBLE = 25;
 };
 
-
-#endif
+#endif // __TRUCKHUD_H_

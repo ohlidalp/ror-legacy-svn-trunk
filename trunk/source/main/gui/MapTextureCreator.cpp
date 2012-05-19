@@ -73,7 +73,7 @@ bool MapTextureCreator::init()
 	mCamera->setAspectRatio(1.0);
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
-	//mCamera->setFOVy(Radian(Math::HALF_PI));
+	mCamera->setFOVy(Radian(Math::HALF_PI));
 
 	return true;
 }

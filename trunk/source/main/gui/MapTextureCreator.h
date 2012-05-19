@@ -21,7 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __MAP_TEXTURE_CREATOR_H_
 
 #include "RoRPrerequisites.h"
-#include <Ogre.h>
+
+#include "Ogre.h"
 
 class MapTextureCreator : public Ogre::RenderTargetListener
 {
@@ -40,7 +41,6 @@ protected:
 	void setFogVisible(bool value);
 	bool init();
 
-	static int mCounter;
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mMainCam;
 	Ogre::MaterialPtr mMaterial;
@@ -52,6 +52,7 @@ protected:
 	Ogre::Vector3 mCampos;
 	Ogre::Viewport *mViewport;
 	RoRFrameListener *mEfl;
+	static int mCounter;
 };
 
 #endif // __MAP_TEXTURE_CREATOR_H_

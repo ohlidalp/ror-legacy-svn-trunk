@@ -23,11 +23,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // This code is in the public domain. You may do whatever you want with it.
 
 #include "DepthOfFieldEffect.h"
-#include <Ogre.h>
+
 #include "Lens.h"
-
-#include "RoRPrerequisites.h"
-
+#include "Ogre.h"
 #include "Settings.h"
 
 using namespace Ogre;
@@ -35,20 +33,20 @@ using namespace Ogre;
 const int DepthOfFieldEffect::BLUR_DIVISOR = 2;
 
 DepthOfFieldEffect::DepthOfFieldEffect(Ogre::Viewport *v, Ogre::Camera *cam) :
-	mNearDepth(10.0)
-	, mFocalDepth(100.0)
-	, mFarDepth(190.0)
+	  mCamera(cam)
+	, mCompositor(NULL)
+	, mDepthTarget(NULL)
+	, mDepthTechnique(NULL)
+	, mDepthViewport(NULL)
 	, mFarBlurCutoff(1.0)
+	, mFarDepth(190.0)
+	, mFocalDepth(100.0)
+	, mNearDepth(10.0)
 	, mViewport(v)
-	, mCamera(cam)
 {
 	mWidth = mViewport->getActualWidth();
 	mHeight = mViewport->getActualHeight();
-
-	mCompositor = NULL;
-	mDepthTechnique = NULL;
-	mDepthTarget = NULL;
-	mDepthViewport = NULL;
+	
 	mDepthTexture.setNull();
 	mDepthMaterial.setNull();
 
@@ -257,8 +255,7 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 	//mRaySceneQuery->setQueryMask(queryMask);
 
 	debugNode = 0;
-	bool debug = BSETTING("DOFDebug", false);
-	if(debug)
+	if (BSETTING("DOFDebug", false))
 	{
 		MaterialPtr material = MaterialManager::getSingleton().getByName("DoF_DepthDebug");
 		material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("DoF_Depth");
