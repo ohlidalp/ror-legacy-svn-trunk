@@ -71,7 +71,6 @@ void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx
 		CameraManager::getSingleton().switchToNextBehavior();
 	} else if ( reset )
 	{
-		camMode = CHARACTER_THIRD_PERSON;
 		this->reset(ctx);
 	}
 }
@@ -102,5 +101,6 @@ bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_
 		reset(ctx);
 		return false;
 	}
+	camMode = 0;
 	return true;
 }
