@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehavior.h"
 
+#include "Beam.h"
 #include "InputEngine.h"
 #include "heightfinder.h"
 #include "Ogre.h"
@@ -30,7 +31,7 @@ CameraBehavior::CameraBehavior() :
 	, camDistMax(0.0f)
 	, camDistMin(0.0f)
 	, camLookAt(Vector3::ZERO)
-	, camIntertia(11.0f)
+	, camRatio(11.0f)
 	, camRotX(0.0f)
 	, camRotY(0.3f)
 	, targetDirection(0.0f)
@@ -112,9 +113,16 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 		desiredPosition.y = std::max(h, desiredPosition.y);
 	}
 
-	Vector3 camTrans = (desiredPosition - ctx.mCamera->getPosition()) * 0.1f;
+	Vector3 precedingPosition = ctx.mCamera->getPosition(); 
+	
+	if ( ctx.mCurrTruck )
+	{
+		precedingPosition += ctx.mCurrTruck->nodes[0].Velocity * ctx.mCurrTruck->ttdt;
+	}
 
-	ctx.mCamera->move(camTrans);
+	Vector3 camPosition = (1.0f / (camRatio + 1.0f)) * desiredPosition + (camRatio / (camRatio + 1.0f)) * precedingPosition;
+
+	ctx.mCamera->setPosition(camPosition);
 	ctx.mCamera->lookAt(camLookAt);
 }
 

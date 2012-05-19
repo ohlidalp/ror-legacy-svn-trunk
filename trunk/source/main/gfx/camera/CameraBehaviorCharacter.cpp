@@ -64,7 +64,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	return CameraBehavior::mouseMoved(ctx, _arg);
 }
 
-void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	if ( reset )
 	{
@@ -81,20 +81,23 @@ void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 	{
 		camRotY = 0.1f;
 		camDist = 0.1f;
-		camIntertia = 0.0f;
+		camRatio = 0.0f;
 		camPositionOffset = Vector3(0.0f, 1.82f, 0.0f);
 	} else if ( camMode == CHARACTER_THIRD_PERSON )
 	{
 		camRotY = 0.3f;
 		camDist = 5.0f;
-		camIntertia = 11.0f;
+		camRatio = 11.0f;
 		camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
 	}
 }
 
 bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
 {
-	reset(ctx);
-
-	return ++camMode >= CHARACTER_END;
+	if (++camMode < CHARACTER_END)
+	{
+		reset(ctx);
+		return false;
+	}
+	return true;
 }

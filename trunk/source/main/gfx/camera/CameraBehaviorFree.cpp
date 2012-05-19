@@ -19,8 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "CameraBehaviorFree.h"
 
+#include "Console.h"
 #include "heightfinder.h"
 #include "InputEngine.h"
+#include "language.h"
 #include "mygui/BaseLayout.h"
 #include "Ogre.h"
 
@@ -28,52 +30,68 @@ using namespace Ogre;
 
 void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 {
-	Vector3 mTrans(Vector3::ZERO);
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
+	Degree mRotScale(ctx.mRotScale * 0.5f);
+	Vector3 mTrans(Vector3::ZERO);
+	Real mTransScale(ctx.mTransScale * 0.5f);
+
+	if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
+	{
+		mRotScale   *= 3.0f;
+		mTransScale *= 3.0f;
+	}
+	if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
+	{
+		mRotScale   *= 30.0f;
+		mTransScale *= 30.0f;
+	}
+	if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
+	{
+		mRotScale   *= 0.05f;
+		mTransScale *= 0.05f;
+	}
 
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT) )
 	{
-		mTrans.x -= ctx.mTransScale;
+		mTrans.x -= mTransScale;
 	}
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_RIGHT) )
 	{
-		mTrans.x += ctx.mTransScale;
+		mTrans.x += mTransScale;
 	}
-
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_FORWARD) )
 	{
-		mTrans.z -= ctx.mTransScale;
+		mTrans.z -= mTransScale;
 	}
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_BACKWARDS) )
 	{
-		mTrans.z += ctx.mTransScale;
+		mTrans.z += mTransScale;
 	}
-
-	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP) )
-	{
-		mRotY += ctx.mRotScale;
-	}
-	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN) )
-	{
-		mRotY -= ctx.mRotScale;
-	}
-
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_UP) )
 	{
-		mTrans.y += ctx.mTransScale;
+		mTrans.y += mTransScale;
 	}
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_DOWN) )
 	{
-		mTrans.y -= ctx.mTransScale;
+		mTrans.y -= mTransScale;
 	}
+
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_RIGHT) )
 	{
-		mRotX -= ctx.mRotScale;
+		mRotX -= mRotScale;
 	}
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_LEFT) )
 	{
-		mRotX += ctx.mRotScale;
+		mRotX += mRotScale;
+	}
+	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_UP) )
+	{
+		mRotY += mRotScale;
+	}
+	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_ROT_DOWN) )
+	{
+		mRotY -= mRotScale;
 	}
 
 	ctx.mCamera->yaw(mRotX);
@@ -100,7 +118,14 @@ bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, c
 
 #ifdef USE_MYGUI
 	MyGUI::PointerManager::getInstance().setVisible(false);
-
 #endif // USE_MYGUI
+
 	return true;
+}
+
+void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+{
+#ifdef USE_MYGUI
+	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
+#endif // USE_MYGUI
 }

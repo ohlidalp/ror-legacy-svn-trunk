@@ -21,8 +21,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "Character.h"
+#include "Console.h"
 #include "DepthOfFieldEffect.h"
 #include "heightfinder.h"
+#include "language.h"
 #include "Ogre.h"
 
 using namespace Ogre;
@@ -68,7 +70,7 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	}
 }
 
-void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	fovPreviously = ctx.mCamera->getFOVy();
 }
@@ -76,4 +78,9 @@ void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, b
 void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
 {
 	ctx.mCamera->setFOVy(fovPreviously);
+
+	if ( ctx.mDof )
+	{
+		ctx.mDof->setFocusMode(DOFManager::Auto);
+	}
 }

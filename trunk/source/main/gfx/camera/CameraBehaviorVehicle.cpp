@@ -47,7 +47,7 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
-	camIntertia = 1.0f / (ctx.mDt * 4.0f);
+	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
 
 	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
 
@@ -56,7 +56,7 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	CameraBehavior::update(ctx);
 }
 
-void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck )
 	{
@@ -71,6 +71,6 @@ void CameraBehaviorVehicle::reset(const CameraManager::cameraContext_t &ctx)
 {
 	camRotX = 0.0f;
 	camRotY = 0.5f;
-	camDist = ctx.mCurrTruck->getMinimalCameraRadius() * 3.0f;
+	camDist = ctx.mCurrTruck->getMinimalCameraRadius() * 3.0f + 2.0f;
 	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
 }
