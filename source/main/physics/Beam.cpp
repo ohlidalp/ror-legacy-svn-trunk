@@ -3897,28 +3897,26 @@ void Beam::updateFlares(float dt, bool isCurrent)
 
 void Beam::setBlinkType(blinktype blink)
 {
-#ifdef USE_OPENAL
 	blinkingtype = blink;
-	if(blinkingtype == BLINK_NONE)
-	{
-		left_blink_on = false;
-		right_blink_on = false;
-		warn_blink_on = false;
-	}
-	if(blink == BLINK_NONE)
+
+	left_blink_on = false;
+	right_blink_on = false;
+	warn_blink_on = false;
+
+#ifdef USE_OPENAL
+	if (blink == BLINK_NONE)
 	{
 		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_TURN_SIGNAL);
 	} else
 	{
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_TURN_SIGNAL);
 	}
-
 #endif //OPENAL
 }
 
 void Beam::autoBlinkReset()
 {
-	blinktype blink=getBlinkType();
+	blinktype blink = getBlinkType();
 
 	// TODO: make this set-able per truck
 	float blink_lock_range = 0.1f;
