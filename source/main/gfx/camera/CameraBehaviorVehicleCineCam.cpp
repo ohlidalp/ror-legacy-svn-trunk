@@ -59,7 +59,7 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 	ctx.mCamera->setOrientation(orientation);
 }
 
-void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck || ctx.mCurrTruck->freecinecamera <= 0 )
 	{

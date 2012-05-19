@@ -21,7 +21,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "InputEngine.h"
-#include "language.h"
 #include "Ogre.h"
 #include "Settings.h"
 
@@ -38,11 +37,13 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 
 void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
 {
-	Vector3 dir = ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos;
-	dir.normalise();
+	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos
+				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
+
 	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	targetPitch = 0;
-	camIntertia = 1.0f / (ctx.mDt * 4.0f);
+	targetPitch     = 0.0f;
+
+	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
 
 	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
@@ -64,7 +65,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 	CameraBehavior::update(ctx);
 }
 
-void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset)
+void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck || ctx.mCurrTruck->free_camerarail <= 0 )
 	{
