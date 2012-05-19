@@ -5137,6 +5137,15 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	
 	if (mtc)
 	{
+		Quaternion orientation = Quaternion(Degree(0), Vector3::UNIT_X);
+		Vector3 lookAt = Vector3(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
+		
+		if (hfinder)
+		{
+			lookAt.y += hfinder->getHeightAt(mapsizex / 2.0f, mapsizez / 2.0f);
+		}
+
+		mtc->setCamera(lookAt, orientation);
 		mtc->update();
 	}
 #endif //USE_MYGUI

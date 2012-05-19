@@ -33,10 +33,10 @@ public:
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
 	
-	void setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction);
-	void setCameraMode(Ogre::PolygonMode pm);
-	void setCameraZoom(float z);
-	void setStaticGeometry(Ogre::StaticGeometry *geo);
+	void setCamera(Ogre::Vector3 lookAt, Ogre::Quaternion orientation);
+	void setCameraMode(Ogre::PolygonMode polygonMode);
+	void setCameraZoom(Ogre::Real zoom);
+	void setStaticGeometry(Ogre::StaticGeometry *staticGeometry);
 
 	void update();
 
@@ -50,16 +50,15 @@ protected:
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mMainCam;
 	Ogre::MaterialPtr mMaterial;
-	Ogre::Quaternion mCamDir;
+	Ogre::Quaternion mCamOrientation;
+	Ogre::Real mCamZoom;
 	Ogre::RenderTarget *mRttTex;
 	Ogre::SceneManager *mSceneManager;
 	Ogre::StaticGeometry *mStatics;
 	Ogre::TextureUnitState* mTextureUnitState;
-	Ogre::Vector3 mCamPos;
+	Ogre::Vector3 mCamLookAt;
 	Ogre::Viewport *mViewport;
 	RoRFrameListener *mEfl;
-
-	float mZoom;
 
 	static int mCounter;
 };
