@@ -66,7 +66,10 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 
 void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
-	if ( reset )
+	if ( ctx.mCurrTruck )
+	{
+		CameraManager::getSingleton().switchToNextBehavior();
+	} else if ( reset )
 	{
 		camMode = CHARACTER_THIRD_PERSON;
 		this->reset(ctx);
