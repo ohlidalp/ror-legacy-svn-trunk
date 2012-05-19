@@ -167,12 +167,9 @@ void CameraManager::update(float dt)
 	if ( !ctx.mCurrTruck && dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
-	} else if ( ctx.mCurrTruck && !dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) )
+	} else if ( ctx.mCurrTruck && dynamic_cast<CameraBehaviorCharacter*>(currentBehavior) )
 	{
-		if ( currentBehaviorID != CAMERA_BEHAVIOR_STATIC && currentBehaviorID < CAMERA_BEHAVIOR_END )
-		{
-			switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
-		}
+		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
 	}
 
 	if ( currentBehavior )
