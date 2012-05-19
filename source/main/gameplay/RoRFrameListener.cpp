@@ -4318,7 +4318,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//environment map
 	if (!BSETTING("Envmapdisable", false))
 	{
-		envmap=new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap", false));
+		envmap = new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap", false));
 	}
 
 	//dashboard
