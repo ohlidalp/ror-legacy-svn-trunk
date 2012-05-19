@@ -28,7 +28,7 @@ class MapTextureCreator : public Ogre::RenderTargetListener
 {
 public:
 
-	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, RoRFrameListener *efl);
+	MapTextureCreator(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl);
 
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
@@ -36,6 +36,7 @@ public:
 	void setCamera(Ogre::Vector3 lookAt, Ogre::Quaternion orientation);
 	void setCameraMode(Ogre::PolygonMode polygonMode);
 	void setCameraZoom(Ogre::Real zoom);
+	void setCameraZoomRelative(Ogre::Real zoomDelta);
 	void setStaticGeometry(Ogre::StaticGeometry *staticGeometry);
 
 	void update();
@@ -44,8 +45,8 @@ protected:
 
 	bool init();
 
-	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-    void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+	void preRenderTargetUpdate();
+    void postRenderTargetUpdate();
 
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mMainCam;

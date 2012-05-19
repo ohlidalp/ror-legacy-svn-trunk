@@ -19,6 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MapTextureCreator.h"
 
+#include "BeamFactory.h"
 #include "ResourceBuffer.h"
 #include "RoRFrameListener.h"
 #include "water.h"
@@ -27,9 +28,9 @@ using namespace Ogre;
 
 int MapTextureCreator::mCounter = 0;
 
-MapTextureCreator::MapTextureCreator(SceneManager *mgr, Camera *maincam, RoRFrameListener *efl) :
-	  mSceneManager(mgr)
-	, mMainCam(mMainCam)
+MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, RoRFrameListener *efl) :
+	  mSceneManager(scm)
+	, mMainCam(cam)
 	, mEfl(efl)
 	, mCamOrientation(Quaternion::ZERO)
 	, mCamLookAt(Vector3::ZERO)
@@ -71,9 +72,6 @@ bool MapTextureCreator::init()
 
 	mRttTex->addListener(this);
 
-	mCamera->setPosition(0.0f, 1000.0f, 0.0f);
-	mCamera->lookAt(Vector3::ZERO);
-
 	mCamera->setFarClipDistance(0.0f);
 	mCamera->setAspectRatio(1.0f);
 	mCamera->setFixedYawAxis(false);
@@ -92,6 +90,11 @@ void MapTextureCreator::setCameraMode(PolygonMode polygonMode)
 void MapTextureCreator::setCameraZoom(Real zoom)
 {
 	mCamZoom = std::max(0.3f, zoom);
+}
+
+void MapTextureCreator::setCameraZoomRelative(Real zoomDelta)
+{
+	mCamZoom = std::max(0.3f, mCamZoom + zoomDelta * mCamZoom / 100.0f);
 }
 
 void MapTextureCreator::setCamera(Vector3 lookAt, Quaternion orientation)
@@ -121,29 +124,11 @@ void MapTextureCreator::update()
 	}
 	mCamera->lookAt(mCamLookAt);
 
-	float f = std::max(20.0f, 50.0f - mCamZoom);
-
-	if ( mStatics )
-	{
-		mStatics->setRenderingDistance(0);
-	}
+	preRenderTargetUpdate();
 
 	mRttTex->update();
 
-	Water *w = mEfl->getWater();
-
-	if ( w )
-	{
-		w->setVisible(false);
-	}
-	if ( mStatics )
-	{
-		mStatics->setRenderingDistance(1000);
-	}
-	if ( w )
-	{
-		w->setVisible(true);
-	}
+	postRenderTargetUpdate();
 }
 
 String MapTextureCreator::getMaterialName()
@@ -156,19 +141,54 @@ String MapTextureCreator::getRTName()
 	return "MapRttTex" + TOSTRING(mCounter);
 }
 
-void MapTextureCreator::preRenderTargetUpdate(const RenderTargetEvent& evt)
+void MapTextureCreator::preRenderTargetUpdate()
 {
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+
+	float f = std::max(20.0f, 50.0f - mCamZoom);
+
+	for (int i=0; i < BeamFactory::getSingleton().getTruckCount(); i++)
+	{
+		if ( trucks[i] )
+		{
+			trucks[i]->preMapLabelRenderUpdate(true, f);
+		}
+	}
+
 	Water *w = mEfl->getWater();
+
 	if ( w )
 	{
 		w->setVisible(false);
 	}
+
+	if ( mStatics )
+	{
+		mStatics->setRenderingDistance(0);
+	}
 }
-void MapTextureCreator::postRenderTargetUpdate(const RenderTargetEvent& evt)
+
+void MapTextureCreator::postRenderTargetUpdate()
 {
+	Beam **trucks = BeamFactory::getSingleton().getTrucks();
+
+	for (int i=0; i < BeamFactory::getSingleton().getTruckCount(); i++)
+	{
+		if ( trucks[i] )
+		{
+			trucks[i]->preMapLabelRenderUpdate(false);
+		}
+	}
+
 	Water *w = mEfl->getWater();
+
 	if ( w )
 	{
 		w->setVisible(true);
+	}
+
+	if ( mStatics )
+	{
+		mStatics->setRenderingDistance(1000);
 	}
 }
