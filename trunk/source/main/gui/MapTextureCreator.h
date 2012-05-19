@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __MAP_TEXTURE_CREATOR_H_
-#define __MAP_TEXTURE_CREATOR_H_
+#ifndef __MapTextureCreator_H_
+#define __MapTextureCreator_H_
 
 #include "RoRPrerequisites.h"
 
@@ -29,30 +29,39 @@ class MapTextureCreator : public Ogre::RenderTargetListener
 public:
 
 	MapTextureCreator(Ogre::SceneManager *smgr, Ogre::Camera *mainCam, RoRFrameListener *efl);
+
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
-	void update();
+	
+	void setCamPosition(Ogre::Vector3 pos, Ogre::Quaternion direction);
+	void setCameraMode(Ogre::PolygonMode pm);
+	void setCameraZoom(float z);
 	void setStaticGeometry(Ogre::StaticGeometry *geo);
+
+	void update();
 
 protected:
 
+	bool init();
+
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-	void setFogVisible(bool value);
-	bool init();
 
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mMainCam;
 	Ogre::MaterialPtr mMaterial;
-	Ogre::Quaternion mCamdir;
+	Ogre::Quaternion mCamDir;
 	Ogre::RenderTarget *mRttTex;
 	Ogre::SceneManager *mSceneManager;
 	Ogre::StaticGeometry *mStatics;
 	Ogre::TextureUnitState* mTextureUnitState;
-	Ogre::Vector3 mCampos;
+	Ogre::Vector3 mCamPos;
 	Ogre::Viewport *mViewport;
 	RoRFrameListener *mEfl;
+
+	float mZoom;
+
 	static int mCounter;
 };
 
-#endif // __MAP_TEXTURE_CREATOR_H_
+#endif // __MapTextureCreator_H_
