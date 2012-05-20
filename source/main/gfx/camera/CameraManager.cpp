@@ -72,6 +72,8 @@ CameraManager::~CameraManager()
 
 void CameraManager::update(float dt)
 {
+	static std::stack<int> precedingBehaviors;
+
 	if ( dt == 0 ) return;
 
 	mTransScale = mTransSpeed  * dt;
@@ -102,10 +104,18 @@ void CameraManager::update(float dt)
 
 	if ( !ctx.mCurrTruck && hasActiveVehicleBehavior() )
 	{
+		precedingBehaviors.push(currentBehaviorID);
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	} else if ( ctx.mCurrTruck && hasActiveCharacterBehavior() )
 	{
-		switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
+		if ( !precedingBehaviors.empty() )
+		{
+			switchBehavior(precedingBehaviors.top(), false);
+			precedingBehaviors.pop();
+		} else
+		{
+			switchBehavior(CAMERA_BEHAVIOR_VEHICLE);
+		}
 	}
 
 	if ( currentBehavior )
