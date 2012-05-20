@@ -3082,10 +3082,10 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					if (surveyMapMode == SURVEY_MAP_SMALL)
 					{
-						surveyMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
+						surveyMap->setPosition(-1, 1, 0.3f, mWindow);
 					} else if (surveyMapMode == SURVEY_MAP_BIG)
 					{
-						surveyMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
+						surveyMap->setPosition(0, 0, 0.98f, mWindow);
 					}
 					surveyMap->setVisibility(true);
 				}

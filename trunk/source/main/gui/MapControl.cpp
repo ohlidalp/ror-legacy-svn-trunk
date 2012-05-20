@@ -111,13 +111,38 @@ void MapControl::setAlpha(float value)
 	mMainWidget->setAlpha(value);
 }
 
-void MapControl::setPosition(float x, float y, float w, float h, RenderWindow* rw)
+void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow* rw)
 {
 	updateRenderMetrics(rw);
 
-	mScale = w;
-	mMainWidget->setCoord(x * rWinWidth, y * rWinHeight, w * rWinWidth, h * rWinHeight);
+	int realx, realy, realw, realh;
+	
+	realw = realh = size * std::min(rWinWidth, rWinHeight);
+	mScale = size;
 
+	if (x == -1)
+	{
+		realx = 0;
+	} else if (x == 0)
+	{
+		realx = (rWinWidth - realw) / 2;
+	} else if (x == 1)
+	{
+		realx = rWinWidth - realw;
+	}
+
+	if (y == -1)
+	{
+		realy = 0;
+	} else if (y == 0)
+	{
+		realy = (rWinHeight - realh) / 2;
+	} else if (y == 1)
+	{
+		realy = rWinHeight - realh;
+	}
+
+	mMainWidget->setCoord(realx, realy, realw, realh);
 	updateEntityPositions();
 }
 
