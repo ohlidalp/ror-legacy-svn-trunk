@@ -21,7 +21,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "OverlayWrapper.h"
-#include "Settings.h"
 
 using namespace Ogre;
 
@@ -30,8 +29,6 @@ CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 	, currTruck(0)
 	, lastCineCam(0)
 {
-	fovInternal = Degree(FSETTING("FOV Internal", 75.0f));
-	fovExternal = Degree(FSETTING("FOV External", 60.0f));
 }
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
@@ -75,7 +72,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 	currTruck = ctx.mCurrTruck;
 
-	ctx.mCamera->setFOVy(fovInternal);
+	ctx.mCamera->setFOVy(ctx.fovInternal);
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -99,7 +96,7 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 		return;
 	}
 
-	ctx.mCamera->setFOVy(fovExternal);
+	ctx.mCamera->setFOVy(ctx.fovExternal);
 		
 	currTruck->prepareInside(false);
 
@@ -116,8 +113,9 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 
 void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &ctx)
 {
-	camRotX = 0.0f;
+	CameraBehavior::reset(ctx);
 	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
+	ctx.mCamera->setFOVy(ctx.fovInternal);
 }
 
 bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)

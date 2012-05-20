@@ -46,8 +46,10 @@ public:
 		Ogre::SceneManager *mSceneMgr;
 		OverlayWrapper *mOverlayWrapper;
 		RoRFrameListener *mEfl;
-		float mDt;
-		float mTransScale;
+		Ogre::Real mDt;
+		Ogre::Real mTransScale;
+		Ogre::Radian fovInternal;
+		Ogre::Radian fovExternal;
 	} cameraContext_t;
 
 	enum CameraBehaviors {

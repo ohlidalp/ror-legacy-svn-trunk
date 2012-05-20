@@ -42,7 +42,6 @@ protected:
 
 	Beam *currTruck;
 	int lastCineCam;
-	Ogre::Radian fovInternal, fovExternal;
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 };
 
