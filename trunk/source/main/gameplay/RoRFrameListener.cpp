@@ -1852,6 +1852,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 {
 	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05f ||
 		INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05f ||
+		(curr_truck->cc_target_speed < curr_truck->cc_target_speed_lower_limit) ||
 		(curr_truck->parkingbrake && curr_truck->engine->getGear() > 0) ||
 		!curr_truck->engine->running ||
 		!curr_truck->engine->contact)
@@ -1887,7 +1888,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		if (curr_truck->engine->getGear() > 0)
 		{
 			curr_truck->cc_target_speed += 5.0f * dt;
-			curr_truck->cc_target_speed  = std::max(0.0f, curr_truck->cc_target_speed);
+			curr_truck->cc_target_speed  = std::max(curr_truck->cc_target_speed_lower_limit, curr_truck->cc_target_speed);
 			curr_truck->cc_target_speed  = std::min(curr_truck->cc_target_speed, curr_truck->sl_speed_limit);
 		} else if (curr_truck->engine->getGear() == 0) // out of gear
 		{
@@ -1900,7 +1901,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		if (curr_truck->engine->getGear() > 0)
 		{
 			curr_truck->cc_target_speed -= 5.0f * dt;
-			curr_truck->cc_target_speed  = std::max(0.0f, curr_truck->cc_target_speed);
+			curr_truck->cc_target_speed  = std::max(curr_truck->cc_target_speed_lower_limit, curr_truck->cc_target_speed);
 		} else if (curr_truck->engine->getGear() == 0) // out of gear
 		{
 			curr_truck->cc_target_rpm -= 1000.0f * dt;
@@ -1910,17 +1911,19 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_READJUST))
 	{
 		curr_truck->cc_target_speed = std::min(curr_truck->WheelSpeed, curr_truck->sl_speed_limit);
+		curr_truck->cc_target_speed = std::max(curr_truck->cc_target_speed_lower_limit, curr_truck->cc_target_speed);
 		curr_truck->cc_target_rpm   = curr_truck->engine->getRPM();
 	}
 
-#if 0
-	if (curr_truck->WheelSpeed > curr_truck->cc_target_speed + 0.5f && !INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE))
+	if (curr_truck->cc_can_brake)
 	{
-		float brake = (curr_truck->WheelSpeed - curr_truck->cc_target_speed) * 0.5f;
-		brake = std::min(brake, 1.0f);
-		curr_truck->brake = curr_truck->brakeforce * brake;
+		if (curr_truck->WheelSpeed > curr_truck->cc_target_speed + 0.5f && !INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE))
+		{
+			float brake = (curr_truck->WheelSpeed - curr_truck->cc_target_speed) * 0.5f;
+			brake = std::min(brake, 1.0f);
+			curr_truck->brake = curr_truck->brakeforce * brake;
+		}
 	}
-#endif
 }
 
 void checkSpeedlimit(Beam* curr_truck, float dt)
