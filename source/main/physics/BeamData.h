@@ -893,8 +893,10 @@ struct rig
 
 	// Cruise Control
 	bool cc_mode;
+	bool cc_can_brake;
 	float cc_target_rpm;
 	float cc_target_speed;
+	float cc_target_speed_lower_limit;
 
 	// Speed Limiter
 	float sl_speed_limit;

@@ -201,8 +201,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cablightNode = 0;
 
 	cc_mode = false;
+	cc_can_brake = false;
 	cc_target_rpm = 0.0f;
 	cc_target_speed = 0.0f;
+	cc_target_speed_lower_limit = 0.0f;
 
 	debugVisuals = 0;
 

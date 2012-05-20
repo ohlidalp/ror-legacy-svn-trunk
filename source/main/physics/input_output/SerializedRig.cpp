@@ -851,6 +851,18 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 				}
 				continue;
 			}
+			if (c.line.size() > 13 && c.line.substr(0, 13) == "cruisecontrol")
+			{
+				parse_args(c, args, 3);
+				cc_target_speed_lower_limit = PARSEREAL(args[1]);
+				cc_can_brake = PARSEINT(args[2]) != 0;
+				if (cc_target_speed_lower_limit <= 0.0f)
+				{
+					parser_warning(c, "CruiseControl: First parameter must be a decimal and greater than zero (e.g. 5.6)");
+					continue;
+				}
+				continue;
+			}
 			if (c.line.size() > 12 && c.line.substr(0, 12) == "speedlimiter")
 			{
 				parse_args(c, args, 2);
