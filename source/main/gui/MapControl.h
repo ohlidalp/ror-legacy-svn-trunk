@@ -47,7 +47,7 @@ public:
 	void setAlpha(float value);
 	void setEntitiesVisibility(bool value);
 	void setMapTexture(Ogre::String name);
-	void setPosition(float x, float y, float w, float h, Ogre::RenderWindow* rw);
+	void setPosition(int x, int y, float size, Ogre::RenderWindow* rw);
 	void setVisibility(bool value);
 	void setWorldSize(int x, int z);
 
