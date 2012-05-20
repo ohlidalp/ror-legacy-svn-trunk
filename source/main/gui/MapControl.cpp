@@ -23,88 +23,76 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "MapEntity.h"
+#include "Ogre.h"
 
 using namespace Ogre;
 
 MapControl::MapControl(int mapsizex, int mapsizez) :
-	  h(100.0f)
+	  mMapWidth(mapsizex)
+	, mMapHeight(mapsizez)
 	, mAlpha(1.0f)
-	, mapsizex(mapsizex)
-	, mapsizez(mapsizez)
-	, rWinHeight(1)
-	, rWinWidth(1)
-	, w(100.0f)
-	, x(0.0f)
-	, y(0.0f)
+	, mScale(1.0f)
 {
 	initialiseByAttributes(this);
+	setVisibility(false);
 }
 
-MapControl::~MapControl()
+void MapControl::setMapTexture(String name)
 {
-}
-
-void MapControl::setMapTexture(String _name)
-{
-	mMapTexture->setImageTexture(_name);
+	mMapTexture->setImageTexture(name);
 }
 
 void MapControl::setWorldSize(int x, int z)
 {
-	this->mapsizex = x;
-	this->mapsizez = z;
+	mMapWidth = x;
+	mMapHeight = z;
 }
 
 MapEntity *MapControl::createMapEntity(String type)
 {
-	MapEntity *m = new MapEntity(this, type, mMapTexture);
-	mMapEntities.push_back(m);
-	return m;
+	MapEntity *entity = new MapEntity(this, type, mMapTexture);
+	mMapEntities.insert(entity);
+	return entity;
 }
 
 MapEntity *MapControl::createNamedMapEntity(String name, String type)
 {
-	MapEntity *e = createMapEntity(type);
-	mNamedEntities[name] = e;
-	return e;
+	MapEntity *entity = createMapEntity(type);
+	mNamedEntities[name] = entity;
+	return entity;
 }
 
 MapEntity *MapControl::getEntityByName(String name)
 {
 	if (mNamedEntities.find(name) != mNamedEntities.end())
+	{
 		return mNamedEntities[name];
-
-	return nullptr;
+	}
+	return NULL;
 }
 
 String MapControl::getTypeByDriveable(int driveable)
 {
-	if(driveable == NOT_DRIVEABLE)
+	switch (driveable)
+	{
+	case NOT_DRIVEABLE:
 		return "load";
-	else if(driveable == TRUCK)
+	case TRUCK:
 		return "truck";
-	else if(driveable == AIRPLANE)
+	case AIRPLANE:
 		return "airplane";
-	else if(driveable == BOAT)
+	case BOAT:
 		return "boat";
-	else if(driveable == MACHINE)
+	case MACHINE:
 		return "machine";
-	return "unknown";
+	default:
+		return "unknown";
+	}
 }
 
-void MapControl::deleteMapEntity(MapEntity *ent)
+void MapControl::deleteMapEntity(MapEntity *entity)
 {
-	std::vector<MapEntity *>::iterator it;
-	for(it=mMapEntities.begin(); it!= mMapEntities.end(); it++)
-	{
-		if((*it) == ent)
-		{
-			// found it, erase!
-			delete *it;
-			mMapEntities.erase(it);
-			return;
-		}
-	}
+	mMapEntities.erase(entity);
 }
 
 bool MapControl::getVisibility()
@@ -114,7 +102,6 @@ bool MapControl::getVisibility()
 
 void MapControl::setVisibility(bool value)
 {
-	//if(!value) GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(value);
 }
 
@@ -124,18 +111,19 @@ void MapControl::setAlpha(float value)
 	mMainWidget->setAlpha(value);
 }
 
-void MapControl::setPosition(float _x, float _y, float _w, float _h, RenderWindow* rw)
+void MapControl::setPosition(float x, float y, float w, float h, RenderWindow* rw)
 {
-	mMainWidget->setCoord(_x*rWinWidth, _y*rWinHeight, _w*rWinWidth, _h*rWinHeight);
-	myScale = _w;
+	updateRenderMetrics(rw);
+
+	mScale = w;
+	mMainWidget->setCoord(x * rWinWidth, y * rWinHeight, w * rWinWidth, h * rWinHeight);
+
 	updateEntityPositions();
 }
 
-
 void MapControl::updateEntityPositions()
 {
-	std::vector<MapEntity *>::iterator it;
-	for(it=mMapEntities.begin(); it!=mMapEntities.end(); it++)
+	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
 	{
 		(*it)->update();
 	}
@@ -143,17 +131,10 @@ void MapControl::updateEntityPositions()
 
 void MapControl::setEntitiesVisibility(bool value)
 {
-	std::vector<MapEntity *>::iterator it;
-	for(it=mMapEntities.begin(); it!=mMapEntities.end(); it++)
+	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
 	{
 		(*it)->setVisibility(value);
 	}
-}
-
-void MapControl::resizeToScreenRatio(RenderWindow* rw)
-{
-	//win->setRealPosition(
-	// TODO
 }
 
 void MapControl::updateRenderMetrics(RenderWindow* win)

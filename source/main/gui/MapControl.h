@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
+
 #ifndef __MAP_CONTROL_H_
 #define __MAP_CONTROL_H_
 
@@ -32,46 +33,44 @@ class MapControl : public wraps::BaseLayout
 public:
 
 	MapControl(int mapsizex, int mapsizez);
-	~MapControl();
 
-	void setMapTexture(Ogre::String _name);
-
-	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
 	MapEntity *createMapEntity(Ogre::String type);
+	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
+
+	
 	MapEntity *getEntityByName(Ogre::String name);
-	void deleteMapEntity(MapEntity *ent);
+	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mMapWidth, mMapHeight); }
 	bool getVisibility();
-	void setVisibility(bool value);
-
-	void setPosition(float x, float y, float w, float h, Ogre::RenderWindow* rw=0);
-	void setPosition(float x, float y, float w, Ogre::RenderWindow* rw=0);
-	void resizeToScreenRatio(Ogre::RenderWindow* win);
-
-	void updateRenderMetrics(Ogre::RenderWindow* win);
-
-	static Ogre::String getTypeByDriveable(int driveable);
 	float getAlpha() { return mAlpha; }
+	float getWindowScale() { return mScale; }
+
 	void setAlpha(float value);
 	void setEntitiesVisibility(bool value);
+	void setMapTexture(Ogre::String name);
+	void setPosition(float x, float y, float w, float h, Ogre::RenderWindow* rw);
+	void setVisibility(bool value);
 	void setWorldSize(int x, int z);
-	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mapsizex, mapsizez); }
-	float getWindowScale() { return myScale; }
+
+	void deleteMapEntity(MapEntity *ent);
+
+	static Ogre::String getTypeByDriveable(int driveable);
 
 protected:
 
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
 	MyGUI::StaticImage* mMapTexture;
 
-	std::vector<MapEntity *> mMapEntities;
-	std::map<Ogre::String, MapEntity *> mNamedEntities;
-	int mapsizex, mapsizez;
-	float x,y,w,h, myScale;
-	float mAlpha;
-	unsigned int rWinWidth, rWinHeight, rWinDepth;
+	float mAlpha, mScale;
+	int mMapWidth, mMapHeight;
 	int rWinLeft, rWinTop;
+	unsigned int rWinWidth, rWinHeight, rWinDepth;
+	std::map<Ogre::String, MapEntity *> mNamedEntities;
+	std::set<MapEntity *> mMapEntities;
 
 	void updateEntityPositions();
+	void updateRenderMetrics(Ogre::RenderWindow* win);
 };
 
 #endif // __MAP_CONTROL_H_
+
 #endif // USE_MYGUI

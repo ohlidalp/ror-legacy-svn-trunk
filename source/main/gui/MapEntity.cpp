@@ -22,45 +22,45 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "MapEntity.h"
 #include "MapControl.h"
+#include "Ogre.h"
 
-Ogre::String MapEntity::entityStates[MaxEntityStates] = {"activated", "deactivated", "sleeping", "networked"};
+using namespace Ogre;
 
-MapEntity::MapEntity(MapControl *ctrl, Ogre::String type, MyGUI::StaticImagePtr _parent)
+String MapEntity::entityStates[MaxEntityStates] = {"activated", "deactivated", "sleeping", "networked"};
+
+MapEntity::MapEntity(MapControl *ctrl, String type, MyGUI::StaticImagePtr parent) :
+	  mMapControl(ctrl)
+	, mType(type)
+	, mParent(parent)
+	, mRotation(0)
+	, mState(Sleeping)
+	, mX(0)
+	, mZ(0)
 {
-	initialiseByAttributes(this, _parent);
+	initialiseByAttributes(this, parent);
 
-	if (mIcon) mIconRotating = mIcon->getSubWidgetMain()->castType<MyGUI::RotatingSkin>(false);
-	else mIconRotating = nullptr;
+	if (mIcon)
+		mIconRotating = mIcon->getSubWidgetMain()->castType<MyGUI::RotatingSkin>(false);
+	else
+		mIconRotating = nullptr;
 
-	mMapControl = ctrl;
-	mParent = _parent;
-	mType = type;
-	mX = 0;
-	mZ = 0;
-	mRotation = 0;
-	mState = Sleeping;
 	init();
-}
-
-MapEntity::~MapEntity()
-{
 }
 
 void MapEntity::init()
 {
 	// check if static only icon
-	Ogre::String imageFile = "icon_" + mType + ".dds";
-	Ogre::String group = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
+	String imageFile = "icon_" + mType + ".dds";
+	String group = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
-	if(Ogre::ResourceGroupManager::getSingleton().resourceExists(group, imageFile))
+	if (ResourceGroupManager::getSingleton().resourceExists(group, imageFile))
 	{
 		//LOG("static map icon found: " + imageFile);
-		mIsStatic=true;
-	}
-	else
+		mIsStatic = true;
+	} else
 	{
 		LOG("static map icon not found: " + imageFile);
-		mIsStatic=false;
+		mIsStatic = false;
 	}
 
 	setVisibility(false);
@@ -69,37 +69,39 @@ void MapEntity::init()
 	update();
 }
 
-void MapEntity::setPosition(Ogre::Vector3 pos)
+void MapEntity::setPosition(Vector3 pos)
 {
 	setPosition(pos.x, pos.z);
 }
 
-void MapEntity::setPosition(float _x, float _z)
+void MapEntity::setPosition(float x, float z)
 {
-	bool needUpdate=false;
-	if(fabs(_x - mX) > 0.00001f || fabs(_z - mZ) > 0.00001f)
-		needUpdate=true;
-	mX = _x;
-	mZ = _z;
-	if(needUpdate)
+	bool needUpdate = false;
+
+	if (fabs(x - mX) > 0.00001f || fabs(z - mZ) > 0.00001f)
+	{
+		needUpdate = true;
+	}
+
+	mX = x;
+	mZ = z;
+
+	if (needUpdate)
+	{
 		update();
+	}
 }
 
-void MapEntity::setRotation(Ogre::Quaternion q)
+void MapEntity::setRotation(Quaternion q)
 {
-	mRotation = q.getYaw().valueRadians() - Ogre::Math::PI/2;
+	mRotation = q.getYaw().valueRadians() - Math::PI/2;
 	if (mIconRotating) mIconRotating->setAngle(-mRotation);
 }
 
-void MapEntity::setRotation(Ogre::Radian _r)
+void MapEntity::setRotation(Radian _r)
 {
 	mRotation = _r.valueRadians();
 	if (mIconRotating) mIconRotating->setAngle(-mRotation);
-}
-
-void MapEntity::onTop()
-{
-//	container->_notifyZOrder(container->getZOrder()+10);
 }
 
 bool MapEntity::getVisibility()
@@ -114,19 +116,28 @@ void MapEntity::setVisibility(bool value)
 
 void MapEntity::setState(int truckstate)
 {
-	if (mIsStatic)
-		return;
+	if (mIsStatic) return;
 
-	EntityStates mapstate;
+	EntityStates mapstate = Sleeping;
+
 	switch (truckstate)
 	{
-	case ACTIVATED: mapstate = Activated; break;
+	case ACTIVATED:
+		mapstate = Activated;
+		break;
 	case DESACTIVATED:
 	case MAYSLEEP:
-	case GOSLEEP: mapstate = Deactivated; break;
-	case SLEEPING: mapstate = Sleeping; break;
-	case NETWORKED: mapstate = Networked; break;
-	default: mapstate = Sleeping;
+	case GOSLEEP:
+		mapstate = Deactivated;
+		break;
+	case SLEEPING:
+		mapstate = Sleeping;
+		break;
+	case NETWORKED:
+		mapstate = Networked;
+		break;
+	default:
+		mapstate = Sleeping;
 	}
 
 	if (mState != mapstate)
@@ -147,7 +158,7 @@ void MapEntity::update()
 
 	mCaption->setVisible(wscale > 0.5f);
 
-	Ogre::Vector2 s = mMapControl->getMapSize();
+	Vector2 s = mMapControl->getMapSize();
 	mMainWidget->setPosition(
 		mX / s.x * mParent->getWidth() - mMainWidget->getWidth() / 2,
 		mZ / s.y * mParent->getHeight() - mMainWidget->getHeight() / 2
@@ -161,13 +172,13 @@ void MapEntity::update()
 	mIcon->setVisible(true);
 }
 
-void MapEntity::setDescription(Ogre::String s)
+void MapEntity::setDescription(String s)
 {
 	mDescription = s;
 	mCaption->setCaption(mDescription);
 }
 
-Ogre::String MapEntity::getDescription()
+String MapEntity::getDescription()
 {
 	return mDescription;
 }
@@ -175,21 +186,24 @@ Ogre::String MapEntity::getDescription()
 void MapEntity::updateIcon()
 {
 	// check if static only icon
-	Ogre::String imageFile;
-	if(mIsStatic)	imageFile = "icon_" + mType + ".dds";
-	else			imageFile = "icon_" + mType + "_" + entityStates[mState] + ".dds";
+	String imageFile = "icon_" + mType + "_" + entityStates[mState] + ".dds";
+
+	if (mIsStatic)
+	{
+		imageFile = "icon_" + mType + ".dds";
+	}
 
 	// set image texture to load it into memory, so TextureManager::getByName will have it loaded if files exist
 	mIcon->setImageTexture(imageFile);
 
-	Ogre::TexturePtr texture = (Ogre::TexturePtr)(Ogre::TextureManager::getSingleton().getByName(imageFile));
-	if(texture.isNull())
+	TexturePtr texture = (TexturePtr)(TextureManager::getSingleton().getByName(imageFile));
+	if (texture.isNull())
 	{
 		imageFile = "icon_missing.dds";
-		texture = (Ogre::TexturePtr)(Ogre::TextureManager::getSingleton().getByName(imageFile));
+		texture = (TexturePtr)(TextureManager::getSingleton().getByName(imageFile));
 	}
 
-	if(!texture.isNull())
+	if (!texture.isNull())
 	{
 		mIconSize.width  = (int)texture->getWidth();
 		mIconSize.height = (int)texture->getHeight();
@@ -203,4 +217,4 @@ void MapEntity::updateIcon()
 	}
 }
 
-#endif // MYGUI
+#endif // USE_MYGUI
