@@ -140,3 +140,9 @@ bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const
 
 	return false;
 }
+
+void CameraBehavior::reset(const CameraManager::cameraContext_t &ctx)
+{
+	camRotX = 0.0f;
+	ctx.mCamera->setFOVy(ctx.fovExternal);
+}

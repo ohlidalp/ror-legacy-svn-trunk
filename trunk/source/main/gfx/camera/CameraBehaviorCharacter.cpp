@@ -77,7 +77,7 @@ void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx
 
 void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 {
-	camRotX =  0.0f;
+	CameraBehavior::reset(ctx);
 
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{

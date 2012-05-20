@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "InputEngine.h"
 #include "RoRFrameListener.h"
+#include "Settings.h"
 
 #include "CameraBehavior.h"
 #include "CameraBehaviorCharacter.h"
@@ -81,6 +82,8 @@ void CameraManager::update(float dt)
 	ctx.mHfinder    = RoRFrameListener::hfinder;
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
+	ctx.fovInternal = Degree(FSETTING("FOV Internal", 75.0f));
+	ctx.fovExternal = Degree(FSETTING("FOV External", 60.0f));
 
 	if ( currentBehaviorID < CAMERA_BEHAVIOR_END && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
 	{

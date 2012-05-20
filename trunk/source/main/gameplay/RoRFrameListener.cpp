@@ -2107,7 +2107,41 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 	}
 
+	// camera FOV settings
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
+	{
+		int fov = mCamera->getFOVy().valueDegrees();
 
+		if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS))
+			fov -= 2;
+		else
+			fov += 2;
+
+		if (fov >= 10 && fov <= 160)
+		{
+			mCamera->setFOVy(Degree(fov));
+
+	#ifdef USE_MYGUI
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
+	#endif // USE_MYGUI
+
+			// save the settings
+			if (CameraManager::singletonExists() &&
+				CameraManager::getSingleton().hasActiveBehavior() &&
+				CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+			{
+				SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
+			} else
+			{
+				SETTINGS.setSetting("FOV External", TOSTRING(fov));
+			}
+		} else
+		{
+#ifdef USE_MYGUI
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: Limit reached"), "camera_edit.png", 2000);
+#endif // USE_MYGUI
+		}
+	}
 
 	// full screen/windowed screen switching
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FULLSCREEN_TOGGLE, 2.0f))

@@ -69,7 +69,7 @@ void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, 
 
 void CameraBehaviorVehicle::reset(const CameraManager::cameraContext_t &ctx)
 {
-	camRotX = 0.0f;
+	CameraBehavior::reset(ctx);
 	camRotY = 0.35f;
 	camDist = ctx.mCurrTruck->getMinimalCameraRadius() * 3.0f + 2.0f;
 	camDistMin = ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f;
