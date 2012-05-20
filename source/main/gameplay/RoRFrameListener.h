@@ -80,8 +80,8 @@ public:
 
 	int loading_state;
 
-	enum { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, EDITOR_PAUSE };
-	enum { EVENT_NONE, EVENT_ALL, EVENT_AVATAR, EVENT_TRUCK, EVENT_AIRPLANE, EVENT_DELETE };
+	enum LoadingStatuses { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, EDITOR_PAUSE };
+	enum SurveyMapTypes { SURVEY_MAP_NONE, SURVEY_MAP_SMALL, SURVEY_MAP_BIG, SURVEY_MAP_END};
 
 protected:
 
@@ -90,7 +90,7 @@ protected:
 		float px;
 		float py;
 		float pz;
-		//	float ry;
+		//float ry;
 		Ogre::Quaternion rotation;
 		char name[256];
 		bool ismachine;
@@ -154,7 +154,7 @@ protected:
 	HDRListener *hdrListener;
 	HeatHaze *heathaze;
 	MOC::CollisionTools *mCollisionTools;
-	MapControl *bigMap;
+	MapControl *surveyMap;
 	MapTextureCreator *mtc;
 	Network *net;
 
@@ -214,7 +214,7 @@ protected:
 	int inputGrabMode;
 	int joyshiftlock;
 	int mStatsOn;
-	int mapMode;
+	int surveyMapMode;
 	int mouseGrabState;
 	int netPointToUID;
 	int nodegrabbed;
@@ -257,28 +257,6 @@ protected:
 	void windowClosed(Ogre::RenderWindow* rw);
 	void windowFocusChange(Ogre::RenderWindow* rw);
 
-	//GUI_TruckTool *truckToolGUI;
-	//GUI_MainMenu *mainmenu;
-	//GUI_Progress *gui_progress;
-
-	//SceneNode *speed_node;
-	//SceneNode *tach_node;
-	//SceneNode *roll_node;
-	//SceneNode *pitch_node;
-	//SceneNode *rollcorr_node;
-
-	//bool usejoy;
-	//bool useforce;
-	//BeamJoystick *joy;
-
-	//SceneNode *personode;
-	//AnimationState *persoanim;
-	//float persoangle;
-	//float persospeed;
-	//float persovspeed;
-	//bool perso_canjump;
-	//Vector3 lastpersopos;
-
 private:
 
 	int net_quality;
@@ -312,7 +290,6 @@ public: // public methods
 	int getLoadingState() { return loading_state; };
 	int getNetPointToUID() { return netPointToUID; };
 
-	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
 	void changedCurrentTruck(Beam *previousTruck, Beam *currentTruck);
 	void checkRemoteStreamResultsChanged();
 	void hideGUI(bool visible);
@@ -326,6 +303,7 @@ public: // public methods
 	void pauseSim(bool value);
 	void reloadCurrentTruck();
 	void removeBeam(Beam *);
+	void RTSSgenerateShaders(Ogre::Entity *entity, Ogre::String normalTextureName);
 	void setDirectionArrow(char *text, Ogre::Vector3 position);
 	void setLoadingState(int value);
 	void setNetPointToUID(int uid);
