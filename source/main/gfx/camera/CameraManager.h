@@ -67,8 +67,11 @@ public:
 	void switchToNextBehavior();
 	void toggleBehavior(int behavior);
 
-	bool hasActiveBehavior() { return currentBehavior!=0; };
-	int getCameraBehavior() { return currentBehaviorID; };
+	bool hasActiveBehavior();
+	bool hasActiveCharacterBehavior();
+	bool hasActiveVehicleBehavior();
+
+	int getCameraBehavior();
 
 protected:
 
