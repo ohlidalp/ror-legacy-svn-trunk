@@ -5631,6 +5631,7 @@ void RoRFrameListener::windowResized(RenderWindow* rw)
 	screenHeight = height;
 
 	if (ow) ow->windowResized(rw);
+	if (surveyMap) surveyMap->windowResized(rw);
 
 	//update mouse area
 	INPUTENGINE.windowResized(rw);

@@ -29,23 +29,14 @@ using namespace Ogre;
 
 MapControl::MapControl(int mapsizex, int mapsizez) :
 	  mMapWidth(mapsizex)
-	, mMapHeight(mapsizez)
+	, mMapLength(mapsizez)
 	, mAlpha(1.0f)
 	, mScale(1.0f)
+	, mX(0)
+	, mY(0)
 {
 	initialiseByAttributes(this);
 	setVisibility(false);
-}
-
-void MapControl::setMapTexture(String name)
-{
-	mMapTexture->setImageTexture(name);
-}
-
-void MapControl::setWorldSize(int x, int z)
-{
-	mMapWidth = x;
-	mMapHeight = z;
 }
 
 MapEntity *MapControl::createMapEntity(String type)
@@ -62,6 +53,11 @@ MapEntity *MapControl::createNamedMapEntity(String name, String type)
 	return entity;
 }
 
+void MapControl::deleteMapEntity(MapEntity *entity)
+{
+	mMapEntities.erase(entity);
+}
+
 MapEntity *MapControl::getEntityByName(String name)
 {
 	if (mNamedEntities.find(name) != mNamedEntities.end())
@@ -71,38 +67,14 @@ MapEntity *MapControl::getEntityByName(String name)
 	return NULL;
 }
 
-String MapControl::getTypeByDriveable(int driveable)
+Vector2 MapControl::getMapSize()
 {
-	switch (driveable)
-	{
-	case NOT_DRIVEABLE:
-		return "load";
-	case TRUCK:
-		return "truck";
-	case AIRPLANE:
-		return "airplane";
-	case BOAT:
-		return "boat";
-	case MACHINE:
-		return "machine";
-	default:
-		return "unknown";
-	}
-}
-
-void MapControl::deleteMapEntity(MapEntity *entity)
-{
-	mMapEntities.erase(entity);
+	return Vector2(mMapWidth, mMapLength);
 }
 
 bool MapControl::getVisibility()
 {
 	return mMainWidget->getVisible();
-}
-
-void MapControl::setVisibility(bool value)
-{
-	mMainWidget->setVisible(value);
 }
 
 void MapControl::setAlpha(float value)
@@ -111,14 +83,30 @@ void MapControl::setAlpha(float value)
 	mMainWidget->setAlpha(value);
 }
 
-void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow* rw)
+void MapControl::setEntitiesVisibility(bool value)
 {
-	updateRenderMetrics(rw);
+	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
+	{
+		(*it)->setVisibility(value);
+	}
+}
 
+void MapControl::setMapTexture(String name)
+{
+	mMapTexture->setImageTexture(name);
+}
+
+void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow *rw)
+{
 	int realx, realy, realw, realh;
+
+	mScale = size;
+	mX = x;
+	mY = y;
+
+	updateRenderMetrics(rw);
 	
 	realw = realh = size * std::min(rWinWidth, rWinHeight);
-	mScale = size;
 
 	if (x == -1)
 	{
@@ -143,7 +131,43 @@ void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow* rw)
 	}
 
 	mMainWidget->setCoord(realx, realy, realw, realh);
+
 	updateEntityPositions();
+}
+
+void MapControl::setVisibility(bool value)
+{
+	mMainWidget->setVisible(value);
+}
+
+void MapControl::setWorldSize(int width, int length)
+{
+	mMapWidth = width;
+	mMapLength = length;
+}
+
+void MapControl::windowResized(Ogre::RenderWindow *rw)
+{
+	setPosition(mX, mY, mScale, rw);
+}
+
+String MapControl::getTypeByDriveable(int driveable)
+{
+	switch (driveable)
+	{
+	case NOT_DRIVEABLE:
+		return "load";
+	case TRUCK:
+		return "truck";
+	case AIRPLANE:
+		return "airplane";
+	case BOAT:
+		return "boat";
+	case MACHINE:
+		return "machine";
+	default:
+		return "unknown";
+	}
 }
 
 void MapControl::updateEntityPositions()
@@ -151,14 +175,6 @@ void MapControl::updateEntityPositions()
 	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
 	{
 		(*it)->update();
-	}
-}
-
-void MapControl::setEntitiesVisibility(bool value)
-{
-	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
-	{
-		(*it)->setVisibility(value);
 	}
 }
 
