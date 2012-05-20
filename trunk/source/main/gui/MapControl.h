@@ -36,10 +36,11 @@ public:
 
 	MapEntity *createMapEntity(Ogre::String type);
 	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
-
 	
+	void deleteMapEntity(MapEntity *ent);
+
 	MapEntity *getEntityByName(Ogre::String name);
-	Ogre::Vector2 getMapSize(){ return Ogre::Vector2(mMapWidth, mMapHeight); }
+	Ogre::Vector2 getMapSize();
 	bool getVisibility();
 	float getAlpha() { return mAlpha; }
 	float getWindowScale() { return mScale; }
@@ -47,27 +48,32 @@ public:
 	void setAlpha(float value);
 	void setEntitiesVisibility(bool value);
 	void setMapTexture(Ogre::String name);
-	void setPosition(int x, int y, float size, Ogre::RenderWindow* rw);
+	void setPosition(int x, int y, float size, Ogre::RenderWindow *rw);
 	void setVisibility(bool value);
-	void setWorldSize(int x, int z);
+	void setWorldSize(int width, int length);
 
-	void deleteMapEntity(MapEntity *ent);
+	void windowResized(Ogre::RenderWindow *rw);
 
 	static Ogre::String getTypeByDriveable(int driveable);
 
 protected:
 
+	float mAlpha, mScale;
+	int mX, mY;
+
+	int mMapWidth, mMapLength;
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
 	MyGUI::StaticImage* mMapTexture;
 
-	float mAlpha, mScale;
-	int mMapWidth, mMapHeight;
-	int rWinLeft, rWinTop;
-	unsigned int rWinWidth, rWinHeight, rWinDepth;
 	std::map<Ogre::String, MapEntity *> mNamedEntities;
 	std::set<MapEntity *> mMapEntities;
 
 	void updateEntityPositions();
+
+	int rWinLeft, rWinTop;
+	unsigned int rWinWidth, rWinHeight, rWinDepth;
+
 	void updateRenderMetrics(Ogre::RenderWindow* win);
 };
 
