@@ -69,6 +69,7 @@ void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx
 	if ( ctx.mCurrTruck )
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
+		return;
 	} else if ( reset )
 	{
 		this->reset(ctx);

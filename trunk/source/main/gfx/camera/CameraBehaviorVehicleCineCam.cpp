@@ -62,9 +62,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
 		return;
-	}
-	
-	if ( reset )
+	} else if ( reset )
 	{
 		lastCineCam = 0;
 		this->reset(ctx);
@@ -109,6 +107,7 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 
 	currTruck->currentcamera = -1;
 	currTruck->changedCamera();
+	currTruck = 0;
 }
 
 void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &ctx)
