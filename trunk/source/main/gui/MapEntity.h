@@ -19,63 +19,63 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
 
-#ifndef __MAP_ENTITY_H__
-#define __MAP_ENTITY_H__
+#ifndef __MAP_ENTITY_H_
+#define __MAP_ENTITY_H_
 
 #include "RoRPrerequisites.h"
-#include <Ogre.h>
+
 #include "mygui/BaseLayout.h"
 
 ATTRIBUTE_CLASS_LAYOUT(MapEntity, "MapEntity.layout");
-class MapEntity :
-	public wraps::BaseLayout
+
+class MapEntity : public wraps::BaseLayout
 {
 public:
+
 	MapEntity(MapControl *ctrl, Ogre::String type, MyGUI::StaticImagePtr parent);
-	~MapEntity();
+
+	Ogre::String getDescription();
+	bool getVisibility();
+	int getState();
+
+	void setDescription(Ogre::String s);
 	void setPosition(Ogre::Vector3 pos);
 	void setPosition(float x, float z);
 	void setRotation(Ogre::Quaternion q);
 	void setRotation(Ogre::Radian r);
-	bool getVisibility();
-	void setVisibility(bool value);
-	void onTop();
-
 	void setState(int state);
-	int getState();
+	void setVisibility(bool value);
 
-	enum EntityStates {Activated = 0, Deactivated, Sleeping, Networked, MaxEntityStates};
-	static Ogre::String entityStates[MaxEntityStates];
 	void update();
-	void setDescription(Ogre::String s);
-	Ogre::String getDescription();
 
-protected:
-	void updateIcon();
 private:
+
 	MyGUI::StaticImagePtr mParent;
 
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapEntity, mCaption, "mCaption");
-	MyGUI::StaticText* mCaption;
+	MyGUI::StaticText *mCaption;
 
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapEntity, mIcon, "mIcon");
-	MyGUI::StaticImage* mIcon;
+	MyGUI::StaticImage *mIcon;
+	MyGUI::RotatingSkin *mIconRotating;
 
-	MyGUI::RotatingSkin* mIconRotating;
-
-	Ogre::String mType;
-	Ogre::String mDescription;
-	Ogre::Real mX, mZ;
+	enum EntityStates {Activated, Deactivated, Sleeping, Networked, MaxEntityStates};
+	
+	EntityStates mState;
+	MapControl *mMapControl;
 	MyGUI::IntSize mIconSize;
 	Ogre::Real mRotation;
-	MapControl *mMapControl;
-	EntityStates mState;
+	Ogre::Real mX, mZ;
+	Ogre::String mDescription;
+	Ogre::String mType;
 	bool mIsStatic;
+
 	void init();
+	void updateIcon();
+
+	static Ogre::String entityStates[MaxEntityStates];
 };
 
-#endif // __MAP_ENTITY_H__
+#endif // __MAP_ENTITY_H_
 
-
-#endif //MYGUI
-
+#endif // USE_MYGUI
