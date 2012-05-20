@@ -200,9 +200,9 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	cablight = 0;
 	cablightNode = 0;
 
-	cc_mode = 0;
-	cc_target_rpm = 0;
-	cc_target_speed = 0;
+	cc_mode = false;
+	cc_target_rpm = 0.0f;
+	cc_target_speed = 0.0f;
 
 	debugVisuals = 0;
 
@@ -256,7 +256,10 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	previousCrank = 0.0f;
 
+	sl_speed_limit = std::numeric_limits<float>::max();
+
 	state = SLEEPING;
+
 	tc_fade = 0.0f;
 	tc_mode = 0;
 	tc_present = false;

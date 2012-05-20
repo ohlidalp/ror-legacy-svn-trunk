@@ -1850,9 +1850,11 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 void updateCruiseControl(Beam* curr_truck, float dt)
 {
-	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05 || INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05
-		|| (curr_truck->parkingbrake && curr_truck->engine->getGear() > 0)
-		|| !curr_truck->engine->running || !curr_truck->engine->contact)
+	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05f ||
+		INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05f ||
+		(curr_truck->parkingbrake && curr_truck->engine->getGear() > 0) ||
+		!curr_truck->engine->running ||
+		!curr_truck->engine->contact)
 	{
 		curr_truck->cruisecontrolToggle();
 		return;
@@ -1863,9 +1865,9 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		// Try to maintain the target speed
 		if (curr_truck->cc_target_speed > curr_truck->WheelSpeed)
 		{
-			float accl = (curr_truck->cc_target_speed - curr_truck->WheelSpeed);
+			float accl = (curr_truck->cc_target_speed - curr_truck->WheelSpeed) * 2.0f;
+			accl = std::max(curr_truck->engine->getAcc(), accl);
 			accl = std::min(accl, 1.0f);
-			accl = std::max(INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE), accl);
 			curr_truck->engine->setAcc(accl);
 		}
 	} else if (curr_truck->engine->getGear() == 0) // out of gear
@@ -1873,9 +1875,9 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		// Try to maintain the target rpm
 		if (curr_truck->cc_target_rpm > curr_truck->engine->getRPM())
 		{
-			float accl = (curr_truck->cc_target_rpm - curr_truck->engine->getRPM()) * 0.01;
+			float accl = (curr_truck->cc_target_rpm - curr_truck->engine->getRPM()) * 0.01f;
+			accl = std::max(curr_truck->engine->getAcc(), accl);
 			accl = std::min(accl, 1.0f);
-			accl = std::max(INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE), accl);
 			curr_truck->engine->setAcc(accl);
 		}
 	}
@@ -1884,36 +1886,52 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 	{
 		if (curr_truck->engine->getGear() > 0)
 		{
-			curr_truck->cc_target_speed += 5 * dt;
+			curr_truck->cc_target_speed += 5.0f * dt;
+			curr_truck->cc_target_speed  = std::max(0.0f, curr_truck->cc_target_speed);
+			curr_truck->cc_target_speed  = std::min(curr_truck->cc_target_speed, curr_truck->sl_speed_limit);
 		} else if (curr_truck->engine->getGear() == 0) // out of gear
 		{
 			curr_truck->cc_target_rpm += 1000.0f * dt;
+			curr_truck->cc_target_rpm  = std::min(curr_truck->cc_target_rpm, curr_truck->engine->getMaxRPM());
 		}
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_DECL))
 	{
 		if (curr_truck->engine->getGear() > 0)
 		{
-			curr_truck->cc_target_speed -= 5 * dt;
+			curr_truck->cc_target_speed -= 5.0f * dt;
+			curr_truck->cc_target_speed  = std::max(0.0f, curr_truck->cc_target_speed);
 		} else if (curr_truck->engine->getGear() == 0) // out of gear
 		{
 			curr_truck->cc_target_rpm -= 1000.0f * dt;
+			curr_truck->cc_target_rpm  = std::max(curr_truck->engine->getIdleRPM(), curr_truck->cc_target_rpm);
 		}
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_READJUST))
 	{
-		curr_truck->cc_target_speed = curr_truck->WheelSpeed;
+		curr_truck->cc_target_speed = std::min(curr_truck->WheelSpeed, curr_truck->sl_speed_limit);
 		curr_truck->cc_target_rpm   = curr_truck->engine->getRPM();
 	}
 
 #if 0
 	if (curr_truck->WheelSpeed > curr_truck->cc_target_speed + 0.5f && !INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE))
 	{
-		float brake = (curr_truck->WheelSpeed - curr_truck->cc_target_speed) * 0.5;
+		float brake = (curr_truck->WheelSpeed - curr_truck->cc_target_speed) * 0.5f;
 		brake = std::min(brake, 1.0f);
 		curr_truck->brake = curr_truck->brakeforce * brake;
 	}
 #endif
+}
+
+void checkSpeedlimit(Beam* curr_truck, float dt)
+{
+	if (curr_truck->engine->getGear() > 0)
+	{
+		float accl = (curr_truck->sl_speed_limit - curr_truck->WheelSpeed) * 2.0f;
+		accl = std::max(0.0f, accl);
+		accl = std::min(accl, curr_truck->engine->getAcc());
+		curr_truck->engine->setAcc(accl);
+	}
 }
 
 bool RoRFrameListener::updateEvents(float dt)
@@ -2108,14 +2126,14 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 	// camera FOV settings
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE))
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS, 0.1f) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE, 0.1f))
 	{
 		int fov = mCamera->getFOVy().valueDegrees();
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS))
-			fov -= 2;
+			fov--;
 		else
-			fov += 2;
+			fov++;
 
 		if (fov >= 10 && fov <= 160)
 		{
@@ -2698,7 +2716,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 						updateCruiseControl(curr_truck,dt);
 					}
-					
+					checkSpeedlimit(curr_truck, dt);
 				}
 				if (curr_truck->driveable==AIRPLANE)
 				{

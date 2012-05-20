@@ -843,11 +843,22 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 
 						} else
 						{
-							parser_warning(c,"TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.", PARSER_ERROR);
+							parser_warning(c, "TractionControl Mode: missing " + String(fname) +" line " + StringConverter::toString(c.linecounter) + ". TractionControl Mode = ON.", PARSER_ERROR);
 							tc_present = true;
 							tc_mode = 1;
 						}
 					}
+				}
+				continue;
+			}
+			if (c.line.size() > 12 && c.line.substr(0, 12) == "speedlimiter")
+			{
+				parse_args(c, args, 2);
+				sl_speed_limit = PARSEREAL(args[1]);
+				if (sl_speed_limit <= 0.0f)
+				{
+					parser_warning(c, "SpeedLimiter: Parameter must be a decimal and greater than zero (e.g. 69.445)");
+					continue;
 				}
 				continue;
 			}

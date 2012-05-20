@@ -892,9 +892,12 @@ struct rig
 	float animTimer;
 
 	// Cruise Control
-	int cc_mode;
+	bool cc_mode;
 	float cc_target_rpm;
 	float cc_target_speed;
+
+	// Speed Limiter
+	float sl_speed_limit;
 
 	float beam_creak;
 	char uniquetruckid[256];
