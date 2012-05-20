@@ -2060,7 +2060,7 @@ void MyDialog::SetDefaults()
 	//wxCheckBox *dust;
 	OnScrollForceFeedback(dummye);
 	advanced_logging->SetValue(false);
-	arcadeControls->SetValue(false);
+	arcadeControls->SetValue(true);
 	beam_break_debug->SetValue(false);
 	beam_deform_debug->SetValue(false);
 	collisions->SetValue(false);
