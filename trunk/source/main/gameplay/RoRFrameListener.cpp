@@ -735,15 +735,14 @@ void RoRFrameListener::setGravity(float value)
 
 // Constructor takes a RenderWindow because it uses that to determine input context
 RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, Ogre::String inputhwnd) :
-	bigMap(0),
 	clutch(0),
 	collisions(0),
 	dashboard(0),
 	debugCollisions(false),
+	dof(0),
 	editor(0),
 	editorfd(0),
 	envmap(0),
-	dof(0),
 	flaresMode(3), // on by default
 	forcefeedback(0),
 	freeTruckPosition(false),
@@ -765,7 +764,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mTimeUntilNextToggle(0),
 	mTruckInfoOn(false),
 	mWindow(win),
-	mapMode(0),
 	mapsizex(3000),
 	mapsizez(3000),
 	mtc(0),
@@ -788,6 +786,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	road(0),
 	rtime(0),
 	shaderSchemeMode(1),
+	surveyMap(0),
+	surveyMapMode(SURVEY_MAP_NONE),
 	terrainFileHash(""),
 	terrainFileName(""),
 	terrainHasTruckShop(false),
@@ -1040,7 +1040,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	NetworkStreamManager::getSingleton();
 
 	// new factory for characters, net is INVALID, will be set later
-	new CharacterFactory(cam, 0, collisions, hfinder, w, bigMap, mSceneMgr);
+	new CharacterFactory(cam, 0, collisions, hfinder, w, surveyMap, mSceneMgr);
 	new ChatSystemFactory(0);
 
 	// notice: all factories must be available before starting the network!
@@ -1820,7 +1820,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 	//add icons if type is set
 #ifdef USE_MYGUI
 	String typestr = "";
-	if (type && bigMap)
+	if (type && surveyMap)
 	{
 		typestr = String(type);
 		// hack for raceways
@@ -1833,7 +1833,7 @@ void RoRFrameListener::loadObject(const char* name, float px, float py, float pz
 
 		if (typestr != String("") && typestr != String("road") && typestr != String("sign"))
 		{
-			MapEntity *e = bigMap->createMapEntity(typestr);
+			MapEntity *e = surveyMap->createMapEntity(typestr);
 			if (e)
 			{
 				e->setVisibility(true);
@@ -3061,54 +3061,58 @@ bool RoRFrameListener::updateEvents(float dt)
 		}
 
 #ifdef USE_MYGUI
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
+		if (surveyMap)
 		{
-			if (bigMap)
+			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
 			{
-				mapMode++;
-				if (mapMode>2)
-					mapMode=0;
+				surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 
-				if (mapMode==0)
+				if (surveyMapMode == SURVEY_MAP_BIG &&
+					CameraManager::singletonExists() &&
+					CameraManager::getSingleton().hasActiveBehavior() &&
+					CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{
-					bigMap->setVisibility(true);
-					if (CameraManager::singletonExists() &&
-						CameraManager::getSingleton().hasActiveBehavior() &&
-						CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
-					{
-						//make it small again
-						bigMap->updateRenderMetrics(mWindow);
-						bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-					}
-				} else if (mapMode==1)
+					surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
+				}
+
+				if (surveyMapMode == SURVEY_MAP_NONE)
 				{
-					bigMap->setVisibility(true);
-					// make it big
-					bigMap->updateRenderMetrics(mWindow);
-					bigMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
+					surveyMap->setVisibility(false);
 				} else
 				{
-					bigMap->setVisibility(false);
+					if (surveyMapMode == SURVEY_MAP_SMALL)
+					{
+						surveyMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
+					} else if (surveyMapMode == SURVEY_MAP_BIG)
+					{
+						surveyMap->setPosition(0.2, 0, 0.8, 0.8, mWindow);
+					}
+					surveyMap->setVisibility(true);
 				}
 			}
-
-		}
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
-		{
-			if (bigMap)
+			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
 			{
-				if (fabs(1-bigMap->getAlpha()) < 0.001)
+				if (fabs(1.0f - surveyMap->getAlpha()) < 0.001f)
 				{
-					bigMap->setAlpha(0.5);
+					surveyMap->setAlpha(0.5f);
 				}
-				else if (fabs(0.5-bigMap->getAlpha()) < 0.001)
+				else if (fabs(0.5f - surveyMap->getAlpha()) < 0.001f)
 				{
-					bigMap->setAlpha(0.2);
+					surveyMap->setAlpha(0.2f);
 				}
-				else if (fabs(0.2-bigMap->getAlpha()) < 0.001)
+				else if (fabs(0.2f - surveyMap->getAlpha()) < 0.001f)
 				{
-					bigMap->setAlpha(1);
+					surveyMap->setAlpha(1.0f);
 				}
+			}
+			if (surveyMapMode == SURVEY_MAP_BIG &&
+				CameraManager::singletonExists() &&
+				CameraManager::getSingleton().hasActiveVehicleBehavior())
+			{
+				surveyMap->setAlpha(0.5f);
+			} else if (surveyMapMode != SURVEY_MAP_NONE)
+			{
+				surveyMap->setAlpha(1.0f);
 			}
 		}
 #endif //USE_MYGUI
@@ -3267,9 +3271,9 @@ bool RoRFrameListener::updateEvents(float dt)
 					freeTruckPosition=false; // reset this, only to be used once
 				}
 
-				if (bigMap && localTruck)
+				if (surveyMap && localTruck)
 				{
-					MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
+					MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
 					if (e)
 					{
 						e->setState(DESACTIVATED);
@@ -3422,8 +3426,8 @@ void RoRFrameListener::shutdown_final()
 void RoRFrameListener::hideMap()
 {
 #ifdef USE_MYGUI
-	if (bigMap)
-		bigMap->setVisibility(false);
+	if (surveyMap)
+		surveyMap->setVisibility(false);
 #endif //USE_MYGUI
 }
 
@@ -3439,15 +3443,7 @@ void RoRFrameListener::initializeCompontents()
 	// init the map
 	if (!disableMap)
 	{
-		bigMap = new MapControl((int)mapsizex, (int)mapsizez);
-		// important: update first!
-		bigMap->updateRenderMetrics(mWindow);
-		bigMap->setVisibility(true);
-		//make it small again
-		bigMap->updateRenderMetrics(mWindow);
-		bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-		//bigMap->setPosition(0, 0, 1, 1);
-		//bigMap->resizeToScreenRatio(win);
+		surveyMap = new MapControl((int)mapsizex, (int)mapsizez);
 	}
 #endif //USE_MYGUI
 
@@ -3781,8 +3777,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		if (tmpSize != String(""))
 			mapsizez = atof(tmpSize.c_str());
 #ifdef USE_MYGUI
-		if (bigMap)
-			bigMap->setWorldSize(mapsizex, mapsizez);
+		if (surveyMap)
+			surveyMap->setWorldSize(mapsizex, mapsizez);
 #endif //MYGUI
 
 		if (!newTerrainMode && !disableTetrrain)
@@ -4352,11 +4348,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	if (spl.rot != Quaternion::ZERO) mCamera->setOrientation(spl.rot);
 
 #ifdef USE_MYGUI
-	if (bigMap)
+	if (surveyMap)
 	{
 		mtc = new MapTextureCreator(mSceneMgr, mCamera, this);
-		bigMap->setVisibility(false);
-		bigMap->setMapTexture(mtc->getRTName());
+		surveyMap->setMapTexture(mtc->getRTName());
 	}
 #endif //USE_MYGUI
 
@@ -4970,13 +4965,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
-
-	if (bigMap)
-	{
-		// this has a slight offset in size, thus forces the icons to recalc their size -> correct size on screen
-		bigMap->updateRenderMetrics(mWindow);
-		bigMap->setPosition(0, 0.81, 0.14, 0.1901, mWindow);
-	}
 #endif //MYGUI
 
 #if 0
@@ -5060,9 +5048,9 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		}
 
 #ifdef USE_MYGUI
-		if (b && bigMap)
+		if (b && surveyMap)
 		{
-			MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+			MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 			if (e)
 			{
 				e->setState(DESACTIVATED);
@@ -5087,9 +5075,9 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		{
 			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, 0, truck_preload[i].freePosition);
 #ifdef USE_MYGUI
-			if (b && bigMap)
+			if (b && surveyMap)
 			{
-				MapEntity *e = bigMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+				MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 				if (e)
 				{
 					e->setState(DESACTIVATED);
@@ -5252,16 +5240,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			ow->showDashboardOverlays(true, currentTruck);
 			ow->showEditorOverlay(currentTruck->editorId>=0);
 		}
-
-		// mapmode change?
-#ifdef USE_MYGUI
-		// show minimap and put it into lower left corner
-		if (bigMap)
-		{
-			//bigMap->setVisibility(true);
-			bigMap->setPosition(0, 0.81, 0.14, 0.19, mWindow);
-		}
-#endif //USE_MYGUI
 
 		currentTruck->activate();
 		//if (trucks[current_truck]->engine->running) trucks[current_truck]->audio->playStart();
@@ -5444,7 +5422,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif // USE_CAELUM
 		} else
 		{
-			envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
+			envmap->update(Vector3(terrainxsize / 2.0f, hfinder->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f ) + 50.0f, terrainzsize / 2.0f));
 		}
 	}
 
@@ -5628,9 +5606,9 @@ void RoRFrameListener::netDisconnectTruck(int number)
 	// TODO: fix that below!
 	//removeTruck(number);
 #ifdef USE_MYGUI
-	if (bigMap)
+	if (surveyMap)
 	{
-		MapEntity *e = bigMap->getEntityByName("Truck"+TOSTRING(number));
+		MapEntity *e = surveyMap->getEntityByName("Truck"+TOSTRING(number));
 		if (e)
 			e->setVisibility(false);
 	}
