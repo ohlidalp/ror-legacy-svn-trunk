@@ -3408,22 +3408,19 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_OUTPUT_POSITION) && loading_state == ALL_LOADED)
 	{
-		Vector3 pos = Vector3::ZERO;
-		float rotz = 0;
+		Vector3 position(Vector3::ZERO);
+		Radian rotation(0);
 		if (BeamFactory::getSingleton().getCurrentTruckNumber() == -1)
 		{
-			pos = person->getPosition();
-			rotz = person->getOrientation().getYaw().valueDegrees()+180;
-		}
-		else
+			position = person->getPosition();
+			rotation = person->getRotation() + Radian(Math::PI);
+		} else
 		{
-			pos = curr_truck->getPosition();
-			Vector3 idir=curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition-curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition;
-			rotz = atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
-			rotz = -Radian(rotz).valueDegrees();
+			position = curr_truck->getPosition();
+			Vector3 idir = curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition - curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition;
+			rotation = atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
 		}
-		LOG("position-x " + TOSTRING(pos.x) + ", "+ TOSTRING(pos.y) + ", " + TOSTRING(pos.z) + ", 0, " + TOSTRING(rotz)+", 0");
-
+		LOG("Position: " + TOSTRING(position.x) + ", "+ TOSTRING(position.y) + ", " + TOSTRING(position.z) + ", 0, " + TOSTRING(rotation.valueDegrees()) + ", 0");
 	}
 
 	//update window
@@ -5205,22 +5202,30 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 {
 	// hide any old dashes
 	if (previousTruck && previousTruck->dash)
+	{
 		previousTruck->dash->setVisible3d(false);
+	}
 	// show new
 	if (currentTruck && currentTruck->dash)
+	{
 		currentTruck->dash->setVisible3d(true);
-
-
+	}
+	
 	// normal workflow
 	if (!currentTruck)
 	{
 		// get out
 		if (previousTruck && person)
+		{
 			person->setPosition(previousTruck->getPosition());
+			person->updateCharacterRotation();
+		}
 
 		// detach person from truck
 		if (person)
+		{
 			person->setBeamCoupling(false);
+		}
 
 		//force feedback
 		if (forcefeedback) forcefeedback->setEnabled(false);
@@ -5263,6 +5268,7 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		if (person && position != Vector3::ZERO)
 		{
 			person->setPosition(position);
+			person->updateCharacterRotation();
 			//person->setVisible(true);
 		}
 		if (ow) ow->showDashboardOverlays(false, currentTruck);
@@ -5317,7 +5323,10 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 
 		// attach person to truck
 		if (person)
+		{
 			person->setBeamCoupling(true, currentTruck);
+		}
+
 		if (ow)
 		{
 			try

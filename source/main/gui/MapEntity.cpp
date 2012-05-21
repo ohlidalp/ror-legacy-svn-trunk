@@ -94,7 +94,7 @@ void MapEntity::setPosition(float x, float z)
 
 void MapEntity::setRotation(Quaternion q)
 {
-	mRotation = q.getYaw().valueRadians() - Math::PI/2;
+	mRotation = q.getYaw().valueRadians() - Math::HALF_PI;
 	if (mIconRotating) mIconRotating->setAngle(-mRotation);
 }
 

@@ -101,9 +101,9 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 	}
 
 	Vector3 desiredPosition = camLookAt + camDist * 0.5f * Vector3(
-			  sin(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians())
-			, sin(targetPitch     + camRotY.valueRadians())
-			, cos(targetDirection + camRotX.valueRadians()) * cos(targetPitch + camRotY.valueRadians())
+			  sin(targetDirection.valueRadians() + camRotX.valueRadians()) * cos(targetPitch.valueRadians() + camRotY.valueRadians())
+			, sin(targetPitch.valueRadians()     + camRotY.valueRadians())
+			, cos(targetDirection.valueRadians() + camRotX.valueRadians()) * cos(targetPitch.valueRadians() + camRotY.valueRadians())
 			);
 
 	if ( ctx.mHfinder )

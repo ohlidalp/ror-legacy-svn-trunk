@@ -1663,7 +1663,7 @@ void Beam::resetAngle(float rot)
 
 	// Set up matrix for yaw rotation
 	Matrix3 matrix;
-	matrix.FromEulerAnglesXYZ(Radian(0), Radian(-rot - Math::PI/2), Radian(0));
+	matrix.FromEulerAnglesXYZ(Radian(0), Radian(-rot - Math::HALF_PI), Radian(0));
 
 	for (int i = 0; i < free_node; i++)
 	{
@@ -1800,21 +1800,30 @@ void Beam::mouseMove(int node, Vector3 pos, float force)
 	mousepos = pos;
 }
 
+bool Beam::hasDriverSeat()
+{
+	return driverSeat != 0;
+}
 
 int Beam::calculateDriverPos(Vector3 &pos, Quaternion &rot)
 {
 	BES_GFX_START(BES_GFX_calculateDriverPos);
-	if(!this || !driverSeat) return 1;
-	Vector3 normal=(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos).crossProduct(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos);
-	normal.normalise();
-	//position
-	Vector3 mposition=nodes[driverSeat->noderef].smoothpos+driverSeat->offsetx*(nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos)+driverSeat->offsety*(nodes[driverSeat->nodey].smoothpos-nodes[driverSeat->noderef].smoothpos);
-	pos = mposition+normal*driverSeat->offsetz;
+	if (!hasDriverSeat()) return 1;
 
-	//orientation
-	Vector3 refx=nodes[driverSeat->nodex].smoothpos-nodes[driverSeat->noderef].smoothpos;
-	refx.normalise();
-	Vector3 refy=refx.crossProduct(normal);
+	Vector3 diffY = nodes[driverSeat->nodey].smoothpos - nodes[driverSeat->noderef].smoothpos;
+	Vector3 diffX = nodes[driverSeat->nodex].smoothpos - nodes[driverSeat->noderef].smoothpos;
+
+	Vector3 normal = (diffY.crossProduct(diffX)).normalisedCopy();
+
+	// position
+	Vector3 position = nodes[driverSeat->noderef].smoothpos + driverSeat->offsetx * diffX + driverSeat->offsety * diffY;
+
+	pos = position + normal * driverSeat->offsetz;
+
+	// orientation
+	Vector3 refx = diffX.normalisedCopy();
+	Vector3 refy = refx.crossProduct(normal);
+
 	rot = Quaternion(refx, normal, refy) * driverSeat->rot * Quaternion(Degree(180), Vector3::UNIT_Y); // rotate towards the driving direction
 	BES_GFX_STOP(BES_GFX_calculateDriverPos);
 	return 0;

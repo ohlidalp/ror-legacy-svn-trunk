@@ -42,10 +42,10 @@ public:
 
 protected:
 
-	Ogre::Vector3 camLookAt;
 	Ogre::Radian camRotX, camRotY;
-	float camDist, camDistMin, camDistMax, camRatio;
-	float targetDirection, targetPitch;
+	Ogre::Radian targetDirection, targetPitch;
+	Ogre::Real camDist, camDistMin, camDistMax, camRatio;
+	Ogre::Vector3 camLookAt;
 };
 
 #endif // __CAMERA_BEHAVIOR_ORBIT_H_

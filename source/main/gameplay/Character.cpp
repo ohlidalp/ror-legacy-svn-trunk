@@ -34,78 +34,77 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-unsigned int Character::characterCounter=0;
 
+unsigned int Character::characterCounter = 0;
 
-Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote) : personode(0)
+Character::Character(Camera *cam, Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote) :
+	  beamCoupling(0)
+	, canJump(false)
+	, characterRotation(0.0f)
+	, characterSpeed(2.0f)
+	, characterVSpeed(0.0f)
+	, collisions(c)
+	, colourNumber(colourNumber)
+	, hFinder(h)
+	, last_net_time(0)
+	, mAnimState(0)
+	, mCamera(cam)
+	, mCharacterNode(0)
+	, mLastPosition(Vector3::ZERO)
+	, mMoveableText(0)
+	, mSceneMgr(scm)
+	, mapControl(m)
+	, net(net)
+	, networkAuthLevel(0)
+	, networkUsername("")
+	, physicsEnabled(true)
+	, remote(remote)
+	, source(source)
+	, streamid(streamid)
+	, water(w)
 {
-	this->mCamera=cam;
-	this->net=net;
-	this->collisions=c;
-	this->hfinder=h;
-	this->water=w;
-	this->map=m;
-	this->scm=scm;
-	this->source=source;
-	this->streamid=streamid;
-	this->colourNumber=colourNumber;
-	this->remote=remote;
-	this->physicsEnabled=true;
-	beamCoupling=0;
-	//remote = true;
-	last_net_time=0;
-	netMT=0;
-	networkUsername = String();
-	networkAuthLevel = 0;
-
-
 	myNumber = characterCounter++;
-	myName = "character"+TOSTRING(myNumber);
-	persoangle=0;
-	persospeed=2;
-	persovspeed=0;
-	perso_canjump=false;
-	lastpersopos=Vector3::ZERO;
-	personode=0;
-	persoanim=0;
+	myName   = "Character" + TOSTRING(myNumber);
 
-	Entity *ent = scm->createEntity(myName+"_mesh", "character.mesh");
+	Entity *entity = mSceneMgr->createEntity(myName+"_mesh", "character.mesh");
 #if OGRE_VERSION<0x010602
-	ent->setNormaliseNormals(true);
+	entity->setNormaliseNormals(true);
 #endif //OGRE_VERSION
 
 	// fix disappearing mesh
-	Ogre::AxisAlignedBox aabb;
+	AxisAlignedBox aabb;
 	aabb.setInfinite();
-	ent->getMesh()->_setBounds(aabb);
+	entity->getMesh()->_setBounds(aabb);
 
-	// Add entity to the scene node
-	personode=scm->getRootSceneNode()->createChildSceneNode();
-	personode->attachObject(ent);
-	personode->setScale(0.02,0.02,0.02);
-	persoanim=ent->getAllAnimationStates();
+	// add entity to the scene node
+	mCharacterNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	mCharacterNode->attachObject(entity);
+	mCharacterNode->setScale(0.02f, 0.02f, 0.02f);
+	mAnimState = entity->getAllAnimationStates();
 
 #ifdef USE_MYGUI
-	if(map)
+	if (mapControl)
 	{
-		mapEnt = map->createNamedMapEntity(myName, "person");
-		mapEnt->setState(0);
-		mapEnt->setVisibility(true);
-		mapEnt->setPosition(personode->getPosition());
-		mapEnt->setRotation(personode->getOrientation());
+		mapEntity = mapControl->createNamedMapEntity(myName, "person");
+		mapEntity->setState(0);
+		mapEntity->setVisibility(true);
+		mapEntity->setPosition(mCharacterNode->getPosition());
+		mapEntity->setRotation(mCharacterNode->getOrientation());
 	}
-#endif //MYGUI
+#endif // USE_MYGUI
 
-	if(net)
+	if (net)
+	{
 		sendStreamSetup();
-
-	if(remote)
+	}
+	if (remote)
+	{
 		setVisible(true);
-
+	}
 	// setup colour
-	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/character");
-	MaterialPtr mat2 = mat->clone("tracks/"+myName);
-	ent->setMaterialName("tracks/"+myName);
+	MaterialPtr mat1 = MaterialManager::getSingleton().getByName("tracks/character");
+	MaterialPtr mat2 = mat1->clone("tracks/"+myName);
+	entity->setMaterialName("tracks/"+myName);
 
 	updateNetLabel();
 }
@@ -113,18 +112,30 @@ Character::Character(Camera *cam,Collisions *c, Network *net, HeightFinder *h, W
 Character::~Character()
 {
 	setVisible(false);
-	if(netMT) delete netMT;
-	if(personode) personode->detachAllObjects();
+	if (mMoveableText)
+	{
+		delete mMoveableText;
+	}
+	if (mCharacterNode)
+	{
+		mCharacterNode->detachAllObjects();
+	}
 #ifdef USE_MYGUI
-	if(map && mapEnt) map->deleteMapEntity(mapEnt);
-#endif //MYGUI
+	if (mapControl && mapEntity)
+	{
+		mapControl->deleteMapEntity(mapEntity);
+	}
+#endif // USE_MYGUI
 	// try to unload some materials
 	try
 	{
 		MaterialManager::getSingleton().unload("tracks/"+myName);
-	} catch(...)
-	{
-	}
+	} catch(...) {}
+}
+
+void Character::updateCharacterRotation()
+{
+	setRotation(characterRotation);
 }
 
 void Character::updateCharacterColour()
@@ -142,56 +153,53 @@ void Character::updateNetLabel()
 {
 #ifdef USE_SOCKETW
 	// label above head
-	if(!net) return;
-	if(remote)
+	if (!net) return;
+	if (remote)
 	{
 		client_t *info = net->getClientInfo(this->source);
-		if(!info) return;
-		if(tryConvertUTF(info->user.username).empty()) return;
+		if (!info) return;
+		if (tryConvertUTF(info->user.username).empty()) return;
 		this->colourNumber = info->user.colournum;
 		networkUsername = tryConvertUTF(info->user.username);
 		networkAuthLevel = info->user.authstatus;
 	} else
 	{
 		user_info_t *info = net->getLocalUserData();
-		if(!info) return;
-		if(String(info->username).empty()) return;
+		if (!info) return;
+		if (String(info->username).empty()) return;
 		this->colourNumber = info->colournum;
 		networkUsername = tryConvertUTF(info->username);
 		networkAuthLevel = info->authstatus;
 	}
 
 	//LOG(" * updateNetLabel : " + TOSTRING(this->source));
-	if(!netMT)
+	if (!mMoveableText)
 	{
-		netMT = new MovableText("netlabel-"+myName, networkUsername);
-		personode->attachObject(netMT);
-		netMT->setFontName("CyberbitEnglish");
-		netMT->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
-		netMT->setAdditionalHeight(2);
-		netMT->showOnTop(false);
-		netMT->setCharacterHeight(8);
-		netMT->setColor(ColourValue::Black);
+		mMoveableText = new MovableText("netlabel-"+myName, networkUsername);
+		mCharacterNode->attachObject(mMoveableText);
+		mMoveableText->setFontName("CyberbitEnglish");
+		mMoveableText->setTextAlignment(MovableText::H_CENTER, MovableText::V_ABOVE);
+		mMoveableText->setAdditionalHeight(2);
+		mMoveableText->showOnTop(false);
+		mMoveableText->setCharacterHeight(8);
+		mMoveableText->setColor(ColourValue::Black);
 	}
 
 	//LOG(" *label caption: " + String(networkUsername));
 	try
 	{
-		netMT->setCaption(networkUsername);
-	}
-	catch (...)
-	{
-	}
+		mMoveableText->setCaption(networkUsername);
+	} catch (...) {}
 	/*
-	if(networkAuthLevel & AUTH_ADMIN)
+	if (networkAuthLevel & AUTH_ADMIN)
 	{
-		netMT->setFontName("highcontrast_red");
-	} else if(networkAuthLevel & AUTH_RANKED)
+		mMoveableText->setFontName("highcontrast_red");
+	} else if (networkAuthLevel & AUTH_RANKED)
 	{
-		netMT->setFontName("highcontrast_green");
+		mMoveableText->setFontName("highcontrast_green");
 	} else
 	{
-		netMT->setFontName("highcontrast_black");
+		mMoveableText->setFontName("highcontrast_black");
 	}
 	*/
 
@@ -200,78 +208,71 @@ void Character::updateNetLabel()
 #endif //SOCKETW
 }
 
-void Character::setPosition(Ogre::Vector3 pos)
+void Character::setPosition(Vector3 position)
 {
-	personode->setPosition(pos);
+	mCharacterNode->setPosition(position);
 #ifdef USE_MYGUI
-	if(map)
-		map->getEntityByName(myName)->setPosition(pos);
-#endif //MYGUI
-}
-
-Vector3 Character::getPosition()
-{
-	return personode->getPosition();
-}
-
-Quaternion Character::getOrientation()
-{
-	return personode->getOrientation();
-}
-
-void Character::setOrientation(Quaternion rot)
-{
-	return personode->setOrientation(rot);
+	if (mapControl)
+	{
+		mapControl->getEntityByName(myName)->setPosition(position);
+	}
+#endif // USE_MYGUI
 }
 
 void Character::setVisible(bool visible)
 {
-	personode->setVisible(visible);
+	mCharacterNode->setVisible(visible);
 #ifdef USE_MYGUI
-	// CRASH BELOW
-	//if(map)
-	//	map->getEntityByName(myName)->setVisibility(visible);
-#endif //MYGUI
+	if (mapControl)
+	{
+		mapControl->getEntityByName(myName)->setVisibility(visible);
+	}	
+#endif // USE_MYGUI
+}
+
+Vector3 Character::getPosition()
+{
+	return mCharacterNode->getPosition();
 }
 
 bool Character::getVisible()
 {
-	return personode->getAttachedObject(0)->getVisible();
+	return mCharacterNode->getAttachedObject(0)->getVisible();
 }
 
-void Character::setAngle(float angle)
+void Character::setRotation(Radian rotation)
 {
-	persoangle = angle;
-	personode->resetOrientation();
-	personode->yaw(-Radian(persoangle));
+	characterRotation = rotation;
+	mCharacterNode->resetOrientation();
+	mCharacterNode->yaw(-characterRotation);
 }
 
-void Character::setCollisions(Collisions *c)
+void Character::setCollisions(Collisions *collisions)
 {
-	this->collisions = c;
+	this->collisions = collisions;
 }
 
-void Character::setHFinder(HeightFinder *h)
+void Character::setHFinder(HeightFinder *hFinder)
 {
-	this->hfinder = h;
+	this->hFinder = hFinder;
 }
 
-void Character::setWater(Water *w)
+void Character::setWater(Water *water)
 {
-	this->water = w;
+	this->water = water;
 }
 
-void Character::setAnimationMode(Ogre::String mode, float time)
+void Character::setAnimationMode(String mode, float time)
 {
-	if(!persoanim)
+	if (!mAnimState)
 		return;
-	if(lastmode != mode)
+	if (mLastAnimMode != mode)
 	{
-		AnimationStateIterator it = persoanim->getAnimationStateIterator();
+		AnimationStateIterator it = mAnimState->getAnimationStateIterator();
 		while(it.hasMoreElements())
 		{
 			AnimationState *as = it.getNext();
-			if(as->getAnimationName() == mode)
+			if (as->getAnimationName() == mode)
 			{
 				as->setEnabled(true);
 				as->setWeight(1);
@@ -283,125 +284,126 @@ void Character::setAnimationMode(Ogre::String mode, float time)
 				as->setWeight(0);
 			}
 		}
-		lastmode = mode;
+		mLastAnimMode = mode;
 	} else
 	{
-		persoanim->getAnimationState(mode)->addTime(time);
+		mAnimState->getAnimationState(mode)->addTime(time);
 	}
 }
 
 void Character::update(float dt)
 {
-	if(physicsEnabled && !remote)
+	if (physicsEnabled && !remote)
 	{
 		// disable character movement when using the free camera mode or when the menu is opened
-		if(!CameraManager::singletonExists() || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_FREE) return;
+		if (CameraManager::singletonExists() && CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_FREE) return;
 
 		// small hack: if not visible do not apply physics
-		//mode perso
-		Vector3 position=personode->getPosition();
-		//gravity force is always on
-		position.y+=persovspeed*dt;
-		persovspeed+=dt*-9.8;
-		bool idleanim=true;
-		//object contact
-		Vector3 position2=position+Vector3(0, 0.075, 0);
-		Vector3 position3=position+Vector3(0, 0.25, 0);
+		Vector3 position = mCharacterNode->getPosition();
+
+		// gravity force is always on
+		position.y += characterVSpeed * dt;
+		characterVSpeed += dt * -9.8f;
+
+		// object contact
+		Vector3 position2 = position + Vector3(0.0f, 0.075f, 0.0f);
+		Vector3 position3 = position + Vector3(0.0f, 0.25, 0.0f);
+
 		if (collisions->collisionCorrect(&position))
 		{
-			if (persovspeed<0) persovspeed=0.0f;
-			if (collisions->collisionCorrect(&position2) && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
-			else perso_canjump=true;
-		}
-		else
-		{
-			//double check
-			if ((position-lastpersopos).length()<5.0)
+			characterVSpeed = std::max(0.0f, characterVSpeed);
+			if (collisions->collisionCorrect(&position2) && !collisions->collisionCorrect(&position3))
 			{
-				int numstep=100;
-				Vector3 dvec=(position-lastpersopos);
-				Vector3 iposition=lastpersopos;
-				Vector3 cposition;
-				for (int i=0; i<numstep; i++)
+				characterVSpeed = 2.0f; // autojump
+			} else
+			{
+				canJump = true;
+			}
+		} else
+		{
+			// double check
+			if (mLastPosition.squaredDistance(position) < 25.0f)
+			{
+				const int numstep = 100;
+				Vector3 dvec = (position - mLastPosition);
+				for (int i=1; i <= numstep; i++)
 				{
-					cposition=iposition+dvec*((float)(i+1)/numstep);
-					//Vector3 cposition2=cposition+Vector3(0, 0.075, 0);
+					Vector3 cposition = mLastPosition + dvec * ((float)i / numstep);
 					if (collisions->collisionCorrect(&cposition))
 					{
-						position=cposition;
-						if (persovspeed<0) persovspeed=0.0f;
-						perso_canjump=true;
-						/*if (collisions->collisionCorrect(&cposition2))
-						{
-						position=cposition2-Vector3(0, 0.075, 0);
-						}*/
+						position = cposition;
+						characterVSpeed = std::max(0.0f, characterVSpeed);
+						canJump = true;
 						break;
 					}
 				}
 			}
 
 		}
-		lastpersopos=position;
 
-		//ground contact
-		float pheight = hfinder->getHeightAt(position.x,position.z);
-		float wheight = -99999;
-		if (position.y<pheight)
+		mLastPosition = position;
+
+		// ground contact
+		float pheight = hFinder->getHeightAt(position.x,position.z);
+
+		if (position.y < pheight)
 		{
-			position.y=pheight;
-			persovspeed=0.0f;
-			perso_canjump=true;
+			position.y = pheight;
+			characterVSpeed = 0.0f;
+			canJump = true;
 		}
-		//water stuff
-		bool isswimming=false;
+
+		// water stuff
+		bool isswimming = false;
+		float wheight = -99999;
+
 		if (water)
 		{
-			wheight=water->getHeightWaves(position);
-			if (position.y<wheight-1.8)
+			wheight = water->getHeightWaves(position);
+			if (position.y < wheight - 1.8f)
 			{
-				position.y=wheight-1.8;
-				persovspeed=0.0f;
-			};
+				position.y = wheight - 1.8f;
+				characterVSpeed = 0.0f;
+			}
 		}
 
 		// 0.1 due to 'jumping' from waves -> not nice looking
-		if(water && wheight - pheight > 1.8 && position.y + 0.1 <= wheight)
-			isswimming=true;
+		if (water && (wheight - pheight > 1.8f) && (position.y + 0.1f <= wheight))
+		{
+			isswimming = true;
+		}
 
-
-		float tmpJoy = 0;
-		if(perso_canjump)
+		float tmpJoy = 0.0f;
+		if (canJump)
 		{
 			if (INPUTENGINE.getEventBoolValue(EV_CHARACTER_JUMP))
 			{
-				persovspeed = 2.0;
-				perso_canjump=false;
+				characterVSpeed = 2.0f;
+				canJump = false;
 			}
 		}
+
+		bool idleanim = true;
 
 		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_RIGHT);
 		if (tmpJoy > 0.0f)
 		{
-			persoangle += dt * 2.0 * tmpJoy;
-			personode->resetOrientation();
-			personode->yaw(-Radian(persoangle));
-			if(!isswimming)
+			setRotation(characterRotation + dt * 2.0f * Radian(tmpJoy));
+			if (!isswimming)
 			{
 				setAnimationMode("Turn", -dt);
-				idleanim=false;
+				idleanim = false;
 			}
 		}
 
 		tmpJoy = INPUTENGINE.getEventValue(EV_CHARACTER_LEFT);
 		if (tmpJoy > 0.0f)
 		{
-			persoangle -= dt * 2.0 * tmpJoy;
-			personode->resetOrientation();
-			personode->yaw(-Radian(persoangle));
-			if(!isswimming)
+			setRotation(characterRotation - dt * 2.0f * Radian(tmpJoy));
+			if (!isswimming)
 			{
 				setAnimationMode("Turn", dt);
-				idleanim=false;
+				idleanim = false;
 			}
 		}
 				
@@ -411,17 +413,17 @@ void Character::update(float dt)
 		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_LEFT);
 		if (tmpJoy > 0.0f)
 		{
-			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			if (tmpRun > 0.0f) accel = 3.0f * tmpRun;
 			// animation missing for that
-			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle-Math::PI/2), 0.0f, sin(persoangle-Math::PI/2));
+			position += dt * characterSpeed *1.5f * accel * Vector3(cos(characterRotation.valueRadians() - Math::HALF_PI), 0.0f, sin(characterRotation.valueRadians() - Math::HALF_PI));
 		}
 
 		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_SIDESTEP_RIGHT);
 		if (tmpJoy > 0.0f)
 		{
-			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			if (tmpRun > 0.0f) accel = 3.0f * tmpRun;
 			// animation missing for that
-			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle+Math::PI/2), 0.0f, sin(persoangle+Math::PI/2));
+			position += dt * characterSpeed * 1.5f * accel * Vector3(cos(characterRotation.valueRadians() + Math::HALF_PI), 0.0f, sin(characterRotation.valueRadians() + Math::HALF_PI));
 		}
 
 		tmpJoy = accel = INPUTENGINE.getEventValue(EV_CHARACTER_FORWARD) + INPUTENGINE.getEventValue(EV_CHARACTER_ROT_UP);
@@ -432,50 +434,50 @@ void Character::update(float dt)
 
 		if (tmpJoy > 0.0f || tmpRun > 0.0f)
 		{
-			if (tmpRun > 0.0f) accel = 3.0 * tmpRun;
+			if (tmpRun > 0.0f) accel = 3.0f * tmpRun;
 			
-			float time = dt*tmpJoy*persospeed;
+			float time = dt * tmpJoy * characterSpeed;
 
-			if(isswimming)
+			if (isswimming)
 			{
 				setAnimationMode("Swim_loop", time);
-				idleanim=false;
+				idleanim = false;
 			} else
 			{
-				if (tmpRun > 0)
+				if (tmpRun > 0.0f)
 				{
 					setAnimationMode("Run", time);
-					idleanim=false;
+					idleanim = false;
 				} else
 				{
 					setAnimationMode("Walk", time);
-					idleanim=false;
+					idleanim = false;
 				}
 			}
 			// 0.005f fixes character getting stuck on meshes
-			position+=dt*persospeed*1.5*accel*Vector3(cos(persoangle), 0.01f, sin(persoangle));
+			position += dt * characterSpeed * 1.5f * accel * Vector3(cos(characterRotation.valueRadians()), 0.01f, sin(characterRotation.valueRadians()));
 		} else if (tmpBack > 0.0f)
 		{
-			float time = -dt*persospeed;
-			if(isswimming)
+			float time = -dt * characterSpeed;
+			if (isswimming)
 			{
 				setAnimationMode("Spot_swim", time);
-				idleanim=false;
+				idleanim = false;
 			} else
 			{
 				setAnimationMode("Walk", time);
-				idleanim=false;
+				idleanim = false;
 			}
 			// 0.005f fixes character getting stuck on meshes
-			position-=dt*persospeed*tmpBack*Vector3(cos(persoangle), 0.01f, sin(persoangle));
+			position -= dt * characterSpeed * tmpBack * Vector3(cos(characterRotation.valueRadians()), 0.01f, sin(characterRotation.valueRadians()));
 		}
 
-		if(idleanim)
+		if (idleanim)
 		{
-			if(isswimming)
-				setAnimationMode("Spot_swim", dt * 0.5);
+			if (isswimming)
+				setAnimationMode("Spot_swim", dt * 0.5f);
 			else
-				setAnimationMode("Idle_sway", dt * 0.05);
+				setAnimationMode("Idle_sway", dt * 0.05f);
 		}
 
 		/*
@@ -494,61 +496,69 @@ void Character::update(float dt)
 		if (persovspeed<0) persovspeed=0.0f;
 		Vector3 corr=rposition-position; corr.y=0;
 		if (corr.squaredLength()>0 && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
-		perso_canjump=true;
+		perso_canJump = true;
 		break;
 		}
 		}
 		*/
-		personode->setPosition(position);
+		mCharacterNode->setPosition(position);
 		updateMapIcon();
-	} else if(beamCoupling)
+	} else if (beamCoupling)
 	{
 		// if physics is disabled, its attached to a beam truck maybe?
 		Vector3 pos;
 		Quaternion rot;
 		float angle = beamCoupling->hydrodirwheeldisplay * -1.0f; // not getSteeringAngle(), but this, as its smoothed
 		int res = beamCoupling->calculateDriverPos(pos, rot);
-		if(!res)
+		if (!res)
 		{
 			setPosition(pos + rot * Vector3(0.0f,-0.6f,-0.1f)); // hack to position the character right perfect on the default seat
-			setOrientation(rot);
+			mCharacterNode->setOrientation(rot);
 			setAnimationMode("driving");
-			Real lenght = persoanim->getAnimationState("driving")->getLength();
+			Real lenght = mAnimState->getAnimationState("driving")->getLength();
 			float timePos = ((angle + 1.0f) * 0.5f) * lenght;
 			//LOG("angle: " + TOSTRING(angle) + " / " + TOSTRING(timePos));
-			//prevent animation flickering on the borders:
-			if(timePos < 0.01f) timePos = 0.01f;
-			if(timePos > lenght - 0.01f) timePos = lenght - 0.01f;
-			persoanim->getAnimationState("driving")->setTimePosition(timePos);
+			// prevent animation flickering on the borders:
+			if (timePos < 0.01f)
+			{
+				timePos = 0.01f;
+			}
+			if (timePos > lenght - 0.01f)
+			{
+				timePos = lenght - 0.01f;
+			}
+			mAnimState->getAnimationState("driving")->setTimePosition(timePos);
 		}
 
 	}
 
 #ifdef USE_SOCKETW
-	if(net && !remote)
+	if (net && !remote)
+	{
 		sendStreamData();
+	}
 #endif // USE_SOCKETW
 }
 
 void Character::updateMapIcon()
 {
 #ifdef USE_MYGUI
-	if(map)
+	if (mapControl)
 	{
-		map->getEntityByName(myName)->setPosition(personode->getPosition());
-		map->getEntityByName(myName)->setRotation(personode->getOrientation());
+		mapControl->getEntityByName(myName)->setPosition(mCharacterNode->getPosition());
+		mapControl->getEntityByName(myName)->setRotation(mCharacterNode->getOrientation());
 	}
-#endif //MYGUI
+#endif // USE_MYGUI
 }
 
-void Character::move(Ogre::Vector3 v)
+void Character::move(Vector3 offset)
 {
-	personode->translate(v);
+	mCharacterNode->translate(offset);
 }
 
 void Character::sendStreamSetup()
 {
-	if(remote) return;
+	if (remote) return;
 	// new local stream
 	stream_register_t reg;
 	memset(&reg, 0, sizeof(reg));
@@ -567,21 +577,21 @@ void Character::sendStreamData()
 		return;
 
 	// do not send position data if coupled to a truck already
-	if(beamCoupling) return;
+	if (beamCoupling) return;
 
 	last_net_time = t;
 
 	pos_netdata_t data;
 	data.command = CHARCMD_POSITION;
-	data.posx = personode->getPosition().x;
-	data.posy = personode->getPosition().y;
-	data.posz = personode->getPosition().z;
-	data.rotx = personode->getOrientation().x;
-	data.roty = personode->getOrientation().y;
-	data.rotz = personode->getOrientation().z;
-	data.rotw = personode->getOrientation().w;
-	strncpy(data.animationMode, lastmode.c_str(), 254);
-	data.animationTime = persoanim->getAnimationState(lastmode)->getTimePosition();
+	data.posx = mCharacterNode->getPosition().x;
+	data.posy = mCharacterNode->getPosition().y;
+	data.posz = mCharacterNode->getPosition().z;
+	data.rotx = mCharacterNode->getOrientation().x;
+	data.roty = mCharacterNode->getOrientation().y;
+	data.rotz = mCharacterNode->getOrientation().z;
+	data.rotw = mCharacterNode->getOrientation().w;
+	strncpy(data.animationMode, mLastAnimMode.c_str(), 254);
+	data.animationTime = mAnimState->getAnimationState(mLastAnimMode)->getTimePosition();
 
 	//LOG("sending character stream data: " + TOSTRING(net->getUserID()) + ":"+ TOSTRING(streamid));
 	this->addPacket(MSG2_STREAM_DATA, sizeof(pos_netdata_t), (char*)&data);
@@ -589,23 +599,23 @@ void Character::sendStreamData()
 
 void Character::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
-	if(type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
+	if (type == MSG2_STREAM_DATA && this->source == source && this->streamid == streamid)
 	{
 		header_netdata_t *header = (header_netdata_t *)buffer;
-		if(header->command == CHARCMD_POSITION)
+		if (header->command == CHARCMD_POSITION)
 		{
 			// position
 			pos_netdata_t *data = (pos_netdata_t *)buffer;
 			Vector3 pos(data->posx, data->posy, data->posz);
 			this->setPosition(pos);
 			Quaternion rot(data->rotw, data->rotx, data->roty, data->rotz);
-			this->setOrientation(rot);
+			mCharacterNode->setOrientation(rot);
 			setAnimationMode(getASCIIFromCharString(data->animationMode, 255), data->animationTime);
 		} else if (header->command == CHARCMD_ATTACH)
 		{
 			// attach
 			attach_netdata_t *data = (attach_netdata_t *)buffer;
-			if(data->enabled)
+			if (data->enabled)
 			{
 				Beam *beam = BeamFactory::getSingleton().getBeam(data->source_id, data->stream_id);
 				setBeamCoupling(true, beam);
@@ -615,44 +625,41 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 			}
 		}
 	}
-	//else
-	//	LOG("character stream data wrong: " + TOSTRING(source) + ":"+ TOSTRING(streamid));
 }
 
 void Character::updateNetLabelSize()
 {
-	if (!this || !net || !netMT) return;
+	if (!this || !net || !mMoveableText) return;
 
-	netMT->setVisible(getVisible());
+	mMoveableText->setVisible(getVisible());
 
-	if(!netMT->isVisible()) return;
+	if (!mMoveableText->isVisible()) return; // why not getVisible()?
 
-	Vector3 vdir = personode->getPosition() - mCamera->getPosition();
-	float vlen=vdir.length();
-	float h = vlen * 1.2f;
-	if(h<9)
-		h=9;
-	netMT->setCharacterHeight(h);
-	if(vlen>1000)
-		netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
-	else if (vlen>20 && vlen <= 1000)
-		netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
+	float camDist = (mCharacterNode->getPosition() - mCamera->getPosition()).length();
+	float h = std::max(9.0f, camDist * 1.2f);
+
+	mMoveableText->setCharacterHeight(h);
+
+	if (camDist > 1000.0f)
+		mMoveableText->setCaption(networkUsername + "  (" + TOSTRING((float)(ceil(camDist / 100) / 10.0f))+ " km)");
+	else if (camDist > 20.0f && camDist <= 1000.0f)
+		mMoveableText->setCaption(networkUsername + "  (" + TOSTRING((int)camDist)+ " m)");
 	else
-		netMT->setCaption(networkUsername);
-
-	//netMT->setAdditionalHeight((maxy-miny)+h+0.1);
-	//netMT->setVisible(true);
+		mMoveableText->setCaption(networkUsername);
 }
 
-int Character::setBeamCoupling(bool enabled, Beam *truck)
+void Character::setBeamCoupling(bool enabled, Beam *truck /* = 0 */)
 {
-	if(enabled)
+	if (enabled)
 	{
-		if(!truck) return 1;
+		if (!truck) return;
 		beamCoupling = truck;
 		setPhysicsEnabled(false);
-		if(netMT && netMT->isVisible()) netMT->setVisible(false);
-		if(net && !remote)
+		if (mMoveableText && mMoveableText->isVisible())
+		{
+			mMoveableText->setVisible(false);
+		}
+		if (net && !remote)
 		{
 			attach_netdata_t data;
 			data.command = CHARCMD_ATTACH;
@@ -663,24 +670,23 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 		}
 
 		// do not cast shadows inside of a truck
-		personode->getAttachedObject(0)->setCastShadows(false);
+		mCharacterNode->getAttachedObject(0)->setCastShadows(false);
 
 		// check if there is a seat, if not, hide our character
-		Vector3 pos;
-		Quaternion rot;
-		int res = beamCoupling->calculateDriverPos(pos, rot);
-		if(res)
+		if (!beamCoupling->hasDriverSeat())
 		{
 			// driver seat not found
 			setVisible(false);
 		}
-
 	} else
 	{
 		setPhysicsEnabled(true);
-		beamCoupling=0;
-		if(netMT && !netMT->isVisible()) netMT->setVisible(true);
-		if(net && !remote)
+		beamCoupling = 0;
+		if (mMoveableText && !mMoveableText->isVisible())
+		{
+			mMoveableText->setVisible(true);
+		}
+		if (net && !remote)
 		{
 			attach_netdata_t data;
 			data.command = CHARCMD_ATTACH;
@@ -691,11 +697,9 @@ int Character::setBeamCoupling(bool enabled, Beam *truck)
 		// show character
 		setVisible(true);
 
-		personode->resetOrientation();
+		mCharacterNode->resetOrientation();
 
 		// cast shadows when using it on the outside
-		personode->getAttachedObject(0)->setCastShadows(true);
+		mCharacterNode->getAttachedObject(0)->setCastShadows(true);
 	}
-	return 0;
 }
-
