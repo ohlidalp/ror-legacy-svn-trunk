@@ -25,8 +25,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MovableText.h"
 #include "Streamable.h"
 
-enum {CHARCMD_POSITION, CHARCMD_ATTACH};
-
 class Character : public Streamable
 {
 	friend class CharacterFactory;
@@ -37,70 +35,73 @@ public:
 	Character(Ogre::Camera *cam, Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~Character();
 
-	Ogre::Quaternion getOrientation();
-	Ogre::SceneNode *getSceneNode() { return personode; };
+	Ogre::Radian getRotation() { return characterRotation; };
+	Ogre::SceneNode *getSceneNode() { return mCharacterNode; };
 	Ogre::Vector3 getPosition();
 	bool getPhysicsEnabled() { return physicsEnabled; };
 	bool getVisible();
-	bool isRemote() { return remote; };
-	float getAngle() { return persoangle; };
 	int getUID() { return source; };
-	int setBeamCoupling(bool enabled, Beam *truck=0);
-	static unsigned int characterCounter;
-	void move(Ogre::Vector3 v);
-	void setAngle(float angle);
-	void setCollisions(Collisions *c);
-	void setColour(int number) { this->colourNumber = number; };
-	void setHFinder(HeightFinder *h);
-	void setOrientation(Ogre::Quaternion);
-	void setPhysicsEnabled(bool val) { physicsEnabled=val; };
-	void setPosition(Ogre::Vector3 pos);
-	void setVisible(bool v);
-	void setWater(Water *w);
+	
+	bool isRemote() { return remote; };
+
+	void setBeamCoupling(bool enabled, Beam *truck = 0);
+	void setCollisions(Collisions *collisions);
+	void setColour(int color) { this->colourNumber = color; };
+	void setHFinder(HeightFinder *hFinder);
+	void setPhysicsEnabled(bool enabled) { physicsEnabled = enabled; };
+	void setPosition(Ogre::Vector3 position);
+	void setRotation(Ogre::Radian rotation);
+	void setVisible(bool visible);
+	void setWater(Water *water);
+
+	void move(Ogre::Vector3 offset);
 
 	void update(float dt);
 	void updateCharacterColour();
+	void updateCharacterRotation();
 	void updateMapIcon();
 	void updateNetLabel();
+
+	static unsigned int characterCounter;
 
 protected:
 
 	Beam *beamCoupling;
 	Collisions *collisions;
-	HeightFinder *hfinder;
-	MapControl *map;
-	MapEntity *mapEnt;
+	HeightFinder *hFinder;
+	MapControl *mapControl;
+	MapEntity *mapEntity;
 	Network *net;
 	Water *water;
 
-	bool perso_canjump;
+	bool canJump;
 	bool physicsEnabled;
 	bool remote;
 	
-	float persoangle;
-	float persospeed;
-	float persovspeed;
+	Ogre::Radian characterRotation;
+	Ogre::Real characterSpeed;
+	Ogre::Real characterVSpeed;
 	
 	int colourNumber;
 	int networkAuthLevel;
 	int source;
 
-	Ogre::AnimationStateSet *persoanim;
+	Ogre::AnimationStateSet *mAnimState;
 	Ogre::Camera *mCamera;
-	Ogre::MovableText *netMT;
-	Ogre::SceneManager *scm;
-	Ogre::SceneNode *personode;
-	Ogre::String lastmode;
+	Ogre::MovableText *mMoveableText;
+	Ogre::SceneManager *mSceneMgr;
+	Ogre::SceneNode *mCharacterNode;
+	Ogre::String mLastAnimMode;
 	Ogre::String myName;
 	Ogre::UTFString networkUsername;
-	Ogre::Vector3 lastpersopos;
-	Ogre::Vector3 position;
+	Ogre::Vector3 mLastPosition;
 
 	unsigned int myNumber;
 	unsigned int streamid;
 	
 	void setAnimationMode(Ogre::String mode, float time=0);
 
+	// network stuff
 	typedef struct header_netdata_t
 	{
 		int command;
@@ -123,6 +124,8 @@ protected:
 		int stream_id;
 		int position;
 	} attach_netdata_t;
+
+	enum {CHARCMD_POSITION, CHARCMD_ATTACH};
 
 	// overloaded from Streamable:
 	Ogre::Timer netTimer;

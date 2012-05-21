@@ -238,6 +238,7 @@ public:
 	static int thread_mode;
 	static int free_tb;
 
+	bool hasDriverSeat();
 	int calculateDriverPos(Ogre::Vector3 &pos, Ogre::Quaternion &rot);
 	float getSteeringAngle();
 
