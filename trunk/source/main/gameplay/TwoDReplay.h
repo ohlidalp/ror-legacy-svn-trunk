@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __TwoDReplay_H_
 
 #include <vector>
+#include <stdio.h>
 
 /** FILE FORMAT
  *
