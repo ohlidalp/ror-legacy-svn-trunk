@@ -19,9 +19,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TwoDReplay.h"
 
-#include "BeamData.h"
+//#include "BeamData.h" // we dont want that here for these consts
 
-using namespace Ogre;
+#define MAX_TRUCKS 64
 
 const char colors[10][8] = {
 		"#FF4848",

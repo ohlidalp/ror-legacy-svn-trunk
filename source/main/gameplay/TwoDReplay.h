@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __TwoDReplay_H_
 #define __TwoDReplay_H_
 
-#include "RoRPrerequisites.h"
+#include <vector>
 
 /** FILE FORMAT
  *
