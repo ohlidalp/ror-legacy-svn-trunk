@@ -17,15 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef TWODREPLAY_H__
-#define TWODREPLAY_H__
+#ifndef __TwoDReplay_H_
+#define __TwoDReplay_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "BeamData.h"
-#include "Beam.h"
-
-#include <vector>
 
 /** FILE FORMAT
  *
@@ -110,12 +105,14 @@ enum { R2DTYPE_NULL, R2DTYPE_FRAME, R2DTYPE_EVENT, R2DTYPE_END };
 class TwoDReplay
 {
 protected:
+
 	FILE *file;
 	float time;
 
 	void start();
 
 public:
+
 	TwoDReplay();
 	~TwoDReplay();
 
@@ -123,6 +120,4 @@ public:
 	void recordFrame();
 };
 
-#endif //TWODREPLAY_H__
-
-
+#endif // __TwoDReplay_H_
