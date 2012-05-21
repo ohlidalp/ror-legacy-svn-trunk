@@ -14,6 +14,12 @@ IF(ROR_BUILD_CONFIGURATOR)
   add_subdirectory(configurator)
 ENDIF()
 
+set(ROR_BUILD_TWODREPLAY "TRUE" CACHE BOOL "build the twodreplay")
+
+IF(ROR_BUILD_TWODREPLAY)
+  add_subdirectory(twodreplay)
+ENDIF()
+
 IF(ROR_BUILD_UPDATER)
   add_subdirectory(updater)
 ENDIF()

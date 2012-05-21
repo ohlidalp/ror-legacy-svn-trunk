@@ -165,5 +165,3 @@ endmacro(add_ror_project)
 IF(ROR_BUILD_SIM)
 	add_subdirectory(main_sim)
 endif()
-
-#add_subdirectory(main_tdr2svg)
