@@ -21,8 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "DustManager.h"
+#include "IWater.h"
 #include "SoundScriptManager.h"
-#include "water.h"
 
 Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float fullpower, Water* water, int trucknum) :
 	  nodes(nodes)

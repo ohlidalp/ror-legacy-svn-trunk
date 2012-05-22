@@ -42,6 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexObj.h"
 #include "heightfinder.h"
 #include "InputEngine.h"
+#include "IWater.h"
 #include "language.h"
 #include "MeshObject.h"
 #include "MovableText.h"
@@ -58,7 +59,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "turbojet.h"
 #include "turboprop.h"
-#include "water.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX

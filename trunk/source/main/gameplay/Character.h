@@ -36,7 +36,6 @@ public:
 	~Character();
 
 	Ogre::Radian getRotation() { return characterRotation; };
-	Ogre::SceneNode *getSceneNode() { return mCharacterNode; };
 	Ogre::Vector3 getPosition();
 	bool getPhysicsEnabled() { return physicsEnabled; };
 	bool getVisible();

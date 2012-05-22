@@ -19,13 +19,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "autopilot.h"
 
-#include <Ogre.h>
-using namespace Ogre;
-
-#include "SoundScriptManager.h"
-#include "heightfinder.h"
-#include "water.h"
 #include "BeamData.h"
+#include "heightfinder.h"
+#include "IWater.h"
+#include "SoundScriptManager.h"
+
+using namespace Ogre;
 
 Autopilot::Autopilot(HeightFinder *hfd, Water *w, int trucknum)
 {

@@ -20,9 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapTextureCreator.h"
 
 #include "BeamFactory.h"
+#include "IWater.h"
 #include "ResourceBuffer.h"
 #include "RoRFrameListener.h"
-#include "water.h"
 
 using namespace Ogre;
 
