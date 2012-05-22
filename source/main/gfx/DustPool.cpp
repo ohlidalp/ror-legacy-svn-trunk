@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "DustPool.h"
-#include "water.h"
+#include "IWater.h"
 #include "RoRPrerequisites.h"
 
 DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)

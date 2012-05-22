@@ -32,8 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "BeamEngine.h"
 #include "BeamFactory.h"
-#include "CameraManager.h"
 #include "CacheSystem.h"
+#include "CameraManager.h"
 #include "Character.h"
 #include "CharacterFactory.h"
 #include "ChatSystem.h"
@@ -52,6 +52,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "hdrlistener.h"
 #include "Heathaze.h"
 #include "InputEngine.h"
+#include "IWater.h"
 #include "language.h"
 #include "MeshObject.h"
 #include "MumbleIntegration.h"
@@ -68,17 +69,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRVersion.h"
 #include "SceneMouse.h"
 #include "ScopeLog.h"
-#include "SoundScriptManager.h"
 #include "screwprop.h"
 #include "Scripting.h"
 #include "Settings.h"
 #include "ShadowManager.h"
 #include "SkyManager.h"
+#include "SoundScriptManager.h"
 #include "TruckHUD.h"
 #include "turboprop.h"
 #include "utils.h"
 #include "vidcam.h"
-#include "water.h"
 #include "WaterOld.h"
 #include "writeTextToTexture.h"
 
@@ -2717,7 +2717,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (curr_truck->cc_mode)
 					{
 
-						updateCruiseControl(curr_truck,dt);
+						updateCruiseControl(curr_truck, dt);
 					}
 					checkSpeedlimit(curr_truck, dt);
 				}

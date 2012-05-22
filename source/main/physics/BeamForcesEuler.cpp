@@ -31,10 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Differentials.h"
 #include "FlexAirfoil.h"
 #include "InputEngine.h"
+#include "IWater.h"
 #include "Replay.h"
 #include "screwprop.h"
 #include "SoundScriptManager.h"
-#include "water.h"
 
 extern float mrtime;
 
