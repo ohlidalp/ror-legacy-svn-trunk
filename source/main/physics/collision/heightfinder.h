@@ -17,46 +17,41 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __HeightFinder_H__
-#define __HeightFinder_H__
+#ifndef __HeightFinder_H_
+#define __HeightFinder_H_
 
 #include "RoRPrerequisites.h"
-#include <OgrePrerequisites.h>
-#include <OgreVector3.h>
 
-
-#include "OgreTerrain.h"
 #include "OgreTerrainGroup.h"
-//#include "DotSceneLoader.h"
 
-//using namespace Ogre;
 /**
- * This is the common Interface for all Scenemanager Specific Implementations of the Heightfinder
+ * This is the common interface for all Scene-Manager specific implementations of the Height-Finder
  */
 class HeightFinder
 {
 public:
+
 	HeightFinder() {};
 	virtual ~HeightFinder() {};
 
 	virtual float getHeightAt(float x, float z) = 0;
-	virtual Ogre::Vector3 getNormalAt(float x, float y, float z, float precision=0.1)
+	virtual Ogre::Vector3 getNormalAt(float x, float y, float z, float precision = 0.1f)
 	{
-		Ogre::Vector3 left(-precision, getHeightAt( x - precision, z ) - y, 0.0f);
-		Ogre::Vector3 down( 0.0f, getHeightAt( x, z + precision ) - y, precision);
-		down = left.crossProduct( down );
+		Ogre::Vector3 left(-precision, getHeightAt(x - precision, z) - y, 0.0f);
+		Ogre::Vector3 down(0.0f, getHeightAt(x, z + precision) - y, precision);
+		down = left.crossProduct(down);
 		down.normalise();
 		return down;
 	}
 };
 
-// new terrain height finder. For the new terrain from Ogre 1.7
+/**
+ * New terrain Height-Finder. For the new terrain from Ogre 1.7
+ */
 class NTHeightFinder : public HeightFinder
 {
-protected:
-	Ogre::TerrainGroup *mTerrainGroup;
-	Ogre::Vector3 mTerrainPos;
 public:
+
 	NTHeightFinder(Ogre::TerrainGroup *tg, Ogre::Vector3 tp) : mTerrainGroup(tg), mTerrainPos(tp)
 	{
 	}
@@ -69,58 +64,62 @@ public:
 	{
 		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
 	}
-};
 
-// new terrain height finder adapted to Ogitor scene loading
-#if 0
-// not used right now
-class OgitorSceneHeightFinder : public HeightFinder
-{
+	float getMaxHeight()
+	{
+		float maxHeight = 0.0f;
+		Ogre::TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+		while(ti.hasMoreElements())
+		{
+			Ogre::Terrain* t = ti.getNext()->instance;
+			maxHeight = std::max(maxHeight, t->getMaxHeight());
+		}
+		return maxHeight;
+	}
+
+	float getMinHeight()
+	{
+		float minHeight = 0.0f;
+		Ogre::TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+		while(ti.hasMoreElements())
+		{
+			Ogre::Terrain* t = ti.getNext()->instance;
+			minHeight = std::min(t->getMaxHeight(), minHeight);
+		}
+		return minHeight;
+	}
+
 protected:
-	DotSceneLoader *mLoader;
-public:
-	OgitorSceneHeightFinder(DotSceneLoader *loader) : mLoader(loader)
-	{
-	}
-	
-	~OgitorSceneHeightFinder()
-	{
-	}
 
-	float getHeightAt(float x, float z)
-	{
-		return mLoader->getTerrainGroup()->getHeightAtWorldPosition(x, 1000, z);
-	}
+	Ogre::TerrainGroup *mTerrainGroup;
+	Ogre::Vector3 mTerrainPos;
 };
-#endif //0
-
-
-
-// Scene-Manager Specific implementations
 
 /**
- * Heightfinder for the standart Ogre Terrain Mnager
+ * Height-Finder for the standard Ogre Terrain Manager
  */
 class TSMHeightFinder : public HeightFinder
 {
-protected:
-	Ogre::Vector3 scale;
-	Ogre::Vector3 inverse_scale;
-	int size;
-	int size1;
-	char cfgfilename[256];
-	unsigned short *data;
-	float defaulth;
-	float dx, dz;
-	bool flipped;
-	void loadSettings();
-
 public:
+
 	TSMHeightFinder(char *cfgfilename, char *fname, float defaultheight);
 	~TSMHeightFinder();
 
 	float getHeightAt(float x, float z);
 
+protected:
+
+	Ogre::String cfgfilename;
+	Ogre::Vector3 inverse_scale;
+	Ogre::Vector3 scale;
+	bool flipped;
+	float defaulth;
+	float dx, dz;
+	int size1;
+	int size;
+	unsigned short *data;
+
+	void loadSettings();
 };
 
-#endif
+#endif // __HeightFinder_H_
