@@ -19,8 +19,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "utils.h"
 
-#include <Ogre.h>
-
 #include "RoRPrerequisites.h"
 #include "rornet.h"
 #include "RoRVersion.h"
@@ -29,8 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <iconv.h>
 #endif //WIN32
 
-#include <fstream>
-
+#include "Ogre.h"
 using namespace Ogre;
 
 String hexdump(void *pAddressIn, long  lSize)
@@ -105,18 +102,18 @@ UTFString tryConvertUTF(const char *buffer)
 	//return UTFString("(UTF conversion error 3)");
 }
 
-Ogre::UTFString formatBytes(double bytes)
+UTFString formatBytes(double bytes)
 {
 	wchar_t tmp[128] = L"";
 	const wchar_t *si_prefix[] = { L"B", L"KB", L"MB", L"GB", L"TB", L"EB", L"ZB", L"YB" };
 	int base = 1024;
 	int c = std::min((int)(log(bytes)/log((float)base)), (int)sizeof(si_prefix) - 1);
 	swprintf(tmp, 128, L"%1.2f %ls", bytes / pow((float)base, c), si_prefix[c]);
-	return Ogre::UTFString(tmp);
+	return UTFString(tmp);
 }
 
 // replace non-ASCII characters with underscores to prevent std::string problems
-Ogre::String getASCIIFromCharString(char *str, int maxlen)
+String getASCIIFromCharString(char *str, int maxlen)
 {
 	char *ptr = str;
 	for(int i=0; i < maxlen; i++, ptr++)
@@ -132,7 +129,7 @@ Ogre::String getASCIIFromCharString(char *str, int maxlen)
 }
 
 // replace non-ASCII characters with underscores to prevent std::string problems
-Ogre::String getASCIIFromOgreString(Ogre::String s, int maxlen)
+String getASCIIFromOgreString(String s, int maxlen)
 {
 	char str[1024] = "";
 	strncpy(str, s.c_str(), 1023);
@@ -155,7 +152,7 @@ int getTimeStamp()
 }
 
 
-Ogre::String getVersionString(bool multiline)
+String getVersionString(bool multiline)
 {
 	char tmp[1024] = "";
 	if(multiline)
@@ -172,7 +169,7 @@ Ogre::String getVersionString(bool multiline)
 		sprintf(tmp, "Rigs of Rods version %s, revision: %s, protocol version: %s, build time: %s, %s", ROR_VERSION_STRING, SVN_REVISION, RORNET_VERSION, __DATE__, __TIME__);
 	}
 
-	return Ogre::String(tmp);
+	return String(tmp);
 }
 
 bool fileExists(const char *filename)
@@ -202,7 +199,7 @@ int isPowerOfTwo (unsigned int x)
 }
 
 // same as: return preg_replace("/[^A-Za-z0-9-_.]/", "_", $s);
-Ogre::String stripNonASCII(Ogre::String s)
+String stripNonASCII(String s)
 {
 	char filename[9046] = "";
 	sprintf(filename, "%s", s.c_str());
@@ -216,7 +213,7 @@ Ogre::String stripNonASCII(Ogre::String s)
 		if(replace)
 			filename[i]='_';
 	}
-	return Ogre::String(filename);
+	return String(filename);
 }
 	
 
@@ -229,7 +226,7 @@ bool compareCaseInsensitive(std::string strFirst, std::string strSecond)
 }
 
 
-Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node)
+AxisAlignedBox getWorldAABB(SceneNode* node)
 {
 	AxisAlignedBox aabb;
 
@@ -250,7 +247,7 @@ Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node)
 	return aabb;
 }
 
-void fixRenderWindowIcon (Ogre::RenderWindow *rw)
+void fixRenderWindowIcon (RenderWindow *rw)
 {
 #ifndef ROR_EMBEDDED
 #ifdef WIN32
@@ -272,13 +269,13 @@ void fixRenderWindowIcon (Ogre::RenderWindow *rw)
 #endif //ROR_EMBEDDED
 }
 
-Ogre::UTFString ANSI_TO_UTF(const Ogre::String source)
+UTFString ANSI_TO_UTF(const String source)
 {
 	return UTFString(ANSI_TO_WCHAR(source)); // UTF converts from wstring
 }
 
 // TODO: Make it bulletproof! <Bad Ptr> e.g kills this
-std::wstring ANSI_TO_WCHAR(const Ogre::String source)
+std::wstring ANSI_TO_WCHAR(const String source)
 {
 #ifdef WIN32
 	const char* srcPtr = source.c_str();
@@ -344,7 +341,7 @@ std::wstring ANSI_TO_WCHAR(const Ogre::String source)
 #endif // WIN32
 }
 
-void trimUTFString( Ogre::UTFString &str, bool left, bool right)
+void trimUTFString( UTFString &str, bool left, bool right)
 {
 	static const String delims = " \t\r";
 	if(right)
@@ -353,3 +350,21 @@ void trimUTFString( Ogre::UTFString &str, bool left, bool right)
 		str.erase(0, str.find_first_not_of(delims)); // trim left
 }
 
+Real Round(Real value, unsigned short ndigits /* = 0 */)
+{
+	Real f = 1.0f;
+
+	while (ndigits--)
+		f = f * 10.0f;
+
+	value *= f;
+
+	if (value >= 0.0f)
+		value = std::floor(value + 0.5f);
+	else
+		value = std::ceil(value - 0.5f);
+
+	value /= f;
+
+	return value;
+}

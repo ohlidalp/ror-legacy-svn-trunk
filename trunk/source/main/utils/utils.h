@@ -56,7 +56,7 @@ Ogre::String getVersionString(bool multiline = true);
 bool fileExists(const char *filename);
 bool folderExists(const char *pathname);
 
-int isPowerOfTwo (unsigned int x);
+int isPowerOfTwo(unsigned int x);
 
 Ogre::String stripNonASCII(Ogre::String s);
 
@@ -132,5 +132,7 @@ inline Ogre::String getThreadIDAsString()
 {
 	return TOSTRING(getThreadID());
 }
+
+Ogre::Real Round(Ogre::Real value, unsigned short ndigits = 0);
 
 #endif //UTILS_H_
