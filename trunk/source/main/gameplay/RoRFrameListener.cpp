@@ -3201,7 +3201,8 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 				alphaValue = surveyMap->getAlpha();
 			}
-			if (surveyMapMode == SURVEY_MAP_BIG &&
+			if (curr_truck &&
+				surveyMapMode == SURVEY_MAP_BIG &&
 				CameraManager::singletonExists() &&
 				CameraManager::getSingleton().hasActiveBehavior() &&
 				CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE)
