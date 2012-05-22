@@ -66,7 +66,7 @@ public:
 	void update(float dt);
 
 	void switchBehavior(int newBehavior, bool reset = true);
-	void switchToNextBehavior();
+	void switchToNextBehavior(bool force = true);
 	void toggleBehavior(int behavior);
 
 	bool hasActiveBehavior();

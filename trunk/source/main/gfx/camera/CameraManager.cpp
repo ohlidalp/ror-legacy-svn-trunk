@@ -89,7 +89,7 @@ void CameraManager::update(float dt)
 
 	if ( currentBehaviorID < CAMERA_BEHAVIOR_END && INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_CHANGE) )
 	{
-		switchToNextBehavior();
+		switchToNextBehavior(false);
 	}
 
 	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_FREE_MODE_FIX) )
@@ -127,9 +127,9 @@ void CameraManager::update(float dt)
 	}
 }
 
-void CameraManager::switchToNextBehavior()
+void CameraManager::switchToNextBehavior(bool force /* = true */)
 {
-	if ( !currentBehavior || currentBehavior->switchBehavior(ctx) )
+	if ( !currentBehavior || force || currentBehavior->switchBehavior(ctx) )
 	{
 		int i = (currentBehaviorID + 1) % CAMERA_BEHAVIOR_END;
 		switchBehavior(i);
