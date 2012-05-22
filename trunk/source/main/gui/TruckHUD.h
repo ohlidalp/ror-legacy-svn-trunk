@@ -27,7 +27,6 @@ class TruckHUD
 public:
 
 	TruckHUD();
-	~TruckHUD();
 
 	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);
 	void show(bool value);
@@ -35,21 +34,23 @@ public:
 
 protected:
 
-    static TruckHUD *myInstance;
-	std::map<int, float> maxVelos;
-	std::map<int, float> minVelos;
-	std::map<int, float> avVelos;
-	std::map<int, float> maxPosVerG;
-	std::map<int, float> maxNegVerG;
-	std::map<int, float> maxPosSagG;
-	std::map<int, float> maxNegSagG;
-	std::map<int, float> maxPosLatG;
-	std::map<int, float> maxNegLatG;
 	Ogre::Overlay *truckHUD;
 	float updatetime;
 	int width, border;
+
+	std::map<int, float> avVelos;
+	std::map<int, float> maxNegLatG;
+	std::map<int, float> maxNegSagG;
+	std::map<int, float> maxNegVerG;
+	std::map<int, float> maxPosLatG;
+	std::map<int, float> maxPosSagG;
+	std::map<int, float> maxPosVerG;
+	std::map<int, float> maxVelos;
+	std::map<int, float> minVelos;
+
 	void checkOverflow(Ogre::OverlayElement* e);
 
+	static TruckHUD *myInstance;
 	static const unsigned int COMMANDS_VISIBLE = 25;
 };
 
