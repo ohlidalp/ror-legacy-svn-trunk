@@ -257,14 +257,14 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 	if (truck->driveable == TRUCK && truck->engine)
 	{
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
-		overlayElement->setCaption(rpmsstr + U(" ") + TOUTFSTRING(ceil(truck->engine->getRPM())) + U(" / ") + TOUTFSTRING(ceil(truck->engine->getMaxRPM())));
+		overlayElement->setCaption(rpmsstr + U(" ") + TOUTFSTRING(Round(truck->engine->getRPM())) + U(" / ") + TOUTFSTRING(Round(truck->engine->getMaxRPM())));
 	} else if (truck->driveable == AIRPLANE)
 	{
 		for (int i=0; i < 8; i++)
 		{
 			if (truck->aeroengines[i])
 			{
-				rpmsstr = rpmsstr + U(" / ") + TOUTFSTRING(ceil(truck->aeroengines[i]->getRPM()));
+				rpmsstr = rpmsstr + U(" / ") + TOUTFSTRING(Round(truck->aeroengines[i]->getRPM()));
 			}
 		}
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/CurrentRPM");
@@ -289,7 +289,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		{
 			velocityKMH = velocityMPH = 0.0f;
 		}
-		overlayElement->setCaption(cspeedstr + TOUTFSTRING(ceil(velocityKMH)) + U(" km/h (") + TOUTFSTRING(ceil(velocityKMH)) + U(" mph)"));
+		overlayElement->setCaption(cspeedstr + TOUTFSTRING(Round(velocityKMH)) + U(" km/h (") + TOUTFSTRING(Round(velocityKMH)) + U(" mph)"));
 		checkOverflow(overlayElement);
 
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");
@@ -297,7 +297,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		float velocityMinKMH = minVelos[truck->driveable] * 3.6f;
 		float velocityMaxMPH = maxVelos[truck->driveable] * 2.23693629f;
 		float velocityMinMPH = minVelos[truck->driveable] * 2.23693629f;
-		overlayElement->setCaption(mspeedstr + TOUTFSTRING(ceil(velocityMaxKMH)) + U("km/h (") + TOUTFSTRING(ceil(velocityMaxMPH)) + U("mph)") + U(", min: ") + TOUTFSTRING(ceil(velocityMinKMH)) + U("km/h (") + TOUTFSTRING(ceil(velocityMinMPH)) + U("mph)"));
+		overlayElement->setCaption(mspeedstr + TOUTFSTRING(Round(velocityMaxKMH)) + U("km/h (") + TOUTFSTRING(Round(velocityMaxMPH)) + U("mph)") + U(", min: ") + TOUTFSTRING(Round(velocityMinKMH)) + U("km/h (") + TOUTFSTRING(Round(velocityMinMPH)) + U("mph)"));
 		checkOverflow(overlayElement);
 
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
@@ -322,13 +322,13 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		{
 			velocityKN = 0.0f;
 		}
-		overlayElement->setCaption(cspeedstr + TOUTFSTRING(ceil(velocityKN)) + U(" kn"));
+		overlayElement->setCaption(cspeedstr + TOUTFSTRING(Round(velocityKN)) + U(" kn"));
 		checkOverflow(overlayElement);
 
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");
 		float velocityMaxKN = maxVelos[truck->driveable] * 1.94384449f;
 		float velocityMinKN = minVelos[truck->driveable] * 1.94384449f;
-		overlayElement->setCaption(mspeedstr + TOUTFSTRING(ceil(maxVelos[truck->driveable])) + U(" kn, min: ") + TOUTFSTRING(ceil(minVelos[truck->driveable])) + U(" kn"));
+		overlayElement->setCaption(mspeedstr + TOUTFSTRING(Round(maxVelos[truck->driveable])) + U(" kn, min: ") + TOUTFSTRING(Round(minVelos[truck->driveable])) + U(" kn"));
 		checkOverflow(overlayElement);
 
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/AverageVelocity");
@@ -336,7 +336,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		if (truck->driveable == AIRPLANE)
 		{
 			float altitude = truck->nodes[0].AbsPosition.y * 1.1811f;
-			overlayElement->setCaption(altitudestr + TOUTFSTRING(ceil(altitude)) + U(" m"));
+			overlayElement->setCaption(altitudestr + TOUTFSTRING(Round(altitude)) + U(" m"));
 			checkOverflow(overlayElement);
 		}
 	} else if (truck->driveable == MACHINE)
