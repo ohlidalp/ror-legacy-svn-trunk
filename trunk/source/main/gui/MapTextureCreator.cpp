@@ -48,15 +48,15 @@ MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, RoRFrameLis
 
 bool MapTextureCreator::init()
 {
-	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex" + TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 1024, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	TexturePtr texture = TextureManager::getSingleton().createManual("MapRttTex" + TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 2048, 2048, TU_RENDERTARGET, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	
 	if ( texture.isNull() ) return false;;
 
 	mRttTex = texture->getBuffer()->getRenderTarget();
 
-	if ( !mRttTex ) return false;;
+	if ( !mRttTex ) return false;
 
-	mRttTex->setAutoUpdated(true);
+	mRttTex->setAutoUpdated(false);
 
 	mCamera = mSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
 
@@ -72,7 +72,7 @@ bool MapTextureCreator::init()
 
 	mRttTex->addListener(this);
 
-	mCamera->setFarClipDistance(0.0f);
+	mCamera->setFarClipDistance(1000.0f);
 	mCamera->setAspectRatio(1.0f);
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
@@ -114,7 +114,7 @@ void MapTextureCreator::update()
 
 	float width = mEfl->mapsizex;
 	float height = mEfl->mapsizez;
-	float zoomFactor = mCamZoom * ((width + height) / 2.0f) * 0.002f;
+	float zoomFactor = mCamZoom * ((width + height) / 2.0f) * 0.1f;
 
 	mCamera->setNearClipDistance(mCamZoom);
 	mCamera->setPosition(mCamLookAt + Vector3(0.0f, zoomFactor, 0.0f));
@@ -155,13 +155,6 @@ void MapTextureCreator::preRenderTargetUpdate()
 		}
 	}
 
-	Water *w = mEfl->getWater();
-
-	if ( w )
-	{
-		w->setVisible(false);
-	}
-
 	if ( mStatics )
 	{
 		mStatics->setRenderingDistance(0);
@@ -178,13 +171,6 @@ void MapTextureCreator::postRenderTargetUpdate()
 		{
 			trucks[i]->preMapLabelRenderUpdate(false);
 		}
-	}
-
-	Water *w = mEfl->getWater();
-
-	if ( w )
-	{
-		w->setVisible(true);
 	}
 
 	if ( mStatics )
