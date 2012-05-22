@@ -47,7 +47,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		Radian angle = ctx.mCharacter->getRotation();
 		
 		camRotY += Degree(ms.Y.rel * 0.13f);
-		angle   += Degree(ms.X.rel * 0.01f);
+		angle   += Degree(ms.X.rel * 0.13f);
 
 		camRotY  = Radian(std::min(+Math::HALF_PI * 0.65f, camRotY.valueRadians()));
 		camRotY  = Radian(std::max(camRotY.valueRadians(), -Math::HALF_PI * 0.9f));
