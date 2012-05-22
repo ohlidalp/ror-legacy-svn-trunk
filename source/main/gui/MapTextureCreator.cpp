@@ -32,15 +32,14 @@ MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, RoRFrameLis
 	  mSceneManager(scm)
 	, mMainCam(cam)
 	, mEfl(efl)
-	, mCamOrientation(Quaternion::ZERO)
-	, mCamLookAt(Vector3::ZERO)
 	, mCamera(NULL)
+	, mMapCenter(Vector3::ZERO)
+	, mMapZoom(0.0f)
 	, mMaterial(NULL)
 	, mRttTex(NULL)
 	, mStatics(NULL)
 	, mTextureUnitState(NULL)
 	, mViewport(NULL)
-	, mCamZoom(3.0f)
 {
 	mCounter++;
 	init();
@@ -72,35 +71,27 @@ bool MapTextureCreator::init()
 
 	mRttTex->addListener(this);
 
-	mCamera->setFarClipDistance(1000.0f);
-	mCamera->setAspectRatio(1.0f);
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
-	mCamera->setFOVy(Radian(Math::HALF_PI));
-	mCamera->setNearClipDistance(mCamZoom);
 
 	return true;
 }
 
-void MapTextureCreator::setCameraMode(PolygonMode polygonMode)
+void MapTextureCreator::setMapZoom(Real zoomValue)
 {
-	mCamera->setPolygonMode(polygonMode);
+	mMapZoom = std::max(0.0f, zoomValue);
+	mMapZoom = std::min(zoomValue, 1.0f);
 }
 
-void MapTextureCreator::setCameraZoom(Real zoom)
+void MapTextureCreator::setMapZoomRelative(Real zoomDelta)
 {
-	mCamZoom = std::max(0.3f, zoom);
+	setMapZoom(mMapZoom + zoomDelta * mMapZoom / 100.0f);
 }
 
-void MapTextureCreator::setCameraZoomRelative(Real zoomDelta)
+void MapTextureCreator::setMapCenter(Vector3 position)
 {
-	mCamZoom = std::max(0.3f, mCamZoom + zoomDelta * mCamZoom / 100.0f);
-}
-
-void MapTextureCreator::setCamera(Vector3 lookAt, Quaternion orientation)
-{
-	mCamLookAt = lookAt;
-	mCamOrientation = orientation;
+	mMapCenter = position;
+	mMapCenter.y = 0.0f;
 }
 
 void MapTextureCreator::setStaticGeometry(StaticGeometry *staticGeometry)
@@ -112,17 +103,12 @@ void MapTextureCreator::update()
 {
 	if ( !mRttTex ) return;
 
-	float width = mEfl->mapsizex;
-	float height = mEfl->mapsizez;
-	float zoomFactor = mCamZoom * ((width + height) / 2.0f) * 0.1f;
+	float orthoWindowWidth = mEfl->mapsizex - mEfl->mapsizex * mMapZoom;
+	float orthoWindowHeight = mEfl->mapsizez - mEfl->mapsizez * mMapZoom;
 
-	mCamera->setNearClipDistance(mCamZoom);
-	mCamera->setPosition(mCamLookAt + Vector3(0.0f, zoomFactor, 0.0f));
-	if ( mCamOrientation != Quaternion::ZERO )
-	{
-		mCamera->setOrientation(mCamOrientation);
-	}
-	mCamera->lookAt(mCamLookAt);
+	mCamera->setOrthoWindow(orthoWindowWidth, orthoWindowHeight);
+	mCamera->setPosition(mMapCenter + Vector3(0.0f, 500.0f, 0.0f));
+	mCamera->lookAt(mMapCenter);
 
 	preRenderTargetUpdate();
 
@@ -145,7 +131,7 @@ void MapTextureCreator::preRenderTargetUpdate()
 {
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 
-	float f = std::max(20.0f, 50.0f - mCamZoom);
+	float f = 20.0f + 30.0f * mMapZoom;
 
 	for (int i=0; i < BeamFactory::getSingleton().getTruckCount(); i++)
 	{
