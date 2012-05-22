@@ -3051,8 +3051,41 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (ow) ow->showPressureOverlay(false);
 				}
 
+				if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && !netmode && curr_truck->driveable != AIRPLANE)
+				{
+					if (!BeamFactory::getSingleton().enterRescueTruck())
+					{
+#ifdef USE_MYGUI
+						Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
+#endif // USE_MYGUI
+					}
+				}
 
-			}//end of truck!=-1
+				if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_LEFT))
+				{
+					if (curr_truck->getBlinkType() == BLINK_LEFT)
+						curr_truck->setBlinkType(BLINK_NONE);
+					else
+						curr_truck->setBlinkType(BLINK_LEFT);
+				}
+
+				if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_RIGHT))
+				{
+					if (curr_truck->getBlinkType() == BLINK_RIGHT)
+						curr_truck->setBlinkType(BLINK_NONE);
+					else
+						curr_truck->setBlinkType(BLINK_RIGHT);
+				}
+
+				if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_WARN))
+				{
+					if (curr_truck->getBlinkType() == BLINK_WARN)
+						curr_truck->setBlinkType(BLINK_NONE);
+					else
+						curr_truck->setBlinkType(BLINK_WARN);
+				}
+
+			} // end of truck!=-1
 		}
 
 #ifdef USE_CAELUM
@@ -3118,14 +3151,20 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 		if (surveyMap)
 		{
+			static float alphaValue = 1.0f;
+			float velocity = 0.0f;
+			if (curr_truck)
+			{
+				velocity = curr_truck->nodes[0].Velocity.length();
+			}
 			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
 			{
 				surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 
-				if (surveyMapMode == SURVEY_MAP_BIG &&
-					CameraManager::singletonExists() &&
+				if (surveyMapMode == SURVEY_MAP_BIG && (velocity > 5.0f ||
+					(CameraManager::singletonExists() &&
 					CameraManager::getSingleton().hasActiveBehavior() &&
-					CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+					CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)))
 				{
 					surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 				}
@@ -3142,69 +3181,44 @@ bool RoRFrameListener::updateEvents(float dt)
 					{
 						surveyMap->setPosition(0, 0, 0.98f, mWindow);
 					}
+					surveyMap->setAlpha(alphaValue);
 					surveyMap->setVisibility(true);
 				}
 			}
 			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
 			{
-				if (fabs(1.0f - surveyMap->getAlpha()) < 0.001f)
+				if (surveyMap->getAlpha() > 0.51f)
 				{
 					surveyMap->setAlpha(0.5f);
 				}
-				else if (fabs(0.5f - surveyMap->getAlpha()) < 0.001f)
+				else if (surveyMap->getAlpha() >= 0.21f && surveyMap->getAlpha() <= 0.51f)
 				{
 					surveyMap->setAlpha(0.2f);
 				}
-				else if (fabs(0.2f - surveyMap->getAlpha()) < 0.001f)
+				else if (surveyMap->getAlpha() < 0.21f)
 				{
 					surveyMap->setAlpha(1.0f);
 				}
+				alphaValue = surveyMap->getAlpha();
 			}
 			if (surveyMapMode == SURVEY_MAP_BIG &&
 				CameraManager::singletonExists() &&
-				CameraManager::getSingleton().hasActiveVehicleBehavior())
+				CameraManager::getSingleton().hasActiveBehavior() &&
+				CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE)
 			{
-				surveyMap->setAlpha(0.5f);
-			} else if (surveyMapMode != SURVEY_MAP_NONE)
-			{
-				surveyMap->setAlpha(1.0f);
+				if (velocity > 7.5f || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+				{
+					surveyMap->setPosition(-1, 1, 0.3f, mWindow);
+					surveyMap->setAlpha(alphaValue);
+					surveyMapMode = SURVEY_MAP_SMALL;
+				} else
+				{
+					surveyMap->setAlpha(1.0f / sqrt(std::max(1.0f, velocity - 1.0f)));
+				}
 			}
 		}
 #endif //USE_MYGUI
-		if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_RESCUE_TRUCK, 0.5f) && curr_truck && !netmode && curr_truck->driveable != AIRPLANE)
-		{
-			if (!BeamFactory::getSingleton().enterRescueTruck())
-			{
-#ifdef USE_MYGUI
-				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("No rescue truck found!"), "warning.png");
-#endif // USE_MYGUI
-			}
-		}
-
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_LEFT) && curr_truck)
-		{
-			if (curr_truck->getBlinkType() == BLINK_LEFT)
-				curr_truck->setBlinkType(BLINK_NONE);
-			else
-				curr_truck->setBlinkType(BLINK_LEFT);
-		}
-
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_RIGHT) && curr_truck)
-		{
-			if (curr_truck->getBlinkType() == BLINK_RIGHT)
-				curr_truck->setBlinkType(BLINK_NONE);
-			else
-				curr_truck->setBlinkType(BLINK_RIGHT);
-		}
-
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_BLINK_WARN) && curr_truck)
-		{
-			if (curr_truck->getBlinkType() == BLINK_WARN)
-				curr_truck->setBlinkType(BLINK_NONE);
-			else
-				curr_truck->setBlinkType(BLINK_WARN);
-		}
-
+		
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_ENTER_OR_EXIT_TRUCK) && mTimeUntilNextToggle <= 0)
 		{
 			mTimeUntilNextToggle = 0.5; //Some delay before trying to re-enter(exit) truck
