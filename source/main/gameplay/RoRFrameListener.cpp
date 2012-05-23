@@ -4381,7 +4381,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//environment map
 	if (!BSETTING("Envmapdisable", false))
 	{
-		envmap = new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap", false));
+		envmap = new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap", false), ISETTING("EnvmapUpdateRate", 1));
 	}
 
 	//dashboard
@@ -5056,12 +5056,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #endif // 0
 
 	collisions->finishLoadingTerrain();
-
-	//okay, taking a picture of the scene for the envmap
-	//SAY CHEESE!
-	//no, not yet, Caelum is not ready!
-	//if (envmap) envmap->update(Vector3(terrainxsize/2.0, hfinder->getHeightAt(terrainxsize/2.0, terrainzsize/2.0)+50.0, terrainzsize/2.0));
-
 }
 
 void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck, Skin *skin)
@@ -5486,12 +5480,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		if (curr_truck)
 		{
 			envmap->update(curr_truck->getPosition(), curr_truck);
-#ifdef USE_CAELUM
-			if (SkyManager::singletonExists())
-			{
-				SkyManager::getSingleton().notifyCameraChanged(mCamera);
-			}
-#endif // USE_CAELUM
 		} else
 		{
 			envmap->update(Vector3(terrainxsize / 2.0f, hfinder->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f ) + 50.0f, terrainzsize / 2.0f));
