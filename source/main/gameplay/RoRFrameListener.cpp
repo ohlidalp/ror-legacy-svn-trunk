@@ -1928,7 +1928,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 
 void checkSpeedlimit(Beam* curr_truck, float dt)
 {
-	if (curr_truck->engine->getGear() != 0)
+	if (curr_truck->sl_speed_limit > 0.0f && curr_truck->engine->getGear() != 0)
 	{
 		float accl = (curr_truck->sl_speed_limit - std::abs(curr_truck->WheelSpeed)) * 2.0f;
 		accl = std::max(0.0f, accl);

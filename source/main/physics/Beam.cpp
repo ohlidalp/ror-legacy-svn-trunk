@@ -258,7 +258,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 
 	previousCrank = 0.0f;
 
-	sl_speed_limit = std::numeric_limits<float>::max();
+	sl_speed_limit = 0.0f;
 
 	state = SLEEPING;
 
