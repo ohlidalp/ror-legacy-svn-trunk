@@ -33,9 +33,9 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 {
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
-	Degree mRotScale(ctx.mRotScale * 0.5f);
+	Degree mRotScale(ctx.mRotScale * 0.25f);
 	Vector3 mTrans(Vector3::ZERO);
-	Real mTransScale(ctx.mTransScale * 0.5f);
+	Real mTransScale(ctx.mTransScale * 0.25f);
 
 	if(INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
 	{
@@ -44,13 +44,13 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	}
 	if(INPUTENGINE.isKeyDown(OIS::KC_LCONTROL))
 	{
-		mRotScale   *= 30.0f;
-		mTransScale *= 30.0f;
+		mRotScale   *= 20.0f;
+		mTransScale *= 20.0f;
 	}
 	if(INPUTENGINE.isKeyDown(OIS::KC_LMENU))
 	{
-		mRotScale   *= 0.05f;
-		mTransScale *= 0.05f;
+		mRotScale   *= 0.1f;
+		mTransScale *= 0.1f;
 	}
 
 	if ( INPUTENGINE.getEventBoolValue(EV_CHARACTER_SIDESTEP_LEFT) )
@@ -98,7 +98,7 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	ctx.mCamera->yaw(mRotX);
 	ctx.mCamera->pitch(mRotY);
 
-	Vector3 camPosition = ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans;
+	Vector3 camPosition = ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
 	if ( ctx.mHfinder )
 	{
