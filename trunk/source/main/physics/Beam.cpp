@@ -87,6 +87,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	, aileron(0)
 	, avichatter_timer(11.0f) // some pseudo random number,  doesn't matter
 	, beacon(false)
+	, beamsVisible(true)
 	, blinkingtype(BLINK_NONE)
 	, blinktreshpassed(false)
 	, brake(0.0)
@@ -479,6 +480,9 @@ Beam::~Beam()
 
 	// hide all meshes, prevents deleting stuff while drawing
 	this->setMeshVisibility(false);
+
+	// hide all beams, prevents deleting stuff while drawing
+	this->setBeamVisibility(false);
 
 	_waitForSync();
 
@@ -4537,6 +4541,25 @@ void Beam::setMeshWireframe(SceneNode *node, bool value)
 					else
 						m->getTechnique(x)->getPass(y)->setPolygonMode(PM_SOLID);
 		}
+	}
+}
+
+void Beam::setBeamVisibility(bool visible, bool linked)
+{
+	int i=0;
+	for(i=0;i<free_beam;i++)
+	{
+		if(beams[i].mSceneNode) beams[i].mSceneNode->setVisible(visible);
+	}
+	beamsVisible = visible;
+
+	if (linked)
+	{
+		// apply to the locked truck
+		std::list<Beam*> linkedBeams = getAllLinkedBeams();
+
+		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+			(*it)->setBeamVisibility(visible, false);
 	}
 }
 
