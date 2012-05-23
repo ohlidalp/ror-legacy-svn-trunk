@@ -79,6 +79,7 @@ enum {
 	DD_ENGINE_GEAR,        // current gear
 	DD_ENGINE_NUM_GEAR,    // amount of gears
 	DD_ENGINE_GEAR_STRING, // string like "<current gear>/<max gear>"
+	DD_ENGINE_AUTOGEAR_STRING, // string like "P R N G"
 	DD_ENGINE_AUTO_GEAR,   // automatic gear
 
 	DD_ENGINE_CLUTCH,      // the engines clutch

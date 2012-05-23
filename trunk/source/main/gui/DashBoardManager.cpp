@@ -47,6 +47,7 @@ DashBoardManager::DashBoardManager(void) : visible(true), free_dashboard(0)
 	INITDATA(DD_ENGINE_GEAR             , DC_INT  , "engine_gear");
 	INITDATA(DD_ENGINE_NUM_GEAR         , DC_INT  , "engine_num_gear");
 	INITDATA(DD_ENGINE_GEAR_STRING      , DC_CHAR , "engine_gear_string");
+	INITDATA(DD_ENGINE_AUTOGEAR_STRING  , DC_CHAR , "engine_autogear_string");
 	INITDATA(DD_ENGINE_AUTO_GEAR        , DC_INT  , "engine_auto_gear");
 	INITDATA(DD_ENGINE_CLUTCH           , DC_FLOAT, "engine_clutch");
 	INITDATA(DD_BRAKE                   , DC_FLOAT, "brake");
@@ -108,6 +109,8 @@ DashBoardManager::DashBoardManager(void) : visible(true), free_dashboard(0)
 	INITDATA(DD_ODOMETER_TOTAL          , DC_FLOAT, "odometer_total");
 	INITDATA(DD_ODOMETER_USER           , DC_FLOAT, "odometer_user");
 
+	// load dash fonts
+	MyGUI::ResourceManager::getInstance().load("MyGUI_FontsDash.xml");
 }
 
 
@@ -663,10 +666,12 @@ void DashBoard::setVisible(bool v, bool smooth)
 	if(!mainWidget) return;
 	visible = v;
 
+	/*
+	// buggy for some reason
 	if(smooth)
 		mainWidget->setVisibleSmooth(v);
-	else
-		mainWidget->setVisible(v);
+	*/
+	mainWidget->setVisible(v);
 }
 
 #endif // USE_MYGUI

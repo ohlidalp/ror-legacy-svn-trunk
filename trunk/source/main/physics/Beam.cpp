@@ -5766,6 +5766,22 @@ void Beam::updateDashBoards(float &dt)
 			str = String("R");
 
 		dash->setChar(DD_ENGINE_GEAR_STRING, str.c_str());
+		
+		// R N D 2 1 String
+		int cg = engine->getAutoShift();
+		if(cg != BeamEngine::MANUALMODE)
+		{
+			str  = ((cg == BeamEngine::REAR)   ?"#ff0012":"#8a000a") + String("R\n");
+			str += ((cg == BeamEngine::NEUTRAL)?"#ffffff":"#868686") + String("N\n");
+			str += ((cg == BeamEngine::DRIVE)  ?"#12ff00":"#248c00") + String("D\n");
+			str += ((cg == BeamEngine::TWO)    ?"#ffffff":"#868686") + String("2\n");
+			str += ((cg == BeamEngine::ONE)    ?"#ffffff":"#868686") + String("1");
+		} else
+		{
+			//str = "#b8b8b8M\na\nn\nu\na\nl";
+			str = "#b8b8b8M\na\nn\nu";
+		}
+		dash->setChar(DD_ENGINE_AUTOGEAR_STRING, str.c_str());
 
 		// autogears
 		int autoGear = engine->getAutoShift();
