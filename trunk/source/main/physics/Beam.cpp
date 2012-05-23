@@ -478,11 +478,9 @@ Beam::~Beam()
 	deleting = true;
 	state = DELETED;
 
-	// hide all meshes, prevents deleting stuff while drawing
-	this->setMeshVisibility(false);
-
-	// hide all beams, prevents deleting stuff while drawing
+	// hide everything, prevents deleting stuff while drawing
 	this->setBeamVisibility(false);
+	this->setMeshVisibility(false);
 
 	_waitForSync();
 
@@ -4546,11 +4544,14 @@ void Beam::setMeshWireframe(SceneNode *node, bool value)
 
 void Beam::setBeamVisibility(bool visible, bool linked)
 {
-	int i=0;
-	for(i=0;i<free_beam;i++)
+	for (int i=0; i < free_beam; i++)
 	{
-		if(beams[i].mSceneNode) beams[i].mSceneNode->setVisible(visible);
+		if (beams[i].mSceneNode)
+		{
+			beams[i].mSceneNode->setVisible(visible);
+		}
 	}
+
 	beamsVisible = visible;
 
 	if (linked)
@@ -4565,27 +4566,35 @@ void Beam::setBeamVisibility(bool visible, bool linked)
 
 void Beam::setMeshVisibility(bool visible, bool linked)
 {
-	int i=0;
-	for(i=0;i<free_prop;i++)
+	for (int i=0; i < free_prop; i++)
 	{
-		if(props[i].mo) props[i].mo->setVisible(visible);
-		if(props[i].wheel) props[i].wheel->setVisible(visible);
+		if(props[i].mo)			props[i].mo->setVisible(visible);
+		if(props[i].wheel)		props[i].wheel->setVisible(visible);
 		if(props[i].bbsnode[0]) props[i].bbsnode[0]->setVisible(visible);
 		if(props[i].bbsnode[1]) props[i].bbsnode[1]->setVisible(visible);
 		if(props[i].bbsnode[2]) props[i].bbsnode[2]->setVisible(visible);
 		if(props[i].bbsnode[3]) props[i].bbsnode[3]->setVisible(visible);
 	}
-	for(i=0;i<free_flexbody;i++)
+	for (int i=0; i < free_flexbody; i++)
 	{
 		flexbodies[i]->setVisible(visible);
 	}
-	for(i=0;i<free_wheel;i++)
+	for (int i=0; i < free_wheel; i++)
 	{
-		if(vwheels[i].cnode) vwheels[i].cnode->setVisible(visible);
-		if(vwheels[i].fm) vwheels[i].fm->setVisible(visible);
-
+		if (vwheels[i].cnode)
+		{
+			vwheels[i].cnode->setVisible(visible);
+		}
+		if (vwheels[i].fm)
+		{
+			vwheels[i].fm->setVisible(visible);
+		}
 	}
-	if(cabMesh) cabNode->setVisible(visible);
+	if (cabMesh)
+	{
+		cabNode->setVisible(visible);
+	}
+
 	meshesVisible = visible;
 
 	if (linked)
