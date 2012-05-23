@@ -289,7 +289,7 @@ bool TruckHUD::update(float dt, Beam *truck, SceneManager *mSceneMgr, Camera* mC
 		{
 			velocityKMH = velocityMPH = 0.0f;
 		}
-		overlayElement->setCaption(cspeedstr + TOUTFSTRING(Round(velocityKMH)) + U(" km/h (") + TOUTFSTRING(Round(velocityKMH)) + U(" mph)"));
+		overlayElement->setCaption(cspeedstr + TOUTFSTRING(Round(velocityKMH)) + U(" km/h (") + TOUTFSTRING(Round(velocityMPH)) + U(" mph)"));
 		checkOverflow(overlayElement);
 
 		overlayElement = OverlayManager::getSingleton().getOverlayElement("tracks/TruckInfoBox/MaxVelocity");

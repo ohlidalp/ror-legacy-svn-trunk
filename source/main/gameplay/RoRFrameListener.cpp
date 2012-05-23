@@ -1149,7 +1149,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 
 	// now continue to load everything...
-	if (preselected_map != "")
+	if (!preselected_map.empty())
 	{
 		if (!CACHE.checkResourceLoaded(preselected_map))
 		{
@@ -1168,41 +1168,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		terrainUID = ce.uniqueid;
 
 		loadTerrain(preselected_map);
-		//miniature map stuff
-		//char ppname[1024];
-		//sprintf(ppname, "%s-mini.png", preselected_map);
-		//MaterialPtr tmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/Map"));
 
-		//search if mini picture exists
-		//FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo(ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME`, ppname);
-		//if ( && !files->empty())
-		//{
-		//	tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(ppname);
-		//}
-		//else
-		//{
-		//	tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("unknown.png");
-		//}
-
-		//load preselected truck
-		if (preselected_truck == "none")
+		if (preselected_truck.empty())
 		{
-			// do not load truck
-		} else if (preselected_truck != "")
-		{
-			loading_state=TERRAIN_LOADED;
-			std::vector<String> *tconfig = 0;
-			if (!preselected_truckConfig.empty())
-			{
-				std::vector<String> tconfig2;
-				if (!preselected_truckConfig.empty())
-					tconfig2.push_back(preselected_truckConfig);
-				tconfig = &tconfig2;
-			}
-			initTrucks(true, preselected_truck.c_str(), "", tconfig, enterTruck);
-
-		} else {
-			// no trucks loaded?
 			if (truck_preload_num == 0 && (!netmode || !terrainHasTruckShop))
 			{
 #ifdef USE_MYGUI
@@ -1212,27 +1180,30 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 				{
 					hideMap();
 					SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
-				}
-				else
+				} else
 				{
 					hideMap();
 					SelectorWindow::getSingleton().show(SelectorWindow::LT_Network);
 				}
-#endif //USE_MYGUI
-			} else {
-				// init no trucks, as there were found some
+#endif // USE_MYGUI
+			} else
+			{
 				initTrucks(false, preselected_map);
 			}
+		} else if (!preselected_truck.empty() && preselected_truck != "none")
+		{
+			// load preselected truck
+			loading_state = TERRAIN_LOADED;
+			initTrucks(true, preselected_truck, "", &std::vector<String>(1, preselected_truckConfig), enterTruck);
 		}
 	} else
 	{
 #ifdef USE_MYGUI
 		// show terrain selector
 		hideMap();
-		//LOG("huette debug 3");
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_Terrain);
 		SelectorWindow::getSingleton().setEnableCancel(false);
-#endif //USE_MYGUI
+#endif // USE_MYGUI
 	}
 
 	initialized=true;
@@ -1273,8 +1244,6 @@ RoRFrameListener::~RoRFrameListener()
 	}
 	#endif
 }
-
-
 
 void RoRFrameListener::loadNetTerrain(char *preselected_map)
 {
