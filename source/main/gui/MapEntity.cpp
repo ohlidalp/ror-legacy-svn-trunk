@@ -158,10 +158,10 @@ void MapEntity::update()
 
 	mCaption->setVisible(wscale > 0.5f);
 
-	Vector2 s = mMapControl->getMapSize();
+	Vector3 mapSize = mMapControl->getMapSize();
 	mMainWidget->setPosition(
-		mX / s.x * mParent->getWidth() - mMainWidget->getWidth() / 2,
-		mZ / s.y * mParent->getHeight() - mMainWidget->getHeight() / 2
+		mX / mapSize.x * mParent->getWidth() - mMainWidget->getWidth() / 2,
+		mZ / mapSize.z * mParent->getHeight() - mMainWidget->getHeight() / 2
 	);
 	mIcon->setCoord(
 		mMainWidget->getWidth() / 2 - mIconSize.width * wscale / 2,

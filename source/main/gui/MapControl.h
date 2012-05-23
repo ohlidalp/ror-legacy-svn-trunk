@@ -32,7 +32,7 @@ class MapControl : public wraps::BaseLayout
 {
 public:
 
-	MapControl(int mapsizex, int mapsizez);
+	MapControl(float mapsizex, float mapsizey, float mapsizez);
 
 	MapEntity *createMapEntity(Ogre::String type);
 	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
@@ -40,7 +40,7 @@ public:
 	void deleteMapEntity(MapEntity *ent);
 
 	MapEntity *getEntityByName(Ogre::String name);
-	Ogre::Vector2 getMapSize();
+	Ogre::Vector3 getMapSize() { return mMapSize; };
 	bool getVisibility();
 	float getAlpha() { return mAlpha; }
 	float getWindowScale() { return mScale; }
@@ -50,7 +50,7 @@ public:
 	void setMapTexture(Ogre::String name);
 	void setPosition(int x, int y, float size, Ogre::RenderWindow *rw);
 	void setVisibility(bool value);
-	void setWorldSize(int width, int length);
+	void setWorldSize(float width, float length, float height);
 
 	void windowResized(Ogre::RenderWindow *rw);
 
@@ -61,7 +61,7 @@ protected:
 	float mAlpha, mScale;
 	int mX, mY;
 
-	int mMapWidth, mMapLength;
+	Ogre::Vector3 mMapSize;
 
 	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
 	MyGUI::StaticImage* mMapTexture;

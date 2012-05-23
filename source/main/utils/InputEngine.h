@@ -81,7 +81,11 @@ enum eventtypes
 enum events
 {
 	// has to start at zero, since we iterate over it at times
-	EV_AIRPLANE_BRAKE=0, //!< normal brake for an aircraft.
+	EV_AIRPLANE_AIRBRAKES_FULL=0,
+	EV_AIRPLANE_AIRBRAKES_LESS,
+	EV_AIRPLANE_AIRBRAKES_MORE,
+	EV_AIRPLANE_AIRBRAKES_NONE,
+	EV_AIRPLANE_BRAKE, //!< normal brake for an aircraft.
 	EV_AIRPLANE_ELEVATOR_DOWN, //!< pull the elevator down in an aircraft.
 	EV_AIRPLANE_ELEVATOR_UP, //!< pull the elevator up in an aircraft.
 	EV_AIRPLANE_FLAPS_FULL, //!< full flaps in an aircraft.
@@ -94,6 +98,7 @@ enum events
 	EV_AIRPLANE_RUDDER_RIGHT, //!< rudder right
 	EV_AIRPLANE_STEER_LEFT, //!< steer left
 	EV_AIRPLANE_STEER_RIGHT, //!< steer right
+	EV_AIRPLANE_THROTTLE,
 	EV_AIRPLANE_THROTTLE_AXIS, //!< throttle axis. Only use this if you have fitting hardware :) (i.e. a Slider)
 	EV_AIRPLANE_THROTTLE_DOWN, //!< decreases the airplane thrust
 	EV_AIRPLANE_THROTTLE_FULL, //!< full thrust
@@ -114,6 +119,8 @@ enum events
 	EV_CAELUM_INCREASE_TIME, //!< increase day-time
 	EV_CAELUM_INCREASE_TIME_FAST, //!< increase day-time a lot faster
 	EV_CAMERA_CHANGE, //!< change camera mode
+	EV_CAMERA_FREE_MODE,
+	EV_CAMERA_FREE_MODE_FIX,
 	EV_CAMERA_LOOKBACK, //!< look back (toggles between normal and lookback)
 	EV_CAMERA_RESET, //!< reset the camera position
 	EV_CAMERA_ROTATE_DOWN, //!< rotate camera down
@@ -125,13 +132,17 @@ enum events
 	EV_CAMERA_ZOOM_OUT, //!< zoom camera out
 	EV_CAMERA_ZOOM_OUT_FAST, //!< zoom camera out faster
 	EV_CHARACTER_BACKWARDS, //!< step backwards with the character
+	EV_CHARACTER_DOWN,
 	EV_CHARACTER_FORWARD, //!< step forward with the character
 	EV_CHARACTER_JUMP, //!< let the character jump
 	EV_CHARACTER_LEFT, //!< rotate character left
 	EV_CHARACTER_RIGHT, //!< rotate character right
+	EV_CHARACTER_ROT_DOWN,
+	EV_CHARACTER_ROT_UP,
 	EV_CHARACTER_RUN, //!< let the character run
 	EV_CHARACTER_SIDESTEP_LEFT, //!< sidestep to the left
 	EV_CHARACTER_SIDESTEP_RIGHT, //!< sidestep to the right
+	EV_CHARACTER_UP,
 	EV_COMMANDS_01, //!< Command 1
 	EV_COMMANDS_02, //!< Command 2
 	EV_COMMANDS_03, //!< Command 3
@@ -180,27 +191,37 @@ enum events
 	EV_COMMANDS_46, //!< Command 46
 	EV_COMMANDS_47, //!< Command 47
 	EV_COMMANDS_48, //!< Command 48
+	EV_COMMON_AUTOLOCK, //!< unlock autolock hook node
 	EV_COMMON_CONSOLEDISPLAY, //!< show / hide the console
 	EV_COMMON_CONSOLEMODE, //!< toggle appearance of console
 	EV_COMMON_ENTER_CHATMODE, //!< enter the chat mode
-	EV_COMMON_SEND_CHAT, //!< send the chat text
 	EV_COMMON_ENTER_OR_EXIT_TRUCK, //!< enter or exit a truck
+	EV_COMMON_FOV_LESS, //!<decreases the current FOV value
+	EV_COMMON_FOV_MORE, //!<increases the current FOV value
+	EV_COMMON_FULLSCREEN_TOGGLE,
 	EV_COMMON_HIDE_GUI, //!< hide all GUI elements
 	EV_COMMON_LOCK, //!< connect hook node to a node in close proximity
-	EV_COMMON_AUTOLOCK, //!< unlock autolock hook node
-	EV_COMMON_ROPELOCK, //!< connect hook node to a node in close proximity
-	EV_COMMON_MAP_ALPHA, //!< toggle translucency of overview-map
+	EV_COMMON_NETCHATDISPLAY,
+	EV_COMMON_NETCHATMODE,
 	EV_COMMON_OUTPUT_POSITION, //!< write current position to log (you can open the logfile and reuse the position)
 	EV_COMMON_PRESSURE_LESS, //!< decrease tire pressure (note: only very few trucks support this)
 	EV_COMMON_PRESSURE_MORE, //!< increase tire pressure (note: only very few trucks support this)
 	EV_COMMON_QUIT_GAME, //!< exit the game
+	EV_COMMON_RELOAD_ROADS,
 	EV_COMMON_REPAIR_TRUCK, //!< repair truck to original condition
+	EV_COMMON_REPLAY_BACKWARD,
+	EV_COMMON_REPLAY_FAST_BACKWARD,
+	EV_COMMON_REPLAY_FAST_FORWARD,
+	EV_COMMON_REPLAY_FORWARD,
 	EV_COMMON_RESCUE_TRUCK, //!< teleport to rescue truck
 	EV_COMMON_RESET_TRUCK, //!< reset truck to original starting position
+	EV_COMMON_ROPELOCK, //!< connect hook node to a node in close proximity
+	EV_COMMON_SAVE_TERRAIN, //!< save terrain mesh to file
 	EV_COMMON_SCREENSHOT, //!< take a screenshot
 	EV_COMMON_SCREENSHOT_BIG, //!< take a BIG screenshot
-	EV_COMMON_SAVE_TERRAIN, //!< save terrain mesh to file
 	EV_COMMON_SECURE_LOAD, //!< tie a load to the truck
+	EV_COMMON_SEND_CHAT, //!< send the chat text
+	EV_COMMON_SHOWTRUCKTOOL,
 	EV_COMMON_SHOW_SKELETON, //!< toggle skeleton display mode
 	EV_COMMON_START_TRUCK_EDITOR, //!< start the old truck editor
 	EV_COMMON_TOGGLE_CUSTOM_PARTICLES, //!< toggle particle cannon
@@ -211,9 +232,7 @@ enum events
 	EV_COMMON_TOGGLE_TRUCK_BEACONS, //!< toggle truck beacons
 	EV_COMMON_TOGGLE_TRUCK_LIGHTS, //!< toggle truck front lights
 	EV_COMMON_TRUCK_INFO, //!< toggle truck HUD
-	EV_COMMON_VIEW_MAP, //!< toggle map modes
-	EV_COMMON_FOV_LESS, //!<decreases the current FOV value
-	EV_COMMON_FOV_MORE, //!<increases the current FOV value
+	EV_COMMON_TRUCK_REMOVE,
 	EV_GRASS_LESS, //!< EXPERIMENTAL: remove some grass
 	EV_GRASS_MORE, //!< EXPERIMENTAL: add some grass
 	EV_GRASS_MOST, //!< EXPERIMENTAL: set maximum amount of grass
@@ -224,6 +243,10 @@ enum events
 	EV_MENU_RIGHT, //!< select next category
 	EV_MENU_SELECT, //!< select focussed item and close menu
 	EV_MENU_UP, //!< select previous element in current category
+	EV_SURVEY_MAP_ALPHA, //!< toggle translucency of overview-map
+	EV_SURVEY_MAP_TOGGLE_VIEW, //!< toggle map modes
+	EV_SURVEY_MAP_ZOOM_IN, //!< increase survey map scale
+	EV_SURVEY_MAP_ZOOM_OUT, //!< decrease survey map scale
 	EV_TERRAINEDITOR_BUILT, //!< place currently selected object at current position
 	EV_TERRAINEDITOR_PITCHBACKWARD, //!< pitch object backward
 	EV_TERRAINEDITOR_PITCHFOREWARD, //!< pitch object foreward
@@ -232,15 +255,25 @@ enum events
 	EV_TERRAINEDITOR_SELECTROAD, //!< switch to road laying mode
 	EV_TERRAINEDITOR_TOGGLEOBJECT, //!< toggle between available objects
 	EV_TERRAINEDITOR_TOGGLEROADTYPE, //!< toggle between available road types
+	EV_TOGGLESHADERS,
+	EV_TRUCKEDIT_RELOAD,
 	EV_TRUCK_ACCELERATE, //!< accelerate the truck
+	EV_TRUCK_ANTILOCK_BRAKE, //!< toggle antilockbrake system
 	EV_TRUCK_AUTOSHIFT_DOWN, //!< shift automatic transmission one gear down
 	EV_TRUCK_AUTOSHIFT_UP, //!< shift automatic transmission one gear up
 	EV_TRUCK_BLINK_LEFT, //!< toggle left direction indicator (blinker)
 	EV_TRUCK_BLINK_RIGHT, //!< toggle right direction indicator (blinker)
 	EV_TRUCK_BLINK_WARN, //!< toggle all direction indicators
 	EV_TRUCK_BRAKE, //!< brake
+	EV_TRUCK_CRUISE_CONTROL, //!< toggle cruise control
+	EV_TRUCK_CRUISE_CONTROL_ACCL,//!< increase target speed / rpm
+	EV_TRUCK_CRUISE_CONTROL_DECL,//!< decrease target speed / rpm
+	EV_TRUCK_CRUISE_CONTROL_READJUST, //!< match target speed / rpm with current truck speed / rpm
 	EV_TRUCK_HORN, //!< truck horn
+	EV_TRUCK_LEFT_MIRROR_LEFT,
+	EV_TRUCK_LEFT_MIRROR_RIGHT,
 	EV_TRUCK_LIGHTTOGGLE1,  //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE10, //!< toggle custom light 10
 	EV_TRUCK_LIGHTTOGGLE2,  //!< toggle custom light 2
 	EV_TRUCK_LIGHTTOGGLE3,  //!< toggle custom light 3
 	EV_TRUCK_LIGHTTOGGLE4,  //!< toggle custom light 4
@@ -249,28 +282,12 @@ enum events
 	EV_TRUCK_LIGHTTOGGLE7,  //!< toggle custom light 7
 	EV_TRUCK_LIGHTTOGGLE8,  //!< toggle custom light 8
 	EV_TRUCK_LIGHTTOGGLE9,  //!< toggle custom light 9
-	EV_TRUCK_LIGHTTOGGLE10, //!< toggle custom light 10
 	EV_TRUCK_MANUAL_CLUTCH, //!< manual clutch (for manual transmission)
 	EV_TRUCK_PARKING_BRAKE, //!< toggle parking brake
-	EV_TRUCK_ANTILOCK_BRAKE, //!< toggle antilockbrake system
-	EV_TRUCK_TRACTION_CONTROL, //!< toggle antilockbrake system
-	EV_TRUCK_CRUISE_CONTROL, //!< toggle cruise control
-	EV_TRUCK_CRUISE_CONTROL_READJUST, //!< match target speed / rpm with current truck speed / rpm
-	EV_TRUCK_CRUISE_CONTROL_ACCL,//!< increase target speed / rpm
-	EV_TRUCK_CRUISE_CONTROL_DECL,//!< decrease target speed / rpm
+	EV_TRUCK_RIGHT_MIRROR_LEFT,
+	EV_TRUCK_RIGHT_MIRROR_RIGHT,
 	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
-	EV_TRUCK_SHIFT_NEUTRAL, //!< shift to neutral gear in manual transmission mode
-	EV_TRUCK_SHIFT_UP, //!< shift one gear up in manual transmission mode
-	EV_TRUCK_SHIFT_GEAR_REVERSE, //!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR1,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR2,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR3,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR4,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR5,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR6,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR7,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR8,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR9,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR10,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR11,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR12,//!< shift directly into this gear
@@ -280,44 +297,27 @@ enum events
 	EV_TRUCK_SHIFT_GEAR16,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR17,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR18,//!< shift directly into this gear
-
+	EV_TRUCK_SHIFT_GEAR2,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR3,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR4,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR5,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR6,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR7,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR8,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR9,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR_REVERSE, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_HIGHRANGE, //!< select high range (13-18) for H-shaft
 	EV_TRUCK_SHIFT_LOWRANGE, //!< select low range (1-6) for H-shaft
 	EV_TRUCK_SHIFT_MIDRANGE, //!< select middle range (7-12) for H-shaft
-	EV_TRUCK_SHIFT_HIGHRANGE, //!< select high range (13-18) for H-shaft
-
+	EV_TRUCK_SHIFT_NEUTRAL, //!< shift to neutral gear in manual transmission mode
+	EV_TRUCK_SHIFT_UP, //!< shift one gear up in manual transmission mode
 	EV_TRUCK_STARTER, //!< hold to start the engine
 	EV_TRUCK_STEER_LEFT, //!< steer left
 	EV_TRUCK_STEER_RIGHT, //!< steer right
 	EV_TRUCK_SWITCH_SHIFT_MODES, //!< toggle between transmission modes
-	EV_TRUCK_TOGGLE_CONTACT, //!< toggle ignition
 	EV_TRUCK_TOGGLE_AXLE_LOCK,
-
-	EV_COMMON_SHOWTRUCKTOOL,
-	EV_COMMON_RELOAD_ROADS,
-	EV_COMMON_FULLSCREEN_TOGGLE,
-	EV_CAMERA_FREE_MODE_FIX,
-	EV_CAMERA_FREE_MODE,
-	EV_TRUCK_LEFT_MIRROR_LEFT,
-	EV_TRUCK_LEFT_MIRROR_RIGHT,
-	EV_TRUCK_RIGHT_MIRROR_LEFT,
-	EV_TRUCK_RIGHT_MIRROR_RIGHT,
-	EV_COMMON_REPLAY_FORWARD,
-	EV_COMMON_REPLAY_BACKWARD,
-	EV_COMMON_REPLAY_FAST_FORWARD,
-	EV_COMMON_REPLAY_FAST_BACKWARD,
-	EV_AIRPLANE_AIRBRAKES_NONE,
-	EV_AIRPLANE_AIRBRAKES_FULL,
-	EV_AIRPLANE_AIRBRAKES_LESS,
-	EV_AIRPLANE_AIRBRAKES_MORE,
-
-	EV_AIRPLANE_THROTTLE,
-	EV_COMMON_TRUCK_REMOVE,
-	EV_COMMON_NETCHATDISPLAY,
-	EV_COMMON_NETCHATMODE,
-	EV_CHARACTER_ROT_UP,
-	EV_CHARACTER_ROT_DOWN,
-	EV_CHARACTER_UP,
-	EV_CHARACTER_DOWN,
+	EV_TRUCK_TOGGLE_CONTACT, //!< toggle ignition
+	EV_TRUCK_TRACTION_CONTROL, //!< toggle antilockbrake system
 
 	// position storage now
 	EV_TRUCK_SAVE_POS1,
@@ -352,10 +352,6 @@ enum events
 	EV_DOF_DEBUG_APERTURE_LESS,
 	EV_DOF_DEBUG_FOCUS_IN,
 	EV_DOF_DEBUG_FOCUS_OUT,
-
-	EV_TRUCKEDIT_RELOAD,
-
-	EV_TOGGLESHADERS,
 
 	// the end, DO NOT MODIFY
 	EV_MODE_BEFORELAST,

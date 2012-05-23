@@ -28,7 +28,7 @@ class MapTextureCreator : public Ogre::RenderTargetListener
 {
 public:
 
-	MapTextureCreator(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl);
+	MapTextureCreator(Ogre::SceneManager *scm, Ogre::Camera *cam, MapControl *ctrl);
 
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
@@ -47,6 +47,7 @@ protected:
 	void preRenderTargetUpdate();
     void postRenderTargetUpdate();
 
+	MapControl *mMapControl;
 	Ogre::Camera *mCamera;
 	Ogre::Camera *mMainCam;
 	Ogre::MaterialPtr mMaterial;
@@ -57,7 +58,6 @@ protected:
 	Ogre::TextureUnitState *mTextureUnitState;
 	Ogre::Vector3 mMapCenter;
 	Ogre::Viewport *mViewport;
-	RoRFrameListener *mEfl;
 
 	static int mCounter;
 };

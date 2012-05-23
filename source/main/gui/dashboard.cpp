@@ -29,6 +29,8 @@ class DashboardListener;
 
 Dashboard::Dashboard(SceneManager *mSceneMgr) :
 	  mScene(mSceneMgr)
+	, mDashCam(0)
+	, mDashboardListener(0)
 	, rttTex(0)
 {
 	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
@@ -68,7 +70,10 @@ void Dashboard::setEnable(bool en)
 
 void Dashboard::prepareShutdown()
 {
-	if (rttTex) rttTex->removeListener(mDashboardListener);
+	if (rttTex)
+	{
+		rttTex->removeListener(mDashboardListener);
+	}
 }
 
 DashboardListener::DashboardListener(Ogre::SceneManager *mSceneMgr) : 
@@ -83,7 +88,7 @@ DashboardListener::DashboardListener(Ogre::SceneManager *mSceneMgr) :
 
 void DashboardListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 {
-	// Hide everything
+	// hide everything
 	mScene->setFindVisibleObjects(false);
 
 	// hide fps stats
@@ -115,10 +120,10 @@ void DashboardListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 
 void DashboardListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 {
-	// Show everything
+	// show everything
 	mScene->setFindVisibleObjects(true);
 
-	//show everything again, if it was displayed before hiding it...
+	// show everything again, if it was displayed before hiding it...
 	if (fpsOverlay && fpsDisplayed)
 	{
 		fpsOverlay->show();
@@ -129,7 +134,7 @@ void DashboardListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 		truckHUDOverlay->show();
 	}
 
-	//hide overlay
+	// hide overlay
 	dashOverlay->hide();
 	needlesOverlay->hide();
 	blendOverlay->hide();

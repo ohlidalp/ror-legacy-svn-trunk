@@ -75,7 +75,7 @@ public:
 	bool freeTruckPosition;
 	bool terrainHasTruckShop;
 
-	float mapsizex, mapsizez;
+	float mapsizex, mapsizey, mapsizez;
 	float netcheckGUITimer;
 
 	int loading_state;

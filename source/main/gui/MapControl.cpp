@@ -27,9 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-MapControl::MapControl(int mapsizex, int mapsizez) :
-	  mMapWidth(mapsizex)
-	, mMapLength(mapsizez)
+MapControl::MapControl(float mapsizex, float mapsizey, float mapsizez) :
+	  mMapSize(Vector3(mapsizex, mapsizey, mapsizez))
 	, mAlpha(1.0f)
 	, mScale(1.0f)
 	, mX(0)
@@ -65,11 +64,6 @@ MapEntity *MapControl::getEntityByName(String name)
 		return mNamedEntities[name];
 	}
 	return NULL;
-}
-
-Vector2 MapControl::getMapSize()
-{
-	return Vector2(mMapWidth, mMapLength);
 }
 
 bool MapControl::getVisibility()
@@ -140,10 +134,9 @@ void MapControl::setVisibility(bool value)
 	mMainWidget->setVisible(value);
 }
 
-void MapControl::setWorldSize(int width, int length)
+void MapControl::setWorldSize(float width, float length, float height)
 {
-	mMapWidth = width;
-	mMapLength = length;
+	mMapSize = Vector3(width, length, height);
 }
 
 void MapControl::windowResized(Ogre::RenderWindow *rw)

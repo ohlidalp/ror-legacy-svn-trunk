@@ -701,12 +701,6 @@ eventInfo_t eventInfo[] = {
 		_L("connect a rope to a node in close proximity")
 	},
 	{
-		"COMMON_MAP_ALPHA",
-		EV_COMMON_MAP_ALPHA,
-		"Keyboard EXPL+CTRL+TAB",
-		_L("toggle translucency of overview-map")
-	},
-	{
 		"COMMON_OUTPUT_POSITION",
 		EV_COMMON_OUTPUT_POSITION,
 		"Keyboard H",
@@ -833,12 +827,6 @@ eventInfo_t eventInfo[] = {
 		_L("toggle truck HUD")
 	},
 	{
-		"COMMON_VIEW_MAP",
-		EV_COMMON_VIEW_MAP,
-		"Keyboard EXPL+TAB",
-		_L("toggle map modes")
-	},
-	{
 		"COMMON_FOV_LESS",
 		EV_COMMON_FOV_LESS,
 		"Keyboard EXPL+NUMPAD7",
@@ -909,6 +897,30 @@ eventInfo_t eventInfo[] = {
 		EV_MENU_UP,
 		"Keyboard UP",
 		_L("select previous element in current category")
+	},
+	{
+		"SURVEY_MAP_TOGGLE_ALPHA",
+		EV_SURVEY_MAP_ALPHA,
+		"Keyboard EXPL+CTRL+TAB",
+		_L("toggle translucency of overview-map")
+	},
+	{
+		"SURVEY_MAP_TOGGLE_VIEW",
+		EV_SURVEY_MAP_TOGGLE_VIEW,
+		"Keyboard EXPL+TAB",
+		_L("toggle map modes")
+	},
+	{
+		"SURVEY_MAP_ZOOM_IN",
+		EV_SURVEY_MAP_ZOOM_IN,
+		"Keyboard EXPL+TAB",
+		_L("zoom in")
+	},
+	{
+		"SURVEY_MAP_ZOOM_OUT",
+		EV_SURVEY_MAP_ZOOM_OUT,
+		"Keyboard EXPL+TAB",
+		_L("zoom out")
 	},
 	{
 		"TERRAINEDITOR_BUILT",
