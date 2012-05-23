@@ -26,24 +26,26 @@ class Envmap
 {
 public:
 		
-	Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic);
+	Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic, int updateRate = 1);
 
 	void prepareShutdown() {};
 
-	void update(Ogre::Vector3 center, Beam *beam=0);
+	void update(Ogre::Vector3 center, Beam *beam = 0);
 
 private:
 
-	void forceUpdate(Ogre::Vector3 center);
+	void init(Ogre::Vector3 center);
 
 	static const unsigned int NUM_FACES = 6;
 
 	Ogre::Camera *mCameras[NUM_FACES];
+	Ogre::Camera *mMainCamera;
 	Ogre::RenderTarget *mRenderTargets[NUM_FACES];
 	Ogre::SceneNode *mDebugSceneNode;
 	bool mInitiated;
 	bool mIsDynamic;
 	int mRound;
+	int updateRate;
 };
 
 #endif // __Environment_Map_H_

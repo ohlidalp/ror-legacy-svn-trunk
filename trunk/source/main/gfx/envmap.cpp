@@ -26,11 +26,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
+Envmap::Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic, int updateRate /* = 1 */) :
 	  mDebugSceneNode(0)
-	, mIsDynamic(dynamic)
 	, mInitiated(false)
+	, mIsDynamic(dynamic)
+	, mMainCamera(cam)
 	, mRound(0)
+	, updateRate(updateRate)
 {
 	TexturePtr texture = TextureManager::getSingleton().createManual("EnvironmentTexture",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_CUBE_MAP, 256, 256, 0,
@@ -39,12 +41,12 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 	for (int face=0; face < NUM_FACES; face++)
 	{
 		mRenderTargets[face] = texture->getBuffer(face)->getRenderTarget();
-
 		mCameras[face] = scm->createCamera("EnvironmentCamera-" + TOSTRING(face));
 		mCameras[face]->setAspectRatio(1.0);
 		mCameras[face]->setProjectionType(PT_PERSPECTIVE);
+		mCameras[face]->setFixedYawAxis(false);
 		mCameras[face]->setFOVy(Degree(90));
-		mCameras[face]->setNearClipDistance(0.1); //why this does not work, I wonder.
+		mCameras[face]->setNearClipDistance(0.1f);
 		mCameras[face]->setFarClipDistance(cam->getFarClipDistance());
 
 		Viewport *v = mRenderTargets[face]->addViewport(mCameras[face]);
@@ -56,28 +58,29 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 		switch (face)
 		{
 		case 0:
-			mCameras[face]->setDirection(-1, 0, 0);   // <-- should be +X
+			mCameras[face]->setDirection(+Vector3::UNIT_X);
 			break;
 		case 1:
-			mCameras[face]->setDirection(1, 0, 0);   // <-- should be -X
+			mCameras[face]->setDirection(-Vector3::UNIT_X);
 			break;
 		case 2:
-			mCameras[face]->setDirection(0, 0, 1);
-			mCameras[face]->pitch(Degree(90));
+			mCameras[face]->setDirection(+Vector3::UNIT_Y);
 			break;
 		case 3:
-			mCameras[face]->setDirection(0, 0, 1);
-			mCameras[face]->pitch(Degree(-90));
+			mCameras[face]->setDirection(-Vector3::UNIT_Y);
 			break;
 		case 4:
-			mCameras[face]->setDirection(0, 0, 1);
+			mCameras[face]->setDirection(-Vector3::UNIT_Z);
 			break;
 		case 5:
-			mCameras[face]->setDirection(0, 0, -1);
+			mCameras[face]->setDirection(+Vector3::UNIT_Z);
 			break;
 		}
 	}
-	
+
+	updateRate = std::max(0, updateRate);
+	updateRate = std::min(updateRate, 6);
+
 	if (BSETTING("EnvMapDebug", false))
 	{
 		// create fancy mesh for debugging the envmap
@@ -85,7 +88,7 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 		if (overlay)
 		{
 			Vector3 position = Vector3::ZERO;
-			Vector3 scale = Vector3(1,1,1);
+			float scale = 1.0f;
 			
 			MeshPtr mesh = MeshManager::getSingletonPtr()->createManual("cubeMapDebug", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			// create sub mesh
@@ -117,7 +120,7 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 
 			// Vertex data
 			static const float vertexData[] = {
-			//   Position      Texture coordinates      // Index
+			// Position      Texture coordinates    // Index
 			  0.0, 2.0,      -1.0,  1.0,  1.0,      //  0
 			  0.0, 1.0,      -1.0, -1.0,  1.0,      //  1
 			  1.0, 2.0,      -1.0,  1.0, -1.0,      //  2
@@ -136,11 +139,11 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 
 			// Fill vertex buffer
 			float *pData = static_cast<float*>(vertexBuffer->lock(HardwareBuffer::HBL_DISCARD));
-			for (size_t vertex = 0, i = 0; vertex < mesh->sharedVertexData->vertexCount; ++vertex)
+			for (size_t vertex=0, i=0; vertex < mesh->sharedVertexData->vertexCount; vertex++)
 			{
 			  // Position
-			  *pData++ = position.x + scale.x * vertexData[i++];
-			  *pData++ = position.y + scale.y * vertexData[i++];
+			  *pData++ = position.x + scale * vertexData[i++];
+			  *pData++ = position.y + scale * vertexData[i++];
 			  *pData++ = 0.0;
 
 			  // Texture coordinates
@@ -161,7 +164,7 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 
 			// Index data
 			static const uint16 indexData[] = {
-			//   Indices         // Face
+			// Indices         // Face
 			   0,  1,  2,      //  0
 			   2,  1,  3,      //  1
 			   2,  3,  4,      //  2
@@ -201,18 +204,22 @@ Envmap::Envmap(SceneManager *scm, RenderWindow *rw, Camera *cam, bool dynamic) :
 			overlay->show();
 			
 			// example update
-			forceUpdate(Vector3::ZERO);
+			init(Vector3::ZERO);
 		}
 	}
 }
 
-void Envmap::update(Ogre::Vector3 center, Beam *beam/* =0 */)
+void Envmap::update(Ogre::Vector3 center, Beam *beam /* = 0 */)
 {
-	if (!mIsDynamic)
+	if (!mIsDynamic || !beam)
 	{
-		if (mInitiated) return;
-		else forceUpdate(center);
+		if (!mInitiated)
+		{
+			init(center);
+		}
+		return;
 	}
+
 	for (int i=0; i < NUM_FACES; i++)
 	{
 		mCameras[i]->setPosition(center);
@@ -227,26 +234,34 @@ void Envmap::update(Ogre::Vector3 center, Beam *beam/* =0 */)
 		beam->setMeshVisibility(false);
 	}
 
-	// caelum needs to know that we changed the cameras
+	for (int i=0; i < updateRate; i++)
+	{
+		// caelum needs to know that we changed the cameras
+	#ifdef USE_CAELUM
+		if (SkyManager::singletonExists())
+		{
+			SkyManager::getSingleton().notifyCameraChanged(mCameras[mRound]);
+		}
+	#endif // USE_CAELUM
+		mRenderTargets[mRound]->update();
+		mRound = (mRound + 1) % NUM_FACES;
+	}
 #ifdef USE_CAELUM
 	if (SkyManager::singletonExists())
 	{
-		SkyManager::getSingleton().notifyCameraChanged(mCameras[mRound]);
+		SkyManager::getSingleton().notifyCameraChanged(mMainCamera);
 	}
 #endif // USE_CAELUM
-	mRenderTargets[mRound]->update();
 
 	if (toggleMeshes)
 	{
 		beam->setMeshVisibility(true);
 	}
-
-	mRound = (mRound + 1) % NUM_FACES;
 }
 
-void Envmap::forceUpdate(Vector3 center)
+void Envmap::init(Vector3 center)
 {
-	if (mInitiated) return;
+	if (mIsDynamic) return;
 
 	// capture all images at once
 	for (int i=0; i < NUM_FACES; i++)
