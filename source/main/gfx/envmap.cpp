@@ -229,9 +229,16 @@ void Envmap::update(Ogre::Vector3 center, Beam *beam /* = 0 */)
 	// but only if they are visible ...
 	bool toggleMeshes = beam && beam->meshesVisible;
 
+	// same for all beams
+	bool toggleBeams = beam && beam->beamsVisible;
+
 	if (toggleMeshes)
 	{
 		beam->setMeshVisibility(false);
+	}
+	if (toggleBeams)
+	{
+		beam->setBeamVisibility(false);
 	}
 
 	for (int i=0; i < updateRate; i++)
@@ -256,6 +263,10 @@ void Envmap::update(Ogre::Vector3 center, Beam *beam /* = 0 */)
 	if (toggleMeshes)
 	{
 		beam->setMeshVisibility(true);
+	}
+	if (toggleBeams)
+	{
+		beam->setBeamVisibility(true);
 	}
 }
 

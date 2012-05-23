@@ -321,6 +321,8 @@ public:
 	bool abs_state;
 	float abs_timer;
 
+	void setBeamVisibility(bool visible, bool linked=true);
+	bool beamsVisible;
 	void setMeshVisibility(bool visible, bool linked=true);
 	bool meshesVisible;
 	bool inRange(float num, float min, float max);
