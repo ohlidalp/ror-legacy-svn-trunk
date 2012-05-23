@@ -40,10 +40,10 @@ public:
 
 private:
 
-	DashboardListener* mDashboardListener;
+	DashboardListener *mDashboardListener;
 	Ogre::Camera *mDashCam;
-	Ogre::RenderTexture* rttTex;
-	Ogre::SceneManager* mScene;
+	Ogre::RenderTexture *rttTex;
+	Ogre::SceneManager *mScene;
 };
 
 class DashboardListener : public Ogre::RenderTargetListener
@@ -58,12 +58,12 @@ public:
 
 private:
 
+	Ogre::Overlay *blendOverlay;
+	Ogre::Overlay *dashOverlay;
 	Ogre::Overlay *fpsOverlay;
-	Ogre::Overlay* blendOverlay;
-	Ogre::Overlay* dashOverlay;
-	Ogre::Overlay* needlesOverlay;
-	Ogre::Overlay* truckHUDOverlay;
-	Ogre::SceneManager* mScene;
+	Ogre::Overlay *needlesOverlay;
+	Ogre::Overlay *truckHUDOverlay;
+	Ogre::SceneManager *mScene;
 	bool consolevisible;
 	bool fpsDisplayed;
 	bool truckHUD;

@@ -765,6 +765,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	mTruckInfoOn(false),
 	mWindow(win),
 	mapsizex(3000),
+	mapsizey(1000),
 	mapsizez(3000),
 	mtc(0),
 	net(0),
@@ -3157,7 +3158,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			{
 				velocity = curr_truck->nodes[0].Velocity.length();
 			}
-			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_VIEW_MAP))
+			if (INPUTENGINE.getEventBoolValueBounce(EV_SURVEY_MAP_TOGGLE_VIEW))
 			{
 				surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 
@@ -3185,7 +3186,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					surveyMap->setVisibility(true);
 				}
 			}
-			if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_MAP_ALPHA))
+			if (INPUTENGINE.getEventBoolValueBounce(EV_SURVEY_MAP_ALPHA))
 			{
 				if (surveyMap->getAlpha() > 0.51f)
 				{
@@ -3510,7 +3511,7 @@ void RoRFrameListener::initializeCompontents()
 	// init the map
 	if (!disableMap)
 	{
-		surveyMap = new MapControl((int)mapsizex, (int)mapsizez);
+		surveyMap = new MapControl(mapsizex, mapsizey, mapsizez);
 	}
 #endif //USE_MYGUI
 
@@ -3835,17 +3836,16 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		DataStreamPtr ds_config = ResourceGroupManager::getSingleton().openResource(String(geom), group);
 		cfg.load(ds_config, "\t:=", false);
 
-		// X and Z scale
-		String tmpSize = cfg.getSetting("PageWorldX");
-		if (tmpSize != String(""))
-			mapsizex = atof(tmpSize.c_str());
+		// X, Y and Z scale
+		mapsizex = StringConverter::parseInt(cfg.getSetting("PageWorldX"));
+		mapsizey = StringConverter::parseInt(cfg.getSetting("MaxHeight"));
+		mapsizez = StringConverter::parseInt(cfg.getSetting("PageWorldZ"));
 
-		tmpSize = cfg.getSetting("PageWorldZ");
-		if (tmpSize != String(""))
-			mapsizez = atof(tmpSize.c_str());
 #ifdef USE_MYGUI
 		if (surveyMap)
-			surveyMap->setWorldSize(mapsizex, mapsizez);
+		{
+			surveyMap->setWorldSize(mapsizex, mapsizey, mapsizez);
+		}
 #endif //MYGUI
 
 		if (!newTerrainMode && !disableTetrrain)
@@ -4417,7 +4417,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #ifdef USE_MYGUI
 	if (surveyMap)
 	{
-		mtc = new MapTextureCreator(mSceneMgr, mCamera, this);
+		mtc = new MapTextureCreator(mSceneMgr, mCamera, surveyMap);
 		surveyMap->setMapTexture(mtc->getRTName());
 	}
 #endif //USE_MYGUI

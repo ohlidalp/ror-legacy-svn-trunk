@@ -65,30 +65,6 @@ public:
 		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
 	}
 
-	float getMaxHeight()
-	{
-		float maxHeight = 0.0f;
-		Ogre::TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
-		while(ti.hasMoreElements())
-		{
-			Ogre::Terrain* t = ti.getNext()->instance;
-			maxHeight = std::max(maxHeight, t->getMaxHeight());
-		}
-		return maxHeight;
-	}
-
-	float getMinHeight()
-	{
-		float minHeight = 0.0f;
-		Ogre::TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
-		while(ti.hasMoreElements())
-		{
-			Ogre::Terrain* t = ti.getNext()->instance;
-			minHeight = std::min(t->getMaxHeight(), minHeight);
-		}
-		return minHeight;
-	}
-
 protected:
 
 	Ogre::TerrainGroup *mTerrainGroup;

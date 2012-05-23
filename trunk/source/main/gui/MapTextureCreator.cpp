@@ -21,17 +21,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "IWater.h"
+#include "MapControl.h"
 #include "ResourceBuffer.h"
-#include "RoRFrameListener.h"
 
 using namespace Ogre;
 
 int MapTextureCreator::mCounter = 0;
 
-MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, RoRFrameListener *efl) :
+MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, MapControl *ctrl) :
 	  mSceneManager(scm)
 	, mMainCam(cam)
-	, mEfl(efl)
+	, mMapControl(ctrl)
 	, mCamera(NULL)
 	, mMapCenter(Vector3::ZERO)
 	, mMapZoom(0.0f)
@@ -73,6 +73,7 @@ bool MapTextureCreator::init()
 
 	mCamera->setFixedYawAxis(false);
 	mCamera->setProjectionType(PT_ORTHOGRAPHIC);
+	mCamera->setNearClipDistance(1.0f);
 
 	return true;
 }
@@ -103,11 +104,13 @@ void MapTextureCreator::update()
 {
 	if ( !mRttTex ) return;
 
-	float orthoWindowWidth = mEfl->mapsizex - mEfl->mapsizex * mMapZoom;
-	float orthoWindowHeight = mEfl->mapsizez - mEfl->mapsizez * mMapZoom;
+	Vector3 mapSize = mMapControl->getMapSize();
+	float orthoWindowWidth  = mapSize.x - (mapSize.x - 20.0f) * mMapZoom;
+	float orthoWindowHeight = mapSize.z - (mapSize.z - 20.0f) * mMapZoom;
 
+	mCamera->setFarClipDistance(mapSize.y + 3.0f);
 	mCamera->setOrthoWindow(orthoWindowWidth, orthoWindowHeight);
-	mCamera->setPosition(mMapCenter + Vector3(0.0f, 500.0f, 0.0f));
+	mCamera->setPosition(mMapCenter + Vector3(0.0f, mapSize.y + 2.0f, 0.0f));
 	mCamera->lookAt(mMapCenter);
 
 	preRenderTargetUpdate();
