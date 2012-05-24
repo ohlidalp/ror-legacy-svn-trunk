@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrainGroup.h"
 
+#include "TerrainManager.h"
+
 /**
  * This is the common interface for all Scene-Manager specific implementations of the Height-Finder
  */
@@ -52,8 +54,9 @@ class NTHeightFinder : public HeightFinder
 {
 public:
 
-	NTHeightFinder(Ogre::TerrainGroup *tg, Ogre::Vector3 tp) : mTerrainGroup(tg), mTerrainPos(tp)
+	NTHeightFinder(TerrainManager *tm, Ogre::Vector3 tp) : mTerrainGroup(0), mTerrainPos(tp)
 	{
+		mTerrainGroup = tm->getTerrainGroup();
 	}
 	
 	~NTHeightFinder()

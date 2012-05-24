@@ -38,6 +38,8 @@ public:
 
 	void loadTerrain(Ogre::String filename);
 
+	inline Ogre::TerrainGroup *getTerrainGroup() { return mTerrainGroup; };
+
 protected:
 	bool disableCaching;
 	bool mTerrainsImported;
@@ -59,6 +61,7 @@ protected:
 	void configureTerrainDefaults();
 	void defineTerrain(int x, int y, bool flat=false);
 	void initBlendMaps( Ogre::Terrain* t );
+	void getTerrainImage(int x, int y, Ogre::Image& img);
 };
 #endif // TERRAINMANAGER_H__
 
