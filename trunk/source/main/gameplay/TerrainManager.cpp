@@ -68,10 +68,9 @@ bool TerrainManager::loadTerrainConfig(String filename)
 void TerrainManager::initTerrain()
 {
 	// X, Y and Z scale
-	mapsizex = PARSEINT(terrainConfig.getSetting("PageWorldX"));
-	mapsizey = PARSEINT(terrainConfig.getSetting("MaxHeight"));
-	mapsizez = PARSEINT(terrainConfig.getSetting("PageWorldZ"));
-	pageSize = PARSEINT(terrainConfig.getSetting("PageSize"));
+	mapsizex = PARSEINT(terrainConfig.getSetting("WorldSizeX"));
+	mapsizey = PARSEINT(terrainConfig.getSetting("WorldSizeY"));
+	mapsizez = PARSEINT(terrainConfig.getSetting("WorldSizeZ"));
 	terrainSize = mapsizex+1;
 	worldSize = std::max(mapsizex, mapsizez);
 
@@ -95,29 +94,30 @@ void TerrainManager::initTerrain()
 	configureTerrainDefaults();
 
 	String filename = mTerrainGroup->generateFilename(0, 0);
-	bool is_cached  = ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename);
-	if (disableCaching || !is_cached)
+	for (long x = pageMinX; x <= pageMaxX; ++x)
+		for (long y = pageMinY; y <= pageMaxY; ++y)
+			defineTerrain(x, y);
+
+	// sync load since we want everything in place when we start
+	mTerrainGroup->loadAllTerrains(true);
+
+
+	// update the blend maps
+	if (mTerrainsImported)
 	{
-		for (long x = pageMinX; x <= pageMaxX; ++x)
-			for (long y = pageMinY; y <= pageMaxY; ++y)
-				defineTerrain(x, y);
-
-		// sync load since we want everything in place when we start
-		mTerrainGroup->loadAllTerrains(true);
-
-		if (mTerrainsImported)
+		TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+		while(ti.hasMoreElements())
 		{
-			TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
-			while(ti.hasMoreElements())
-			{
-				Terrain *terrain = ti.getNext()->instance;
-				//ShadowManager::getSingleton().updatePSSM(terrain);
-				initBlendMaps(terrain);
-			}
+			Terrain *terrain = ti.getNext()->instance;
+			//ShadowManager::getSingleton().updatePSSM(terrain);
+			initBlendMaps(terrain);
 		}
 
-		// always save the results
-		//mTerrainGroup->saveAllTerrains(false);
+		// always save the results when it was imported
+		mTerrainGroup->saveAllTerrains(false);
+	} else
+	{
+		LOG(" *** Terrain loaded from cache ***");
 	}
 
 	mTerrainGroup->freeTemporaryResources();
@@ -132,8 +132,6 @@ void TerrainManager::configureTerrainDefaults()
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
 	// Configure global
 	terrainOptions->setMaxPixelError(PARSEINT(terrainConfig.getSetting("MaxPixelError")));
-	// testing composite map
-	terrainOptions->setCompositeMapDistance(PARSEINT(terrainConfig.getSetting("CompositeDistance")));
 
 	// Important to set these so that the terrain knows what to use for derived (non-realtime) data
 	if(light)
@@ -146,7 +144,7 @@ void TerrainManager::configureTerrainDefaults()
 	// Configure default import settings for if we use imported image
 	Ogre::Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
 	defaultimp.terrainSize  = terrainSize; // the heightmap size
-	defaultimp.worldSize    = pageSize; // this is the scaled up size, like 12km
+	defaultimp.worldSize    = worldSize; // this is the scaled up size, like 12km
 	defaultimp.inputScale   = mapsizey;
 	defaultimp.minBatchSize = 33;
 	defaultimp.maxBatchSize = 65;
@@ -166,11 +164,14 @@ void TerrainManager::configureTerrainDefaults()
 	matProfile->setGlobalColourMapEnabled(StringConverter::parseBool(terrainConfig.getSetting("GlobalColourMapEnabled")));
 	matProfile->setReceiveDynamicShadowsDepth(StringConverter::parseBool(terrainConfig.getSetting("ReceiveDynamicShadowsDepth")));
 
+	terrainOptions->setLayerBlendMapSize(PARSEINT(terrainConfig.getSetting("LayerBlendMapSize")));
 	terrainOptions->setCompositeMapSize(PARSEINT(terrainConfig.getSetting("CompositeMapSize")));
 	terrainOptions->setCompositeMapDistance(PARSEINT(terrainConfig.getSetting("CompositeMapDistance")));
 	terrainOptions->setSkirtSize(PARSEINT(terrainConfig.getSetting("SkirtSize")));
 	terrainOptions->setLightMapSize(PARSEINT(terrainConfig.getSetting("LightMapSize")));
-	terrainOptions->setCastsDynamicShadows(PARSEINT(terrainConfig.getSetting("CastsDynamicShadows")));
+	terrainOptions->setCastsDynamicShadows(StringConverter::parseBool(terrainConfig.getSetting("CastsDynamicShadows")));
+
+	terrainOptions->setUseRayBoxDistanceCalculation(false);
 
 	// load the textures and blendmaps into our data structures
 	blendMaps.clear();
@@ -194,19 +195,24 @@ void TerrainManager::configureTerrainDefaults()
 
 void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 {
+	bool debugBlendMaps = StringConverter::parseBool(terrainConfig.getSetting("DebugBlendMaps"));
+
 	for(int i = 1; i < terrain->getLayerCount(); i++)
 	{
+		int j = i - 1; // one layer off since init
 		Ogre::Image img;
+		//std::pair<uint8,uint8> textureIndex = terrain->getLayerBlendTextureIndex(i);
+		//uint8 bti = terrain->getBlendTextureIndex(i);
 		try
 		{
-			img.load(blendMaps[i-1], ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+			img.load(blendMaps[j], ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 		} catch(Exception &e)
 		{
-			LOG("Error loading blendmap: " + blendMaps[i] + " : " + e.getFullDescription());
+			LOG("Error loading blendmap: " + blendMaps[j] + " : " + e.getFullDescription());
 			continue;
 		}
 
-		TerrainLayerBlendMap *blendmap = terrain->getLayerBlendMap(i); // starting with 1, very strange ...
+		TerrainLayerBlendMap *blendmap = terrain->getLayerBlendMap(i);
 
 		// resize that blending map so it will fit
 		Ogre::uint32 blendmapSize = terrain->getLayerBlendMapSize();
@@ -221,32 +227,42 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 			{
 				Ogre::ColourValue c = img.getColourAt(x, y, 0);
 				float alpha = 1;//(1/b);
-				if (blendMode[i] == "R")
+				if      (blendMode[j] == "R")
 					*ptr++ = c.r * alpha;
-				else if (blendMode[i] == "G")
+				else if (blendMode[j] == "G")
 					*ptr++ = c.g * alpha;
-				else if (blendMode[i] == "B")
+				else if (blendMode[j] == "B")
 					*ptr++ = c.b * alpha;
-				else if (blendMode[i] == "A")
+				else if (blendMode[j] == "A")
 					*ptr++ = c.a * alpha;
 			}
 		}
 		blendmap->dirty();
 		blendmap->update();
 	}
+
+	if(debugBlendMaps)
+	{
+		for(int i = 1; i < terrain->getLayerCount(); i++)
+		{
+			std::pair<uint8,uint8> textureIndex = terrain->getLayerBlendTextureIndex(i);
+			String blendTexture = terrain->getBlendTextureName(textureIndex.first);
+			TexturePtr tex = (TexturePtr)Ogre::TextureManager::getSingleton().getByName(blendTexture);
+			Image img;
+			if(!tex.isNull())
+			{
+				tex->convertToImage(img);
+				img.save("blend_layer_"+TOSTRING(i)+ blendTexture + ".png");
+			}
+		}
+	}
 }
 
 void TerrainManager::getTerrainImage(int x, int y, Image& img)
 {
 	// create new from image
-	String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
+	String heightmapString = "HeightmapImage." + TOSTRING(x) + "." + TOSTRING(y);
 	String heightmapFilename = terrainConfig.getSetting(heightmapString);
-	if (heightmapFilename.empty())
-	{
-		// try loading the old non-paged name
-		heightmapString = "Heightmap.image";
-		heightmapFilename = terrainConfig.getSetting(heightmapString);
-	}
 
 	if (heightmapFilename.find(".raw") != String::npos)
 	{
