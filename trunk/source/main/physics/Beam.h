@@ -241,6 +241,7 @@ public:
 	bool hasDriverSeat();
 	int calculateDriverPos(Ogre::Vector3 &pos, Ogre::Quaternion &rot);
 	float getSteeringAngle();
+	void triggerGUIFeaturesChanged();
 
 	float elevator;
 	float rudder;
@@ -472,7 +473,7 @@ protected:
 	// SLIDE NODES /////////////////////////////////////////////////////////////
 	//! true if SlideNodes are locked, false if not
 	bool SlideNodesLocked;
-	bool guiInitialized;
+	bool GUIFeaturesChanged;
 
 
 	/**
@@ -494,7 +495,6 @@ protected:
 	 * @return a pair containing the rail, and the distant to the SlideNode
 	 */
 	std::pair<RailGroup*, Ogre::Real> getClosestRailOnTruck( Beam* truck, const SlideNode& node);
-
 };
 
 

@@ -163,6 +163,7 @@ class SlideNode;
 class SoundManager;
 class SoundScriptInstance;
 class SoundScriptManager;
+class TerrainManager;
 class TorqueCurve;
 class TruckEditor;
 class TruckHUD;

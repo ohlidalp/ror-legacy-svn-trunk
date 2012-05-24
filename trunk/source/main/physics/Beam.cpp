@@ -183,7 +183,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	, disableTruckTruckCollisions(false)
 	, disableTruckTruckSelfCollisions(false)
 	, pointCD(0)
-	, guiInitialized(false)
+	, GUIFeaturesChanged(false)
 {
 
 	airbrakeval = 0;
@@ -6022,12 +6022,19 @@ void Beam::updateDashBoards(float &dt)
 
 
 	// set the features of this vehicle once
-	if(!guiInitialized)
+	if(!GUIFeaturesChanged)
 	{
 		bool hasEngine = (engine != 0);
 		bool hasturbo = false;
+		bool autogearVisible = false;
 
-		dash->setEnabled(DD_ENGINE_TURBO, engine->hasturbo);
+		if(hasEngine)
+		{
+			hasturbo = engine->hasturbo;
+			autogearVisible = (engine->getAutoShift() == BeamEngine::MANUALMODE);
+		}
+
+		dash->setEnabled(DD_ENGINE_TURBO, hasturbo);
 		dash->setEnabled(DD_ENGINE_GEAR, hasEngine);
 		dash->setEnabled(DD_ENGINE_NUM_GEAR, hasEngine);
 		dash->setEnabled(DD_ENGINE_GEAR_STRING, hasEngine);
@@ -6044,8 +6051,10 @@ void Beam::updateDashBoards(float &dt)
 		dash->setEnabled(DD_TIES_MODE, !ties.empty());
 		dash->setEnabled(DD_LOCKED, !hooks.empty());
 
+		dash->setEnabled(DD_ENGINE_AUTOGEAR_STRING, autogearVisible);
+
 		dash->updateFeatures();
-		guiInitialized = true;
+		GUIFeaturesChanged = true;
 	}
 
 	// TODO: compass value
@@ -6192,4 +6201,9 @@ Vector3 Beam::getGForces()
 	}
 
 	return Vector3::ZERO;
+}
+
+void Beam::triggerGUIFeaturesChanged()
+{
+	GUIFeaturesChanged = true;
 }
