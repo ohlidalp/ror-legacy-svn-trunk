@@ -2983,7 +2983,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 	{
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
-			if (beams[i].shock && (beams[i].shock->flags & ~SHOCK_FLAG_ISTRIGGER)) // this is NOT a trigger beam
+			if (beams[i].shock && !(beams[i].shock->flags & SHOCK_FLAG_ISTRIGGER)) // this is NOT a trigger beam
 			{
 				// hard (normal) shock bump
 				k = beams[i].shock->sbd_spring;
