@@ -899,6 +899,7 @@ struct rig
 	float cc_target_speed_lower_limit;
 
 	// Speed Limiter
+	bool sl_enabled;
 	float sl_speed_limit;
 
 	float beam_creak;
