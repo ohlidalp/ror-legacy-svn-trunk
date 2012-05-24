@@ -31,37 +31,34 @@ public:
 	BeamEngine(float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum);
 	~BeamEngine();
 
-	float getRPM();
-	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
-	void setRPM(float value);
-	void update(float dt, int doUpdate);
-	void updateAudio(int doUpdate);
-	
-	int getAutoMode();
-	void setAutoMode(int mode);
-	void toggleAutoMode();
-	
 	float getAcc();
-	float getSmoke();
-	float getTorque();
-	float getTurboPSI();
-	void netForceSettings(float rpm, float force, float clutch, int gear, bool running, bool contact, char automode);
-	void setAcc(float val);
-	void setSpin(float rpm);
-
-	// for hydros acceleration
 	float getClutch();
 	float getClutchForce();
 	float getCrankFactor();
+	float getRPM();
+	float getSmoke();
+	float getTorque();
+	float getTurboPSI();
+	int getAutoMode();
+
+	void netForceSettings(float rpm, float force, float clutch, int gear, bool running, bool contact, char automode);
+
+	void setAcc(float val);
+	void setAutoMode(int mode);
 	void setClutch(float clutch);
+	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
+	void setRPM(float value);
+	void setSpin(float rpm);
+
+	void toggleAutoMode();
 	void toggleContact();
 
-	//quick start
+	// quick start
 	void offstart();
 	void setstarter(int v);
 	void start();
 
-	//low level gear changing
+	// low level gear changing
 	int getGear();
 	int getGearRange();
 	void setGear(int v);
@@ -80,7 +77,7 @@ public:
 	float getMaxRPM() { return maxRPM; };
 	int getAutoShift();
 	size_t getNumGears() { return gearsRatio.size() - 2; };
-	size_t getNumGearsRanges() {return getNumGears()/6+1; }
+	size_t getNumGearsRanges() {return getNumGears() / 6 + 1; }
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	void autoSetAcc(float val);
 	void autoShiftDown();
@@ -91,25 +88,13 @@ public:
 	void shiftTo(int val);
 	void updateShifts();
 
+	void update(float dt, int doUpdate);
+	void updateAudio(int doUpdate);
+
 	enum shiftmodes {AUTOMATIC, SEMIAUTO, MANUAL, MANUAL_STICK, MANUAL_RANGES};
 	enum autoswitch {REAR, NEUTRAL, DRIVE, TWO, ONE, MANUALMODE};
 
 protected:
-
-	float iddleRPM;
-	float maxRPM;
-	float stallRPM;
-	float brakingTorque;
-	float engineTorque;
-
-	bool hasturbo;
-	bool hasair;
-	char type;
-	int running;
-	int contact;
-	float hydropump;
-	int prime;
-	
 
 	// gear stuff
 	float curGearboxRPM;
@@ -125,9 +110,21 @@ protected:
 	float curClutchTorque;
 
 	// engine stuff
+	bool hasair;
+	bool hasturbo;
+	char type;
+	float brakingTorque;
 	float curAcc;
 	float curEngineRPM;
+	float engineTorque;
+	float hydropump;
+	float iddleRPM;
 	float inertia;
+	float maxRPM;
+	float stallRPM;
+	int contact;
+	int prime;
+	int running;
 
 	// shifting
 	float post_shift_time;
