@@ -1175,7 +1175,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 			{
 #ifdef USE_MYGUI
 				// show truck selector
-				SelectorWindow::getSingleton().setEnableCancel(false);
 				if (w)
 				{
 					hideMap();
@@ -1188,6 +1187,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif // USE_MYGUI
 			} else
 			{
+				// init no trucks
 				initTrucks(false, preselected_map);
 			}
 		} else if (!preselected_truck.empty() && preselected_truck != "none")
@@ -1202,7 +1202,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		// show terrain selector
 		hideMap();
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_Terrain);
-		SelectorWindow::getSingleton().setEnableCancel(false);
 #endif // USE_MYGUI
 	}
 
@@ -1859,7 +1858,10 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		{
 			curr_truck->cc_target_speed += 5.0f * dt;
 			curr_truck->cc_target_speed  = std::max(curr_truck->cc_target_speed_lower_limit, curr_truck->cc_target_speed);
-			curr_truck->cc_target_speed  = std::min(curr_truck->cc_target_speed, curr_truck->sl_speed_limit);
+			if (curr_truck->sl_enabled)
+			{
+				curr_truck->cc_target_speed  = std::min(curr_truck->cc_target_speed, curr_truck->sl_speed_limit);
+			}
 		} else if (curr_truck->engine->getGear() == 0) // out of gear
 		{
 			curr_truck->cc_target_rpm += 1000.0f * dt;
@@ -1880,7 +1882,10 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 	}
 	if (INPUTENGINE.getEventBoolValue(EV_TRUCK_CRUISE_CONTROL_READJUST))
 	{
-		curr_truck->cc_target_speed = std::min(curr_truck->WheelSpeed, curr_truck->sl_speed_limit);
+		if (curr_truck->sl_enabled)
+		{
+			curr_truck->cc_target_speed = std::min(curr_truck->WheelSpeed, curr_truck->sl_speed_limit);
+		}
 		curr_truck->cc_target_speed = std::max(curr_truck->cc_target_speed_lower_limit, curr_truck->cc_target_speed);
 		curr_truck->cc_target_rpm   = curr_truck->engine->getRPM();
 	}
@@ -1898,7 +1903,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 
 void checkSpeedlimit(Beam* curr_truck, float dt)
 {
-	if (curr_truck->sl_speed_limit > 0.0f && curr_truck->engine->getGear() != 0)
+	if (curr_truck->sl_enabled && curr_truck->engine->getGear() != 0)
 	{
 		float accl = (curr_truck->sl_speed_limit - std::abs(curr_truck->WheelSpeed)) * 2.0f;
 		accl = std::max(0.0f, accl);
@@ -2482,30 +2487,30 @@ bool RoRFrameListener::updateEvents(float dt)
 									}
 
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES))
-									{
-										//Toggle Auto shift
-										curr_truck->engine->toggleAutoMode();
+								{
+									//Toggle Auto shift
+									curr_truck->engine->toggleAutoMode();
 #ifdef USE_MYGUI
-										switch(curr_truck->engine->getAutoMode())
-										{
-											case BeamEngine::AUTOMATIC:
-												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
-												break;
-											case BeamEngine::SEMIAUTO:
-												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
-												break;
-											case BeamEngine::MANUAL:
-												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
-												break;
-											case BeamEngine::MANUAL_STICK:
-												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
-												break;
-											case BeamEngine::MANUAL_RANGES:
-												Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
-												break;
-										}
-#endif //USE_MYGUI
+									switch(curr_truck->engine->getAutoMode())
+									{
+										case BeamEngine::AUTOMATIC:
+											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
+											break;
+										case BeamEngine::SEMIAUTO:
+											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
+											break;
+										case BeamEngine::MANUAL:
+											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
+											break;
+										case BeamEngine::MANUAL_STICK:
+											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
+											break;
+										case BeamEngine::MANUAL_RANGES:
+											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
+											break;
 									}
+#endif //USE_MYGUI
+								}
 
 								//joy clutch
 								float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
@@ -3278,8 +3283,8 @@ bool RoRFrameListener::updateEvents(float dt)
 						}
 					} else
 					{
-						// init no trucks, as there were found some
-						initTrucks(false, sel->fname, String(), 0, false, skin);
+						// init no trucks
+						initTrucks(false, sel->fname, "", 0, false, skin);
 					}
 				}
 			} else if (loading_state==TERRAIN_LOADED)
@@ -5575,18 +5580,17 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	int free_truck    = BeamFactory::getSingleton().getTruckCount();
 	Beam **trucks     = BeamFactory::getSingleton().getTrucks();
 
-	//first, test if the place if clear, BUT NOT IN MULTIPLAYER
+	// first, test if the place if clear, BUT NOT IN MULTIPLAYER
 	if (!net)
 	{
-		collision_box_t *spawnbox=collisions->getBox(instance, box);
-		for (int t=0; t<free_truck; t++)
+		collision_box_t *spawnbox = collisions->getBox(instance, box);
+		for (int t=0; t < free_truck; t++)
 		{
 			if (!trucks[t]) continue;
-			for (int i=0; i<trucks[t]->free_node; i++)
+			for (int i=0; i < trucks[t]->free_node; i++)
 			{
 				if (collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
 				{
-					//boy, thats bad
 #ifdef USE_MYGUI
 					Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Please clear the place first"), "error.png");
 #endif // USE_MYGUI
@@ -5596,10 +5600,10 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 			}
 		}
 	}
-	reload_pos=collisions->getPosition(instance, box);
-	reload_dir=collisions->getDirection(instance, box);
-	reload_box=collisions->getBox(instance, box);
-	loading_state=RELOADING;
+	reload_pos = collisions->getPosition(instance, box);
+	reload_dir = collisions->getDirection(instance, box);
+	reload_box = collisions->getBox(instance, box);
+	loading_state = RELOADING;
 	hideMap();
 #ifdef USE_MYGUI
 	SelectorWindow::getSingleton().show(SelectorWindow::LoaderType(type));

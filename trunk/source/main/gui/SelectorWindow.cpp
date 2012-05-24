@@ -316,19 +316,19 @@ void SelectorWindow::getData()
 		if(it->fext=="terrn")
 			add = (mLoaderType == LT_Terrain);
 		else if(it->fext=="truck")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Truck || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Truck	|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="car")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Car || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Car		|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="boat")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Boat || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Boat																	|| mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="airplane")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Airplane || mLoaderType == LT_Network || mLoaderType == LT_NetworkWithBoat);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Airplane								|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
 		else if(it->fext=="trailer")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Trailer || mLoaderType == LT_Extension);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Trailer	|| mLoaderType == LT_Extension);
 		else if(it->fext=="train")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Train);
 		else if(it->fext=="load")
-			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Load || mLoaderType == LT_Extension);
+			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Load		|| mLoaderType == LT_Extension);
 
 		if(!add)
 			continue;

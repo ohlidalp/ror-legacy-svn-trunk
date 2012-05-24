@@ -872,6 +872,7 @@ int SerializedRig::loadTruck(String fname, SceneManager *manager, SceneNode *par
 					parser_warning(c, "SpeedLimiter: Parameter must be a decimal and greater than zero (e.g. 69.445)");
 					continue;
 				}
+				sl_enabled = true;
 				continue;
 			}
 			if (c.line.size() > 17 && c.line.substr(0, 17) == "fileformatversion")
