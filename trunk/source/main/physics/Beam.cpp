@@ -183,6 +183,7 @@ Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win
 	, disableTruckTruckCollisions(false)
 	, disableTruckTruckSelfCollisions(false)
 	, pointCD(0)
+	, guiInitialized(false)
 {
 
 	airbrakeval = 0;
@@ -5772,8 +5773,8 @@ void Beam::updateDashBoards(float &dt)
 		int cg = engine->getAutoShift();
 		if(cg != BeamEngine::MANUALMODE)
 		{
-			str  = ((cg == BeamEngine::REAR)   ?"#ff0012":"#8a000a") + String("R\n");
-			str += ((cg == BeamEngine::NEUTRAL)?"#ffffff":"#868686") + String("N\n");
+			str  = ((cg == BeamEngine::REAR)   ?"#ffffff":"#868686") + String("R\n");
+			str += ((cg == BeamEngine::NEUTRAL)?"#ff0012":"#8a000a") + String("N\n");
 			str += ((cg == BeamEngine::DRIVE)  ?"#12ff00":"#248c00") + String("D\n");
 			str += ((cg == BeamEngine::TWO)    ?"#ffffff":"#868686") + String("2\n");
 			str += ((cg == BeamEngine::ONE)    ?"#ffffff":"#868686") + String("1");
@@ -6019,6 +6020,33 @@ void Beam::updateDashBoards(float &dt)
 	dash->setFloat(DD_ODOMETER_TOTAL, odometerTotal);
 	dash->setFloat(DD_ODOMETER_USER, odometerUser);
 
+
+	// set the features of this vehicle once
+	if(!guiInitialized)
+	{
+		bool hasEngine = (engine != 0);
+		bool hasturbo = false;
+
+		dash->setEnabled(DD_ENGINE_TURBO, engine->hasturbo);
+		dash->setEnabled(DD_ENGINE_GEAR, hasEngine);
+		dash->setEnabled(DD_ENGINE_NUM_GEAR, hasEngine);
+		dash->setEnabled(DD_ENGINE_GEAR_STRING, hasEngine);
+		dash->setEnabled(DD_ENGINE_AUTOGEAR_STRING, hasEngine);
+		dash->setEnabled(DD_ENGINE_AUTO_GEAR, hasEngine);
+		dash->setEnabled(DD_ENGINE_CLUTCH, hasEngine);
+		dash->setEnabled(DD_ENGINE_RPM, hasEngine);
+		dash->setEnabled(DD_ENGINE_IGNITION, hasEngine);
+		dash->setEnabled(DD_ENGINE_BATTERY, hasEngine);
+		dash->setEnabled(DD_ENGINE_CLUTCH_WARNING, hasEngine);
+
+		dash->setEnabled(DD_TRACTIONCONTROL_MODE, tc_present);
+		dash->setEnabled(DD_ANTILOCKBRAKE_MODE, alb_present);
+		dash->setEnabled(DD_TIES_MODE, !ties.empty());
+		dash->setEnabled(DD_LOCKED, !hooks.empty());
+
+		dash->updateFeatures();
+		guiInitialized = true;
+	}
 
 	// TODO: compass value
 
