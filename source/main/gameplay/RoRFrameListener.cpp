@@ -2033,7 +2033,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		String ssmsg = _L("wrote screenshot:") + TOSTRING(mNumScreenShots);
 		LOG(ssmsg);
 #ifdef USE_MYGUI
-		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ssmsg, "camera.png", 10000);
+		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ssmsg, "camera.png", 10000, false);
 #endif //USE_MYGUI
 	}
 
