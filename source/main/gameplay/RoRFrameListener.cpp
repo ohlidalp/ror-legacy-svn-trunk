@@ -4121,7 +4121,7 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	// we choose the heightfinder depending on whether we use the classical
 	// terrain or the new one
 	if (newTerrainMode)
-		hfinder = new NTHeightFinder(mTerrainGroup, Vector3::ZERO);
+		hfinder = new NTHeightFinder(terrainManager, Vector3::ZERO);
 	else
 		hfinder = new TSMHeightFinder(geom, terrainmap, wheight);
 

@@ -65,7 +65,6 @@ bool TerrainManager::loadTerrainConfig(String filename)
 	return true;
 }
 
-
 void TerrainManager::initTerrain()
 {
 	// X, Y and Z scale
@@ -73,7 +72,7 @@ void TerrainManager::initTerrain()
 	mapsizey = PARSEINT(terrainConfig.getSetting("MaxHeight"));
 	mapsizez = PARSEINT(terrainConfig.getSetting("PageWorldZ"));
 	pageSize = PARSEINT(terrainConfig.getSetting("PageSize"));
-	terrainSize = pageSize;
+	terrainSize = mapsizex+1;
 	worldSize = std::max(mapsizex, mapsizez);
 
 	String terrainFileSuffix = "mapbin";
@@ -92,9 +91,6 @@ void TerrainManager::initTerrain()
 	mTerrainGroup->setFilenameConvention(baseName, terrainFileSuffix);
 	mTerrainGroup->setOrigin(mTerrainPos);
 	mTerrainGroup->setResourceGroup("cache");
-
-	OGRE_NEW TerrainGlobalOptions();
-	// Configure global
 
 	configureTerrainDefaults();
 
@@ -116,7 +112,7 @@ void TerrainManager::initTerrain()
 			{
 				Terrain *terrain = ti.getNext()->instance;
 				//ShadowManager::getSingleton().updatePSSM(terrain);
-				//initBlendMaps(terrain);
+				initBlendMaps(terrain);
 			}
 		}
 
@@ -124,12 +120,14 @@ void TerrainManager::initTerrain()
 		//mTerrainGroup->saveAllTerrains(false);
 	}
 
-	//mTerrainGroup->freeTemporaryResources();
+	mTerrainGroup->freeTemporaryResources();
 }
 
 
 void TerrainManager::configureTerrainDefaults()
 {
+	OGRE_NEW TerrainGlobalOptions();
+
 	Light *light = SkyManager::getSingleton().getMainLight();
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
 	// Configure global
@@ -272,6 +270,44 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 	}
 }
 
+void TerrainManager::getTerrainImage(int x, int y, Image& img)
+{
+	// create new from image
+	String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
+	String heightmapFilename = terrainConfig.getSetting(heightmapString);
+	if (heightmapFilename.empty())
+	{
+		// try loading the old non-paged name
+		heightmapString = "Heightmap.image";
+		heightmapFilename = terrainConfig.getSetting(heightmapString);
+	}
+
+	if (heightmapFilename.find(".raw") != String::npos)
+	{
+		int rawSize = StringConverter::parseInt(terrainConfig.getSetting("Heightmap.raw.size"));
+		int bpp = StringConverter::parseInt(terrainConfig.getSetting("Heightmap.raw.bpp"));
+
+		// load raw data
+		DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
+		LOG(" loading RAW image: " + TOSTRING(stream->size()) + " / " + TOSTRING(rawSize*rawSize*bpp));
+		PixelFormat pformat = PF_L8;
+		if (bpp == 2)
+			pformat = PF_L16;
+		img.loadRawData(stream, rawSize, rawSize, 1, pformat);
+	} else
+	{
+		img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	}
+
+	if (!terrainConfig.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(terrainConfig.getSetting("Heightmap.flip")))
+		img.flipAroundX();
+
+	//if (flipX)
+	//	img.flipAroundY();
+	//if (flipY)
+	//	img.flipAroundX();
+}
+
 void TerrainManager::defineTerrain( int x, int y, bool flat )
 {
 	if (flat)
@@ -288,42 +324,8 @@ void TerrainManager::defineTerrain( int x, int y, bool flat )
 	}
 	else
 	{
-		// create new from image
-		String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
-		String heightmapFilename = terrainConfig.getSetting(heightmapString);
-		if (heightmapFilename.empty())
-		{
-			// try loading the old non-paged name
-			heightmapString = "Heightmap.image";
-			heightmapFilename = terrainConfig.getSetting(heightmapString);
-		}
 		Image img;
-		if (heightmapFilename.find(".raw") != String::npos)
-		{
-			int rawSize = StringConverter::parseInt(terrainConfig.getSetting("Heightmap.raw.size"));
-			int bpp = StringConverter::parseInt(terrainConfig.getSetting("Heightmap.raw.bpp"));
-
-			// load raw data
-			DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
-			LOG(" loading RAW image: " + TOSTRING(stream->size()) + " / " + TOSTRING(rawSize*rawSize*bpp));
-			PixelFormat pformat = PF_L8;
-			if (bpp == 2)
-				pformat = PF_L16;
-			img.loadRawData(stream, rawSize, rawSize, 1, pformat);
-		} else
-		{
-			img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		}
-
-		if (!terrainConfig.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(terrainConfig.getSetting("Heightmap.flip")))
-			img.flipAroundX();
-
-
-		//if (x % 2 != 0)
-		//	img.flipAroundY();
-		//if (y % 2 != 0)
-		//	img.flipAroundX();
-
+		getTerrainImage(x, y, img);
 		mTerrainGroup->defineTerrain(x, y, &img);
 		mTerrainsImported = true;
 	}
