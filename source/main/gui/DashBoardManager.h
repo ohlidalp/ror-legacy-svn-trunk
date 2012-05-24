@@ -51,16 +51,19 @@ typedef struct dashData_t
 {
 	char type; // DC_*
 	dataContainer_t data;
+	bool enabled;
 	const char *name; // char string of name
 
 	dashData_t() : type(DC_INVALID)
 	{
 		memset(&data, 0, sizeof(data));
+		enabled = false;
 	}
 
 	dashData_t(char type, const char *name) : type(type), name(name)
 	{
 		memset(&data, 0, sizeof(data));
+		enabled = true;
 	}
 
 } dashData_t;
@@ -176,11 +179,14 @@ public:
 	inline float _getFloat(size_t key) { return data[key].data.value_float; };
 	inline float getNumeric(size_t key);
 	inline char *getChar(size_t key)  { return data[key].data.value_char; };
+	inline bool getEnabled( size_t key ) { return data[key].enabled; };
 
 	inline void setBool(size_t key, bool &val)   { data[key].data.value_bool  = val; };
 	inline void setInt(size_t key, int &val)     { data[key].data.value_int   = val; };
 	inline void setFloat(size_t key, float &val) { data[key].data.value_float = val; };
 	inline void setChar(size_t key, const char *val)  { strncpy(data[key].data.value_char, val, DD_MAXCHAR); };
+
+	inline void setEnabled(size_t key, bool val) { data[key].enabled = val; };
 
 	inline int getDataType(size_t key) { return data[key].type; };
 
@@ -189,6 +195,7 @@ public:
 	int loadDashBoard(Ogre::String filename, bool textureLayer);
 
 	void update(float &dt);
+	void updateFeatures();
 
 	bool wasLoaded() { return (free_dashboard > 0); };
 
@@ -196,7 +203,6 @@ public:
 	void setVisible3d(bool visibility);
 	bool getVisible() { return visible; };
 	void windowResized();
-
 protected:
 	bool visible;
 	dashData_t data[DD_MAX];
@@ -217,6 +223,7 @@ public:
 	bool getIsTextureLayer() { return textureLayer; }
 
 	void update(float &dt);
+	void updateFeatures();
 
 	void windowResized();
 

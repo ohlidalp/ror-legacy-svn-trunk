@@ -472,6 +472,7 @@ protected:
 	// SLIDE NODES /////////////////////////////////////////////////////////////
 	//! true if SlideNodes are locked, false if not
 	bool SlideNodesLocked;
+	bool guiInitialized;
 
 
 	/**

@@ -163,6 +163,14 @@ void DashBoardManager::update(float &dt)
 	}
 }
 
+void DashBoardManager::updateFeatures()
+{
+	for(int i=0; i < free_dashboard; i++)
+	{
+		dashboards[i]->updateFeatures();
+	}
+}
+
 float DashBoardManager::getNumeric( size_t key )
 {
 	switch(data[key].type)
@@ -219,6 +227,17 @@ DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename, bool _tex
 DashBoard::~DashBoard()
 {
 	MyGUI::LayoutManager::getInstance().unloadLayout(widgets);
+}
+
+void DashBoard::updateFeatures()
+{
+	// this hides / shows parts of the gui depending on the vehicle features
+	for(int i = 0; i < free_controls; i++)
+	{
+		bool enabled = manager->getEnabled(controls[i].linkID);
+
+		controls[i].widget->setVisible(enabled);
+	}
 }
 
 void DashBoard::update( float &dt )
@@ -373,9 +392,10 @@ void DashBoard::windowResized()
 
 void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 {
-	std::string name = w->getName();
-	std::string anim = w->getUserString("anim");
-	std::string debug = w->getUserString("debug");
+	std::string name     = w->getName();
+	std::string anim     = w->getUserString("anim");
+	std::string debug    = w->getUserString("debug");
+	std::string linkArgs = w->getUserString("link");
 
 	// make it unclickable
 	w->setUserString("interactive", "0");
@@ -407,7 +427,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 
 	
 	// animations for this control?
-	if(!anim.empty())
+	if(!linkArgs.empty())
 	{
 
 		layoutLink_t ctrl;
@@ -422,7 +442,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 		
 		// establish the link
 		{
-			String linkArgs = w->getUserString("link");
+			
 			replaceString(linkArgs, "&gt;", ">");
 			replaceString(linkArgs, "&lt;", "<");
 			String linkName = "";
