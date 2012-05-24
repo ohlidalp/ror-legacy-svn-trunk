@@ -57,6 +57,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MeshObject.h"
 #include "MumbleIntegration.h"
 #include "network.h"
+#include "TerrainManager.h"
 #include "OutProtocol.h"
 #include "OverlayWrapper.h"
 #include "PlayerColours.h"
@@ -796,7 +797,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	terrainName(""),
 	terrainUID(""),
 	truck_preload_num(0),
-	w(0)
+	w(0),
+	terrainManager(0)
 {
 	RoRFrameListener::eflsingleton = this;
 
@@ -2490,6 +2492,10 @@ bool RoRFrameListener::updateEvents(float dt)
 								{
 									//Toggle Auto shift
 									curr_truck->engine->toggleAutoMode();
+
+									// force gui update
+									curr_truck->triggerGUIFeaturesChanged();
+									
 #ifdef USE_MYGUI
 									switch(curr_truck->engine->getAutoMode())
 									{
@@ -3828,264 +3834,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 			mSceneMgr->setWorldGeometry(geom);
 		} else if (newTerrainMode && !disableTetrrain)
 		{
-			// new terrain mode
-			// new terrain
-			int pageSize = StringConverter::parseInt(cfg.getSetting("PageSize"));
-			int worldSize = StringConverter::parseInt(cfg.getSetting("PageWorldX"));
-			int pageMaxHeight = StringConverter::parseInt(cfg.getSetting("MaxHeight"));
-
-			String TERRAIN_FILE_PREFIX  = String(geom); //"testTerrain";
-			String TERRAIN_FILE_SUFFIX  = "mapbin";
-			float TERRAIN_WORLD_SIZE    = worldSize; //1000.0f; // PageWorldX?
-			int TERRAIN_SIZE            = pageSize;
-			int TERRAIN_PAGE_MIN_X=0, TERRAIN_PAGE_MAX_X=0;
-			int TERRAIN_PAGE_MIN_Y=0, TERRAIN_PAGE_MAX_Y=0;
-
-			TERRAIN_PAGE_MAX_X = StringConverter::parseInt(cfg.getSetting("Pages_X"));
-			TERRAIN_PAGE_MAX_Y = StringConverter::parseInt(cfg.getSetting("Pages_Y"));
-
-			bool mTerrainsImported=false;
-			TerrainPaging* mTerrainPaging=0;
-			PageManager* mPageManager=0;
-
-			Vector3 mTerrainPos(worldSize/2,0,worldSize/2);
-			mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
-			mTerrainGroup->setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX);
-			mTerrainGroup->setOrigin(mTerrainPos);
-			mTerrainGroup->setResourceGroup("cache");
-
-			new TerrainGlobalOptions();
-			// Configure global
-			TerrainGlobalOptions::getSingleton().setMaxPixelError(StringConverter::parseInt(cfg.getSetting("MaxPixelError")));
-			
-			// testing composite map
-			if (mCamera->getFarClipDistance() == 0)
-				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(1000.0f);
-			else
-				TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
-			//mTerrainGlobals->setUseRayBoxDistanceCalculation(true);
-
-			// adds strange colours for debug purposes
-			//TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->setDebugLevel(1);
-
-			// TBD: optimizations
-			TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
-			matProfile->setLightmapEnabled(true);
-			//matProfile->setLayerNormalMappingEnabled(false);
-			//matProfile->setLayerSpecularMappingEnabled(false);
-			//matProfile->setLayerParallaxMappingEnabled(false);
-
-			matProfile->setGlobalColourMapEnabled(false);
-			matProfile->setReceiveDynamicShadowsDepth(true);
-
-
-			TerrainGlobalOptions::getSingleton().setCompositeMapSize(1024);
-			//TerrainGlobalOptions::getSingleton().setCompositeMapDistance(100);
-			TerrainGlobalOptions::getSingleton().setSkirtSize(1);
-			TerrainGlobalOptions::getSingleton().setLightMapSize(256);
-			TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
-
-			// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-			if (mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
-			TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
-			//mTerrainGlobals->setCompositeMapAmbient(ColourValue::Red);
-			if (mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
-
-			
-
-			// Configure default import settings for if we use imported image
-			Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
-			defaultimp.terrainSize  = TERRAIN_SIZE;
-			defaultimp.worldSize    = TERRAIN_WORLD_SIZE;
-
-			//TerrainGlobalOptions::getSingleton().setDefaultGlobalColourMapSize(pageSize);
-
-			defaultimp.inputScale   = pageMaxHeight;
-			defaultimp.minBatchSize = 33;
-			if (!cfg.getSetting("minBatchSize").empty())
-				defaultimp.minBatchSize = StringConverter::parseInt(cfg.getSetting("minBatchSize"));
-
-			if (!cfg.getSetting("maxBatchSize").empty())
-				defaultimp.maxBatchSize = StringConverter::parseInt(cfg.getSetting("maxBatchSize"));
-
-			// TBD: properly load textures: http://www.ogre3d.org/forums/viewtopic.php?f=2&t=60302&start=0
-
-			// textures
-			StringVector blendMaps, blendMode;
-			int numLayers = StringConverter::parseInt(cfg.getSetting("Layers.count"));
-			if (numLayers > 0)
-			{
-				defaultimp.layerList.resize(numLayers+1);
-				blendMaps.resize(numLayers+1);
-				blendMode.resize(numLayers+1);
-				for(int i = 1; i<numLayers+1; i++)
-				{
-					defaultimp.layerList[i].worldSize = StringConverter::parseReal(cfg.getSetting("Layers."+TOSTRING(i)+".size"));
-					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+TOSTRING(i)+".diffuse"));
-					defaultimp.layerList[i].textureNames.push_back(cfg.getSetting("Layers."+TOSTRING(i)+".normal"));
-					blendMaps[i] = cfg.getSetting("Layers."+TOSTRING(i)+".blendmap");
-					blendMode[i] = cfg.getSetting("Layers."+TOSTRING(i)+".blendmapmode");
-				}
-			}
-
-			String filename = mTerrainGroup->generateFilename(0, 0);
-			bool is_cached = (ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename));
-
-			bool disableCaching = false;
-			if (!cfg.getSetting("disableCaching").empty())
-				disableCaching = StringConverter::parseBool(cfg.getSetting("disableCaching"));
-
-			if (disableCaching || !is_cached)
-			{
-				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
-				{
-					for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
-					{
-						String filename = mTerrainGroup->generateFilename(x, y);
-						if (!disableCaching && ResourceGroupManager::getSingleton().resourceExists(mTerrainGroup->getResourceGroup(), filename))
-						{
-							mTerrainGroup->defineTerrain(x, y);
-						}
-						else
-						{
-							String heightmapString = "Heightmap.image." + TOSTRING(x) + "." + TOSTRING(y);
-							String heightmapFilename = cfg.getSetting(heightmapString);
-							if (heightmapFilename.empty())
-							{
-								// try loading the old non-paged name
-								heightmapString = "Heightmap.image";
-								heightmapFilename = cfg.getSetting(heightmapString);
-							}
-							Image img;
-							if (heightmapFilename.find(".raw") != String::npos)
-							{
-								int rawSize = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.size"));
-								int bpp = StringConverter::parseInt(cfg.getSetting("Heightmap.raw.bpp"));
-
-								// load raw data
-								DataStreamPtr stream = ResourceGroupManager::getSingleton().openResource(heightmapFilename);
-								LOG(" loading RAW image: " + TOSTRING(stream->size()) + " / " + TOSTRING(rawSize*rawSize*bpp));
-								PixelFormat pformat = PF_L8;
-								if (bpp == 2)
-									pformat = PF_L16;
-								img.loadRawData(stream, rawSize, rawSize, 1, pformat);
-							} else
-							{
-								img.load(heightmapFilename, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-							}
-
-							if (!cfg.getSetting("Heightmap.flip").empty()  && StringConverter::parseBool(cfg.getSetting("Heightmap.flip")))
-								img.flipAroundX();
-
-
-							//if (x % 2 != 0)
-							//	img.flipAroundY();
-							//if (y % 2 != 0)
-							//	img.flipAroundX();
-
-							mTerrainGroup->defineTerrain(x, y, &img);
-							mTerrainsImported = true;
-						}
-					}
-				}
-
-				// sync load since we want everything in place when we start
-				mTerrainGroup->loadAllTerrains(true);
-
-				for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
-				{
-					for (long py = TERRAIN_PAGE_MIN_Y; py <= TERRAIN_PAGE_MAX_Y; ++py)
-					{
-						Terrain* terrain = mTerrainGroup->getTerrain(x,py);
-						if (!terrain) continue;
-
-						ShadowManager::getSingleton().updatePSSM(terrain);
-
-						// set up a colour map
-						/*
-						String textureString = "Texture.image." + TOSTRING(x) + "." + TOSTRING(y);
-						String textureFilename = cfg.getSetting(textureString);
-						if (textureFilename.empty())
-						{
-							// try to load traditional world texture
-							textureString="WorldTexture";
-							textureFilename = cfg.getSetting(textureString);
-						}
-						if (!textureFilename.empty() && !terrain->getGlobalColourMapEnabled())
-						{
-							Image colourMap;
-							colourMap.load(textureFilename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
-
-							terrain->setGlobalColourMapEnabled(true, 1024);
-
-							TexturePtr tp = terrain->getGlobalColourMap();
-							if (!tp.isNull())
-								tp->loadImage(colourMap);
-						}
-						*/
-
-						for(int i=1; i<terrain->getLayerCount(); i++)
-						{
-							Ogre::Image img;
-							String group="";
-							try
-							{
-								group = ResourceGroupManager::getSingleton().findGroupContainingResource(blendMaps[i]);
-							} catch(...) {}
-							if (group.empty())
-								continue;
-							img.load(blendMaps[i], group);
-
-							TerrainLayerBlendMap *bm = terrain->getLayerBlendMap(i); // starting with 1, very strange ...
-
-							int bmSize = terrain->getLayerBlendMapSize();
-							float* pBlend1 = bm->getBlendPointer();
-							for (Ogre::uint16 y = 0; y != bmSize; y++)
-							{
-								for (Ogre::uint16 x = 0; x != bmSize; x++)
-								{
-									Ogre::Real tx=(float(x)/float(bmSize));
-									Ogre::Real ty=(float(y)/float(bmSize));
-									int ix = int(img.getWidth()*tx);
-									int iy = int(img.getHeight()*ty);
-									Ogre::ColourValue c = img.getColourAt(ix, iy, 0);
-									float alpha = 1;//(1/b);
-									if (blendMode[i] == "R")
-										*pBlend1++ = c.r * alpha;
-									else if (blendMode[i] == "G")
-										*pBlend1++ = c.g * alpha;
-									else if (blendMode[i] == "B")
-										*pBlend1++ = c.b * alpha;
-									else if (blendMode[i] == "A")
-										*pBlend1++ = c.a * alpha;
-								}
-							}
-							bm->dirty();
-							bm->update();
-						}
-					}
-				}
-
-				if (disableCaching)
-					mTerrainGroup->saveAllTerrains(false);
-			} else
-			{
-				// paging, yeah!
-				// Paging setup
-				mPageManager = OGRE_NEW PageManager();
-				// Since we're not loading any pages from .page files, we need a way just
-				// to say we've loaded them without them actually being loaded
-				mPageManager->setPageProvider(&mDummyPageProvider);
-				mPageManager->addCamera(mCamera);
-				mTerrainPaging = OGRE_NEW TerrainPaging(mPageManager);
-				PagedWorld* world = mPageManager->createWorld();
-				mTerrainPaging->createWorldSection(world, mTerrainGroup, TERRAIN_SIZE, TERRAIN_SIZE*1.2f,
-					TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y,
-					TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y);
-			}
-
-			mTerrainGroup->freeTemporaryResources();
-
+			terrainManager = new TerrainManager(mSceneMgr);
+			terrainManager->loadTerrain(geom);
 		}
 	}
 
