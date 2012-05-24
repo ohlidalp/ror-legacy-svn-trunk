@@ -157,54 +157,20 @@ void TerrainManager::configureTerrainDefaults()
 	if (!terrainConfig.getSetting("maxBatchSize").empty())
 		defaultimp.maxBatchSize = PARSEINT(terrainConfig.getSetting("maxBatchSize"));
 
-	/*
-	// testing composite map
+	// optimizations
+	TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(terrainOptions->getDefaultMaterialGenerator()->getActiveProfile());
+	matProfile->setLightmapEnabled(StringConverter::parseBool(terrainConfig.getSetting("LightmapEnabled")));
+	matProfile->setLayerNormalMappingEnabled(StringConverter::parseBool(terrainConfig.getSetting("NormalMappingEnabled")));
+	matProfile->setLayerSpecularMappingEnabled(StringConverter::parseBool(terrainConfig.getSetting("SpecularMappingEnabled")));
+	matProfile->setLayerParallaxMappingEnabled(StringConverter::parseBool(terrainConfig.getSetting("ParallaxMappingEnabled")));
+	matProfile->setGlobalColourMapEnabled(StringConverter::parseBool(terrainConfig.getSetting("GlobalColourMapEnabled")));
+	matProfile->setReceiveDynamicShadowsDepth(StringConverter::parseBool(terrainConfig.getSetting("ReceiveDynamicShadowsDepth")));
 
-
-
-
-	// Configure default import settings for if we use imported image
-	Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
-	defaultimp.terrainSize  = pageSize;
-	defaultimp.worldSize    = mapsizex;
-
-	//TerrainGlobalOptions::getSingleton().setDefaultGlobalColourMapSize(pageSize);
-
-	if (mCamera->getFarClipDistance() == 0)
-		TerrainGlobalOptions::getSingleton().setCompositeMapDistance(1000.0f);
-	else
-		TerrainGlobalOptions::getSingleton().setCompositeMapDistance(std::min(1000.0f, mCamera->getFarClipDistance()));
-	
-	//terrainOptions->setUseRayBoxDistanceCalculation(true);
-
-	// adds strange colours for debug purposes
-	//TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->setDebugLevel(1);
-
-	// TBD: optimizations
-	TerrainMaterialGeneratorA::SM2Profile* matProfile = static_cast<TerrainMaterialGeneratorA::SM2Profile*>(TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
-	matProfile->setLightmapEnabled(true);
-	//matProfile->setLayerNormalMappingEnabled(false);
-	//matProfile->setLayerSpecularMappingEnabled(false);
-	//matProfile->setLayerParallaxMappingEnabled(false);
-
-	matProfile->setGlobalColourMapEnabled(false);
-	matProfile->setReceiveDynamicShadowsDepth(true);
-
-
-	TerrainGlobalOptions::getSingleton().setCompositeMapSize(1024);
-	//TerrainGlobalOptions::getSingleton().setCompositeMapDistance(100);
-	TerrainGlobalOptions::getSingleton().setSkirtSize(1);
-	TerrainGlobalOptions::getSingleton().setLightMapSize(256);
-	TerrainGlobalOptions::getSingleton().setCastsDynamicShadows(true);
-
-	// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-	Light *mainLight = SkyManager::getSingleton().getMainLight();
-	if (mainLight) TerrainGlobalOptions::getSingleton().setLightMapDirection(mainLight->getDerivedDirection());
-	TerrainGlobalOptions::getSingleton().setCompositeMapAmbient(mSceneMgr->getAmbientLight());
-	//terrainOptions->setCompositeMapAmbient(ColourValue::Red);
-	if (mainLight) TerrainGlobalOptions::getSingleton().setCompositeMapDiffuse(mainLight->getDiffuseColour());
-	*/
-
+	terrainOptions->setCompositeMapSize(PARSEINT(terrainConfig.getSetting("CompositeMapSize")));
+	terrainOptions->setCompositeMapDistance(PARSEINT(terrainConfig.getSetting("CompositeMapDistance")));
+	terrainOptions->setSkirtSize(PARSEINT(terrainConfig.getSetting("SkirtSize")));
+	terrainOptions->setLightMapSize(PARSEINT(terrainConfig.getSetting("LightMapSize")));
+	terrainOptions->setCastsDynamicShadows(PARSEINT(terrainConfig.getSetting("CastsDynamicShadows")));
 
 	// load the textures and blendmaps into our data structures
 	blendMaps.clear();
