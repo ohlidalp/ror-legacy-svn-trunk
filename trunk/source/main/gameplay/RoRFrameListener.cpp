@@ -428,8 +428,8 @@ void RoRFrameListener::updateGUI(float dt)
 		ow->turbotexture->setTextureRotate(Degree(angle));
 
 		// indicators
-		ow->igno->setMaterialName(String("tracks/ign-")         + ((curr_truck->engine->contact)?"on":"off"));
-		ow->batto->setMaterialName(String("tracks/batt-")       + ((curr_truck->engine->contact && !curr_truck->engine->running)?"on":"off"));
+		ow->igno->setMaterialName(String("tracks/ign-")         + ((curr_truck->engine->hasContact())?"on":"off"));
+		ow->batto->setMaterialName(String("tracks/batt-")       + ((curr_truck->engine->hasContact() && !curr_truck->engine->isRunning())?"on":"off"));
 		ow->pbrakeo->setMaterialName(String("tracks/pbrake-")   + ((curr_truck->parkingbrake)?"on":"off"));
 		ow->lockedo->setMaterialName(String("tracks/locked-")   + ((curr_truck->isLocked())?"on":"off"));
 		ow->lopresso->setMaterialName(String("tracks/lopress-") + ((!curr_truck->canwork)?"on":"off"));
@@ -1825,8 +1825,8 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 		INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05f ||
 		(curr_truck->cc_target_speed < curr_truck->cc_target_speed_lower_limit) ||
 		(curr_truck->parkingbrake && curr_truck->engine->getGear() > 0) ||
-		!curr_truck->engine->running ||
-		!curr_truck->engine->contact)
+		!curr_truck->engine->isRunning() ||
+		!curr_truck->engine->hasContact())
 	{
 		curr_truck->cruisecontrolToggle();
 		return;
@@ -2409,7 +2409,7 @@ bool RoRFrameListener::updateEvents(float dt)
 						} else
 						{
 							// start engine
-							if (accval > 0 && curr_truck->engine && curr_truck->engine->contact && !curr_truck->engine->running)
+							if (accval > 0 && curr_truck->engine && curr_truck->engine->hasContact() && !curr_truck->engine->isRunning())
 							{
 								curr_truck->engine->start();
 							}
@@ -2477,7 +2477,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							}
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	curr_truck->engine->toggleContact();
 
-							if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->contact && !curr_truck->replaymode)
+							if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->hasContact() && !curr_truck->replaymode)
 							{
 								//starter
 								curr_truck->engine->setstarter(1);

@@ -17,17 +17,84 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef _Engine_H__
-#define _Engine_H__
+#ifndef __BeamEngine_H_
+#define __BeamEngine_H_
 
 #include "RoRPrerequisites.h"
 
 class BeamEngine
 {
+	friend class Beam;
+
 public:
+
+	BeamEngine(float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum);
+	~BeamEngine();
+
+	float getRPM();
+	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
+	void setRPM(float value);
+	void update(float dt, int doUpdate);
+	void updateAudio(int doUpdate);
+	
+	int getAutoMode();
+	void setAutoMode(int mode);
+	void toggleAutoMode();
+	
+	float getAcc();
+	float getSmoke();
+	float getTorque();
+	float getTurboPSI();
+	void netForceSettings(float rpm, float force, float clutch, int gear, bool running, bool contact, char automode);
+	void setAcc(float val);
+	void setSpin(float rpm);
+
+	// for hydros acceleration
+	float getClutch();
+	float getClutchForce();
+	float getCrankFactor();
+	void setClutch(float clutch);
+	void toggleContact();
+
+	//quick start
+	void offstart();
+	void setstarter(int v);
+	void start();
+
+	//low level gear changing
+	int getGear();
+	int getGearRange();
+	void setGear(int v);
+	void setGearRange(int v);
+	
+	// stall engine
+	void stop();
+
+	// high level controls
+	bool hasContact() { return contact != 0; };
+	bool hasTurbo() { return hasturbo; };
+	bool isRunning() { return running != 0; };
+	char getType() { return type; };
+	float getEngineTorque() { return engineTorque; };
+	float getIdleRPM() { return iddleRPM; };
+	float getMaxRPM() { return maxRPM; };
+	int getAutoShift();
+	size_t getNumGears() { return gearsRatio.size() - 2; };
+	size_t getNumGearsRanges() {return getNumGears()/6+1; }
+	TorqueCurve *getTorqueCurve() { return torqueCurve; };
+	void autoSetAcc(float val);
+	void autoShiftDown();
+	void autoShiftSet(int mode);
+	void autoShiftUp();
+	void setManualClutch(float val);
+	void shift(int val);
+	void shiftTo(int val);
+	void updateShifts();
 
 	enum shiftmodes {AUTOMATIC, SEMIAUTO, MANUAL, MANUAL_STICK, MANUAL_RANGES};
 	enum autoswitch {REAR, NEUTRAL, DRIVE, TWO, ONE, MANUALMODE};
+
+protected:
 
 	float iddleRPM;
 	float maxRPM;
@@ -40,99 +107,50 @@ public:
 	char type;
 	int running;
 	int contact;
-	//char status[256];
 	float hydropump;
 	int prime;
-
-	BeamEngine(float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum);
-	~BeamEngine();
-	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
-	void update(float dt, int doUpdate);
-	void updateAudio(int doUpdate);
-	float getRPM();
-	void setRPM(float value);
 	
-	void toggleAutoMode();
-	int getAutoMode();
-	void setAutoMode(int mode);
-	
-	void setAcc(float val);
-	float getTurboPSI();
-	float getAcc();
-	void netForceSettings(float rpm, float force, float clutch, int gear, bool running, bool contact, char automode);
-	float getSmoke();
-	float getTorque();
-	void setSpin(float rpm);
-	//for hydros acceleration
-	float getCrankFactor();
-	void setClutch(float clutch);
-	float getClutch();
-	float getClutchForce();
-	void toggleContact();
-	//quick start
-	void start();
-	void offstart();
-	void setstarter(int v);
-	//low level gear changing
-	int getGear();
-	int getGearRange();
-	void setGear(int v);
-	void setGearRange(int v);
-	//stalling engine
-	void stop();
-	//high level controls
-	void autoSetAcc(float val);
-	void shift(int val);
-	void shiftTo(int val);
-	void updateShifts();
-	void autoShiftUp();
-	void autoShiftDown();
-	void autoShiftSet(int mode);
-	int getAutoShift();
-	void setManualClutch(float val);
-	size_t getNumGears() { return gearsRatio.size() - 2; };
-	size_t getNumGearsRanges() {return getNumGears()/6+1; }
-	float getMaxRPM() { return maxRPM; };
-	float getIdleRPM() { return iddleRPM; };
-	char getType() { return type; };
-	TorqueCurve *getTorqueCurve() { return torqueCurve; };
-	float getEngineTorque() { return engineTorque; };
 
-protected:
-
-	float clutch_time;
-	float shift_time;
-	float post_shift_time;
-
-	int numGears;
-	std::vector<float> gearsRatio;
-	float inertia;
-	float clutchForce;
-
+	// gear stuff
+	float curGearboxRPM;
 	int curGear;
 	int curGearRange;
-	float curEngineRPM;
-	float curGearboxRPM;
+	int numGears;
+	std::vector<float> gearsRatio;
+
+	// clutch
+	float clutchForce;
+	float clutch_time;
 	float curClutch;
-	float curAcc;
 	float curClutchTorque;
-	//shifting
-	int shifting;
-	int shiftval;
+
+	// engine stuff
+	float curAcc;
+	float curEngineRPM;
+	float inertia;
+
+	// shifting
+	float post_shift_time;
+	float postshiftclock;
+	float shift_time;
 	float shiftclock;
 	int postshifting;
-	float postshiftclock;
-	//auto
+	int shifting;
+	int shiftval;
+
+	// auto
+	autoswitch autoselect;
 	float autocurAcc;
 	int starter;
-	autoswitch autoselect;
-	//turbo
+
+	// turbo
 	float curTurboRPM;
-	//air pressure
+
+	// air pressure
+	TorqueCurve *torqueCurve;
 	float apressure;
 	int automode;
 	int trucknum;
-	TorqueCurve *torqueCurve;
 };
 
-#endif // _Engine_H__
+#endif // __BeamEngine_H_
