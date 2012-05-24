@@ -104,7 +104,7 @@ void BeamEngine::update(float dt, int doUpdate)
 {
 	if (hasair)
 	{
-		//air pressure
+		// air pressure
 		apressure += dt * curEngineRPM;
 		if (apressure > 50000.0f)
 		{
@@ -439,7 +439,7 @@ float BeamEngine::getAcc()
 	return curAcc;
 }
 
-//this is mainly for smoke...
+// this is mainly for smoke...
 void BeamEngine::netForceSettings(float rpm, float force, float clutch, int gear, bool _running, bool _contact, char _automode)
 {
 	curEngineRPM = rpm;
@@ -504,43 +504,44 @@ void BeamEngine::toggleContact()
 	contact=!contact;
 #ifdef USE_OPENAL
 	if (contact)
+	{
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_IGNITION);
-	else
+	} else
+	{
 		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_IGNITION);
+	}
 #endif // USE_OPENAL
 }
 
-//quick start
+// quick start
 void BeamEngine::start()
 {
 	if (automode == AUTOMATIC)
 	{
-		curGear=1;
+		curGear = 1;
 		autoselect=DRIVE;
-	}
-	else
+	} else
 	{
 		if (automode == SEMIAUTO)
 		{
-			curGear=1;
-		}
-		else
+			curGear = 1;
+		} else
 		{
-			curGear=0;
+			curGear = 0;
 		}
 		autoselect=MANUALMODE;
 	}
-	curClutch=0;
-	curEngineRPM=750.0f;
-	curGearboxRPM=750.0f;
-	curClutchTorque=0.0f;
-	curTurboRPM=0.0f;
-	apressure=0.0f;
-	running=1;
-	contact=1;
+	curClutch = 0.0f;
+	curEngineRPM = 750.0f;
+	curGearboxRPM = 750.0f;
+	curClutchTorque = 0.0f;
+	curTurboRPM = 0.0f;
+	apressure = 0.0f;
+	running = 1;
+	contact = 1;
 #ifdef USE_OPENAL
 	SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_IGNITION);
-	setAcc(0);
+	setAcc(0.0f);
 	SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_ENGINE);
 #endif // USE_OPENAL
 }
@@ -573,7 +574,7 @@ int BeamEngine::getGear()
 	return curGear;
 }
 
-//low level gear changing
+// low level gear changing
 void BeamEngine::setGear(int v)
 {
 	curGear = v;
@@ -594,7 +595,7 @@ void BeamEngine::stop()
 	if (!running) return;
 
 	running = 0;
-	//Script Event - engine death
+	// Script Event - engine death
 	TRIGGER_EVENT(SE_TRUCK_ENGINE_DIED, trucknum);
 #ifdef USE_OPENAL
 	SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_ENGINE);
