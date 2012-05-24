@@ -144,7 +144,7 @@ bool OutProtocol::update(float dt)
 	} else if ( truck && truck->engine )
 	{
 		// truck and engine valid
-		if ( truck->engine->hasturbo )
+		if ( truck->engine->hasTurbo() )
 		{
 			gd.Flags |= OG_TURBO;
 		}
@@ -170,7 +170,7 @@ bool OutProtocol::update(float dt)
 		gd.ShowLights = 0;
 		if(truck->parkingbrake)   gd.ShowLights |= DL_HANDBRAKE;
 		if(truck->lights)         gd.ShowLights |= DL_FULLBEAM;
-		if(truck->engine->contact && !truck->engine->running) gd.ShowLights |=  DL_BATTERY;
+		if(truck->engine->hasContact() && !truck->engine->isRunning()) gd.ShowLights |=  DL_BATTERY;
 		if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
 		if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
 		if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
