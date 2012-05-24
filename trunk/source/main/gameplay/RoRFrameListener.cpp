@@ -2405,14 +2405,16 @@ bool RoRFrameListener::updateEvents(float dt)
 							{
 								curr_truck->engine->autoSetAcc(accval);
 							}
-							curr_truck->brake = brake*curr_truck->brakeforce;
+							curr_truck->brake = brake * curr_truck->brakeforce;
 						} else
 						{
 							// start engine
 							if (accval > 0 && curr_truck->engine && curr_truck->engine->contact && !curr_truck->engine->running)
+							{
 								curr_truck->engine->start();
+							}
 
-							// arcade controls: hey - people wanted it x|
+							// arcade controls: hey - people wanted it x| ... <- and it's convenient
 							if (curr_truck->engine->getGear() >= 0)
 							{
 								// neutral or drive forward, everything is as its used to be: brake is brake and accel. is accel.
@@ -2420,7 +2422,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								{
 									curr_truck->engine->autoSetAcc(accval);
 								}
-								curr_truck->brake = brake*curr_truck->brakeforce;
+								curr_truck->brake = brake * curr_truck->brakeforce;
 							} else
 							{
 								// reverse gear, reverse controls: brake is accel. and accel. is brake.
@@ -2428,7 +2430,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								{
 									curr_truck->engine->autoSetAcc(brake);
 								}
-								curr_truck->brake = accval*curr_truck->brakeforce;
+								curr_truck->brake = accval * curr_truck->brakeforce;
 							}
 
 							// only when the truck really is not moving anymore
@@ -2438,7 +2440,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() >= 0)
 								{
 									// we are on the brake, jump to reverse gear
-									if(curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+									if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 									{
 										curr_truck->engine->autoShiftSet(BeamEngine::REAR);
 									} else
@@ -2448,7 +2450,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								} else if (brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
 								{
 									// we are on the gas pedal, jump to first gear when we were in rear gear
-									if(curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+									if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 									{									
 										curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
 									} else
@@ -2467,174 +2469,176 @@ bool RoRFrameListener::updateEvents(float dt)
 						//IMI
 						// gear management -- it might should be transferred to a standalone function of Beam or RoRFrameListener
 						if (curr_truck->engine)
+						{
+							if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 							{
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP)) 	curr_truck->engine->autoShiftUp();
 								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN))	curr_truck->engine->autoShiftDown();
-								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	curr_truck->engine->toggleContact();
+							}
+							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	curr_truck->engine->toggleContact();
 
-								if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->contact && !curr_truck->replaymode)
-									{
-										//starter
-										curr_truck->engine->setstarter(1);
+							if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->contact && !curr_truck->replaymode)
+							{
+								//starter
+								curr_truck->engine->setstarter(1);
 #ifdef USE_OPENAL
-										SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_STARTER);
+								SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_STARTER);
 #endif // OPENAL
-									}
-								else
-									{
-										curr_truck->engine->setstarter(0);
+							} else
+							{
+								curr_truck->engine->setstarter(0);
 #ifdef USE_OPENAL
-										SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_STARTER);
+								SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_STARTER);
 #endif // OPENAL
-									}
+							}
 
-								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES))
-								{
-									//Toggle Auto shift
-									curr_truck->engine->toggleAutoMode();
+							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES))
+							{
+								//Toggle Auto shift
+								curr_truck->engine->toggleAutoMode();
 
-									// force gui update
-									curr_truck->triggerGUIFeaturesChanged();
-									
+								// force gui update
+								curr_truck->triggerGUIFeaturesChanged();
 #ifdef USE_MYGUI
-									switch(curr_truck->engine->getAutoMode())
-									{
-										case BeamEngine::AUTOMATIC:
-											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
-											break;
-										case BeamEngine::SEMIAUTO:
-											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
-											break;
-										case BeamEngine::MANUAL:
-											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
-											break;
-										case BeamEngine::MANUAL_STICK:
-											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
-											break;
-										case BeamEngine::MANUAL_RANGES:
-											Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
-											break;
-									}
+								switch(curr_truck->engine->getAutoMode())
+								{
+									case BeamEngine::AUTOMATIC:
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Automatic shift"), "cog.png", 3000);
+										break;
+									case BeamEngine::SEMIAUTO:
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Manual shift - Auto clutch"), "cog.png", 3000);
+										break;
+									case BeamEngine::MANUAL:
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: sequential shift"), "cog.png", 3000);
+										break;
+									case BeamEngine::MANUAL_STICK:
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully manual: stick shift"), "cog.png", 3000);
+										break;
+									case BeamEngine::MANUAL_RANGES:
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Fully Manual: stick shift with ranges"), "cog.png", 3000);
+										break;
+								}
 #endif //USE_MYGUI
+							}
+
+							//joy clutch
+							float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
+							curr_truck->engine->setManualClutch(cval);
+
+							bool gear_changed_rel = false;
+							int shiftmode = curr_truck->engine->getAutoMode();
+
+							if (shiftmode <= BeamEngine::MANUAL) // auto, semi auto and sequential shifting
+							{
+								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
+								{
+									if (shiftmode != BeamEngine::AUTOMATIC || curr_truck->engine->getAutoShift() == BeamEngine::DRIVE)
+									{
+										curr_truck->engine->shift(1);
+										gear_changed_rel = true;
+									}
+								} else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
+								{
+									if (shiftmode  > BeamEngine::SEMIAUTO ||
+										shiftmode == BeamEngine::SEMIAUTO  && curr_truck->engine->getGear() > 0 ||
+										shiftmode == BeamEngine::AUTOMATIC && curr_truck->engine->getGear() > 1)
+									{
+										curr_truck->engine->shift(-1);
+										gear_changed_rel = true;
+									}
+								} else if (shiftmode != BeamEngine::AUTOMATIC && INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_NEUTRAL))
+								{
+									curr_truck->engine->shiftTo(0);
+								}
+							} else //if (shiftmode > BeamEngine::MANUAL) // h-shift or h-shift with ranges shifting
+							{
+								bool gear_changed	= false;
+								bool found			= false;
+								int curgear		    = curr_truck->engine->getGear();
+								int curgearrange    = curr_truck->engine->getGearRange();
+								int gearoffset      = std::max(0, curgear - curgearrange * 6);
+
+								// one can select range only if in natural
+								if (shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
+								{
+									//  maybe this should not be here, but should experiment
+									if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE) && curgearrange != 0)
+									{
+										curr_truck->engine->setGearRange(0);
+										gear_changed = true;
+#ifdef USE_MYGUI
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Low range selected"), "cog.png", 3000);
+#endif //USE_MYGUI
+									} else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && curgearrange != 1 && curr_truck->engine->getNumGearsRanges()>1)
+									{
+										curr_truck->engine->setGearRange(1);
+										gear_changed = true;
+#ifdef USE_MYGUI
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Mid range selected"), "cog.png", 3000);
+#endif //USE_MYGUI
+									} else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange != 2 && curr_truck->engine->getNumGearsRanges()>2)
+									{
+										curr_truck->engine->setGearRange(2);
+										gear_changed = true;
+#ifdef USE_MYGUI
+										Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("High range selected"), "cog.png", 3000);
+#endif // USE_MYGUI
+									}
+								}
+//zaxxon
+								if (curgear == -1)
+								{
+									gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+								} else if (curgear > 0 && curgear < 19)
+								{
+									if (shiftmode==BeamEngine::MANUAL)
+									{
+										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+									} else
+									{
+										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
+									}
 								}
 
-								//joy clutch
-								float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
-								curr_truck->engine->setManualClutch(cval);
-
-								bool gear_changed_rel = false;
-								int shiftmode = curr_truck->engine->getAutoMode();
-
-//								if (shiftmode==SEMIAUTO || shiftmode==MANUAL) // manual sequencial shifting
-								if (shiftmode<=BeamEngine::MANUAL) // manual sequencial shifting, semi auto shifting, auto shifting
+								if (gear_changed || curgear == 0)
+								{
+									if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE))
 									{
-										if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_UP))
-											{
-												curr_truck->engine->shift(1);
-												gear_changed_rel=true;
-											}
-										else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
-											{
-												curr_truck->engine->shift(-1);
-												gear_changed_rel=true;
-											}
-										else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_NEUTRAL))
-											{
-												curr_truck->engine->shiftTo(0);
-											}
-									}
-								else // if (shiftmode>MANUAL)		// h-shift or h-shift with ranges shifting
+										curr_truck->engine->shiftTo(-1);
+										found = true;
+									} else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL))
 									{
-										bool gear_changed	= false;
-										bool found			= false;
-										int curgear		= curr_truck->engine->getGear();
-										int curgearrange= curr_truck->engine->getGearRange();
-										int gearoffset  = curgear-curgearrange*6;
-										if (gearoffset<0) gearoffset = 0;
-										// one can select range only if in natural
-										if (shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
+										curr_truck->engine->shiftTo(0);
+										found = true;
+									} else
+									{
+										if (shiftmode == BeamEngine::MANUAL_STICK)
+										{
+											for (int i=1;i<19 && !found;i++)
 											{
-												//  maybe this should not be here, but should experiment
-												if		 (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_LOWRANGE) && curgearrange!=0)
-													{
-														curr_truck->engine->setGearRange(0);
-														gear_changed = true;
-#ifdef USE_MYGUI
-														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Low range selected"), "cog.png", 3000);
-#endif //USE_MYGUI
-
+												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+												{
+													curr_truck->engine->shiftTo(i);
+													found = true;
 												}
-												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_MIDRANGE)  && curgearrange !=1 && curr_truck->engine->getNumGearsRanges()>1)
-													{
-														curr_truck->engine->setGearRange(1);
-														gear_changed = true;
-#ifdef USE_MYGUI
-														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Mid range selected"), "cog.png", 3000);
-#endif //USE_MYGUI
-													}
-												else if  (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_HIGHRANGE) && curgearrange!=2 && curr_truck->engine->getNumGearsRanges()>2)
-													{
-														curr_truck->engine->setGearRange(2);
-														gear_changed = true;
-#ifdef USE_MYGUI
-														Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("High range selected"), "cog.png", 3000);
-#endif // USE_MYGUI
-													}
 											}
-//zaxxon
-										if (curgear == -1)
+										} else // BeamEngine::MANUALMANUAL_RANGES
+										{
+											for (int i=1; i < 7 && !found; i++)
 											{
-												gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE);
+												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+												{
+													curr_truck->engine->shiftTo(i + curgearrange * 6);
+													found = true;
+												}
 											}
-										else if (curgear > 0 && curgear < 19)
-											{
-												if (shiftmode==BeamEngine::MANUAL)	gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
-												else					gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
-											}
-
-										if (gear_changed || curgear==0)
-											{
-												if      (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR_REVERSE))
-													{
-														curr_truck->engine->shiftTo(-1);
-														found = true;
-													}
-												else if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_NEUTRAL))
-													{
-														curr_truck->engine->shiftTo(0);
-														found = true;
-													}
-												else
-													{
-														if (shiftmode==BeamEngine::MANUAL_STICK)
-															{
-																for (int i=1;i<19 && !found;i++)
-																	{
-																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
-																			{
-																				curr_truck->engine->shiftTo(i);
-																				found = true;
-																			}
-																	}
-															}
-														else	// MANUAL_RANGES
-															{
-																for (int i=1;i<7 && !found;i++)
-																	{
-																		if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
-																			{
-																				curr_truck->engine->shiftTo(i+curgearrange*6);
-																				found = true;
-																			}
-																	}
-															}
-													}
-												if (!found) curr_truck->engine->shiftTo(0);
-											} // end of if (gear_changed)
-//										if (!found && curgear!=0) curr_truck->engine->shiftTo(0);
-									} // end of shitmode>MANUAL
-							} // endof ->engine
-						} // endof ->replaymode
+										}
+									}
+									if (!found) curr_truck->engine->shiftTo(0);
+								} // end of if (gear_changed)
+							} // end of shitmode > BeamEngine::MANUAL
+						} // end of ->engine
+					} // end of ->replaymode
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
 					{
