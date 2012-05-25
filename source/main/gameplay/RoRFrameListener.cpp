@@ -3659,7 +3659,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//geometry
 	ds->readLine(geom, 1023);
 
-	if (String(geom).find(".cfg2") != String::npos)
+	// otc = ogre terrain config
+	if (String(geom).find(".otc") != String::npos)
 	{
 		LOG("new terrain mode enabled");
 		SETTINGS.setSetting("new Terrain Mode", "Yes");

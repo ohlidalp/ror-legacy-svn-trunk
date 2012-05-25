@@ -197,18 +197,18 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 {
 	bool debugBlendMaps = StringConverter::parseBool(terrainConfig.getSetting("DebugBlendMaps"));
 
-	for(int i = 1; i < terrain->getLayerCount(); i++)
+	int layerCount = terrain->getLayerCount();
+	for(int i = 1; i < layerCount; i++)
 	{
-		int j = i - 1; // one layer off since init
 		Ogre::Image img;
 		//std::pair<uint8,uint8> textureIndex = terrain->getLayerBlendTextureIndex(i);
 		//uint8 bti = terrain->getBlendTextureIndex(i);
 		try
 		{
-			img.load(blendMaps[j], ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+			img.load(blendMaps[i], ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 		} catch(Exception &e)
 		{
-			LOG("Error loading blendmap: " + blendMaps[j] + " : " + e.getFullDescription());
+			LOG("Error loading blendmap: " + blendMaps[i] + " : " + e.getFullDescription());
 			continue;
 		}
 
@@ -227,13 +227,13 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 			{
 				Ogre::ColourValue c = img.getColourAt(x, y, 0);
 				float alpha = 1;//(1/b);
-				if      (blendMode[j] == "R")
+				if      (blendMode[i] == "R")
 					*ptr++ = c.r * alpha;
-				else if (blendMode[j] == "G")
+				else if (blendMode[i] == "G")
 					*ptr++ = c.g * alpha;
-				else if (blendMode[j] == "B")
+				else if (blendMode[i] == "B")
 					*ptr++ = c.b * alpha;
-				else if (blendMode[j] == "A")
+				else if (blendMode[i] == "A")
 					*ptr++ = c.a * alpha;
 			}
 		}
@@ -243,17 +243,20 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 
 	if(debugBlendMaps)
 	{
-		for(int i = 1; i < terrain->getLayerCount(); i++)
+		for(int i = 1; i < layerCount; i++)
 		{
-			std::pair<uint8,uint8> textureIndex = terrain->getLayerBlendTextureIndex(i);
-			String blendTexture = terrain->getBlendTextureName(textureIndex.first);
-			TexturePtr tex = (TexturePtr)Ogre::TextureManager::getSingleton().getByName(blendTexture);
-			Image img;
-			if(!tex.isNull())
-			{
-				tex->convertToImage(img);
-				img.save("blend_layer_"+TOSTRING(i)+ blendTexture + ".png");
-			}
+			Ogre::TerrainLayerBlendMap* blendMap = terrain->getLayerBlendMap(i);
+			Ogre::uint32 blendmapSize = terrain->getLayerBlendMapSize();
+			Ogre::Image img;
+			unsigned short *idata = OGRE_ALLOC_T(unsigned short, blendmapSize * blendmapSize, Ogre::MEMCATEGORY_RESOURCE);
+			float scale = 65535.0f;
+			for(unsigned int x = 0; x < blendmapSize; x++)
+				for(unsigned int y = 0; y < blendmapSize; y++)
+					idata[x + y * blendmapSize] = (unsigned short)(blendMap->getBlendValue(x, blendmapSize - y) * scale);
+			img.loadDynamicImage((Ogre::uchar*)(idata), blendmapSize, blendmapSize, Ogre::PF_L16);
+			std::string fileName = "blendmap_layer_" + Ogre::StringConverter::toString(i) + ".png";
+			img.save(fileName);
+			OGRE_FREE(idata, Ogre::MEMCATEGORY_RESOURCE);
 		}
 	}
 }
