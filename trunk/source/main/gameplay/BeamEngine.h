@@ -47,7 +47,7 @@ public:
 	void setAutoMode(int mode);
 	void setClutch(float clutch);
 	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
-	void setRPM(float value);
+	void setRPM(float rpm);
 	void setSpin(float rpm);
 
 	void toggleAutoMode();
@@ -73,7 +73,7 @@ public:
 	bool isRunning() { return running; };
 	char getType() { return type; };
 	float getEngineTorque() { return engineTorque; };
-	float getIdleRPM() { return iddleRPM; };
+	float getIdleRPM() { return idleRPM; };
 	float getMaxRPM() { return maxRPM; };
 	int getAutoShift();
 	size_t getNumGears() { return gearsRatio.size() - 2; };
@@ -97,7 +97,7 @@ public:
 protected:
 
 	// gear stuff
-	float curGearboxRPM;
+	float curWheelRevolutions;
 	int curGear;
 	int curGearRange;
 	int numGears;
@@ -120,7 +120,7 @@ protected:
 	float curEngineRPM;
 	float engineTorque;
 	float hydropump;
-	float iddleRPM;
+	float idleRPM;
 	float inertia;
 	float maxRPM;
 	float stallRPM;
@@ -147,6 +147,7 @@ protected:
 	TorqueCurve *torqueCurve;
 	float apressure;
 	int automode;
+
 	int trucknum;
 };
 
