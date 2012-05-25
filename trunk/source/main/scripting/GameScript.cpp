@@ -239,18 +239,23 @@ void GameScript::showChooser(std::string &type, std::string &instance, std::stri
 {
 #ifdef USE_MYGUI
 	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
-	if (type == "vehicle")   ntype = SelectorWindow::LT_Vehicle;
-	if (type == "truck")     ntype = SelectorWindow::LT_Truck;
-	if (type == "car")       ntype = SelectorWindow::LT_Truck;
-	if (type == "boat")      ntype = SelectorWindow::LT_Boat;
-	if (type == "airplane")  ntype = SelectorWindow::LT_Airplane;
-	if (type == "heli")      ntype = SelectorWindow::LT_Heli;
-	if (type == "trailer")   ntype = SelectorWindow::LT_Trailer;
-	if (type == "train")     ntype = SelectorWindow::LT_Train;
-	if (type == "load")      ntype = SelectorWindow::LT_Load;
-	if (type == "extension") ntype = SelectorWindow::LT_Extension;
+	
+	if (type == "airplane")    ntype = SelectorWindow::LT_Airplane;
+	if (type == "all")         ntype = SelectorWindow::LT_AllBeam;
+	if (type == "boat")        ntype = SelectorWindow::LT_Boat;
+	if (type == "car")         ntype = SelectorWindow::LT_Car;
+	if (type == "extension")   ntype = SelectorWindow::LT_Extension;
+	if (type == "heli")        ntype = SelectorWindow::LT_Heli;
+	if (type == "load")        ntype = SelectorWindow::LT_Load;
+	if (type == "trailer")     ntype = SelectorWindow::LT_Trailer;
+	if (type == "train")       ntype = SelectorWindow::LT_Train;
+	if (type == "truck")       ntype = SelectorWindow::LT_Truck;
+	if (type == "vehicle")     ntype = SelectorWindow::LT_Vehicle;
+	
 	if (ntype != SelectorWindow::LT_None)
+	{
 		mefl->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+	}
 #endif //USE_MYGUI
 }
 
