@@ -2652,11 +2652,16 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (curr_truck->engine->getAutoMode()  == BeamEngine::AUTOMATIC &&
 							   (curr_truck->engine->getAutoShift() == BeamEngine::DRIVE ||
 							    curr_truck->engine->getAutoShift() == BeamEngine::TWO ||
-							    curr_truck->engine->getAutoShift() == BeamEngine::ONE))
+							    curr_truck->engine->getAutoShift() == BeamEngine::ONE) &&
+								curr_truck->WheelSpeed < 0.1f)
 							{
-								if (curr_truck->WheelSpeed < -0.1f)
+								Vector3 dirDiff = (curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition - curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition).normalisedCopy();
+								Degree pitchAngle = Radian(asin(dirDiff.dotProduct(Vector3::UNIT_Y)));
+								float accl = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
+
+								if (pitchAngle.valueDegrees() > 1.0f)
 								{
-									curr_truck->brake = curr_truck->brakeforce;
+									curr_truck->brake = curr_truck->brakeforce * (1.0f - accl);
 								}
 							}
 						} // end of ->engine
