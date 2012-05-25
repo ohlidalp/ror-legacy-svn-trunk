@@ -2648,7 +2648,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								} // end of if (gear_changed)
 							} // end of shitmode > BeamEngine::MANUAL
 
-							// anti roll back in BeamEngine::DRIVE mode
+							// anti roll back in BeamEngine::AUTOMATIC (DRIVE, TWO, ONE) mode
 							if (curr_truck->engine->getAutoMode()  == BeamEngine::AUTOMATIC &&
 							   (curr_truck->engine->getAutoShift() == BeamEngine::DRIVE ||
 							    curr_truck->engine->getAutoShift() == BeamEngine::TWO ||
@@ -2660,6 +2660,21 @@ bool RoRFrameListener::updateEvents(float dt)
 								float accl = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
 
 								if (pitchAngle.valueDegrees() > 1.0f)
+								{
+									curr_truck->brake = curr_truck->brakeforce * (1.0f - accl);
+								}
+							}
+
+							// anti roll forth in BeamEngine::AUTOMATIC (REAR) mode
+							if (curr_truck->engine->getAutoMode()  == BeamEngine::AUTOMATIC &&
+							    curr_truck->engine->getAutoShift() == BeamEngine::REAR &&
+								curr_truck->WheelSpeed > 0.1f)
+							{
+								Vector3 dirDiff = (curr_truck->nodes[curr_truck->cameranodepos[0]].RelPosition - curr_truck->nodes[curr_truck->cameranodedir[0]].RelPosition).normalisedCopy();
+								Degree pitchAngle = Radian(asin(dirDiff.dotProduct(Vector3::UNIT_Y)));
+								float accl = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
+
+								if (pitchAngle.valueDegrees() < 1.0f)
 								{
 									curr_truck->brake = curr_truck->brakeforce * (1.0f - accl);
 								}
