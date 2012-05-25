@@ -319,7 +319,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	// gear hack
 	if (automode == AUTOMATIC && curGear >= 0 && !shifting && !postshifting && (autoselect == DRIVE || autoselect == TWO))
 	{
-		if ((curEngineRPM > maxRPM - 100.0f || curWheelRevolutions * gearsRatio[curGear + 1] > maxRPM - 100.0f))
+		if ((curEngineRPM > maxRPM - 100.0f && curGear > 1) || curWheelRevolutions * gearsRatio[curGear + 1] > maxRPM - 100.0f)
 		{
 			if ((autoselect == DRIVE && curGear < numGears) || (autoselect == TWO && curGear < 2))
 			{
@@ -550,7 +550,6 @@ void BeamEngine::start()
 	}
 	curClutch = 0.0f;
 	curEngineRPM = 750.0f;
-	curWheelRevolutions = 0.0f;
 	curClutchTorque = 0.0f;
 	curTurboRPM = 0.0f;
 	apressure = 0.0f;
@@ -709,7 +708,7 @@ void BeamEngine::updateShifts()
 		// search for an appropriate gear
 		int newGear = 1;
 
-		while (newGear < numGears && curWheelRevolutions > 0.0f && curWheelRevolutions * gearsRatio[newGear + 1] < maxRPM - 100.0f)
+		while (newGear < numGears && curWheelRevolutions > 0.0f && curWheelRevolutions * gearsRatio[newGear + 1] > maxRPM - 100.0f)
 		{
 			newGear++;
 		}
