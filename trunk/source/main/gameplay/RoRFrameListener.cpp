@@ -2209,7 +2209,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				// replay mode
 				if (curr_truck->replaymode)
 				{
-					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && curr_truck->replaypos<=0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FORWARD, 0.1f) && curr_truck->replaypos <= 0)
 					{
 						curr_truck->replaypos++;
 					}
@@ -2217,7 +2217,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					{
 						curr_truck->replaypos--;
 					}
-					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && curr_truck->replaypos+10<=0)
+					if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_REPLAY_FAST_FORWARD, 0.1f) && curr_truck->replaypos+10 <= 0)
 					{
 						curr_truck->replaypos+=10;
 					}
@@ -2386,38 +2386,25 @@ bool RoRFrameListener::updateEvents(float dt)
 
 						curr_truck->hydrodircommand = sum;
 
-						if ((tmp_left_digital<tmp_left_analog) || (tmp_right_digital<tmp_right_analog))
-							curr_truck->hydroSpeedCoupling=false;
-						else
-							curr_truck->hydroSpeedCoupling=true;
-
-						// arcade_brake: brake + drive reverse + accelerate?
-						bool arcadeControls = BSETTING("ArcadeControls", false);
-
-						float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
-						float brake  = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
-
-						// arcade controls are only working with auto-clutch!
-						if (!arcadeControls || curr_truck->engine->getAutoMode() > BeamEngine::SEMIAUTO)
+						if ((tmp_left_digital < tmp_left_analog) || (tmp_right_digital < tmp_right_analog))
 						{
-							// classic mode, realistic
-							if (curr_truck->engine)
-							{
-								curr_truck->engine->autoSetAcc(accval);
-							}
-							curr_truck->brake = brake * curr_truck->brakeforce;
+							curr_truck->hydroSpeedCoupling = false;
 						} else
 						{
-							// start engine
-							if (accval > 0 && curr_truck->engine && curr_truck->engine->hasContact() && !curr_truck->engine->isRunning())
-							{
-								curr_truck->engine->start();
-							}
+							curr_truck->hydroSpeedCoupling = true;
+						}
 
-							// arcade controls: hey - people wanted it x| ... <- and it's convenient
-							if (curr_truck->engine->getGear() >= 0)
+						if (curr_truck->engine)
+						{
+							bool arcadeControls = BSETTING("ArcadeControls", false);
+
+							float accval = INPUTENGINE.getEventValue(EV_TRUCK_ACCELERATE);
+							float brake  = INPUTENGINE.getEventValue(EV_TRUCK_BRAKE);
+
+							// arcade controls are only working with auto-clutch!
+							if (!arcadeControls || curr_truck->engine->getAutoMode() > BeamEngine::SEMIAUTO)
 							{
-								// neutral or drive forward, everything is as its used to be: brake is brake and accel. is accel.
+								// classic mode, realistic
 								if (curr_truck->engine)
 								{
 									curr_truck->engine->autoSetAcc(accval);
@@ -2425,61 +2412,81 @@ bool RoRFrameListener::updateEvents(float dt)
 								curr_truck->brake = brake * curr_truck->brakeforce;
 							} else
 							{
-								// reverse gear, reverse controls: brake is accel. and accel. is brake.
-								if (curr_truck->engine)
+								// start engine
+								if (accval > 0 && curr_truck->engine && curr_truck->engine->hasContact() && !curr_truck->engine->isRunning())
 								{
-									curr_truck->engine->autoSetAcc(brake);
+									curr_truck->engine->start();
 								}
-								curr_truck->brake = accval * curr_truck->brakeforce;
+
+								// arcade controls: hey - people wanted it x| ... <- and it's convenient
+								if (curr_truck->engine->getGear() >= 0)
+								{
+									// neutral or drive forward, everything is as its used to be: brake is brake and accel. is accel.
+									if (curr_truck->engine)
+									{
+										curr_truck->engine->autoSetAcc(accval);
+									}
+									curr_truck->brake = brake * curr_truck->brakeforce;
+								} else
+								{
+									// reverse gear, reverse controls: brake is accel. and accel. is brake.
+									if (curr_truck->engine)
+									{
+										curr_truck->engine->autoSetAcc(brake);
+									}
+									curr_truck->brake = accval * curr_truck->brakeforce;
+								}
+
+								// only when the truck really is not moving anymore
+								if (fabs(curr_truck->WheelSpeed) <= 0.1f)
+								{
+									// switching point, does the user want to drive forward from backward or the other way round? change gears?
+									if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() >= 0)
+									{
+										// we are on the brake, jump to reverse gear
+										if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+										{
+											curr_truck->engine->autoShiftSet(BeamEngine::REAR);
+										} else
+										{
+											curr_truck->engine->setGear(-1);
+										}
+									} else if (brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
+									{
+										// we are on the gas pedal, jump to first gear when we were in rear gear
+										if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
+										{									
+											curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
+										} else
+										{
+											curr_truck->engine->setGear(1);
+										}
+									}
+								}
 							}
 
-							// only when the truck really is not moving anymore
-							if (fabs(curr_truck->WheelSpeed) <= 0.1f && curr_truck->nodes[0].Velocity.length() < 0.2f)
-							{
-								// switching point, does the user want to drive forward from backward or the other way round? change gears?
-								if (brake > 0.5f && accval < 0.5f && curr_truck->engine->getGear() >= 0)
-								{
-									// we are on the brake, jump to reverse gear
-									if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
-									{
-										curr_truck->engine->autoShiftSet(BeamEngine::REAR);
-									} else
-									{
-										curr_truck->engine->setGear(-1);
-									}
-								} else if (brake < 0.5f && accval > 0.5f && curr_truck->engine->getGear() < 0)
-								{
-									// we are on the gas pedal, jump to first gear when we were in rear gear
-									if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
-									{									
-										curr_truck->engine->autoShiftSet(BeamEngine::DRIVE);
-									} else
-									{
-										curr_truck->engine->setGear(1);
-									}
-								}
-							}
-						}
-#ifdef USE_OPENAL
-						if (curr_truck->brake > curr_truck->brakeforce/6.0)
-							SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_BRAKE);
-						else
-							SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_BRAKE);
-#endif //OPENAL
-						//IMI
-						// gear management -- it might should be transferred to a standalone function of Beam or RoRFrameListener
-						if (curr_truck->engine)
-						{
+							// IMI
+							// gear management -- it might, should be transferred to a standalone function of Beam or RoRFrameListener
 							if (curr_truck->engine->getAutoMode() == BeamEngine::AUTOMATIC)
 							{
-								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP)) 	curr_truck->engine->autoShiftUp();
-								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN))	curr_truck->engine->autoShiftDown();
+								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_UP))
+								{
+									curr_truck->engine->autoShiftUp();
+								}
+								if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_AUTOSHIFT_DOWN))
+								{
+									curr_truck->engine->autoShiftDown();
+								}
 							}
-							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))	curr_truck->engine->toggleContact();
 
-							if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->hasContact() && !curr_truck->replaymode)
+							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_CONTACT))
 							{
-								//starter
+								curr_truck->engine->toggleContact();
+							}
+
+							if (INPUTENGINE.getEventBoolValue(EV_TRUCK_STARTER) && curr_truck->engine->hasContact())
+							{
+								// starter
 								curr_truck->engine->setstarter(1);
 #ifdef USE_OPENAL
 								SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_STARTER);
@@ -2494,7 +2501,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 							if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SWITCH_SHIFT_MODES))
 							{
-								//Toggle Auto shift
+								// toggle Auto shift
 								curr_truck->engine->toggleAutoMode();
 
 								// force gui update
@@ -2521,7 +2528,7 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif //USE_MYGUI
 							}
 
-							//joy clutch
+							// joy clutch
 							float cval = INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH);
 							curr_truck->engine->setManualClutch(cval);
 
@@ -2634,15 +2641,27 @@ bool RoRFrameListener::updateEvents(float dt)
 											}
 										}
 									}
-									if (!found) curr_truck->engine->shiftTo(0);
+									if (!found)
+									{
+										curr_truck->engine->shiftTo(0);
+									}
 								} // end of if (gear_changed)
 							} // end of shitmode > BeamEngine::MANUAL
 						} // end of ->engine
+#ifdef USE_OPENAL
+						if (curr_truck->brake > curr_truck->brakeforce / 6.0f)
+						{
+							SoundScriptManager::getSingleton().trigStart(curr_truck, SS_TRIG_BRAKE);
+						} else
+						{
+							SoundScriptManager::getSingleton().trigStop(curr_truck, SS_TRIG_BRAKE);
+						}
+#endif // USE_OPENAL
 					} // end of ->replaymode
 
 					if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_TOGGLE_AXLE_LOCK))
 					{
-						//Toggle Auto shift
+						// toggle auto shift
 						if (!curr_truck->getAxleLockCount())
 						{
 #ifdef USE_MYGUI
