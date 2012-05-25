@@ -5806,7 +5806,7 @@ void Beam::updateDashBoards(float &dt)
 		dash->setFloat(DD_ENGINE_TURBO, turbo);
 
 		// ignition
-		bool ign = (engine->contact > 0);
+		bool ign = engine->contact;
 		dash->setBool(DD_ENGINE_IGNITION, ign);
 
 		// battery

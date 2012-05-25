@@ -18,9 +18,10 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "BeamEngine.h"
+
+#include "Scripting.h"
 #include "SoundScriptManager.h"
 #include "TorqueCurve.h"
-#include "Scripting.h"
 
 BeamEngine::BeamEngine( float iddle, float max, float torque, std::vector<float> gears, float diff, int trucknum) :
 	  apressure(0.0f)
@@ -30,7 +31,7 @@ BeamEngine::BeamEngine( float iddle, float max, float torque, std::vector<float>
 	, brakingTorque(-torque / 5.0f)
 	, clutchForce(10000.0f)
 	, clutch_time(0.2f)
-	, contact(0.0f)
+	, contact(false)
 	, curAcc(0.0f)
 	, curClutch(0.0f)
 	, curClutchTorque(0.0f)
@@ -52,7 +53,7 @@ BeamEngine::BeamEngine( float iddle, float max, float torque, std::vector<float>
 	, postshiftclock(0.0f)
 	, postshifting(0)
 	, prime(0)
-	, running(0)
+	, running(false)
 	, shift_time(0.5f)
 	, shiftclock(0.0f)
 	, shifting(0)
@@ -76,11 +77,11 @@ void BeamEngine::setOptions(float einertia, char etype, float eclutch, float cti
 	type = etype;
 	clutchForce = eclutch;
 
-	clutch_time     = std::max(0.0f, ctime);
-	post_shift_time = std::max(0.0f, pstime);
-	shift_time      = std::max(0.0f, stime);
+	if (ctime > 0)  clutch_time = ctime;
+	if (pstime > 0) post_shift_time = pstime;
+	if (stime > 0)  shift_time = stime;
 
-	if (etype=='c')
+	if (etype == 'c')
 	{
 		// it's a car!
 		hasturbo = false;
@@ -160,10 +161,7 @@ void BeamEngine::update(float dt, int doUpdate)
 
 	float rpmRatio = curEngineRPM / (maxRPM * 1.25f);
 
-	if (rpmRatio > 1.0f)
-	{
-		rpmRatio = 1.0f;
-	}
+	rpmRatio = std::min(rpmRatio, 1.0f);
 
 	if (torqueCurve)
 	{
@@ -189,7 +187,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	// restart
 	if (!running && curEngineRPM > stallRPM && contact)
 	{
-		running = 1;
+		running = true;
 #ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_ENGINE);
 #endif // USE_OPENAL
@@ -217,10 +215,7 @@ void BeamEngine::update(float dt, int doUpdate)
 		curClutchTorque = 0.0f;
 	}
 
-	if (curEngineRPM < 0.0f)
-	{
-		curEngineRPM = 0.0f;
-	}
+	curEngineRPM = std::max(0.0f, curEngineRPM);
 
 	if (automode < MANUAL)
 	{
@@ -279,7 +274,7 @@ void BeamEngine::update(float dt, int doUpdate)
 			postshiftclock += dt;
 			if (postshiftclock > post_shift_time)
 			{
-				postshifting = 0.0f;
+				postshifting = 0;
 			}
 		}
 
@@ -324,9 +319,7 @@ void BeamEngine::update(float dt, int doUpdate)
 	if (doUpdate)
 	{
 		// gear hack
-		if (curGear < 0 || automode != AUTOMATIC) return;
-
-		if (!shifting && !postshifting && autoselect == DRIVE)
+		if (curGear >= 0 && automode == AUTOMATIC && !shifting && !postshifting && autoselect == DRIVE)
 		{
 			if (curEngineRPM > maxRPM - 100.0f && curGear < numGears )
 			{
@@ -388,9 +381,12 @@ void BeamEngine::toggleAutoMode()
 
 	// this switches off all automatic symbols when in manual mode
 	if (automode != AUTOMATIC)
+	{
 		autoselect = MANUALMODE;
-	else
+	} else
+	{
 		autoselect = NEUTRAL;
+	}
 
 	if (automode == MANUAL_RANGES)
 	{
@@ -486,7 +482,7 @@ float BeamEngine::getCrankFactor()
 
 void BeamEngine::setClutch(float clutch)
 {
-	curClutch=clutch;
+	curClutch = clutch;
 }
 
 float BeamEngine::getClutch()
@@ -501,7 +497,7 @@ float BeamEngine::getClutchForce()
 
 void BeamEngine::toggleContact()
 {
-	contact=!contact;
+	contact = !contact;
 #ifdef USE_OPENAL
 	if (contact)
 	{
@@ -519,7 +515,7 @@ void BeamEngine::start()
 	if (automode == AUTOMATIC)
 	{
 		curGear = 1;
-		autoselect=DRIVE;
+		autoselect = DRIVE;
 	} else
 	{
 		if (automode == SEMIAUTO)
@@ -529,7 +525,7 @@ void BeamEngine::start()
 		{
 			curGear = 0;
 		}
-		autoselect=MANUALMODE;
+		autoselect = MANUALMODE;
 	}
 	curClutch = 0.0f;
 	curEngineRPM = 750.0f;
@@ -537,8 +533,8 @@ void BeamEngine::start()
 	curClutchTorque = 0.0f;
 	curTurboRPM = 0.0f;
 	apressure = 0.0f;
-	running = 1;
-	contact = 1;
+	running = true;
+	contact = true;
 #ifdef USE_OPENAL
 	SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_IGNITION);
 	setAcc(0.0f);
@@ -552,8 +548,8 @@ void BeamEngine::offstart()
 	curClutch = 0.0f;
 	autoselect= NEUTRAL;
 	curEngineRPM = 0.0f;
-	running = 0;
-	contact = 0;
+	running = false;
+	contact = false;
 #ifdef USE_OPENAL
 	SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_IGNITION);
 	SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_ENGINE);
@@ -594,7 +590,7 @@ void BeamEngine::stop()
 {
 	if (!running) return;
 
-	running = 0;
+	running = false;
 	// Script Event - engine death
 	TRIGGER_EVENT(SE_TRUCK_ENGINE_DIED, trucknum);
 #ifdef USE_OPENAL
@@ -623,8 +619,7 @@ void BeamEngine::shift(int val)
 		shifting = 1;
 		shiftclock = 0.0f;
 		setAcc(0.0f);
-	}
-	else
+	} else
 	{
 		if (curClutch > 0.25f)
 		{
@@ -677,11 +672,11 @@ void BeamEngine::updateShifts()
 	SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_SHIFT);
 #endif // USE_OPENAL
 
-	if (autoselect==REAR)    curGear = -1;
-	if (autoselect==NEUTRAL) curGear =  0;
-	if (autoselect==DRIVE)   curGear =  std::max(1, curGear);
-	if (autoselect==TWO)     curGear =  2;
-	if (autoselect==ONE)     curGear =  1;
+	if (autoselect == REAR)    curGear = -1;
+	if (autoselect == NEUTRAL) curGear =  0;
+	if (autoselect == DRIVE)   curGear =  std::max(1, curGear);
+	if (autoselect == TWO)     curGear =  std::max(1, std::min(curGear, 2));
+	if (autoselect == ONE)     curGear =  1;
 }
 
 void BeamEngine::autoShiftSet(int mode)

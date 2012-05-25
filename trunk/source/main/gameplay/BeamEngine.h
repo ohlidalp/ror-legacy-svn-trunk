@@ -68,16 +68,16 @@ public:
 	void stop();
 
 	// high level controls
-	bool hasContact() { return contact != 0; };
+	bool hasContact() { return contact; };
 	bool hasTurbo() { return hasturbo; };
-	bool isRunning() { return running != 0; };
+	bool isRunning() { return running; };
 	char getType() { return type; };
 	float getEngineTorque() { return engineTorque; };
 	float getIdleRPM() { return iddleRPM; };
 	float getMaxRPM() { return maxRPM; };
 	int getAutoShift();
 	size_t getNumGears() { return gearsRatio.size() - 2; };
-	size_t getNumGearsRanges() {return getNumGears() / 6 + 1; }
+	size_t getNumGearsRanges() { return getNumGears() / 6 + 1; };
 	TorqueCurve *getTorqueCurve() { return torqueCurve; };
 	void autoSetAcc(float val);
 	void autoShiftDown();
@@ -110,8 +110,10 @@ protected:
 	float curClutchTorque;
 
 	// engine stuff
+	bool contact;
 	bool hasair;
 	bool hasturbo;
+	bool running;
 	char type;
 	float brakingTorque;
 	float curAcc;
@@ -122,9 +124,7 @@ protected:
 	float inertia;
 	float maxRPM;
 	float stallRPM;
-	int contact;
 	int prime;
-	int running;
 
 	// shifting
 	float post_shift_time;
