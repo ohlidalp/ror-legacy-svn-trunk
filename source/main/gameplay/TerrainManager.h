@@ -54,7 +54,14 @@ protected:
 	Ogre::TerrainGroup *mTerrainGroup;
 	Ogre::TerrainPaging* mTerrainPaging;
 	Ogre::PageManager* mPageManager;
-	Ogre::StringVector blendMaps, blendMode;
+
+	typedef struct blendLayerInfo_t {
+		Ogre::String blendMapTextureFilename;
+		char blendMode;
+		float alpha;
+	} blendLayerInfo_t;
+
+	std::vector<blendLayerInfo_t> blendInfo;
 
 	void initTerrain();
 	bool loadTerrainConfig(Ogre::String filename);

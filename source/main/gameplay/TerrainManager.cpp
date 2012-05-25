@@ -174,21 +174,22 @@ void TerrainManager::configureTerrainDefaults()
 	terrainOptions->setUseRayBoxDistanceCalculation(false);
 
 	// load the textures and blendmaps into our data structures
-	blendMaps.clear();
-	blendMode.clear();
+	blendInfo.clear();
 	terrainLayers = StringConverter::parseInt(terrainConfig.getSetting("Layers.count"));
 	if (terrainLayers > 0)
 	{
 		defaultimp.layerList.resize(terrainLayers);
-		blendMaps.resize(terrainLayers);
-		blendMode.resize(terrainLayers);
+		blendInfo.resize(terrainLayers);
 		for(int i = 0; i < terrainLayers; i++)
 		{
 			defaultimp.layerList[i].worldSize = PARSEINT(terrainConfig.getSetting("Layers."+TOSTRING(i)+".size"));
 			defaultimp.layerList[i].textureNames.push_back(terrainConfig.getSetting("Layers."+TOSTRING(i)+".diffusespecular"));
 			defaultimp.layerList[i].textureNames.push_back(terrainConfig.getSetting("Layers."+TOSTRING(i)+".normalheight"));
-			blendMaps[i] = terrainConfig.getSetting("Layers."+TOSTRING(i)+".blendmap");
-			blendMode[i] = terrainConfig.getSetting("Layers."+TOSTRING(i)+".blendmapmode");
+
+			blendLayerInfo_t &bi = blendInfo[i];
+			bi.blendMapTextureFilename = terrainConfig.getSetting("Layers."+TOSTRING(i)+".blendmap");
+			bi.blendMode = *terrainConfig.getSetting("Layers."+TOSTRING(i)+".blendmapmode").c_str();
+			bi.alpha = Ogre::StringConverter::parseReal(terrainConfig.getSetting("Layers."+TOSTRING(i)+".alpha"));
 		}
 	}
 }
@@ -200,15 +201,16 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 	int layerCount = terrain->getLayerCount();
 	for(int i = 1; i < layerCount; i++)
 	{
+		blendLayerInfo_t &bi = blendInfo[i];
 		Ogre::Image img;
 		//std::pair<uint8,uint8> textureIndex = terrain->getLayerBlendTextureIndex(i);
 		//uint8 bti = terrain->getBlendTextureIndex(i);
 		try
 		{
-			img.load(blendMaps[i], ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+			img.load(bi.blendMapTextureFilename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 		} catch(Exception &e)
 		{
-			LOG("Error loading blendmap: " + blendMaps[i] + " : " + e.getFullDescription());
+			LOG("Error loading blendmap: " + bi.blendMapTextureFilename + " : " + e.getFullDescription());
 			continue;
 		}
 
@@ -226,14 +228,14 @@ void TerrainManager::initBlendMaps( Ogre::Terrain* terrain )
 			for (Ogre::uint32 y = 0; y != blendmapSize; y++)
 			{
 				Ogre::ColourValue c = img.getColourAt(x, y, 0);
-				float alpha = 1;//(1/b);
-				if      (blendMode[i] == "R")
+				float alpha = bi.alpha;
+				if      (bi.blendMode == 'R')
 					*ptr++ = c.r * alpha;
-				else if (blendMode[i] == "G")
+				else if (bi.blendMode == 'G')
 					*ptr++ = c.g * alpha;
-				else if (blendMode[i] == "B")
+				else if (bi.blendMode == 'B')
 					*ptr++ = c.b * alpha;
-				else if (blendMode[i] == "A")
+				else if (bi.blendMode == 'A')
 					*ptr++ = c.a * alpha;
 			}
 		}
