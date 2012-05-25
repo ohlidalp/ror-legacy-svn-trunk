@@ -2647,6 +2647,18 @@ bool RoRFrameListener::updateEvents(float dt)
 									}
 								} // end of if (gear_changed)
 							} // end of shitmode > BeamEngine::MANUAL
+
+							// anti roll back in BeamEngine::DRIVE mode
+							if (curr_truck->engine->getAutoMode()  == BeamEngine::AUTOMATIC &&
+							   (curr_truck->engine->getAutoShift() == BeamEngine::DRIVE ||
+							    curr_truck->engine->getAutoShift() == BeamEngine::TWO ||
+							    curr_truck->engine->getAutoShift() == BeamEngine::ONE))
+							{
+								if (curr_truck->WheelSpeed < -0.1f)
+								{
+									curr_truck->brake = curr_truck->brakeforce;
+								}
+							}
 						} // end of ->engine
 #ifdef USE_OPENAL
 						if (curr_truck->brake > curr_truck->brakeforce / 6.0f)
