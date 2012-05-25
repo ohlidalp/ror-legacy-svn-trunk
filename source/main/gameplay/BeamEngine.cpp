@@ -332,10 +332,9 @@ void BeamEngine::update(float dt, int doUpdate)
 	}
 
 	// engine speed limiter
-	if (curEngineRPM > maxRPM) // you could add a factor of 1.248f for legacy purposes (a factor of 1.0f significantly lowers the top speed of most vehicles)
+	if (curEngineRPM > maxRPM + 500.0f) // you could add a factor of 1.248f for legacy purposes (a factor of 1.0f significantly lowers the top speed of most vehicles)
 	{
-		float acc = 0.0f + 1.0f / (1.0f + (curEngineRPM - maxRPM) / 2.0f);
-		setAcc(acc);
+		setAcc(0.0f);
 	}
 
 	// avoid over-revving
