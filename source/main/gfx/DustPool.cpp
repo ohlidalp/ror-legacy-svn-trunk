@@ -18,15 +18,18 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "DustPool.h"
-#include "IWater.h"
-#include "RoRPrerequisites.h"
 
-DustPool::DustPool(const char* dname, int dsize)
+#include "Water.h"
+#include "RoRPrerequisites.h"
+#include "TerrainManager.h"
+
+using namespace Ogre;
+
+DustPool::DustPool(const char* dname, int dsize) : 
+	  allocated(0)
+	, size(dsize)
 {
-	size=dsize;
-	allocated=0;
-	int i;
-	for (i=0; i<size; i++)
+	for (int i=0; i<size; i++)
 	{
 		char dename[256];
 		sprintf(dename,"Dust %s %i", dname, i);
@@ -289,13 +292,16 @@ void DustPool::update(float gspeed)
 			ParticleEmitter *emit=pss[i]->getEmitter(0);
 			Real vel=velocities[i].length();
 			emit->setEnabled(true);
-			positions[i].y=gEnv->water->getHeight()-0.02;
+			positions[i].y=gEnv->terrainManager->getWater()->getHeight()-0.02;
 			sns[i]->setPosition(positions[i]);
 			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.04));
 			emit->setTimeToLive(vel*0.04/0.1);
 		}
 	}
-	for (i=allocated; i<size; i++) pss[i]->getEmitter(0)->setEnabled(false);
+	for (i=allocated; i<size; i++)
+	{
+		pss[i]->getEmitter(0)->setEnabled(false);
+	}
 	allocated=0;
 }
 

@@ -39,9 +39,7 @@ private:
 	static const unsigned int NUM_FACES = 6;
 
 	Ogre::Camera *mCameras[NUM_FACES];
-	Ogre::Camera *mMainCamera;
 	Ogre::RenderTarget *mRenderTargets[NUM_FACES];
-	Ogre::SceneNode *mDebugSceneNode;
 	bool mInitiated;
 	bool mIsDynamic;
 	int mRound;

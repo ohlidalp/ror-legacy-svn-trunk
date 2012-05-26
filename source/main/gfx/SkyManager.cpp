@@ -17,21 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_CAELUM
 
 #include "SkyManager.h"
 
 #include "Settings.h"
 
-#include "Ogre.h"
 #include <Caelum.h>
 
-
-
-using namespace std;
 using namespace Ogre;
-using namespace Caelum;
 
 //---------------------------------------------------------------------
 SkyManager::SkyManager() : mCaelumSystem(0)
@@ -43,8 +37,8 @@ SkyManager::SkyManager() : mCaelumSystem(0)
 	/*
 	// TODO: set real time, and let the user select his true location
 	mCaelumSystem->getUniversalClock()->setGregorianDateTime(2008, 4, 9, 6, 33, 0);
-	mCaelumSystem->setObserverLongitude(Ogre::Degree(0));
-	mCaelumSystem->setObserverLatitude(Ogre::Degree(0));
+	mCaelumSystem->setObserverLongitude(Degree(0));
+	mCaelumSystem->setObserverLatitude(Degree(0));
 	mCaelumSystem->getUniversalClock()->setTimeScale(100);
 	*/
 
@@ -69,27 +63,27 @@ void SkyManager::forceUpdate(float dt)
 		mCaelumSystem->updateSubcomponents(dt);
 }
 
-void SkyManager::loadScript(Ogre::String script)
+void SkyManager::loadScript(String script)
 {
 	// load the caelum config
 	try
 	{
-		CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
+		Caelum::CaelumPlugin::getSingleton().loadCaelumSystemFromScript (mCaelumSystem, script);
 
 		// overwrite some settings
 #ifdef CAELUM_VERSION_SEC
 		// important: overwrite fog setings if not using infinite farclip
-		if(mCamera->getFarClipDistance() > 0)
+		if(gEnv->ogreCamera->getFarClipDistance() > 0)
 		{
 			// non infinite farclip
-			Real farclip = mCamera->getFarClipDistance();
-			mCaelumSystem->setManageSceneFog(Ogre::FOG_LINEAR);
+			Real farclip = gEnv->ogreCamera->getFarClipDistance();
+			mCaelumSystem->setManageSceneFog(FOG_LINEAR);
 			mCaelumSystem->setManageSceneFogStart(farclip * 0.7f);
 			mCaelumSystem->setManageSceneFogEnd(farclip * 0.9f);
 		} else
 		{
 			// no fog in infinite farclip
-			mCaelumSystem->setManageSceneFog(Ogre::FOG_NONE);
+			mCaelumSystem->setManageSceneFog(FOG_NONE);
 		}
 #else
 #error please use a recent Caelum version, see http://www.rigsofrods.com/wiki/pages/Compiling_3rd_party_libraries#Caelum
@@ -109,29 +103,30 @@ void SkyManager::loadScript(Ogre::String script)
 		// enforcing update, so shadows are set correctly before creating the terrain
 		forceUpdate(0.1);
 
-	} catch(Ogre::Exception& e)
+	} catch(Exception& e)
 	{
 		LOG("exception upon loading sky script: " + e.getFullDescription());
 	}
 }
 
-void SkyManager::setTimeFactor(LongReal factor)
+void SkyManager::setTimeFactor(Real factor)
 {
-    mCaelumSystem->getUniversalClock()->setTimeScale (factor);
+    mCaelumSystem->getUniversalClock()->setTimeScale(factor);
 }
 
-Ogre::Light *SkyManager::getMainLight()
+Light *SkyManager::getMainLight()
 {
 	if(mCaelumSystem && mCaelumSystem->getSun())
 		return mCaelumSystem->getSun()->getMainLight();
 	return 0;
 }
-LongReal SkyManager::getTimeFactor()
+
+Real SkyManager::getTimeFactor()
 {
     return mCaelumSystem->getUniversalClock()->getTimeScale();
 }
 
-Ogre::String SkyManager::getPrettyTime()
+String SkyManager::getPrettyTime()
 {
 	int ignore;
 	int hour;
@@ -140,9 +135,9 @@ Ogre::String SkyManager::getPrettyTime()
 	Caelum::Astronomy::getGregorianDateTimeFromJulianDay(mCaelumSystem->getJulianDay()
 	, ignore, ignore, ignore, hour, minute, second);
 	
-	return Ogre::StringConverter::toString( hour, 2, '0' )
-	+ ":" + Ogre::StringConverter::toString( minute, 2, '0' )
-	+ ":" + Ogre::StringConverter::toString( (int)second, 2, '0' );
+	return StringConverter::toString( hour, 2, '0' )
+	+ ":" + StringConverter::toString( minute, 2, '0' )
+	+ ":" + StringConverter::toString( (int)second, 2, '0' );
 }
 
 #endif //USE_CAELUM

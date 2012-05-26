@@ -17,30 +17,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifdef USE_CAELUM
 
-#ifndef SKYMANAGER_H__
-#define SKYMANAGER_H__
+#ifndef __SkyManager_H_
+#define __SkyManager_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
+
 #include "CaelumPrerequisites.h"
-#include "Singleton.h"
 
 class SkyManager
 {
 public:
+
 	SkyManager();
 	~SkyManager();
 
 	void loadScript(Ogre::String script);
 	
 	/// change the time scale
-	void setTimeFactor(double f);
+	void setTimeFactor(Ogre::Real f);
 	Ogre::Light *getMainLight();
 	/// gets the current time scale
-	double getTimeFactor();
+	Ogre::Real getTimeFactor();
 	
 	/// prints the current time of the simulation in the format of HH:MM:SS
 	Ogre::String getPrettyTime();
@@ -49,10 +48,11 @@ public:
 
 	void notifyCameraChanged(Ogre::Camera *cam);
 protected:
+
     Caelum::CaelumSystem *mCaelumSystem;
 	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
 };
 
-#endif //SKYMANAGER_H__
+#endif // __SkyManager_H_
 
-#endif //USE_CAELUM
+#endif // USE_CAELUM

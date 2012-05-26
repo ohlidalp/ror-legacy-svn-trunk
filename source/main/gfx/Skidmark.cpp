@@ -405,4 +405,3 @@ void Skidmark::update()
 
 	mDirty = false;
 }
-
