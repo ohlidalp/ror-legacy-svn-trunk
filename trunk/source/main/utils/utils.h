@@ -138,4 +138,5 @@ Ogre::Real Round(Ogre::Real value, unsigned short ndigits = 0);
 
 // generates a hash from a Datastream, beware, its loading the whole thing into a bufer, so its not suited for big files
 Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds);
+Ogre::String generateHashFromFile(Ogre::String filename);
 #endif //UTILS_H_
