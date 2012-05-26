@@ -17,6 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#if 0
 #include "Landusemap.h"
 #include "collisions.h"
 #include <Ogre.h>
@@ -25,6 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreStringConverter.h>
 #include "language.h"
 #include "errorutils.h"
+#include ""
+
 
 #ifdef USE_PAGED
 #include "PropertyMaps.h"
@@ -35,9 +38,11 @@ using namespace Ogre;
 
 // this is the Height-Finder for the standart ogre Terrain Manager
 
-Landusemap::Landusemap(String configFilename, Collisions *c, int _mapsizex, int _mapsizez) :
-	data(0), coll(c), mapsizex(_mapsizex), mapsizez(_mapsizez)
+Landusemap::Landusemap(String configFilename) : 
+	  data(0)
+	, mapsize(Vector3::ZERO)
 {
+	mapsize = gEnv->terrainManager->getMax();
 	loadConfig(configFilename);
 #ifndef USE_PAGED
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
@@ -179,3 +184,4 @@ int Landusemap::loadConfig(Ogre::String filename)
 #endif // USE_PAGED
 	return 0;
 }
+#endif

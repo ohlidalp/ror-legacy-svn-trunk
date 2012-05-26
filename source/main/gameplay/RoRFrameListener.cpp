@@ -2757,9 +2757,9 @@ void RoRFrameListener::shutdown_final()
 #endif //OIS_G27
 
 	LOG(" ** Shutdown final");
-	if (w) w->prepareShutdown();
+	if (gEnv->water) gEnv->water->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
-	if (envmap) envmap->prepareShutdown();
+	if (gEnv->terrainManager->envmap) gEnv->terrainManager->envmap->prepareShutdown();
 	if (heathaze) heathaze->prepareShutdown();
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -2807,17 +2807,16 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	LOG("Loading new terrain format: " + terrainfile);
 
-	if(terrainManager)
+	if (gEnv->terrainManager)
 	{
 		// remove old terrain
-		delete(terrainManager);
+		delete(gEnv->terrainManager);
 	}
 
-	terrainManager = new TerrainManager(mSceneMgr, mWindow, mCamera, person);
-	gEnv->terrainManager = terrainManager;
+	gEnv->terrainManager = new TerrainManager();
 	terrainManager->loadTerrain(terrainfile);
 
-	if (person) person->setVisible(true);
+	if (gEnv->player) gEnv->player->setVisible(true);
 
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
