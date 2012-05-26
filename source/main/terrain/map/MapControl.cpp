@@ -90,7 +90,7 @@ void MapControl::setMapTexture(String name)
 	mMapTexture->setImageTexture(name);
 }
 
-void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow *rw)
+void MapControl::setPosition(int x, int y, float size)
 {
 	int realx, realy, realw, realh;
 
@@ -98,7 +98,7 @@ void MapControl::setPosition(int x, int y, float size, Ogre::RenderWindow *rw)
 	mX = x;
 	mY = y;
 
-	updateRenderMetrics(rw);
+	updateRenderMetrics();
 	
 	realw = realh = size * std::min(rWinWidth, rWinHeight);
 
@@ -139,9 +139,9 @@ void MapControl::setWorldSize(float width, float length, float height)
 	mMapSize = Vector3(width, length, height);
 }
 
-void MapControl::windowResized(Ogre::RenderWindow *rw)
+void MapControl::windowResized()
 {
-	setPosition(mX, mY, mScale, rw);
+	setPosition(mX, mY, mScale);
 }
 
 String MapControl::getTypeByDriveable(int driveable)
@@ -171,9 +171,12 @@ void MapControl::updateEntityPositions()
 	}
 }
 
-void MapControl::updateRenderMetrics(RenderWindow* win)
+void MapControl::updateRenderMetrics()
 {
-	win->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
+	if (globalEnvironment->ogreRenderWindow)
+	{
+		globalEnvironment->ogreRenderWindow->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
+	}
 }
 
 #endif // USE_MYGUI

@@ -356,10 +356,10 @@ int GUI_Multiplayer::update()
 	int height = lineheight * (slotid + 1);
 	mpPanel->setSize(sidebarWidth, height);
 	
-	if(gEnv->frameListener && gEnv->frameListener->getNetQuality(true) != 0)
+	if(globalEnvironment->frameListener && globalEnvironment->frameListener->getNetQuality(true) != 0)
 	{
 		netmsgwin->setVisible(true);
-	} else if(gEnv->frameListener && gEnv->frameListener->getNetQuality(true) == 0)
+	} else if(globalEnvironment->frameListener && globalEnvironment->frameListener->getNetQuality(true) == 0)
 	{
 		netmsgwin->setVisible(false);
 	}
@@ -370,12 +370,12 @@ int GUI_Multiplayer::update()
 void GUI_Multiplayer::clickUserGoIcon(MyGUI::WidgetPtr sender)
 {
 	int uid = StringConverter::parseInt(sender->getUserString("uid"));
-	if (!gEnv->frameListener)
+	if (!globalEnvironment->frameListener)
 		return;
-	if(gEnv->frameListener->getNetPointToUID() == uid)
-		gEnv->frameListener->setNetPointToUID(-1);
+	if(globalEnvironment->frameListener->getNetPointToUID() == uid)
+		globalEnvironment->frameListener->setNetPointToUID(-1);
 	else
-		gEnv->frameListener->setNetPointToUID(uid);
+		globalEnvironment->frameListener->setNetPointToUID(uid);
 }
 
 void GUI_Multiplayer::clickInfoIcon(MyGUI::WidgetPtr sender)

@@ -50,16 +50,15 @@ public:
 	void sendthreadstart();
 	void receivethreadstart();
 
-	char *getTerrainName() { return server_settings.terrain; };
 	Ogre::UTFString getNickname(bool colour=false);
-	unsigned int getUserID() { return myuid; };
-	static unsigned long getNetTime();
+	bool getNetQualityChanged();
+	char *getTerrainName() { return server_settings.terrain; };
 	client_t *getClientInfo(unsigned int uid);
 	int getClientInfos(client_t c[MAX_PEERS]);
-
-	int getSpeedUp();
 	int getSpeedDown();
-
+	int getSpeedUp();
+	static unsigned long getNetTime();
+	unsigned int getUserID() { return myuid; };
 	user_info_t *getLocalUserData() { return &userdata; };
 
 	static unsigned int getUID() { return myuid; };
@@ -109,7 +108,6 @@ private:
 	bool net_quality_changed;
 	void setNetQuality(int q);
 	int getNetQuality(bool ack=false);
-	bool getNetQualityChanged();
 	pthread_mutex_t mutex_data;
 };
 

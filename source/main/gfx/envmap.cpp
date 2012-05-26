@@ -43,18 +43,18 @@ Envmap::Envmap() :
 	for (int face=0; face < NUM_FACES; face++)
 	{
 		mRenderTargets[face] = texture->getBuffer(face)->getRenderTarget();
-		mCameras[face] = gEnv->ogreSceneManager->createCamera("EnvironmentCamera-" + TOSTRING(face));
+		mCameras[face] = globalEnvironment->ogreSceneManager->createCamera("EnvironmentCamera-" + TOSTRING(face));
 		mCameras[face]->setAspectRatio(1.0);
 		mCameras[face]->setProjectionType(PT_PERSPECTIVE);
 		mCameras[face]->setFixedYawAxis(false);
 		mCameras[face]->setFOVy(Degree(90));
 		mCameras[face]->setNearClipDistance(0.1f);
-		mCameras[face]->setFarClipDistance(gEnv->ogreCamera->getFarClipDistance());
+		mCameras[face]->setFarClipDistance(globalEnvironment->ogreCamera->getFarClipDistance());
 
 		Viewport *v = mRenderTargets[face]->addViewport(mCameras[face]);
 		v->setOverlaysEnabled(false);
 		v->setClearEveryFrame(true);
-		v->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
+		v->setBackgroundColour(globalEnvironment->ogreCamera->getViewport()->getBackgroundColour());
 		mRenderTargets[face]->setAutoUpdated(false);
 
 		switch (face)
@@ -189,13 +189,13 @@ Envmap::Envmap() :
 			mesh->_setBoundingSphereRadius(10);
 			mesh->load();
 
-			Entity *e = gEnv->ogreSceneManager->createEntity(mesh->getName());
+			Entity *e = globalEnvironment->ogreSceneManager->createEntity(mesh->getName());
 			e->setCastShadows(false);
 			e->setRenderQueueGroup(RENDER_QUEUE_OVERLAY-1);
 			e->setVisible(true);
 
 			e->setMaterialName("tracks/EnvMapDebug");
-			Ogre::SceneNode* mDebugSceneNode = new SceneNode(gEnv->ogreSceneManager);
+			Ogre::SceneNode* mDebugSceneNode = new SceneNode(globalEnvironment->ogreSceneManager);
 			mDebugSceneNode->attachObject(e);
 			mDebugSceneNode->setPosition(Vector3(0, 0, -5));
 			mDebugSceneNode->setFixedYawAxis(true, Vector3::UNIT_Y);
@@ -247,18 +247,18 @@ void Envmap::update(Ogre::Vector3 center, Beam *beam /* = 0 */)
 	{
 		// caelum needs to know that we changed the cameras
 	#ifdef USE_CAELUM
-		if (gEnv->terrainManager->getSkyManager())
+		if (globalEnvironment->terrainManager->getSkyManager())
 		{
-			gEnv->terrainManager->getSkyManager()->notifyCameraChanged(mCameras[mRound]);
+			globalEnvironment->terrainManager->getSkyManager()->notifyCameraChanged(mCameras[mRound]);
 		}
 	#endif // USE_CAELUM
 		mRenderTargets[mRound]->update();
 		mRound = (mRound + 1) % NUM_FACES;
 	}
 #ifdef USE_CAELUM
-	if (gEnv->terrainManager->getSkyManager())
+	if (globalEnvironment->terrainManager->getSkyManager())
 	{
-		gEnv->terrainManager->getSkyManager()->notifyCameraChanged(gEnv->ogreCamera);
+		globalEnvironment->terrainManager->getSkyManager()->notifyCameraChanged(globalEnvironment->ogreCamera);
 	}
 #endif // USE_CAELUM
 

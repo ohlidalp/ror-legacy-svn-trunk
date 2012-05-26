@@ -14,7 +14,7 @@
 using namespace Ogre;
 
 
-GlobalEnvironment *gEnv = new GlobalEnvironment();
+GlobalEnvironment *globalEnvironment = new GlobalEnvironment();
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -198,10 +198,10 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
     m_pRenderWnd->setActive(true);
 
 
-	gEnv->ogreRoot     = m_pRoot;
-	gEnv->ogreViewPort = m_pViewport;
-	gEnv->ogreRenderWindow = m_pRenderWnd;
-	gEnv->embeddedMode = embedded;
+	globalEnvironment->ogreRoot     = m_pRoot;
+	globalEnvironment->ogreViewPort = m_pViewport;
+	globalEnvironment->ogreRenderWindow = m_pRenderWnd;
+	globalEnvironment->embeddedMode = embedded;
 
     return true;
 }

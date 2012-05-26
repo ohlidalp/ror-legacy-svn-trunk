@@ -270,10 +270,10 @@ void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
 	if (SoundScriptManager::getSingleton().isDisabled()) return;
-	if (mode_gpws && gEnv->terrainManager->getHeightFinder() && ref_b)
+	if (mode_gpws && globalEnvironment->terrainManager->getHeightFinder() && ref_b)
 	{
-		float groundalt=gEnv->terrainManager->getHeightFinder()->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
-		if (gEnv->terrainManager->getWater() && groundalt<gEnv->terrainManager->getWater()->getHeight()) groundalt=gEnv->terrainManager->getWater()->getHeight();
+		float groundalt=globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
+		if (globalEnvironment->terrainManager->getWater() && groundalt<globalEnvironment->terrainManager->getWater()->getHeight()) groundalt=globalEnvironment->terrainManager->getWater()->getHeight();
 		float height=(ref_c->AbsPosition.y-groundalt-spawnheight)*3.28083f; //in feet!
 		//skip height warning sounds when the plane is slower then ~10 knots
 		if (( ref_c->Velocity.length() * 1.9685f) > 10.0f)

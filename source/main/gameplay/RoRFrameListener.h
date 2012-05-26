@@ -127,9 +127,9 @@ protected:
 	Ogre::String grassdensityTextureFilename;
 	Ogre::String inputhwnd;
 	Ogre::String terrainUID;
-
 	Ogre::Vector3 dirArrowPointed;
 	Ogre::Vector3 persostart;
+	Ogre::Vector3 reload_pos;
 
 	OverlayWrapper *ow;
 	bool benchmarking;
@@ -197,12 +197,9 @@ protected:
 	void updateStats(void);
 
 	// WindowEventListener
-	void windowMoved(Ogre::RenderWindow* rw);
-	void windowClosed(Ogre::RenderWindow* rw);
-	void windowFocusChange(Ogre::RenderWindow* rw);
-
-private:
-
+	void windowMoved();
+	void windowClosed();
+	void windowFocusChange();
 
 public: // public methods
 
@@ -229,6 +226,7 @@ public: // public methods
 	
 	void loadTerrain(Ogre::String terrainfile);
 
+	void checkSpeedlimit(Beam* curr_truck, float dt);
 	void netDisconnectTruck(int number);
 	void pauseSim(bool value);
 	void reloadCurrentTruck();
@@ -242,9 +240,8 @@ public: // public methods
 	void shutdown_final();
 	void startTimer();
 	void updateCruiseControl(Beam* curr_truck, float dt);
-	void checkSpeedlimit(Beam* curr_truck, float dt);
 	void updateRacingGUI();
-	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
+	void windowResized(); // this needs to be public so we can call it manually in embedded mode
 
 
 };

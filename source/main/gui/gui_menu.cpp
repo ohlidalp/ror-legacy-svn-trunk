@@ -241,7 +241,7 @@ void GUI_MainMenu::vehiclesListUpdate()
 {
 	vehiclesMenu->removeAllItems();
 	
-	bool netmode = (gEnv->network != 0);
+	bool netmode = (globalEnvironment->network != 0);
 
 	if(!netmode)
 	{
@@ -266,12 +266,12 @@ void GUI_MainMenu::vehiclesListUpdate()
 		// sort the list according to the network users
 
 		// add self first
-		user_info_t *local_user = gEnv->network->getLocalUserData();
+		user_info_t *local_user = globalEnvironment->network->getLocalUserData();
 		addUserToMenu(*local_user);
 
 		// get network clients
 		client_t c[MAX_PEERS];
-		gEnv->network->getClientInfos(c);
+		globalEnvironment->network->getClientInfos(c);
 		// iterate over them
 		for(int i = 0; i < MAX_PEERS; i++)
 		{
@@ -307,7 +307,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		int user_uid = PARSEINT(id.substr(5));
 
 		// cannot whisper with self...
-		if(user_uid == gEnv->network->getUID()) return;
+		if(user_uid == globalEnvironment->network->getUID()) return;
 
 		Console::getSingleton().startPrivateChat(user_uid);
 	}

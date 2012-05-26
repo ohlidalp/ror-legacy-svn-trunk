@@ -92,8 +92,8 @@ void DustManager::addNewDustPool(ground_model_t *g)
 								g->fx_particle_timedelta,
 								g->fx_particle_velo_factor,
 								g->fx_particle_ttl,
-								gEnv->ogreSceneManager->getRootSceneNode(),
-								gEnv->ogreSceneManager);
+								globalEnvironment->ogreSceneManager->getRootSceneNode(),
+								globalEnvironment->ogreSceneManager);
 	dustpools[pname] = dp;
 }
 */

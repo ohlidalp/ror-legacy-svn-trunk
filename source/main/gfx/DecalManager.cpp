@@ -30,7 +30,7 @@ using namespace Ogre;
 // DecalManager
 DecalManager::DecalManager()
 {
-	terrain_decals_snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	terrain_decals_snode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	terrain_decal_count = 0;
 }
 
@@ -51,7 +51,7 @@ DecalManager::~DecalManager()
 int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Ogre::Vector2 numSeg, Ogre::Real rotation, Ogre::String materialname, Ogre::String normalname)
 {
 #if 0
-	Ogre::ManualObject *mo = gEnv->ogreSceneManager->createManualObject();
+	Ogre::ManualObject *mo = globalEnvironment->ogreSceneManager->createManualObject();
 	String oname = mo->getName();
 	SceneNode *mo_node = terrain_decals_snode->createChildSceneNode();
 
@@ -126,7 +126,7 @@ int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Og
 	mesh->buildEdgeList();
 
 	// remove the manualobject again, since we dont need it anymore
-	gEnv->ogreSceneManager->destroyManualObject(mo);
+	globalEnvironment->ogreSceneManager->destroyManualObject(mo);
 
 	unsigned short src, dest;
 	if (!mesh->suggestTangentVectorBuildParams(VES_TANGENT, src, dest))
@@ -134,7 +134,7 @@ int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Og
 		mesh->buildTangentVectors(VES_TANGENT, src, dest);
 	}
 	
-	Entity *ent = gEnv->ogreSceneManager->createEntity(oname+"_ent", oname+"_mesh");
+	Entity *ent = globalEnvironment->ogreSceneManager->createEntity(oname+"_ent", oname+"_mesh");
 	mo_node->attachObject(ent);
 
 	mo_node->setVisible(true);
@@ -154,7 +154,7 @@ int DecalManager::addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Og
 int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn, bool debug)
 {
 #if 0
-	Ogre::ManualObject *mo = gEnv->ogreSceneManager->createManualObject();
+	Ogre::ManualObject *mo = globalEnvironment->ogreSceneManager->createManualObject();
 	String oname = mo->getName();
 	SceneNode *mo_node = terrain_decals_snode->createChildSceneNode();
 
@@ -245,7 +245,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 	mesh->buildEdgeList();
 
 	// remove the manualobject again, since we dont need it anymore
-	gEnv->ogreSceneManager->destroyManualObject(mo);
+	globalEnvironment->ogreSceneManager->destroyManualObject(mo);
 
 	unsigned short src, dest;
 	if (!mesh->suggestTangentVectorBuildParams(VES_TANGENT, src, dest))
@@ -253,7 +253,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 		mesh->buildTangentVectors(VES_TANGENT, src, dest);
 	}
 	
-	Entity *ent = gEnv->ogreSceneManager->createEntity(oname+"_ent", oname+"_mesh");
+	Entity *ent = globalEnvironment->ogreSceneManager->createEntity(oname+"_ent", oname+"_mesh");
 	mo_node->attachObject(ent);
 
 	mo_node->setVisible(true);
@@ -285,7 +285,7 @@ int DecalManager::finishTerrainDecal()
 	// if if no decals
 	if(!terrain_decals_snode->numChildren()) return 0;
 	terrain_decal_count++;
-	terrain_decals_sg = gEnv->ogreSceneManager->createStaticGeometry("terrain_decals_"+TOSTRING(terrain_decal_count));
+	terrain_decals_sg = globalEnvironment->ogreSceneManager->createStaticGeometry("terrain_decals_"+TOSTRING(terrain_decal_count));
 	terrain_decals_sg->setCastShadows(false);
 	terrain_decals_sg->addSceneNode(terrain_decals_snode);
 	terrain_decals_sg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -333,11 +333,11 @@ int DecalSpline::showDebugLine(bool enabled)
 {
 	if(enabled)
 	{
-		mo_spline = gEnv->ogreSceneManager->createManualObject();
+		mo_spline = globalEnvironment->ogreSceneManager->createManualObject();
 		if(snparent)
 			mo_spline_node = snparent->createChildSceneNode();
 		else
-			mo_spline_node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			mo_spline_node = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		mo_spline->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
 		for(float j=0;j<1;j+=0.001)
 		{
@@ -349,13 +349,13 @@ int DecalSpline::showDebugLine(bool enabled)
 	{
 		if(mo_spline)
 		{
-			gEnv->ogreSceneManager->destroyManualObject(mo_spline);
+			globalEnvironment->ogreSceneManager->destroyManualObject(mo_spline);
 			delete(mo_spline);
 			mo_spline=0;
 		}
 		if(mo_spline_node)
 		{
-			gEnv->ogreSceneManager->destroySceneNode(mo_spline_node);
+			globalEnvironment->ogreSceneManager->destroySceneNode(mo_spline_node);
 			delete(mo_spline_node);
 			mo_spline_node=0;
 		}

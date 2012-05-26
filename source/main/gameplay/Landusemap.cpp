@@ -42,7 +42,7 @@ Landusemap::Landusemap(String configFilename) :
 	  data(0)
 	, mapsize(Vector3::ZERO)
 {
-	mapsize = gEnv->terrainManager->getMax();
+	mapsize = globalEnvironment->terrainManager->getMax();
 	loadConfig(configFilename);
 #ifndef USE_PAGED
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
