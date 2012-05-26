@@ -75,8 +75,8 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 
 	if ( !myManualObject )
 	{
-		myManualObject =  ctx.mSceneMgr->createManualObject();
-		mySceneNode = ctx.mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		myManualObject = gEnv->ogreSceneManager->createManualObject();
+		mySceneNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 
 		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
 		for (int i = 0; i < splineDrawResolution; i++)

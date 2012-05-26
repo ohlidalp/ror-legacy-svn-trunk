@@ -40,7 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *efl, Character *ps, OverlayWrapper *ow, DOFManager *dof) : 
+CameraManager::CameraManager(OverlayWrapper *ow, DOFManager *dof) : 
 	  currentBehavior(0)
 	, currentBehaviorID(-1)
 	, mTransScale(1.0f)
@@ -52,13 +52,9 @@ CameraManager::CameraManager(SceneManager *scm, Camera *cam, RoRFrameListener *e
 
 	createGlobalBehaviors();
 
-	ctx.mCamera = cam;
-	ctx.mCharacter = ps;
 	ctx.mCurrTruck = 0;
 	ctx.mDof = dof;
-	ctx.mEfl = efl;
 	ctx.mOverlayWrapper = ow;
-	ctx.mSceneMgr = scm;
 }
 
 CameraManager::~CameraManager()

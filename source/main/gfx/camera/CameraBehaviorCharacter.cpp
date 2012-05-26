@@ -33,8 +33,8 @@ CameraBehaviorCharacter::CameraBehaviorCharacter() :
 
 void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 {
-	targetDirection = -ctx.mCharacter->getRotation() - Radian(Math::HALF_PI);
-	camLookAt       =  ctx.mCharacter->getPosition() + camPositionOffset;
+	targetDirection = -gEnv->player->getRotation() - Radian(Math::HALF_PI);
+	camLookAt       =  gEnv->player->getPosition() + camPositionOffset;
 
 	CameraBehavior::update(ctx);
 }
@@ -44,7 +44,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{
 		const OIS::MouseState ms = _arg.state;
-		Radian angle = ctx.mCharacter->getRotation();
+		Radian angle = gEnv->player->getRotation();
 		
 		camRotY += Degree(ms.Y.rel * 0.13f);
 		angle   += Degree(ms.X.rel * 0.13f);
@@ -52,7 +52,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		camRotY  = Radian(std::min(+Math::HALF_PI * 0.65f, camRotY.valueRadians()));
 		camRotY  = Radian(std::max(camRotY.valueRadians(), -Math::HALF_PI * 0.9f));
 
-		ctx.mCharacter->setRotation(angle);
+		gEnv->player->setRotation(angle);
 
 #ifdef USE_MYGUI
 		MyGUI::PointerManager::getInstance().setVisible(false);

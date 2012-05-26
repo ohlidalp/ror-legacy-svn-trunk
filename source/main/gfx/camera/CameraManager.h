@@ -33,18 +33,14 @@ class CameraManager : public RoRSingletonNoCreation < CameraManager >
 
 public:
 
-	CameraManager(Ogre::SceneManager *scm, Ogre::Camera *cam, RoRFrameListener *efl, Character *ps, OverlayWrapper *ow, DOFManager *dof);
+	CameraManager(OverlayWrapper *ow, DOFManager *dof);
 	~CameraManager();
 
 	typedef struct cameraContext {
 		Beam *mCurrTruck;
-		Character *mCharacter;
 		DOFManager *mDof;
-		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;
-		Ogre::SceneManager *mSceneMgr;
 		OverlayWrapper *mOverlayWrapper;
-		RoRFrameListener *mEfl;
 		Ogre::Real mDt;
 		Ogre::Real mTransScale;
 		Ogre::Radian fovInternal;
