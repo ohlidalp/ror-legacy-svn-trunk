@@ -2987,6 +2987,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 
 	terrainManager = new TerrainManager(mSceneMgr, mWindow, mCamera, person);
+	gEnv->terrainManager = terrainManager;
 	terrainManager->loadTerrain(terrainfile);
 
 	if (person) person->setVisible(true);

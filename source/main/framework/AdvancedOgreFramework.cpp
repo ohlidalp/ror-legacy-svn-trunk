@@ -14,6 +14,8 @@
 using namespace Ogre;
 
 
+GEnv *gEnv = new GEnv();
+
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
 OgreFramework::OgreFramework() : hwnd(Ogre::String()), mainhwnd(Ogre::String()), name(), embedded(false)
@@ -194,6 +196,11 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
     m_pTimer->reset();
 
     m_pRenderWnd->setActive(true);
+
+
+	gEnv->ogreRoot     = m_pRoot;
+	gEnv->ogreViewPort = m_pViewport;
+	gEnv->ogreRenderWindow = m_pRenderWnd;
 
     return true;
 }
