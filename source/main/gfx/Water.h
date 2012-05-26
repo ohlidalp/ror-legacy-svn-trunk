@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __WaterOld_H__
-#define __WaterOld_H__
+#ifndef __Water_H_
+#define __Water_H_
 
 #include "RoRPrerequisites.h"
 
@@ -27,10 +27,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 extern float mrtime;
 
-class WaterOld : public Water
+class Water : public IWater
 {
 public:
-	WaterOld(const Ogre::ConfigFile &mTerrainConfig);
+
+	Water(const Ogre::ConfigFile &mTerrainConfig);
 
 	float getHeight();
 	float getHeightWaves(Ogre::Vector3 pos);
@@ -67,24 +68,23 @@ private:
 
 	bool haswaves;
 	bool visible;
-	Ogre::Camera *mCamera;
-	Ogre::Camera *mReflectCam;
-	Ogre::Camera *mRefractCam;
-	float *mapsizex, *mapsizez;
 	float *wbuffer;
+	float wheight;
 	float height, orgheight;
 	float maxampl;
 	float mScale;
-	Ogre::HardwareVertexBufferSharedPtr wbuf;
 	int framecounter;
 	int free_wavetrain;
 	int mType;
-	Ogre::Viewport *vRtt1, *vRtt2;
+	Ogre::Camera *mReflectCam;
+	Ogre::Camera *mRefractCam;
+	Ogre::HardwareVertexBufferSharedPtr wbuf;
 	Ogre::RenderTexture* rttTex1;
 	Ogre::RenderTexture* rttTex2;
 	Ogre::SceneNode *pBottomNode;
 	Ogre::SceneNode *pTestNode;
+	Ogre::Viewport *vRtt1, *vRtt2;
 	wavetrain_t wavetrains[MAX_WAVETRAINS];
 };
 
-#endif // __WaterOld_H__
+#endif // __Water_H_
