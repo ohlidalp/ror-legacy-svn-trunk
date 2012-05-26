@@ -397,3 +397,10 @@ Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds)
 	
 	return String(hash_result);
 }
+
+Ogre::String generateHashFromFile(Ogre::String filename)
+{
+	// no exception handling in here
+	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+	return generateHashFromDataStream(ds);
+}
