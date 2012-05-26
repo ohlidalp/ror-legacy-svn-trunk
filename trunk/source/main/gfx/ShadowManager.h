@@ -35,7 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class ShadowManager
 {
 public:
-	ShadowManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
+	ShadowManager();
 	~ShadowManager();
 
 	int changeShadowTechnique(Ogre::ShadowTechnique tech);

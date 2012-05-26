@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h"
 #include "BeamFactory.h"
 #include "Character.h"
+#include "Character.h"
 #include "DustManager.h"
 #include "GlowMaterialListener.h"
 #include "ScriptEngine.h"
@@ -31,25 +32,23 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "TerrainGeometryManager.h"
 #include "TerrainObjectManager.h"
+#include "WaterOld.h"
 #include "dashboard.h"
 #include "envmap.h"
 #include "errorutils.h"
 #include "gui_friction.h"
-#include "Character.h"
-
 #include "hdrlistener.h"
 #include "language.h"
 #include "utils.h"
 
 using namespace Ogre;
 
-TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *person) :
+TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *character) :
 	  mSceneMgr(smgr)
 	, mWindow(window)
 	, mCamera(camera)
-	, mCharacter(person)
+	, mCharacter(character)
 	, loading_state(NONE_LOADED)
-	, water_height(-9999)
 {
 
 }
@@ -87,11 +86,6 @@ void TerrainManager::loadTerrain(String filename)
 	{
 		showError(_L("Terrain loading error"), _L("the new terrain mode only supports .otc configurations"));
 		exit(125);
-	}
-
-	if (!mTerrainConfig.getSetting("WaterLine").empty())
-	{
-		water_height = StringConverter::parseReal(mTerrainConfig.getSetting("WaterLine"));
 	}
 
 	ambient_color = StringConverter::parseColourValue(mTerrainConfig.getSetting("AmbientColor"));
@@ -141,6 +135,8 @@ void TerrainManager::initSubSystems()
 
 	initVegetation();
 
+	initWater();
+
 	if (BSETTING("HDR", false))
 	{
 		initHDR();
@@ -156,10 +152,6 @@ void TerrainManager::initSubSystems()
 	if (BSETTING("Sunburn", false))
 	{
 		initSunburn();
-	}
-	if (water_height != -9999)
-	{
-		initWater();
 	}
 	// environment map
 	if (!BSETTING("Envmapdisable", false))
@@ -420,47 +412,22 @@ void TerrainManager::fixCompositorClearColor()
 
 void TerrainManager::initWater()
 {
-	//water!
-	if (water_height != -9999)
-	{
-		bool usewaves=(BSETTING("Waves", false));
-
-		// disable waves in multiplayer
-		if (net)
-			usewaves=false;
-
-		String waterSettingsString = SSETTING("Water effects", "Reflection + refraction (speed optimized)");
-
-		if      (waterSettingsString == "None")
-			water = 0;
-		else if (waterSettingsString == "Basic (fastest)")
-			water = new WaterOld(WaterOld::WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-		else if (waterSettingsString == "Reflection")
-			water = new WaterOld(WaterOld::WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-		else if (waterSettingsString == "Reflection + refraction (speed optimized)")
-			water = new WaterOld(WaterOld::WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-		else if (waterSettingsString == "Reflection + refraction (quality optimized)")
-			water = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
-	}
-	if (water) water->setFadeColour(ambient_color);
-	if (mCharacter) mCharacter->setWater(water);
-	BeamFactory::getSingleton().w = water;
-	DustManager::getSingleton().setWater(water);
+	water = new WaterOld(mTerrainConfig);
 }
 
 void TerrainManager::initEnvironmentMap()
 {
-	envmap = new Envmap(this);
+	envmap = new Envmap();
 }
 
 void TerrainManager::initDashboards()
 {
-	dashboard = new Dashboard(this);
+	dashboard = new Dashboard();
 }
 
 void TerrainManager::initShadows()
 {
-	shadow_manager   = new ShadowManager(this);
+	shadow_manager   = new ShadowManager();
 	shadow_manager->loadConfiguration();
 }
 
@@ -481,7 +448,7 @@ void TerrainManager::loadTerrainObjects()
 
 void TerrainManager::initCollisions()
 {
-	collisions = new Collisions(this);
+	collisions = new Collisions();
 	gEnv->collisions = collisions;
 }
 
