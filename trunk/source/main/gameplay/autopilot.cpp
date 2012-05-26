@@ -21,9 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "IHeightFinder.h"
-#include "IWater.h"
 #include "SoundScriptManager.h"
-#include "IHeightFinder.h"
+#include "Water.h"
 
 using namespace Ogre;
 

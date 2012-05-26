@@ -24,14 +24,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "collisions.h"
 #include "IHeightFinder.h"
 #include "InputEngine.h"
-#include "IWater.h"
 #include "MapControl.h"
 #include "MapEntity.h"
 #include "network.h"
 #include "NetworkStreamManager.h"
 #include "PlayerColours.h"
 #include "utils.h"
-#include "IHeightFinder.h"
+#include "Water.h"
 
 using namespace Ogre;
 

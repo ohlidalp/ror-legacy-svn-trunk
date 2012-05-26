@@ -17,41 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef AUTOPILOT_H__
-#define AUTOPILOT_H__
+#ifndef __AutoPilot_H_
+#define __AutoPilot_H_
 
 #include "RoRPrerequisites.h"
 #include "TerrainObjectManager.h"
 
 class Autopilot
 {
-private:
-	int mode_heading;
-	int mode_alt;
-	bool mode_ias;
-	bool mode_gpws;
-	int alt;
-	int vs;
-	int ias;
-	node_t *ref_l;
-	node_t *ref_r;
-	node_t *ref_b;
-	node_t *ref_c;
-	float ref_span;
-	float last_elevator;
-	float last_aileron;
-	float last_rudder;
-	float last_gpws_height;
-	float last_pullup_height;
-	float lastradiov;
-	float lastradioh;
-	float lastradiorwh;
-	float lastradiorwd;
-	float last_closest_hdist;
-	
-	int trucknum;
-
 public:
+
 	enum {HEADING_NONE, HEADING_FIXED, HEADING_WLV, HEADING_NAV};
 	enum {ALT_NONE, ALT_FIXED, ALT_VS};
 	enum {LOCALIZER_VERTICAL, LOCALIZER_HORIZONTAL, LOCALIZER_NDB, LOCALIZER_VOR};
@@ -80,7 +55,34 @@ public:
 	void gpws_update(float spawnheight);
 
 	void getRadioFix(TerrainObjectManager::localizer_t *localizers, int free_localizer, float *vdev, float *hdev);
+
+
+private:
+
+	int mode_heading;
+	int mode_alt;
+	bool mode_ias;
+	bool mode_gpws;
+	int alt;
+	int vs;
+	int ias;
+	node_t *ref_l;
+	node_t *ref_r;
+	node_t *ref_b;
+	node_t *ref_c;
+	float ref_span;
+	float last_elevator;
+	float last_aileron;
+	float last_rudder;
+	float last_gpws_height;
+	float last_pullup_height;
+	float lastradiov;
+	float lastradioh;
+	float lastradiorwh;
+	float lastradiorwd;
+	float last_closest_hdist;
+
+	int trucknum;
 };
 
-
-#endif // AUTOPILOT_H__
+#endif // __AutoPilot_H_
