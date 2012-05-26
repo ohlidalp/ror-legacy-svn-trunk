@@ -29,13 +29,13 @@ using namespace Ogre;
 
 template<> CharacterFactory *StreamableFactory < CharacterFactory, Character >::_instance = 0;
 
-CharacterFactory::CharacterFactory(Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm) : cam(cam), c(c), net(net), h(h), w(w), m(m), scm(scm)
+CharacterFactory::CharacterFactory()
 {
 }
 
 Character *CharacterFactory::createLocal(int playerColour)
 {
-	Character *ch = new Character(cam, c, net, h, w, m, scm, -1, 0, playerColour, false);
+	Character *ch = new Character(-1, 0, playerColour, false);
 
 	lockStreams();
 	std::map < int, std::map < unsigned int, Character *> > &streamables = getStreams();
@@ -49,7 +49,7 @@ Character *CharacterFactory::createRemoteInstance(stream_reg_t *reg)
 	// NO LOCKS IN HERE, already locked
 
 	LOG(" new character for " + TOSTRING(reg->sourceid) + ":" + TOSTRING(reg->streamid) + ", colour: " + TOSTRING(reg->colour));
-	Character *ch = new Character(cam, c, net, h, w, m, scm, reg->sourceid, reg->streamid, reg->colour, true);
+	Character *ch = new Character(reg->sourceid, reg->streamid, reg->colour, true);
 
 	// already locked
 	//lockStreams();

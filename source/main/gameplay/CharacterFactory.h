@@ -34,26 +34,16 @@ class CharacterFactory : public StreamableFactory < CharacterFactory, Character 
 
 public:
 
-	CharacterFactory(Ogre::Camera *cam, Network *net, Collisions *c, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm);
+	CharacterFactory();
 	~CharacterFactory();
 
 	Character *createLocal(int playerColour);
 	Character *createRemoteInstance(stream_reg_t *reg);
 
-	void setNetwork(Network *net) { this->net = net; };
-
 	void updateCharacters(float dt);
 	void updateLabels();
 
 protected:
-
-	Collisions *c;
-	HeightFinder *h;
-	MapControl *m;
-	Network *net;
-	Ogre::Camera *cam;
-	Ogre::SceneManager *scm;
-	Water *w;
 
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);
