@@ -19,20 +19,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TerrainGeometryManager.h"
 
-#include "BeamFactory.h"
-#include "CameraManager.h"
-#include "RoRFrameListener.h"
 #include "SkyManager.h"
+#include "TerrainManager.h"
 
 using namespace Ogre;
 
 TerrainGeometryManager::TerrainGeometryManager(TerrainManager *terrainManager) :
-	  mSceneMgr(0)
-	, terrainManager(terrainManager)
+	  terrainManager(terrainManager)
 	, disableCaching(false)
 	, mTerrainsImported(false)
 {
-	mSceneMgr = gEnv->ogreSceneManager;
 	gEnv->heightFinder = this;
 }
 
@@ -87,9 +83,9 @@ void TerrainGeometryManager::initTerrain()
 	pageMaxY = PARSEINT(terrainConfig.getSetting("Pages_Y"));
 
 
-	Vector3 mTerrainPos(mapsizex*0.5f, 0, mapsizez * 0.5f);
+	Vector3 mTerrainPos(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
 
-	mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain::ALIGN_X_Z, terrainSize, worldSize);
+	mTerrainGroup = OGRE_NEW TerrainGroup(gEnv->ogreSceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
 	mTerrainGroup->setFilenameConvention(baseName, filenameSuffix);
 	mTerrainGroup->setOrigin(mTerrainPos);
 	mTerrainGroup->setResourceGroup("cache");
@@ -131,7 +127,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 {
 	OGRE_NEW TerrainGlobalOptions();
 
-	Light *light = SkyManager::getSingleton().getMainLight();
+	Light *light = gEnv->terrainManager->getSkyManager()->getMainLight();
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
 	// Configure global
 	terrainOptions->setMaxPixelError(PARSEINT(terrainConfig.getSetting("MaxPixelError")));
@@ -142,7 +138,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 		terrainOptions->setLightMapDirection(light->getDerivedDirection());
 		terrainOptions->setCompositeMapDiffuse(light->getDiffuseColour());
 	}
-	terrainOptions->setCompositeMapAmbient(mSceneMgr->getAmbientLight());
+	terrainOptions->setCompositeMapAmbient(gEnv->ogreSceneManager->getAmbientLight());
 
 	// Configure default import settings for if we use imported image
 	Ogre::Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();
