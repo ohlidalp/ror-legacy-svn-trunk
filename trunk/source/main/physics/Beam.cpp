@@ -80,7 +80,7 @@ Beam* Beam::threadbeam[MAX_TRUCKS];
 int Beam::thread_mode = THREAD_SINGLE;
 int Beam::free_tb = 0;
 
-Beam::Beam(int tnum, Ogre::Vector3 pos, Quaternion rot, const char* fname, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) :
+Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool networked/* =false  */, bool networking/* =false  */, collision_box_t *spawnbox/* =NULL  */, bool ismachine/* =false  */, int flareMode/* =0  */, std::vector<String> *truckconfig/* =0  */, Skin *skin/* =0  */, bool freeposition/* =false */) :
 	  deleting(false)
 	, abs_state(false)
 	, abs_timer(0.0)
@@ -2809,7 +2809,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		Vector3 upv   = dirv.crossProduct(-rollv);
 		float rollangle = asin(rollv.dotProduct(Vector3::UNIT_Y));
 		// rad to deg
-		rollangle = Ogre::Math::RadiansToDegrees(rollangle);
+		rollangle = Math::RadiansToDegrees(rollangle);
 		// flip to other side when upside down
 		if (upv.y < 0) rollangle = 180.0f - rollangle;
 		cstate = rollangle / 180.0f;
@@ -2825,7 +2825,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		Vector3 dirv  = (cam_pos - cam_dir ).normalisedCopy();
 		float pitchangle = asin(dirv.dotProduct(Vector3::UNIT_Y));
 		// radian to degrees with a max cstate of +/- 1.0
-		cstate = (Ogre::Math::RadiansToDegrees(pitchangle) / 90.0f);
+		cstate = (Math::RadiansToDegrees(pitchangle) / 90.0f);
 		div++;
 	}
 
@@ -5426,7 +5426,7 @@ void *threadstart(void* vid)
 			// do work
 			beam->threadentry(id);
 		}
-	} catch(Ogre::Exception& e)
+	} catch(Exception& e)
 	{
 		// try to shutdown input system upon an error
 		if (InputEngine::getSingletonPtrNoCreation())

@@ -21,8 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "DustManager.h"
-#include "IWater.h"
+#include "DustPool.h"
 #include "SoundScriptManager.h"
+#include "TerrainManager.h"
+#include "Water.h"
+
+using namespace Ogre;
 
 Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float fullpower, int trucknum) :
 	  nodes(nodes)
@@ -40,7 +44,7 @@ Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float
 void Screwprop::updateForces(int update)
 {
 	if (!water) return;
-	float depth=water->getHeightWaves(nodes[noderef].AbsPosition)-nodes[noderef].AbsPosition.y;
+	float depth=gEnv->terrainManager->getWater()->getHeightWaves(nodes[noderef].AbsPosition)-nodes[noderef].AbsPosition.y;
 	if (depth<0) return; //out of water!
 	Vector3 dir=nodes[nodeback].RelPosition-nodes[noderef].RelPosition;
 	Vector3 rudaxis=nodes[noderef].RelPosition-nodes[nodeup].RelPosition;

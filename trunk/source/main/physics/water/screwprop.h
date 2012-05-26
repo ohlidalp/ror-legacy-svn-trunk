@@ -17,32 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __Screwprop_H_
-#define __Screwprop_H_
+#ifndef __ScrewProp_H_
+#define __ScrewProp_H_
 
 #include "RoRPrerequisites.h"
 
-#include "DustPool.h"
-
 class Screwprop
 {
-private:
-	node_t *nodes;
-	int nodeback;
-	int nodeup;
-	float fullpower; //in HP
-	Water* water;
-	int trucknum;
-	DustPool *splashp, *ripplep;
-
 public:
-	int noderef;
 
-	bool reverse;
-	float throtle;
-	float rudder;
+	Screwprop(node_t *nd, int nr, int nb, int nu, float power, int trucknum);
 
-	Screwprop(node_t *nd, int nr, int nb, int nu, float power, Water* w, int trucknum);
 	void updateForces(int update);
 	void setThrottle(float val);
 	void setRudder(float val);
@@ -50,6 +35,21 @@ public:
 	float getRudder();
 	void reset();
 	void toggleReverse();
+
+private:
+
+	DustPool *splashp, *ripplep;
+	Water* water;
+	bool reverse;
+	float fullpower; //in HP
+	float rudder;
+	float throtle;
+	int nodeback;
+	int noderef;
+	int nodeup;
+	int trucknum;
+	node_t *nodes;
+
 };
 
-#endif // __Screwprop_H_
+#endif // __ScrewProp_H_

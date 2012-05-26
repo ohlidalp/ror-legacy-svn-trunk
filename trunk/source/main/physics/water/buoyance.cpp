@@ -21,7 +21,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "DustManager.h"
-#include "IWater.h"
+#include "DustPool.h"
+#include "TerrainManager.h"
+#include "Water.h"
+
+using namespace Ogre;
 
 Buoyance::Buoyance()
 {
@@ -30,7 +34,6 @@ Buoyance::Buoyance()
 	splashp = DustManager::getSingleton().getDustPool("splash");
 	ripplep = DustManager::getSingleton().getDustPool("ripple");
 }
-
 
 //compute tetrahedron volume
 inline float Buoyance::computeVolume(Vector3 o, Vector3 a, Vector3 b, Vector3 c)
@@ -51,9 +54,9 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 	if (type!=BUOY_DRAGONLY)
 	{
 		//compute pression prism points
-		Vector3 ap=a+(w->getHeightWaves(a)-a.y)*9810*normal;
-		Vector3 bp=b+(w->getHeightWaves(b)-b.y)*9810*normal;
-		Vector3 cp=c+(w->getHeightWaves(c)-c.y)*9810*normal;
+		Vector3 ap=a+(gEnv->terrainManager->getWater()->getHeightWaves(a)-a.y)*9810*normal;
+		Vector3 bp=b+(gEnv->terrainManager->getWater()->getHeightWaves(b)-b.y)*9810*normal;
+		Vector3 cp=c+(gEnv->terrainManager->getWater()->getHeightWaves(c)-c.y)*9810*normal;
 		//find centroid
 		Vector3 ctd=(a+b+c+ap+bp+cp)/6.0;
 		//compute volume
@@ -73,7 +76,7 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 		//take in account the wave speed
 		//compute center
 		Vector3 tc=(a+b+c)/3.0;
-		vel=vel-w->getVelocity(tc);
+		vel=vel-gEnv->terrainManager->getWater()->getVelocity(tc);
 		float vell=vel.length();
 		if (vell>0.01)
 		{
@@ -88,9 +91,9 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 				{
 					Vector3 fxdir=fxl*normal;
 					if (fxdir.y<0) fxdir.y=-fxdir.y;
-					if (w->getHeightWaves(a)-a.y<0.1) splashp->malloc(a, fxdir);
-					else if (w->getHeightWaves(b)-b.y<0.1) splashp->malloc(b, fxdir);
-					else if (w->getHeightWaves(c)-c.y<0.1) splashp->malloc(c, fxdir);
+					if (gEnv->terrainManager->getWater()->getHeightWaves(a)-a.y<0.1) splashp->malloc(a, fxdir);
+					else if (gEnv->terrainManager->getWater()->getHeightWaves(b)-b.y<0.1) splashp->malloc(b, fxdir);
+					else if (gEnv->terrainManager->getWater()->getHeightWaves(c)-c.y<0.1) splashp->malloc(c, fxdir);
 				}
 			}
 		}
@@ -103,7 +106,7 @@ Vector3 Buoyance::computePressureForceSub(Vector3 a, Vector3 b, Vector3 c, Vecto
 //compute pressure and drag forces on a random triangle
 Vector3 Buoyance::computePressureForce(Vector3 a, Vector3 b, Vector3 c, Vector3 vel, int type)
 {
-	float wha=w->getHeightWaves((a+b+c)/3.0);
+	float wha=gEnv->terrainManager->getWater()->getHeightWaves((a+b+c)/3.0);
 	//check if fully emerged
 	if (a.y>wha && b.y>wha && c.y>wha) return Vector3::ZERO;
 	//check if semi emerged
@@ -155,7 +158,7 @@ Vector3 Buoyance::computePressureForce(Vector3 a, Vector3 b, Vector3 c, Vector3 
 }
 void Buoyance::computeNodeForce(node_t *a, node_t *b, node_t *c, int doupdate, int type)
 {
-	if (a->AbsPosition.y>w->getHeightWaves(a->AbsPosition) && b->AbsPosition.y>w->getHeightWaves(b->AbsPosition) && c->AbsPosition.y>w->getHeightWaves(c->AbsPosition)) return;
+	if (a->AbsPosition.y>gEnv->terrainManager->getWater()->getHeightWaves(a->AbsPosition) && b->AbsPosition.y>gEnv->terrainManager->getWater()->getHeightWaves(b->AbsPosition) && c->AbsPosition.y>gEnv->terrainManager->getWater()->getHeightWaves(c->AbsPosition)) return;
 	//compute center
 	Vector3 m=(a->AbsPosition+b->AbsPosition+c->AbsPosition)/3.0;
 	//compute projected points
