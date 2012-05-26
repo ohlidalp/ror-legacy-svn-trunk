@@ -1239,43 +1239,6 @@ RoRFrameListener::~RoRFrameListener()
 	#endif
 }
 
-void RoRFrameListener::loadNetTerrain(char *preselected_map)
-{
-	// load preselected map
-	char mapname[1024];
-	String group="";
-	sprintf(mapname, "%s.terrn", preselected_map);
-	loadTerrain(mapname);
-	//miniature map stuff
-	MaterialPtr tmat=(MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/Map"));
-	//search if mini picture exists
-	char ppname[1024];
-	sprintf(ppname, "%s-mini.dds", preselected_map);
-	group="";
-	if (group == "")
-	{
-		sprintf(ppname, "%s-mini.png", preselected_map);
-		try
-		{
-			group = ResourceGroupManager::getSingleton().findGroupContainingResource(ppname);
-		}catch(...)
-		{
-		}
-	}
-	if (group == "")
-		return;
-	FileInfoListPtr files= ResourceGroupManager::getSingleton().findResourceFileInfo(group, ppname);
-	if (!files->empty())
-	{
-		tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(ppname);
-	}
-	else
-	{
-		tmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("unknown.dds");
-	}
-}
-
-
 
 
 void updateCruiseControl(Beam* curr_truck, float dt)
@@ -3054,7 +3017,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		LOG("Loading new terrain format: " + terrainfile);
 		loadNewTerrain(terrainfile);
 
-	else if (terrainfile.find(".terrn") != String::npos)
+	} else if (terrainfile.find(".terrn") != String::npos)
 	{
 		LOG("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);

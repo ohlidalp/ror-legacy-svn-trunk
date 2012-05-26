@@ -293,7 +293,6 @@ public: // public methods
 	
 	void loadNewTerrain(Ogre::String terrainfile);
 	void loadClassicTerrain(Ogre::String terrainfile);
-	void loadNetTerrain(char *preselected_map);
 	
 	void loadTerrain(Ogre::String terrainfile);
 	void netDisconnectTruck(int number);
