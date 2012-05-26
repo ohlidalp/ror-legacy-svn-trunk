@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "IWater.h"
 #include "RoRPrerequisites.h"
 
-DustPool::DustPool(char* dname, int dsize, SceneNode *parent)
+DustPool::DustPool(const char* dname, int dsize)
 {
 	size=dsize;
 	allocated=0;
@@ -30,8 +30,8 @@ DustPool::DustPool(char* dname, int dsize, SceneNode *parent)
 	{
 		char dename[256];
 		sprintf(dename,"Dust %s %i", dname, i);
-		sns[i]=parent->createChildSceneNode();
-		pss[i]=smgr->createParticleSystem(dename, dname);
+		sns[i]=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		pss[i]=gEnv->ogreSceneManager->createParticleSystem(dename, dname);
 		if (pss[i])
 		{
 			sns[i]->attachObject(pss[i]);

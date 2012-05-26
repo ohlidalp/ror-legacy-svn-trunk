@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 Road::Road(Vector3 start) :
-	, cur_rtype(0)
+	  cur_rtype(0)
 	, free_rtype(0)
 	, lastpturn(0)
 	, ppitch(0)

@@ -55,7 +55,7 @@ protected:
 	float rates[MAX_DUSTS];
 
 public:
-	DustPool(char* dname, int dsize, SceneNode *parent);
+	DustPool(const char* dname, int dsize);
 
 	void setVisible(bool s);
 	//Dust
