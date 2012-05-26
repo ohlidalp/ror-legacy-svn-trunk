@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class RoRFrameListener;
 class TerrainManager;
 
-class GEnv
+class GlobalEnvironment
 {
 public:
 	Ogre::Root *ogreRoot;

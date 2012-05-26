@@ -14,7 +14,7 @@
 using namespace Ogre;
 
 
-GEnv *gEnv = new GEnv();
+GlobalEnvironment *gEnv = new GlobalEnvironment();
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
