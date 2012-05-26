@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class RoRFrameListener;
 class TerrainManager;
+class Collisions;
 
 class GlobalEnvironment
 {
@@ -34,6 +35,7 @@ public:
 
 	RoRFrameListener *framelistener;
 	TerrainManager *terrainManager;
+	Collisions *collisions;
 
 };
 
