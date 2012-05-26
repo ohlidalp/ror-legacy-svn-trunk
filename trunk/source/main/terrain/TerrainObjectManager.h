@@ -35,6 +35,34 @@ protected:
 	Ogre::SceneManager *mSceneMgr;
 	TerrainManager *terrainManager;
 
+	typedef struct {
+		bool enabled;
+		int loadType;
+		Ogre::String instanceName;
+		Ogre::SceneNode *sceneNode;
+		std::vector <int> collTris;
+		std::vector <int> collBoxes;
+	} loaded_object_t;
+
+	typedef struct
+	{
+		Ogre::Entity *ent;
+		Ogre::SceneNode *node;
+		Ogre::AnimationState *anim;
+		float speedfactor;
+	} animated_object_t;
+
+	Ogre::StaticGeometry *bakesg;
+	ProceduralManager *proceduralManager;
+
+	Road *road;
+
+	std::map< std::string, loaded_object_t >  loadedObjects;
+	std::map< std::string, spawn_location_t > netSpawnPos;
+	std::vector< animated_object_t >          animatedObjects;
+
+	localizer_t localizers[64];
+
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
 

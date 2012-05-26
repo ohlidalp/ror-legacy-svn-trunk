@@ -57,25 +57,12 @@ public:
 	RoRFrameListener(AppState *parent, Ogre::RenderWindow* win, Ogre::Camera* cam, Ogre::SceneManager* scm, Ogre::Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
 
-	static HeightFinder *hfinder;
-	static RoRFrameListener *eflsingleton;
 
 	Character *person;
 	ChatSystem *netChat;
 
-	Ogre::String loadedTerrain;
-	Ogre::String terrainFileHash;
-	Ogre::String terrainFileName;
-	Ogre::String terrainModHash;
-	Ogre::String terrainName;
-	Ogre::Vector3 reload_pos;
-
-	Water *w;
-
 	bool freeTruckPosition;
-	bool terrainHasTruckShop;
 
-	float mapsizex, mapsizey, mapsizez;
 	float netcheckGUITimer;
 
 	int loading_state;
@@ -103,22 +90,6 @@ protected:
 		Ogre::Quaternion rot;
 	} spawn_location_t;
 
-	typedef struct {
-		bool enabled;
-		int loadType;
-		Ogre::String instanceName;
-		Ogre::SceneNode *sceneNode;
-		std::vector <int> collTris;
-		std::vector <int> collBoxes;
-	} loaded_object_t;
-
-	typedef struct
-	{
-		Ogre::Entity *ent;
-		Ogre::SceneNode *node;
-		Ogre::AnimationState *anim;
-		float speedfactor;
-	} animated_object_t;
 
 #ifdef USE_PAGED
 	typedef struct
@@ -144,21 +115,18 @@ protected:
 #endif //USE_OIS_G27
 
 	AppState *parentState;
-	Collisions *collisions;
 	Dashboard *dashboard;
 	DOFManager *dof;
 	Editor *editor;
-	Envmap *envmap;
 	FILE *editorfd;
 	ForceFeedback *forcefeedback;
 	HeatHaze *heathaze;
-	MOC::CollisionTools *mCollisionTools;
 	MapControl *surveyMap;
 	MapTextureCreator *mtc;
 	Network *net;
 
 	Ogre::Camera* mCamera;
-	Ogre::ColourValue fadeColour;
+
 	Ogre::Quaternion reload_dir;
 	Ogre::Real distgrabbed;
 	Ogre::Real mTimeUntilNextToggle; // just to stop toggles flipping too fast
@@ -168,18 +136,14 @@ protected:
 	Ogre::SceneManager *mSceneMgr;
 	Ogre::SceneNode *dirArrowNode;
 	Ogre::SceneNode *pointerDestination;
-	Ogre::StaticGeometry *bakesg;
 	Ogre::String grassdensityTextureFilename;
 	Ogre::String inputhwnd;
 	Ogre::String terrainUID;
-	Ogre::TerrainGroup* mTerrainGroup;
+
 	Ogre::Vector3 dirArrowPointed;
 	Ogre::Vector3 persostart;
 
 	OverlayWrapper *ow;
-	ProceduralManager *proceduralManager;
-
-	Road *road;
 	bool benchmarking;
 	bool chatlock;
 	bool debugCollisions;
@@ -192,7 +156,6 @@ protected:
 	bool mTruckInfoOn;
 	bool netmode;
 	bool pressure_pressed;
-	bool useCaelumSky;
 
 	char screenshotformat[256];
 	char terrainmap[1024];
@@ -228,13 +191,7 @@ protected:
 	int truck_preload_num;
 	int truckgrabbed;
 	
-	static float gravity;
 
-	std::map< std::string, loaded_object_t >  loadedObjects;
-	std::map< std::string, spawn_location_t > netSpawnPos;
-	std::vector< animated_object_t >          animatedObjects;
-
-	localizer_t localizers[64];
 	truck_prepare_t truck_preload[100];
 
 	unsigned int mNumScreenShots;
@@ -245,7 +202,6 @@ protected:
 	int setupBenchmark();
 
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
-	void initDust();
 
 	void initSoftShadows();
 	void initializeCompontents();
@@ -270,7 +226,6 @@ public: // public methods
 	Ogre::RenderWindow *getRenderWindow() { return mWindow; };
 	Ogre::SceneManager *getSceneMgr() { return mSceneMgr; };
 	Ogre::Camera *getCamera() { return mCamera; };
-	Ogre::String saveTerrainMesh();
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
@@ -291,10 +246,8 @@ public: // public methods
 	void hideMap();
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false, Skin *skin=NULL);
 	
-	void loadNewTerrain(Ogre::String terrainfile);
-	void loadClassicTerrain(Ogre::String terrainfile);
-	
 	void loadTerrain(Ogre::String terrainfile);
+
 	void netDisconnectTruck(int number);
 	void pauseSim(bool value);
 	void reloadCurrentTruck();
@@ -307,6 +260,8 @@ public: // public methods
 	void showspray(bool s);
 	void shutdown_final();
 	void startTimer();
+	void updateCruiseControl(Beam* curr_truck, float dt);
+	void checkSpeedlimit(Beam* curr_truck, float dt);
 	void updateRacingGUI();
 	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
 
