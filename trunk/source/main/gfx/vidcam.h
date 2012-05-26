@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class VideoCamera
 {
 public:
-	VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck);
+	VideoCamera(rig_t *truck);
 
 	void init();
 
@@ -37,7 +37,7 @@ public:
 	void setActive(bool state);
 	//static VideoCamera *setActive(bool state);
 	
-	static VideoCamera *parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, SerializedRig *truck, parsecontext_t &c);
+	static VideoCamera *parseLine(SerializedRig *truck, parsecontext_t &c);
 
 	int camNode, lookat, switchoff;
 	float fov, minclip, maxclip;
@@ -49,10 +49,8 @@ public:
 	Ogre::String materialName, disabledTexture, vidCamName;
 
 protected:
-	Ogre::SceneManager *mSceneMgr;
 	rig_t *truck;
 	static int counter;
-	Ogre::Camera *mCamera;
 	Ogre::Camera *mVidCam;
 	Ogre::RenderTexture* rttTex;
 	Ogre::MaterialPtr mat;

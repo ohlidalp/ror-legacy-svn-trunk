@@ -40,18 +40,8 @@ using namespace Ogre;
 
 template<> BeamFactory *StreamableFactory < BeamFactory, Beam >::_instance = 0;
 
-BeamFactory::BeamFactory(SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam) :
-	  manager(manager)
-	, parent(parent)
-	, win(win)
-	, net(net)
-	, mapsizex(mapsizex)
-	, mapsizez(mapsizez)
-	, icollisions(icollisions)
-	, mfinder(mfinder)
-	, w(w)
-	, pcam(pcam)
-	, current_truck(-1)
+BeamFactory::BeamFactory() :
+	  current_truck(-1)
 	, free_truck(0)
 	, physFrame(0)
 	, tdr(0)
@@ -117,23 +107,11 @@ Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collis
 
 	Beam *b = new Beam(
 		truck_num,
-		manager,
-		manager->getRootSceneNode()->createChildSceneNode(),
-		win,
-		net,
-		mapsizex,
-		mapsizez,
-		pos.x,
-		pos.y,
-		pos.z,
+		pos,
 		rot,
 		fname.c_str(),
-		icollisions,
-		mfinder,
-		w,
-		pcam,
 		false, // networked
-		net!=0, // networking
+		gEnv->network!=0, // networking
 		spawnbox,
 		ismachine,
 		flareMode,
@@ -159,7 +137,7 @@ Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collis
 #endif // USE_MYGUI
 
 	// add own username to truck
-	if (net)
+	if (gEnv->network)
 	{
 		b->updateNetworkInfo();
 	}
@@ -232,23 +210,11 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	Beam *b = new Beam(
 		truck_num,
-		manager,
-		manager->getRootSceneNode(),
-		win,
-		net,
-		mapsizex,
-		mapsizez,
-		pos.x,
-		pos.y,
-		pos.z,
+		pos,
 		Quaternion::ZERO,
 		reg->reg.name,
-		icollisions,
-		mfinder,
-		w,
-		pcam,
 		true, // networked
-		net!=0, // networking
+		gEnv->network!=0, // networking
 		0,
 		false,
 		3,

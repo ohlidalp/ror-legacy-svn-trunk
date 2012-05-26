@@ -103,6 +103,14 @@ private:
 	void updatePlayerList();
 
 	Ogre::UTFString getUserChatName(client_t *c);
+
+	// mutex'ed data
+	int net_quality;
+	bool net_quality_changed;
+	void setNetQuality(int q);
+	int getNetQuality(bool ack=false);
+	bool getNetQualityChanged();
+	pthread_mutex_t mutex_data;
 };
 
 #endif // __Network_H_

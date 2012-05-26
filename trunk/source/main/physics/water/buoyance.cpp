@@ -23,9 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustManager.h"
 #include "IWater.h"
 
-Buoyance::Buoyance(Water *water)
+Buoyance::Buoyance()
 {
-	w=water;
 	update=0;
 	sink=0;
 	splashp = DustManager::getSingleton().getDustPool("splash");

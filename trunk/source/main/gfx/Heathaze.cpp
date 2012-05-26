@@ -22,14 +22,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-HeatHazeListener::HeatHazeListener(SceneManager *sceneMgr) : RenderTargetListener(), mSceneMgr(sceneMgr)
+HeatHazeListener::HeatHazeListener() : RenderTargetListener()
 {
 }
 
 void HeatHazeListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// Hide everything
-	//mSceneMgr->setFindVisibleObjects(false);
+	//gEnv->ogreSceneManager->setFindVisibleObjects(false);
 
 	// TODO: hide objects between the heathaze and the viewer, so no heathaze is visible on them
 
@@ -37,18 +37,18 @@ void HeatHazeListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 void HeatHazeListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// Show everything
-	//mSceneMgr->setFindVisibleObjects(true);
+	//gEnv->ogreSceneManager->setFindVisibleObjects(true);
 }
 
 
-HeatHaze::HeatHaze(SceneManager *sceneMgr, RenderWindow *mWindow, Ogre::Camera *cam) : mSceneMgr(sceneMgr), rttTex(0), listener(0)
+HeatHaze::HeatHaze() : rttTex(0), listener(0)
 {
 	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, cam->getViewport()->getWidth(), cam->getViewport()->getHeight(), 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 	{
 		/*
 		// we use the main camera now
-		mHazeCam = mSceneMgr->createCamera("Hazecam");
+		mHazeCam = gEnv->ogreSceneManager->createCamera("Hazecam");
 		mHazeCam->setNearClipDistance(1.0);
 		mHazeCam->setFarClipDistance(1000.0);
 		mHazeCam->setPosition(Vector3(0, 0, 0));
@@ -69,7 +69,7 @@ HeatHaze::HeatHaze(SceneManager *sceneMgr, RenderWindow *mWindow, Ogre::Camera *
 		tex->setTextureName("heathaze_rtt");
 		tex->setProjectiveTexturing(true, cam);
 
-		listener = new HeatHazeListener(mSceneMgr);
+		listener = new HeatHazeListener(gEnv->ogreSceneManager);
 		rttTex->addListener(listener);
 		rttTex->setAutoUpdated(false);
 	}

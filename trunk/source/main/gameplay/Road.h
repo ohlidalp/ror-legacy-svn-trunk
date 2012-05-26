@@ -35,7 +35,7 @@ class Road
 
 public:
 
-	Road(Ogre::SceneManager *scm, Ogre::Vector3 start);
+	Road(Ogre::Vector3 start);
 
 private:
 
@@ -51,7 +51,6 @@ private:
 	static const unsigned int MAX_RTYPES = 10;
 	RoadType_t rtypes[MAX_RTYPES];
 
-	Ogre::SceneManager *mSceneMgr;
 	Ogre::SceneNode *tenode;
 
 	Ogre::Vector3 ppos;

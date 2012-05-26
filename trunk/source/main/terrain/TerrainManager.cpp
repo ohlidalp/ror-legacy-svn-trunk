@@ -43,12 +43,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *character) :
-	  mSceneMgr(smgr)
-	, mWindow(window)
-	, mCamera(camera)
-	, mCharacter(character)
-	, loading_state(NONE_LOADED)
+TerrainManager::TerrainManager() :
+	loading_state(NONE_LOADED)
 {
 
 }

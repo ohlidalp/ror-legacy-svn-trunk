@@ -89,12 +89,11 @@ typedef struct
 	unsigned short *bandfaces;
 	node_t *nodes;
 	int nbrays;
-	Ogre::SceneManager *smanager;
 	bool is_rimmed;
 	float rim_ratio;
 
 public:
-	FlexMesh(Ogre::SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed=false, float rimratio=1.0);
+	FlexMesh(char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed=false, float rimratio=1.0);
 	Ogre::Vector3 updateVertices();
 	Ogre::Vector3 updateShadowVertices();
 	Ogre::Vector3 flexit();

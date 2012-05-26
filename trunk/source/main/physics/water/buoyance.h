@@ -27,14 +27,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Buoyance
 {
 private:
-	Water *w;
 	int update;
 	int sink;
 	DustPool *splashp, *ripplep;
 
 public:
 
-	Buoyance(Water *water);
+	Buoyance();
 	~Buoyance();
 
 	//compute tetrahedron volume

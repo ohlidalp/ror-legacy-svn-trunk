@@ -79,13 +79,18 @@ void *s_receivethreadstart(void* vid)
 Timer Network::timer = Ogre::Timer();
 unsigned int Network::myuid=0;
 
-Network::Network(String servername, long sport, RoRFrameListener *efl): lagDataClients(), initiated(false)
+Network::Network(String servername, long sport, RoRFrameListener *efl) :
+	  lagDataClients()
+	, initiated(false)
+	, net_quality(0)
+	, net_quality_changed(false)
 {
+
+	pthread_mutex_init(&mutex_data, NULL);
+
 	// update factories network objects
 
 	NetworkStreamManager::getSingleton().net = this;
-	CharacterFactory::getSingleton().setNetwork(this);
-	ChatSystemFactory::getSingleton().setNetwork(this);
 
 	//
 	memset(&server_settings, 0, sizeof(server_info_t));
@@ -592,8 +597,7 @@ void Network::receivethreadstart()
 			if(header.size != sizeof(int))
 				continue;
 			int quality = *(int *)buffer;
-			if(RoRFrameListener::eflsingleton)
-				RoRFrameListener::eflsingleton->setNetQuality(quality);
+			setNetQuality(quality);
 			continue;
 		}
 		else if(header.command == MSG2_USER_LEAVE)
@@ -730,6 +734,33 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 	LOG(tmp);
 	//String hex = hexdump(buffer, header->size);
 	//LOG(hex);
+}
+
+void Network::setNetQuality(int q)
+{
+	MUTEX_LOCK(&mutex_data);
+	net_quality = q;
+	net_quality_changed = true;
+	MUTEX_UNLOCK(&mutex_data);
+}
+
+int Network::getNetQuality(bool ack)
+{
+	int res = 0;
+	MUTEX_LOCK(&mutex_data);
+	res = net_quality;
+	if (ack) net_quality_changed=false;
+	MUTEX_UNLOCK(&mutex_data);
+	return res;
+}
+
+bool Network::getNetQualityChanged()
+{
+	bool res = false;
+	MUTEX_LOCK(&mutex_data);
+	res = net_quality_changed;
+	MUTEX_UNLOCK(&mutex_data);
+	return res;
 }
 
 #endif // USE_SOCKETW

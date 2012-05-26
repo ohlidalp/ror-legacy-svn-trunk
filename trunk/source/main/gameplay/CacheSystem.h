@@ -188,7 +188,7 @@ class CacheSystem : public RoRSingleton<CacheSystem>
 {
 	friend class RoRSingleton<CacheSystem>;
 public:	
-	void startup(Ogre::SceneManager *smgr, bool forcecheck=false);
+	void startup(bool forcecheck=false);
 	void loadAllZips();
 	
 	static Ogre::String stripUIDfromString(Ogre::String uidstr);
@@ -231,7 +231,6 @@ protected:
 	static CacheSystem* myInstance;
 	Ogre::String location;
 	Ogre::String configlocation;
-	Ogre::SceneManager *smgr;
 
 
 	Ogre::String currentSHA1;	// stores sha1 over the content

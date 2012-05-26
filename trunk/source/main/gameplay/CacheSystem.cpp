@@ -44,7 +44,6 @@ CacheSystem::CacheSystem() :
 	, deletedFiles(0)
 	, newFiles(0)
 	, rgcounter(0)
-	, smgr(0)
 {
 	// register the extensions
 	known_extensions.push_back("machine");
@@ -75,10 +74,8 @@ void CacheSystem::setLocation(String cachepath, String configpath)
 	configlocation=configpath;
 }
 
-void CacheSystem::startup(SceneManager *smgr, bool forcecheck)
+void CacheSystem::startup(bool forcecheck)
 {
-	this->smgr = smgr;
-
 	if(BSETTING("NOCACHE", false))
 	{
 		LOG("Cache disabled via command line switch");

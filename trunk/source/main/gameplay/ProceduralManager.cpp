@@ -24,12 +24,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace std;
 using namespace Ogre;
 
-ProceduralManager::ProceduralManager(Ogre::SceneManager *manager, HeightFinder *hf, Collisions *_collisions)
+ProceduralManager::ProceduralManager()
 {
 	// set values
-	mSceneMgr = manager;
-	hfinder = hf;
-	collisions = _collisions;
 	objectcounter = 0;
 }
 
@@ -61,7 +58,7 @@ int ProceduralManager::updateObject(ProceduralObject &po)
 	if(po.loadingState == 1 && po.road)
 		deleteObject(po);
 	// create new road2 object
-	po.road = new Road2(mSceneMgr, hfinder, collisions, objectcounter++);;
+	po.road = new Road2(objectcounter++);;
 
 	std::vector<ProceduralPoint>::iterator it;
 	for(it=po.points.begin(); it!=po.points.end(); it++)

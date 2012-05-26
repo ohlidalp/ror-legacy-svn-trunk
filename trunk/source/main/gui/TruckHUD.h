@@ -28,7 +28,7 @@ public:
 
 	TruckHUD();
 
-	bool update(float dt, Beam *truck, Ogre::SceneManager *sm, Ogre::Camera* mCamera, Ogre::RenderWindow* mWindow, bool visible=true);
+	bool update(float dt, Beam *truck, bool visible=true);
 	void show(bool value);
 	bool isVisible();
 

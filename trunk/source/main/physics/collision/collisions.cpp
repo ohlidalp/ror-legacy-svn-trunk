@@ -107,10 +107,8 @@ unsigned int sbox[] =
 
 using namespace Ogre;
 
-Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode) :
-	  mefl(efl)
-	, smgr(mgr)
-	, debugMode(debugMode)
+Collisions::Collisions() :
+	, debugMode(false)
 	, collision_count(0)
 	, collision_tris(0)
 	, forcecam(false)
@@ -125,6 +123,8 @@ Collisions::Collisions(RoRFrameListener *efl, SceneManager *mgr, bool debugMode)
 	, last_used_ground_model(0)
 	, max_col_tris(MAX_COLLISION_TRIS)
 {
+
+	debugMode = BSETTING("Collision Debug Mode");
 	for (int i=0; i < HASH_POWER; i++)
 	{
 		hashmask = hashmask << 1;

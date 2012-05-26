@@ -60,7 +60,7 @@ Character::Character(int source, unsigned int streamid, int colourNumber, bool r
 	myNumber = characterCounter++;
 	myName   = "Character" + TOSTRING(myNumber);
 
-	Entity *entity = mSceneMgr->createEntity(myName+"_mesh", "character.mesh");
+	Entity *entity = gEnv->ogreSceneManager->createEntity(myName+"_mesh", "character.mesh");
 #if OGRE_VERSION<0x010602
 	entity->setNormaliseNormals(true);
 #endif //OGRE_VERSION
@@ -71,7 +71,7 @@ Character::Character(int source, unsigned int streamid, int colourNumber, bool r
 	entity->getMesh()->_setBounds(aabb);
 
 	// add entity to the scene node
-	mCharacterNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	mCharacterNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	mCharacterNode->attachObject(entity);
 	mCharacterNode->setScale(0.02f, 0.02f, 0.02f);
 	mAnimState = entity->getAllAnimationStates();

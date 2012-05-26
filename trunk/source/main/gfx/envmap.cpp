@@ -26,11 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Envmap::Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic, int updateRate /* = 1 */) :
+Envmap::Envmap(bool dynamic, int updateRate /* = 1 */) :
 	  mDebugSceneNode(0)
 	, mInitiated(false)
 	, mIsDynamic(dynamic)
-	, mMainCamera(cam)
 	, mRound(0)
 	, updateRate(updateRate)
 {

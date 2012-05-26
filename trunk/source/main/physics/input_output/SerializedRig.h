@@ -69,7 +69,7 @@ public:
 	int loadTruckVirtual(Ogre::String fname, bool ignoreProblems=false);
 
 	// real truck loading
-	int loadTruck(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
+	int loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);	
 
 	int parse_args(parsecontext_t &context, Ogre::StringVector &v, int minArgNum);
 	int parse_node_number(parsecontext_t &context, Ogre::String s, std::vector<int> *special_numbers=NULL);
@@ -103,7 +103,6 @@ protected:
 	
 	int add_beam(node_t *p1
 		, node_t *p2
-		, Ogre::SceneManager *manager
 		, Ogre::SceneNode *parent
 		, int type
 		, float strength
@@ -117,8 +116,7 @@ protected:
 		, float diameter=DEFAULT_BEAM_DIAMETER
 		, parsecontext_t *c=0);
 
-	void addWheel(Ogre::SceneManager *manager
-		, Ogre::SceneNode *parent
+	void addWheel(Ogre::SceneNode *parent
 		, float radius
 		, float width
 		, int rays
@@ -139,8 +137,7 @@ protected:
 		, bool rimreverse=false
 		, parsecontext_t *c=0);
 	
-	void addWheel2(Ogre::SceneManager *manager
-		, Ogre::SceneNode *parent
+	void addWheel2(Ogre::SceneNode *parent
 		, float radius
 		, float radius2
 		, float width
@@ -160,8 +157,7 @@ protected:
 		, char* texb
 		, parsecontext_t *c=0);
 
-		void addWheel3(Ogre::SceneManager *manager
-		, Ogre::SceneNode *parent
+		void addWheel3(Ogre::SceneNode *parent
 		, float radius
 		, float radius2
 		, float width

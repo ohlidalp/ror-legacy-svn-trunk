@@ -34,20 +34,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class DustManager : public RoRSingletonNoCreation < DustManager >
 {
 public:
-	DustManager(Ogre::SceneManager *mSceneMgr);
+	DustManager();
 	~DustManager();
 
 	DustPool *getGroundModelDustPool(ground_model_t *g);
 	
 	void update(float wspeed);
-	void setWater(Water *w);
+
 	void setVisible(bool visible);
 
 	DustPool *getDustPool(Ogre::String name);
 	
 protected:
-	Ogre::SceneManager *mSceneMgr;
-	Water *w;
 	bool mEnabled;
 	std::map < Ogre::String , DustPool * > dustpools;
 	//void addNewDustPool(ground_model_t *g);

@@ -27,7 +27,7 @@ class TerrainManager
 {
 public:
 
-	TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *character);
+	TerrainManager();
 	~TerrainManager();
 
 	void loadTerrain(Ogre::String filename);
@@ -41,11 +41,7 @@ public:
 
 protected:
 	// members
-	Ogre::Camera *mCamera;
 	Ogre::ConfigFile mTerrainConfig;
-	Ogre::RenderWindow *mWindow;
-	Ogre::SceneManager *mSceneMgr;
-	Character *mCharacter;
 
 	// subsystems
 	Character *character;

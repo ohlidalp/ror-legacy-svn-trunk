@@ -250,7 +250,7 @@ void RoRFrameListener::updateGUI(float dt)
 	if (!curr_truck) return;
 
 	//update the truck info gui (also if not displayed!)
-	ow->truckhud->update(dt, curr_truck, mSceneMgr, mCamera, mWindow, mTruckInfoOn);
+	ow->truckhud->update(dt, curr_truck, mTruckInfoOn);
 
 #ifdef FEAT_TIMING
 	BES.updateGUI(dt);
@@ -691,7 +691,7 @@ void RoRFrameListener::updateGUI(float dt)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, Ogre::String inputhwnd) :
+RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd) :
 	clutch(0),
 	dashboard(0),
 	debugCollisions(false),
@@ -707,19 +707,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	isEmbedded(isEmbedded),
 	joyshiftlock(0),
 	loading_state(NONE_LOADED),
-	mCamera(cam),
-	mRoot(root),
-	mSceneMgr(scm),
 	mStatsOn(0),
 	mTimeUntilNextToggle(0),
 	mTruckInfoOn(false),
-	mWindow(win),
 	mtc(0),
 	net(0),
 	netChat(0),
 	netPointToUID(-1),
-	net_quality(0),
-	net_quality_changed(false),
 	netcheckGUITimer(0),
 	objcounter(0),
 	objectCounter(0),
@@ -738,7 +732,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	truck_preload_num(0),
 	terrainManager(0)
 {
-	pthread_mutex_init(&mutex_data, NULL);
 
 	// we don't use overlays in embedded mode
 	if (!isEmbedded)
@@ -1081,7 +1074,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 #endif //SOCKETW
 
 	// new beam factory
-	new BeamFactory(mSceneMgr, mSceneMgr->getRootSceneNode(), mWindow, net, &mapsizex, &mapsizez, collisions, hfinder, w, mCamera);
+	new BeamFactory();
 
 
 	// now continue to load everything...
@@ -3555,32 +3548,7 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 }
 
 
-void RoRFrameListener::setNetQuality(int q)
-{
-	MUTEX_LOCK(&mutex_data);
-	net_quality = q;
-	net_quality_changed = true;
-	MUTEX_UNLOCK(&mutex_data);
-}
 
-int RoRFrameListener::getNetQuality(bool ack)
-{
-	int res = 0;
-	MUTEX_LOCK(&mutex_data);
-	res = net_quality;
-	if (ack) net_quality_changed=false;
-	MUTEX_UNLOCK(&mutex_data);
-	return res;
-}
-
-bool RoRFrameListener::getNetQualityChanged()
-{
-	bool res = false;
-	MUTEX_LOCK(&mutex_data);
-	res = net_quality_changed;
-	MUTEX_UNLOCK(&mutex_data);
-	return res;
-}
 
 bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName)
 {

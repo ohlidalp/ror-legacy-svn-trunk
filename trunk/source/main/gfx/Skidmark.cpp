@@ -126,9 +126,8 @@ int SkidmarkManager::getTexture(String model, String ground, float slip, String 
 // this is a hardcoded array which we use to map ground types to a certain texture with UV/ coords
 Vector2 Skidmark::tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
 
-Skidmark::Skidmark(SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) :
-	  scm(scm)
-	, mNode(snode)
+Skidmark::Skidmark(wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) :
+	  mNode(snode)
 	, hfinder(hfinder)
 	, mDirty(true)
 	, lenght((_lenght%2) ? (_lenght-(_lenght%2)) : _lenght)

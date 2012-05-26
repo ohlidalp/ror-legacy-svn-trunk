@@ -39,14 +39,7 @@ void GameState::enter()
 
 	LOG("Adding Frame Listener");
 
-	mFrameListener = new RoRFrameListener(this,
-		OgreFramework::getSingleton().m_pRenderWnd,
-		m_pCamera,
-		m_pSceneMgr,
-		OgreFramework::getSingletonPtr()->m_pRoot,
-		OgreFramework::getSingleton().isEmbedded(),
-		OgreFramework::getSingleton().getMainHWND()
-		);
+	mFrameListener = new RoRFrameListener(this,	OgreFramework::getSingleton().getMainHWND());
 	
 	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
 

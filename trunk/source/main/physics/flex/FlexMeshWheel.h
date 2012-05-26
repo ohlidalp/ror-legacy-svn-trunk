@@ -87,14 +87,13 @@ private:
 	unsigned short *faces;
 	node_t *nodes;
 	int nbrays;
-	Ogre::SceneManager *smanager;
 	float rim_radius;
 	Ogre::SceneNode *rnode;
 	float normy;
 	bool revrim;
 	Ogre::Entity *rimEnt;
 public:
-	FlexMeshWheel(Ogre::SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
+	FlexMeshWheel(char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr);
 
 	Ogre::Vector3 updateVertices();
 	Ogre::Vector3 updateShadowVertices();

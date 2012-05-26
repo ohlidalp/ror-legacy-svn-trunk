@@ -34,7 +34,7 @@ void LobbyState::enter()
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
 #ifdef USE_MYGUI
-	new GUIManager(OgreFramework::getSingleton().m_pRoot, m_pSceneMgr, OgreFramework::getSingleton().m_pRenderWnd);
+	new GUIManager();
 
 	LobbyGUI::getSingleton().setVisible(true);
 

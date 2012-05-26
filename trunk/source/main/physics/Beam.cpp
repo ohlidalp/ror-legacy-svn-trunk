@@ -80,7 +80,7 @@ Beam* Beam::threadbeam[MAX_TRUCKS];
 int Beam::thread_mode = THREAD_SINGLE;
 int Beam::free_tb = 0;
 
-Beam::Beam(int tnum, SceneManager *manager, SceneNode *parent, RenderWindow* win, Network *_net, float *_mapsizex, float *_mapsizez, Real px, Real py, Real pz, Quaternion rot, const char* fname, Collisions *icollisions, HeightFinder *mfinder, Water *w, Camera *pcam, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) :
+Beam::Beam(int tnum, Ogre::Vector3 pos, Quaternion rot, const char* fname, bool networked, bool networking, collision_box_t *spawnbox, bool ismachine, int _flaresMode, std::vector<String> *_truckconfig, Skin *skin, bool freeposition) :
 	  deleting(false)
 	, abs_state(false)
 	, abs_timer(0.0)

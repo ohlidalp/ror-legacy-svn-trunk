@@ -23,8 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-Road::Road(SceneManager *scm, Vector3 start) :
-	  mSceneMgr(scm)
+Road::Road(Vector3 start) :
 	, cur_rtype(0)
 	, free_rtype(0)
 	, lastpturn(0)
@@ -88,13 +87,13 @@ void Road::addRoadType(const char* name)
 	// create visuals
 	String entity_name = String("RoadPreview-").append(name);
 	String mesh_name = String(name).append(".mesh");
-	Entity *te = mSceneMgr->createEntity(entity_name, mesh_name);
+	Entity *te = gEnv->ogreSceneManager->createEntity(entity_name, mesh_name);
 
 	te->setCastShadows(false);
 
 	if(free_rtype < MAX_RTYPES)
 	{
-		rtypes[free_rtype].node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		rtypes[free_rtype].node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		rtypes[free_rtype].node->attachObject(te);
 		rtypes[free_rtype].node->setVisible(false);
 		strcpy(rtypes[free_rtype].name, name);
