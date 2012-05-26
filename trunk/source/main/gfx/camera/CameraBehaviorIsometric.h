@@ -28,9 +28,9 @@ class CameraBehaviorIsometric : public ICameraBehavior
 {
 public:
 
-	void update(const CameraManager::cameraContext_t &ctx);
+	void update(const CameraManager::cameraContext_t &ctx) {};
 
-	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
+	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg) { return false; };
 	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 

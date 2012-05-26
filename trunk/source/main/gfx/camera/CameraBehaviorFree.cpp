@@ -95,10 +95,10 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 		mRotY -= mRotScale;
 	}
 
-	ctx.mCamera->yaw(mRotX);
-	ctx.mCamera->pitch(mRotY);
+	gEnv->ogreCamera->yaw(mRotX);
+	gEnv->ogreCamera->pitch(mRotY);
 
-	Vector3 camPosition = ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
+	Vector3 camPosition = gEnv->ogreCamera->getPosition() + gEnv->ogreCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
 	if ( gEnv->heightFinder )
 	{
@@ -107,15 +107,15 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 		camPosition.y = std::max(h, camPosition.y);
 	}
 
-	ctx.mCamera->setPosition(camPosition);
+	gEnv->ogreCamera->setPosition(camPosition);
 }
 
 bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
-	ctx.mCamera->yaw(Degree(-ms.X.rel * 0.13f));
-	ctx.mCamera->pitch(Degree(-ms.Y.rel * 0.13f));
+	gEnv->ogreCamera->yaw(Degree(-ms.X.rel * 0.13f));
+	gEnv->ogreCamera->pitch(Degree(-ms.Y.rel * 0.13f));
 
 #ifdef USE_MYGUI
 	MyGUI::PointerManager::getInstance().setVisible(false);
