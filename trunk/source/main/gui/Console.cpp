@@ -509,7 +509,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/goto <x> <y> <z>#000000  - jumps to the mentioned position"), "world.png");
-			if(gEnv->heightFinder)
+			if(gEnv->terrainManager->getHeightFinder())
 				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/terrainheight#000000  - get height of terrain at current position"), "world.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
@@ -982,7 +982,7 @@ void Console::outputCurrentPosition()
 
 void Console::outputCurrentTerrainHeight()
 {
-	if(!gEnv->heightFinder) return;
+	if(!gEnv->terrainManager->getHeightFinder()) return;
 	Vector3 pos  = Vector3::ZERO;
 
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
@@ -995,7 +995,7 @@ void Console::outputCurrentTerrainHeight()
 		pos = b->getPosition();
 	}
 
-	Real h = gEnv->heightFinder->getHeightAt(pos.x, pos.z);
+	Real h = gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
 }
 

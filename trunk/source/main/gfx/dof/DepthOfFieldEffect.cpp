@@ -32,9 +32,8 @@ using namespace Ogre;
 
 const int DepthOfFieldEffect::BLUR_DIVISOR = 2;
 
-DepthOfFieldEffect::DepthOfFieldEffect(Ogre::Viewport *v, Ogre::Camera *cam) :
-	  mCamera(cam)
-	, mCompositor(NULL)
+DepthOfFieldEffect::DepthOfFieldEffect() :
+	  mCompositor(NULL)
 	, mDepthTarget(NULL)
 	, mDepthTechnique(NULL)
 	, mDepthViewport(NULL)
@@ -42,10 +41,9 @@ DepthOfFieldEffect::DepthOfFieldEffect(Ogre::Viewport *v, Ogre::Camera *cam) :
 	, mFarDepth(190.0)
 	, mFocalDepth(100.0)
 	, mNearDepth(10.0)
-	, mViewport(v)
 {
-	mWidth = mViewport->getActualWidth();
-	mHeight = mViewport->getActualHeight();
+	mWidth = gEnv->ogreViewPort->getActualWidth();
+	mHeight = gEnv->ogreViewPort->getActualHeight();
 	
 	mDepthTexture.setNull();
 	mDepthMaterial.setNull();
@@ -92,7 +90,7 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 
 	// Get its render target and add a viewport to it
 	mDepthTarget = mDepthTexture->getBuffer()->getRenderTarget();
-	mDepthViewport = mDepthTarget->addViewport(mCamera);
+	mDepthViewport = mDepthTarget->addViewport(gEnv->ogreCamera);
 
 	// Register 'this' as a render target listener
 	mDepthTarget->addListener(this);
@@ -143,7 +141,7 @@ void DepthOfFieldEffect::destroyDepthRenderTexture()
 
 void DepthOfFieldEffect::addCompositor()
 {
-	mCompositor = CompositorManager::getSingleton().addCompositor(mViewport, "DoF_Compositor_test");
+	mCompositor = CompositorManager::getSingleton().addCompositor(gEnv->ogreViewPort, "DoF_Compositor_test");
 	mCompositor->addListener(this);
 
 	mCompositor->setEnabled(true);
@@ -154,7 +152,7 @@ void DepthOfFieldEffect::removeCompositor()
 	mCompositor->setEnabled(false);
 
 	mCompositor->removeListener(this);
-	CompositorManager::getSingleton().removeCompositor(mViewport, "DoF_Compositor_test");
+	CompositorManager::getSingleton().removeCompositor(gEnv->ogreViewPort, "DoF_Compositor_test");
 }
 
 void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& material)
@@ -164,8 +162,8 @@ void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& materia
 	case BlurPass:
 		{
 			//float pixelSize[2] = {
-			//	1.0f / (mViewport->getActualWidth() / BLUR_DIVISOR),
-			//	1.0f / (mViewport->getActualHeight() / BLUR_DIVISOR)};
+			//	1.0f / (gEnv->ogreViewPort->getActualWidth() / BLUR_DIVISOR),
+			//	1.0f / (gEnv->ogreViewPort->getActualHeight() / BLUR_DIVISOR)};
 
 			// Adjust fragment program parameters
 			Ogre::Vector3 ps = Ogre::Vector3(1.0f / (mWidth / BLUR_DIVISOR),1.0f / (mHeight / BLUR_DIVISOR), 1.0f);
@@ -236,21 +234,21 @@ bool DepthOfFieldEffect::renderableQueued(Ogre::Renderable* rend, Ogre::uint8 gr
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::Root *root, Ogre::Camera *cam) : mRoot(root), mCamera(cam), mSceneMgr(m)
+DOFManager::DOFManager()
 {
 	mFocusMode = Manual;
 	mAutoSpeed = 30;
 	mAutoTime = 0.5f;
 	targetFocalDistance = 5;
 
-	mDepthOfFieldEffect = new DepthOfFieldEffect(mViewport, mCamera);
-	mLens = new Lens(mCamera->getFOVy(), 1);
+	mDepthOfFieldEffect = new DepthOfFieldEffect();
+	mLens = new Lens(gEnv->ogreCamera->getFOVy(), 1);
 	mLens->setFocalDistance(5);
 	//mLens->setFStop(10);
 //	mDepthOfFieldEffect->setEnabled(false);
-	mRoot->addFrameListener(this);
+	gEnv->ogreRoot->addFrameListener(this);
 
-	mRaySceneQuery = mSceneMgr->createRayQuery(Ogre::Ray());
+	mRaySceneQuery = gEnv->ogreSceneManager->createRayQuery(Ogre::Ray());
 	mRaySceneQuery->setSortByDistance(true);
 	//mRaySceneQuery->setQueryMask(queryMask);
 
@@ -262,8 +260,8 @@ DOFManager::DOFManager(Ogre::SceneManager *m, Ogre::Viewport *mViewport, Ogre::R
 		Overlay* overlay = OverlayManager::getSingleton().getByName("DoF_DepthDebugOverlay");
 		overlay->show();
 
-		debugNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-		Entity *ent = mSceneMgr->createEntity("sphere.mesh");
+		debugNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		Entity *ent = gEnv->ogreSceneManager->createEntity("sphere.mesh");
 		debugNode->attachObject(ent);
 		debugNode->setScale(0.5, 0.5, 0.5);
 	}
@@ -276,7 +274,7 @@ DOFManager::~DOFManager()
 
 void DOFManager::cleanup()
 {
-	mRoot->removeFrameListener(this);
+	gEnv->ogreRoot->removeFrameListener(this);
 
 	delete mLens;
 	mLens = NULL;
@@ -299,12 +297,12 @@ void DOFManager::setEnabled(bool enabled)
 	{
 		// turn on
 		mDepthOfFieldEffect->setEnabled(true);
-		mRoot->addFrameListener(this);
+		gEnv->ogreRoot->addFrameListener(this);
 	} else if(!enabled && mDepthOfFieldEffect->getEnabled())
 	{
 		// turn off
 		mDepthOfFieldEffect->setEnabled(false);
-		mRoot->removeFrameListener(this);
+		gEnv->ogreRoot->removeFrameListener(this);
 	}
 	*/
 }
@@ -320,7 +318,7 @@ void DOFManager::zoomView(float delta)
 	fieldOfView += delta;
 	fieldOfView = std::max<Real>(0.1, std::min<Real>(fieldOfView, 2.0));
 	mLens->setFieldOfView(Radian(fieldOfView));
-	mCamera->setFOVy(Radian(fieldOfView));
+	gEnv->ogreCamera->setFOVy(Radian(fieldOfView));
 }
 
 void DOFManager::Aperture(float delta)
@@ -343,7 +341,7 @@ void  DOFManager::setZoom(float f)
 	Real fieldOfView = Degree(Real(f)).valueRadians();
 	fieldOfView = std::max<Real>(0.1, std::min<Real>(fieldOfView, 2.0));
 	mLens->setFieldOfView(Radian(fieldOfView));
-	mCamera->setFOVy(Radian(fieldOfView));
+	gEnv->ogreCamera->setFOVy(Radian(fieldOfView));
 }
 
 void  DOFManager::setLensFOV(Radian fov)
@@ -367,7 +365,7 @@ void  DOFManager::setFocus(float f)
 
 bool DOFManager::frameStarted(const FrameEvent& evt)
 {
-	Camera *camera = mCamera;
+	Camera *camera = gEnv->ogreCamera;
 	// Focusing
 	switch (mFocusMode)
 	{
@@ -398,7 +396,7 @@ bool DOFManager::frameStarted(const FrameEvent& evt)
 					if(it->worldFragment)
 					{
 						if(debugNode) debugNode->setPosition(it->worldFragment->singleIntersection + Vector3(0.5,0,0));
-						targetFocalDistance = (mCamera->getPosition() - it->worldFragment->singleIntersection).length();
+						targetFocalDistance = (gEnv->ogreCamera->getPosition() - it->worldFragment->singleIntersection).length();
 						break;
 					} else
 					{

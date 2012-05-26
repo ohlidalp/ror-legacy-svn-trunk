@@ -100,9 +100,9 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = gEnv->ogreCamera->getPosition() + gEnv->ogreCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
-	if ( gEnv->heightFinder )
+	if ( gEnv->terrainManager->getHeightFinder() )
 	{
-		float h = gEnv->heightFinder->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
+		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
 
 		camPosition.y = std::max(h, camPosition.y);
 	}

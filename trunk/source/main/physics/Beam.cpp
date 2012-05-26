@@ -1678,7 +1678,7 @@ void Beam::resetAngle(float rot)
 
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
 {
-	if (!gEnv->heightFinder) return;
+	if (!gEnv->terrainManager->getHeightFinder()) return;
 	// horizontal displacement
 	Vector3 offset = Vector3(px, -iPosition.y, pz) - nodes[0].AbsPosition;
 	for (int i=0; i<free_node; i++)
@@ -1689,10 +1689,10 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	float minoffset=0.0;
 	if (miny<-9000)
 	{
-		minoffset=nodes[0].AbsPosition.y-gEnv->heightFinder->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
+		minoffset=nodes[0].AbsPosition.y-gEnv->terrainManager->getHeightFinder()->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
 		for (int i=1; i<free_node; i++)
 		{
-			Vector3 pos=Vector3(nodes[i].AbsPosition.x,gEnv->heightFinder->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
+			Vector3 pos=Vector3(nodes[i].AbsPosition.x,gEnv->terrainManager->getHeightFinder()->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
 			//if (water && pos.y<water->getHeight()) pos.y=water->getHeight();
 			collisions->collisionCorrect(&pos);
 			float offset=nodes[i].AbsPosition.y-pos.y;
@@ -5937,7 +5937,7 @@ void Beam::updateDashBoards(float &dt)
 			if (low_node != -1)
 			{
 				Vector3 pos = nodes[low_node].AbsPosition;
-				float depth =  pos.y - gEnv->heightFinder->getHeightAt(pos.x, pos.z);
+				float depth =  pos.y - gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 				dash->setFloat(DD_WATER_DEPTH, depth);
 			}
 		}

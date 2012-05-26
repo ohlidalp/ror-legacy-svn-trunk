@@ -79,7 +79,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "turboprop.h"
 #include "utils.h"
 #include "vidcam.h"
-#include "WaterOld.h"
+#include "Water.h"
 #include "writeTextToTexture.h"
 
 #ifdef USE_MYGUI
@@ -140,17 +140,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forests;
 #endif //USE_PAGED
 
-Material *terrainmaterial = 0;
+using namespace Ogre;
 
-char terrainoriginalmaterial[100];
 bool shutdownall=false;
 
 //workaround for pagedgeometry
 inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 {
-	if (!gEnv->heightFinder)
+	if (!gEnv->terrainManager->getHeightFinder())
 		return 1;
-	return gEnv->heightFinder->getHeightAt(x, z);
+	return gEnv->terrainManager->getHeightFinder()->getHeightAt(x, z);
 }
 
 void RoRFrameListener::startTimer()
@@ -668,7 +667,7 @@ void RoRFrameListener::updateGUI(float dt)
 		if (curr_truck->getLowestNode() != -1)
 		{
 			Vector3 pos = curr_truck->nodes[curr_truck->getLowestNode()].AbsPosition;
-			float height =  pos.y - gEnv->heightFinder->getHeightAt(pos.x, pos.z);
+			float height =  pos.y - gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 			if (height>0.1 && height < 99.9)
 			{
 				sprintf(tmp, "%2.1f", height);
@@ -732,19 +731,18 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	truck_preload_num(0),
 	terrainManager(0)
 {
-
 	// we don't use overlays in embedded mode
 	if (!isEmbedded)
 	{
-		ow = new OverlayWrapper(win);
+		ow = new OverlayWrapper(gEnv->ogreRenderWindow);
 	}
 
 	enablePosStor = BSETTING("Position Storage", false);
 
 #ifdef USE_MYGUI
 	// init GUI
-	new SceneMouse(scm);
-	new GUIManager(root, scm, win);
+	new SceneMouse();
+	new GUIManager();
 	// create console, must be done early
 	new Console();
 
@@ -801,12 +799,12 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	if (ow)
 	{
 		// setup direction arrow
-		Entity *arrent = mSceneMgr->createEntity("dirArrowEntity", "arrow2.mesh");
+		Entity *arrent = gEnv->ogreSceneManager->createEntity("dirArrowEntity", "arrow2.mesh");
 	#if OGRE_VERSION<0x010602
 		arrent->setNormaliseNormals(true);
 	#endif //OGRE_VERSION
 		// Add entity to the scene node
-		dirArrowNode= new SceneNode(mSceneMgr);
+		dirArrowNode= new SceneNode(gEnv->ogreSceneManager);
 		dirArrowNode->attachObject(arrent);
 		dirArrowNode->setVisible(false);
 		dirArrowNode->setScale(0.1, 0.1, 0.1);
@@ -817,14 +815,14 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 		ow->directionOverlay->add3D(dirArrowNode);
 	}
 
-	INPUTENGINE.setupDefault(win, inputhwnd);
+	INPUTENGINE.setupDefault(gEnv->ogreRenderWindow, inputhwnd);
 
 	// setup particle manager
-	new DustManager(mSceneMgr);
+	new DustManager(gEnv->ogreSceneManager);
 
 	if (BSETTING("regen-cache-only", false))
 	{
-		CACHE.startup(scm, true);
+		CACHE.startup(gEnv->ogreSceneManager, true);
 		UTFString str = _L("Cache regeneration done.\n");
 		if (CACHE.newFiles > 0)     str = str + TOUTFSTRING(CACHE.newFiles) + _L(" new files\n");
 		if (CACHE.changedFiles > 0) str = str + TOUTFSTRING(CACHE.changedFiles) + _L(" changed files\n");
@@ -835,13 +833,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 		exit(0);
 	}
 
-	CACHE.startup(mSceneMgr);
+	CACHE.startup(gEnv->ogreSceneManager);
 
-	screenWidth=win->getWidth();
-	screenHeight=win->getHeight();
+	screenWidth=gEnv->ogreRenderWindow->getWidth();
+	screenHeight=gEnv->ogreRenderWindow->getHeight();
 
-	windowResized(win);
-	RoRWindowEventUtilities::addWindowEventListener(win, this);
+	windowResized(gEnv->ogreRenderWindow);
+	RoRWindowEventUtilities::addWindowEventListener(gEnv->ogreRenderWindow, this);
 
 	debugCollisions = BSETTING("Debug Collisions", false);
 
@@ -861,14 +859,14 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	// heathaze effect
 	if (BSETTING("HeatHaze", false))
 	{
-		heathaze = new HeatHaze(scm, win,cam);
+		heathaze = new HeatHaze(gEnv->ogreSceneManager, gEnv->ogreRenderWindow,cam);
 		heathaze->setEnable(true);
 	}
 
 	// depth of field effect
 	if (BSETTING("DOF", false))
 	{
-		dof = new DOFManager(mSceneMgr, mCamera->getViewport(), mRoot, mCamera);
+		dof = new DOFManager(gEnv->ogreSceneManager, gEnv->ogreCamera->getViewport(), mRoot, gEnv->ogreCamera);
 		dof->setEnabled(true);
 	}
 
@@ -1062,7 +1060,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 	
 	// init camera manager after mygui and after we have a character
-	new CameraManager(mSceneMgr, mCamera, this, person, ow, dof);
+	new CameraManager(gEnv->ogreSceneManager, gEnv->ogreCamera, this, person, ow, dof);
 
 	person->setVisible(false);
 
@@ -1370,7 +1368,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
 			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
-			as->addData("Camera_Position", TOSTRING(mCamera->getPosition()));
+			as->addData("Camera_Position", TOSTRING(gEnv->ogreCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
 			as->addData("AVGFPS", TOSTRING(stats.avgFPS));
@@ -1464,7 +1462,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	// camera FOV settings
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS, 0.1f) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE, 0.1f))
 	{
-		int fov = mCamera->getFOVy().valueDegrees();
+		int fov = gEnv->ogreCamera->getFOVy().valueDegrees();
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS))
 			fov--;
@@ -1473,7 +1471,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (fov >= 10 && fov <= 160)
 		{
-			mCamera->setFOVy(Degree(fov));
+			gEnv->ogreCamera->setFOVy(Degree(fov));
 
 	#ifdef USE_MYGUI
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
@@ -2424,13 +2422,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			switch (mSceneDetailIndex)
 			{
 			case 0:
-				mCamera->setPolygonMode(Ogre::PM_SOLID);
+				gEnv->ogreCamera->setPolygonMode(Ogre::PM_SOLID);
 				break;
 			case 1:
-				mCamera->setPolygonMode(Ogre::PM_WIREFRAME);
+				gEnv->ogreCamera->setPolygonMode(Ogre::PM_WIREFRAME);
 				break;
 			case 2:
-				mCamera->setPolygonMode(Ogre::PM_POINTS);
+				gEnv->ogreCamera->setPolygonMode(Ogre::PM_POINTS);
 				break;
 			}
 		}
@@ -2757,7 +2755,7 @@ void RoRFrameListener::shutdown_final()
 #endif //OIS_G27
 
 	LOG(" ** Shutdown final");
-	if (gEnv->water) gEnv->water->prepareShutdown();
+	if (gEnv->terrainManager->getWater()) gEnv->terrainManager->getWater()->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
 	if (gEnv->terrainManager->envmap) gEnv->terrainManager->envmap->prepareShutdown();
 	if (heathaze) heathaze->prepareShutdown();
@@ -3202,7 +3200,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 		// now update mumble 3d audio things
 #ifdef USE_MUMBLE
-		MumbleIntegration::getSingleton().update(mCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
+		MumbleIntegration::getSingleton().update(gEnv->ogreCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
 #endif // USE_MUMBLE
 	}
 
@@ -3214,33 +3212,41 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_OPENAL
 	// update audio listener position
 	static Vector3 lastCameraPosition;
-	Vector3 cameraSpeed = (mCamera->getPosition() - lastCameraPosition) / dt;
-	lastCameraPosition = mCamera->getPosition();
+	Vector3 cameraSpeed = (gEnv->ogreCamera->getPosition() - lastCameraPosition) / dt;
+	lastCameraPosition = gEnv->ogreCamera->getPosition();
 
-	SoundScriptManager::getSingleton().setCamera(mCamera->getPosition(), mCamera->getDirection(), mCamera->getUp(), cameraSpeed);
+	SoundScriptManager::getSingleton().setCamera(gEnv->ogreCamera->getPosition(), gEnv->ogreCamera->getDirection(), gEnv->ogreCamera->getUp(), cameraSpeed);
 #endif // USE_OPENAL
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	// environment map
-	if (envmap)
+	if (gEnv->terrainManager->getEnvmap())
 	{
 		if (curr_truck)
 		{
-			envmap->update(curr_truck->getPosition(), curr_truck);
+			gEnv->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
 		} else
 		{
-			envmap->update(Vector3(terrainxsize / 2.0f, hfinder->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f ) + 50.0f, terrainzsize / 2.0f));
+			float height = gEnv->terrainManager->getMax().y;
+			if (gEnv->terrainManager->getHeightFinder())
+			{
+				height = gEnv->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );
+			}
+			gEnv->terrainManager->getEnvmap()->update(Vector3(terrainxsize / 2.0f, height + 50.0f, terrainzsize / 2.0f));
 		}
 	}
 
 	// water
-	if (w)
+	if (gEnv->terrainManager->getWater())
 	{
 		if (curr_truck)
-			w->moveTo(mCamera, w->getHeightWaves(curr_truck->getPosition()));
-		else
-			w->moveTo(mCamera, w->getHeight());
+		{
+			gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
+		} else
+		{
+			gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeight());
+		}
 	}
 
 	// update mirrors after moving the camera as we use the camera position in mirrors

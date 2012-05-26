@@ -28,11 +28,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __Lens_H__
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#include "OgreMath.h"
 
-class Lens {
+class Lens
+{
 public:
+
   Lens(void) {};
   Lens(const Ogre::Real& _focalLength, const Ogre::Real& _fStop, const Ogre::Real& _frameSize = 3.5, const Ogre::Real& _circleOfConfusion = 0.003);
   Lens(const Ogre::Radian& _fieldOfView, const Ogre::Real& _fStop, const Ogre::Real& _frameSize = 3.5, const Ogre::Real& _circleOfConfusion = 0.003);
@@ -72,9 +72,10 @@ protected:
 
 
 private:
+
   void recalculateHyperfocalLength(void);
   void recalculateFieldOfView(void);
   void recalculateFocalLength(void);
 };
 
-#endif
+#endif // __Lens_H__
