@@ -43,9 +43,6 @@ public:
 
 	void updatePSSM(Ogre::Terrain* terrain=0);
 protected:
-	Ogre::SceneManager *mSceneMgr;
-	Ogre::RenderWindow *mWindow;
-	Ogre::Camera *mCamera;
 	Ogre::ShadowCameraSetupPtr mPSSMSetup;
 	bool mDepthShadows;
 

@@ -28,13 +28,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 
 //using namespace std;
-//using namespace Ogre;
+using namespace Ogre;
 
 //---------------------------------------------------------------------
-ShadowManager::ShadowManager(Ogre::SceneManager *scene, Ogre::RenderWindow *window, Ogre::Camera *camera) :
-	mSceneMgr(scene), mWindow(window), mCamera(camera), mPSSMSetup()
+ShadowManager::ShadowManager() : mPSSMSetup()
 {
-	setSingleton(this);
 	mDepthShadows = true;
 }
 
@@ -52,6 +50,8 @@ void ShadowManager::loadConfiguration()
 
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
+	SceneManager *mSceneMgr = gEnv->ogreSceneManager;
+
 	float shadowFarDistance = std::min(200.0f, (FSETTING("SightRange", 2000)* 0.8f));
 	float scoef=0.2;
 	mSceneMgr->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
@@ -91,8 +91,8 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		{
 			// shadow camera setup
 			Ogre::PSSMShadowCameraSetup* pssmSetup = new Ogre::PSSMShadowCameraSetup();
-			pssmSetup->setSplitPadding(mCamera->getNearClipDistance());
-			pssmSetup->calculateSplitPoints(3, mCamera->getNearClipDistance(), mSceneMgr->getShadowFarDistance());
+			pssmSetup->setSplitPadding(gEnv->ogreCamera->getNearClipDistance());
+			pssmSetup->calculateSplitPoints(3, gEnv->ogreCamera->getNearClipDistance(), mSceneMgr->getShadowFarDistance());
 			for (int i=0; i < num; ++i)
 			{	int size = i==0 ? 2048 : 1024;
 				const Ogre::Real cAdjfA[5] = {2, 1, 0.5, 0.25, 0.125};

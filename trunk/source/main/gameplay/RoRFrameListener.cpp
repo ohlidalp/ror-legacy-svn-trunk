@@ -977,7 +977,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 
 	// new factory for characters, net is INVALID, will be set later
 	new CharacterFactory();
-	new ChatSystemFactory(0);
+	new ChatSystemFactory();
 
 	// notice: all factories must be available before starting the network!
 #ifdef USE_SOCKETW

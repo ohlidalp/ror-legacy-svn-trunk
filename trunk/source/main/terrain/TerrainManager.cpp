@@ -184,6 +184,7 @@ void TerrainManager::initSkySubSystem()
 	if (useCaelum)
 	{
 		sky_manager = new SkyManager(mSceneMgr, mWindow, mCamera);
+		gEnv->sky = sky_manager;
 
 		// try to load caelum config
 		String caelumConfig = mTerrainConfig.getSetting("CaelumConfigFile");
@@ -197,6 +198,7 @@ void TerrainManager::initSkySubSystem()
 			// no config provided, fall back to the default one
 			sky_manager->loadScript("ror_default_sky");
 		}
+
 	} else
 #endif //USE_CAELUM
 	{
