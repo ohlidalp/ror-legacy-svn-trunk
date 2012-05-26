@@ -50,10 +50,12 @@ public:
 	void sendthreadstart();
 	void receivethreadstart();
 
+	bool getNetQualityChanged();
 	Ogre::UTFString getNickname(bool colour=false);
 	char *getTerrainName() { return server_settings.terrain; };
 	client_t *getClientInfo(unsigned int uid);
 	int getClientInfos(client_t c[MAX_PEERS]);
+	int getNetQuality(bool ack=false);
 	int getSpeedDown();
 	int getSpeedUp();
 	static unsigned long getNetTime();
@@ -107,8 +109,6 @@ private:
 	int net_quality;
 	pthread_mutex_t mutex_data;
 
-	bool getNetQualityChanged();
-	int getNetQuality(bool ack=false);
 	void setNetQuality(int q);
 };
 
