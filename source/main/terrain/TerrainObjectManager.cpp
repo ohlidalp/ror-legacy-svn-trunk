@@ -1139,3 +1139,19 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		}
 #endif //USE_MYGUI
 }
+
+bool TerrainObjectManager::updateAnimatedObjects(float dt)
+{
+	if (animatedObjects.size() == 0)
+		return true;
+	std::vector<animated_object_t>::iterator it;
+	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
+	{
+		if (it->anim && it->speedfactor != 0)
+		{
+			Real time = dt * it->speedfactor;
+			it->anim->addTime(time);
+		}
+	}
+	return true;
+}

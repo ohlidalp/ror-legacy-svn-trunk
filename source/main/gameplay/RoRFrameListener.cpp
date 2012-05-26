@@ -2955,23 +2955,6 @@ void RoRFrameListener::hideMap()
 }
 
 
-void RoRFrameListener::initializeCompontents()
-{
-	// load map
-#ifdef USE_MYGUI
-	LoadingWindow::getSingleton().setProgress(0, _L("Loading Terrain"));
-	bool disableMap = (BSETTING("disableOverViewMap", false));
-
-	// map must be loaded before the script engine
-	// init the map
-	if (!disableMap)
-	{
-		surveyMap = new MapControl(mapsizex, mapsizey, mapsizez);
-	}
-#endif //USE_MYGUI
-
-
-}
 
 
 void RoRFrameListener::loadTerrain(String terrainfile)
@@ -2991,40 +2974,26 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		}
 	}
 
-	loadedTerrain = terrainfile;
-
-	initializeCompontents();
-
-	if (terrainfile.find(".terrn2") != String::npos)
-	{
-		LOG("Loading new terrain format: " + terrainfile);
-		loadNewTerrain(terrainfile);
-
-	} else if (terrainfile.find(".terrn") != String::npos)
-	{
-		LOG("Old Terrain not supported anymore");
-		showError(_L("Terrain loading error"), _L("Old Terrain not supported"));
-		exit(1);
-	} else
-	{
-		// exit on unknown terrain handler
-		LOG("Terrain not supported, unknown format: " + terrainfile);
-		showError(_L("Terrain loading error"), _L("Terrain not supported, unknown format: ") + terrainfile);
-		exit(1);
-	}
-
 #ifdef USE_MYGUI
-	if (!BSETTING("REPO_MODE", false))
+	LoadingWindow::getSingleton().setProgress(0, _L("Loading Terrain"));
+#endif //USE_MYGUI
+
+	LOG("Loading new terrain format: " + terrainfile);
+
+	if(terrainManager)
 	{
-		// hide loading window
-		LoadingWindow::getSingleton().hide();
-		// hide wallpaper
-		MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
-		if (w) w->setVisibleSmooth(false);
+		// remove old terrain
+		delete(terrainManager);
 	}
-#endif // USE_MYGUI
+
+	terrainManager = new TerrainManager();
+	terrainManager->loadTerrain(terrainfile);
 
 	if (person) person->setVisible(true);
+
+#ifdef USE_MYGUI
+	LoadingWindow::getSingleton().hide();
+#endif //USE_MYGUI
 }
 
 void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck, Skin *skin)
@@ -3332,21 +3301,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	}
 }
 
-bool RoRFrameListener::updateAnimatedObjects(float dt)
-{
-	if (animatedObjects.size() == 0)
-		return true;
-	std::vector<animated_object_t>::iterator it;
-	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
-	{
-		if (it->anim && it->speedfactor != 0)
-		{
-			Real time = dt * it->speedfactor;
-			it->anim->addTime(time);
-		}
-	}
-	return true;
-}
 
 bool RoRFrameListener::updateTruckMirrors(float dt)
 {

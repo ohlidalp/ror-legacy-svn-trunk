@@ -56,6 +56,7 @@ protected:
 	Dashboard *dashboard;
 	Collisions *collisions;
 	Water *water;
+	MapControl *surveyMap;
 
 	// subsystem properties
 	HDRListener *hdrListener;
@@ -95,6 +96,7 @@ protected:
 	void initShadows();
 	void initCollisions();
 	void initScripting();
+	void initSurveyMap();
 
 	void fixCompositorClearColor();
 
