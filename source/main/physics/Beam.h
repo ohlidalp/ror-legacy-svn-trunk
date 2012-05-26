@@ -47,7 +47,7 @@ public:
 
 	//constructor
 	Beam( int tnum
-		, Ogre::Real pos
+		, Ogre::Vector3 pos
 		, Ogre::Quaternion rot
 		, const char* fname
 		, bool networked=false
@@ -206,7 +206,6 @@ public:
 	bool reverselight;
 	float leftMirrorAngle;
 	float rightMirrorAngle;
-	float *mapsizex, *mapsizez;
 	float refpressure;
 	PointColDetector *pointCD;
 
@@ -330,7 +329,7 @@ public:
 	int tsteps;
 	float avichatter_timer;
 
-	Ogre::SceneNode *getSceneNode() { return parentNode; }
+	Ogre::SceneNode *getSceneNode() { return beamsRoot; }
 
 #ifdef USE_MYGUI
 	DashBoardManager *dash;
@@ -342,6 +341,7 @@ protected:
 	Ogre::SceneNode *simpleSkeletonNode;
 
 	Ogre::Vector3 position;
+	Ogre::Vector3 iPosition; // initial position
 	Ogre::Vector3 lastposition;
 	Ogre::Vector3 lastlastposition;
 	Ogre::Real minCameraRadius;
@@ -358,7 +358,6 @@ protected:
 
 	bool deleting;
 	
-	Ogre::RenderWindow* mWindow;
 	Ogre::Real hydrolen;
 	
 	//number of torque points
@@ -378,7 +377,6 @@ protected:
 	bool cparticle_mode;
 	Beam** ttrucks;
 	int tnumtrucks;
-	Ogre::SceneNode *parentNode;
 	int detailLevel;
 	bool isInside;
 	bool beacon;
@@ -389,8 +387,7 @@ protected:
 	float mousemoveforce;
 	int reset_requested;
 
-
-	float ipy;
+	std::vector<Ogre::String> truckconfig;
 
 	oob_t *oob1;
 	oob_t *oob2;
