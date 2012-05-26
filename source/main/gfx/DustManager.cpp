@@ -38,12 +38,12 @@ DustManager::DustManager() : mEnabled(false)
 	
 	if (mEnabled)
 	{
-		dustpools["dust"]   = new DustPool((char *)"tracks/Dust", 20 );
-		dustpools["clump"]  = new DustPool((char *)"tracks/Clump", 20 );
-		dustpools["sparks"] = new DustPool((char *)"tracks/Sparks", 10 );
-		dustpools["drip"]   = new DustPool((char *)"tracks/Drip", 50 );
-		dustpools["splash"] = new DustPool((char *)"tracks/Splash", 20 );
-		dustpools["ripple"] = new DustPool((char *)"tracks/Ripple", 20 );
+		dustpools["dust"]   = new DustPool("tracks/Dust", 20 );
+		dustpools["clump"]  = new DustPool("tracks/Clump", 20 );
+		dustpools["sparks"] = new DustPool("tracks/Sparks", 10 );
+		dustpools["drip"]   = new DustPool("tracks/Drip", 50 );
+		dustpools["splash"] = new DustPool("tracks/Splash", 20 );
+		dustpools["ripple"] = new DustPool("tracks/Ripple", 20 );
 	}
 
 }
