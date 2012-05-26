@@ -19,9 +19,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "DustPool.h"
 
-#include "Water.h"
 #include "RoRPrerequisites.h"
 #include "TerrainManager.h"
+#include "Water.h"
 
 using namespace Ogre;
 
