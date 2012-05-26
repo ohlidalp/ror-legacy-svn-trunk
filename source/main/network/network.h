@@ -51,7 +51,6 @@ public:
 	void receivethreadstart();
 
 	Ogre::UTFString getNickname(bool colour=false);
-	bool getNetQualityChanged();
 	char *getTerrainName() { return server_settings.terrain; };
 	client_t *getClientInfo(unsigned int uid);
 	int getClientInfos(client_t c[MAX_PEERS]);
@@ -104,11 +103,13 @@ private:
 	Ogre::UTFString getUserChatName(client_t *c);
 
 	// mutex'ed data
-	int net_quality;
 	bool net_quality_changed;
-	void setNetQuality(int q);
-	int getNetQuality(bool ack=false);
+	int net_quality;
 	pthread_mutex_t mutex_data;
+
+	bool getNetQualityChanged();
+	int getNetQuality(bool ack=false);
+	void setNetQuality(int q);
 };
 
 #endif // __Network_H_

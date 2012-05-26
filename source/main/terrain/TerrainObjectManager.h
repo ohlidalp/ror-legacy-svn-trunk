@@ -29,8 +29,9 @@ public:
 	TerrainObjectManager(TerrainManager *terrainManager);
 	~TerrainObjectManager();
 
-
 	void loadObjectConfigFile(Ogre::String filename);
+
+	bool updateAnimatedObjects(float dt);
 
 	typedef struct localizer_t
 	{
@@ -71,7 +72,6 @@ protected:
 
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
-	bool updateAnimatedObjects(float dt);
 };
 
 #endif // __TerrainObjectManager_H_

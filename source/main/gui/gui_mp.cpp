@@ -24,17 +24,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "gui_mp.h"
 
 #include "BeamFactory.h"
-#include "PlayerColours.h"
-#include "RoRFrameListener.h"
 #include "gui_manager.h"
 #include "language.h"
 #include "network.h"
+#include "PlayerColours.h"
 
 using namespace Ogre;
 
-GUI_Multiplayer::GUI_Multiplayer(Network *_net, Camera *cam) :
+GUI_Multiplayer::GUI_Multiplayer(Network *_net) :
 	  net(_net)
-	, mCamera(cam)
 	, clients(0)
 	, lineheight(16)
 	, msgwin(0)
@@ -356,10 +354,10 @@ int GUI_Multiplayer::update()
 	int height = lineheight * (slotid + 1);
 	mpPanel->setSize(sidebarWidth, height);
 	
-	if(globalEnvironment->frameListener && globalEnvironment->frameListener->getNetQuality(true) != 0)
+	if(globalEnvironment->frameListener && globalEnvironment-network>getNetQuality(true) != 0)
 	{
 		netmsgwin->setVisible(true);
-	} else if(globalEnvironment->frameListener && globalEnvironment->frameListener->getNetQuality(true) == 0)
+	} else if(globalEnvironment->frameListener && globalEnvironment-network>getNetQuality(true) == 0)
 	{
 		netmsgwin->setVisible(false);
 	}

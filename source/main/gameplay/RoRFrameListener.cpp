@@ -51,6 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "GlowMaterialListener.h"
 #include "hdrlistener.h"
 #include "Heathaze.h"
+#include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "IWater.h"
 #include "language.h"
@@ -61,7 +62,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OverlayWrapper.h"
 #include "PlayerColours.h"
 #include "PreviewRenderer.h"
-#include "ProceduralManager.h"
 #include "Replay.h"
 #include "RigsOfRods.h"
 #include "Road.h"
@@ -95,19 +95,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapTextureCreator.h"
 #include "MapEntity.h"
 #endif //USE_MYGUI
-
-#include "IHeightFinder.h"
-
-#include "ResourceBuffer.h"
-
-#ifdef USE_PAGED
-#include "BatchPage.h"
-#include "GrassLoader.h"
-#include "ImpostorPage.h"
-#include "PagedGeometry.h"
-#include "TreeLoader2D.h"
-#include "TreeLoader3D.h"
-#endif //USE_PAGED
 
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
@@ -1005,7 +992,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 		LoadingWindow::getSingleton().hide();
 
 #ifdef USE_SOCKETW
-		new GUI_Multiplayer(net, cam);
+		new GUI_Multiplayer(net);
 		GUI_Multiplayer::getSingleton().update();
 #endif //USE_SOCKETW
 
@@ -1346,7 +1333,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 			// add some more data into the image
-			AdvancedScreen *as = new AdvancedScreen(mWindow, tmpfn);
+			AdvancedScreen *as = new AdvancedScreen(globalEnvironment->ogreRenderWindow, tmpfn);
 			as->addData("terrain_Name", loadedTerrain);
 			as->addData("terrain_ModHash", terrainModHash);
 			as->addData("terrain_FileHash", terrainFileHash);
@@ -1371,15 +1358,15 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
 			as->addData("Camera_Position", TOSTRING(globalEnvironment->ogreCamera->getPosition()));
 
-			const RenderTarget::FrameStats& stats = mWindow->getStatistics();
+			const RenderTarget::FrameStats& stats = globalEnvironment->ogreRenderWindow->getStatistics();
 			as->addData("AVGFPS", TOSTRING(stats.avgFPS));
 
 			as->write();
 			delete(as);
 		} else
 		{
-			mWindow->update();
-			mWindow->writeContentsToFile(tmpfn);
+			globalEnvironment->ogreRenderWindow->update();
+			globalEnvironment->ogreRenderWindow->writeContentsToFile(tmpfn);
 		}
 
 #ifdef USE_MYGUI
@@ -1500,21 +1487,21 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FULLSCREEN_TOGGLE, 2.0f))
 	{
 		static int org_width = -1, org_height = -1;
-		int width = mWindow->getWidth();
-		int height = mWindow->getHeight();
+		int width = globalEnvironment->ogreRenderWindow->getWidth();
+		int height = globalEnvironment->ogreRenderWindow->getHeight();
 		if (org_width == -1)
 			org_width = width;
 		if (org_height == -1)
 			org_height = height;
-		bool mode = mWindow->isFullScreen();
+		bool mode = globalEnvironment->ogreRenderWindow->isFullScreen();
 		if (!mode)
 		{
-			mWindow->setFullscreen(true, org_width, org_height);
+			globalEnvironment->ogreRenderWindow->setFullscreen(true, org_width, org_height);
 			LOG(" ** switched to fullscreen: "+TOSTRING(width)+"x"+TOSTRING(height));
 		} else
 		{
-			mWindow->setFullscreen(false, 640, 480);
-			mWindow->setFullscreen(false, org_width, org_height);
+			globalEnvironment->ogreRenderWindow->setFullscreen(false, 640, 480);
+			globalEnvironment->ogreRenderWindow->setFullscreen(false, org_width, org_height);
 			LOG(" ** switched to windowed mode: ");
 		}
 	}
@@ -2725,10 +2712,10 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 	//update window
-	if (!mWindow->isAutoUpdated())
+	if (!globalEnvironment->ogreRenderWindow->isAutoUpdated())
 	{
 		if (dirty)
-			mWindow->update();
+			globalEnvironment->ogreRenderWindow->update();
 		else
 			sleepMilliSeconds(10);
 	}
@@ -3145,7 +3132,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (dt==0) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
-	if (mWindow->isClosed())
+	if (globalEnvironment->ogreRenderWindow->isClosed())
 		return false;
 
 	// update GUI
