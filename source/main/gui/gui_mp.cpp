@@ -28,6 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "language.h"
 #include "network.h"
 #include "PlayerColours.h"
+#include "RoRFrameListener.h"
 
 using namespace Ogre;
 
@@ -86,7 +87,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net) :
 
 	y=5;
 	UTFString tmp;
-	for(int i = 0; i < MAX_PEERS + 1; i++) // plus 1 for local entry
+	for (int i = 0; i < MAX_PEERS + 1; i++) // plus 1 for local entry
 	{
 		x=100; // space for icons
 		player_row_t *row = &player_rows[i];
@@ -162,7 +163,7 @@ GUI_Multiplayer::GUI_Multiplayer(Network *_net) :
 
 GUI_Multiplayer::~GUI_Multiplayer()
 {
-	if(clients)
+	if (clients)
 	{
 		free(clients);
 		clients = 0;
@@ -171,7 +172,7 @@ GUI_Multiplayer::~GUI_Multiplayer()
 
 void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 {
-	if(!row || !c) return;
+	if (!row || !c) return;
 
 	int x = 100;
 	int y = row->playername->getPosition().top;
@@ -184,7 +185,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	
 	// flag
 	StringVector parts = StringUtil::split(String(c->language), "_");
-	if(parts.size() == 2)
+	if (parts.size() == 2)
 	{
 		String lang = parts[1];
 		StringUtil::toLowerCase(lang);
@@ -200,7 +201,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	
 	UTFString tmp;
 	// auth
-	if(c->authstatus == AUTH_NONE)
+	if (c->authstatus == AUTH_NONE)
 	{
 		row->statimg->setVisible(false);
 	} else if (c->authstatus & AUTH_ADMIN)
@@ -230,7 +231,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	}
 
 	// truck ok image
-	if(!self)
+	if (!self)
 	{
 		row->userTruckOKImg->setVisible(true);
 		row->userTruckOKRemoteImg->setVisible(true);
@@ -242,17 +243,17 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		x -= 10;
 
 		int ok = BeamFactory::getSingleton().checkStreamsOK(c->uniqueid);
-		if(ok == 0)
+		if (ok == 0)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down_red.png");
 			tmp = _L("Truck loading errors");
 			row->userTruckOKImg->setUserString("tooltip", tmp.asUTF8());
-		} else if(ok == 1)
+		} else if (ok == 1)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down.png");
 			tmp = _L("Truck loaded correctly, no errors");
 			row->userTruckOKImg->setUserString("tooltip", tmp.asUTF8());
-		} else if(ok == 2)
+		} else if (ok == 2)
 		{
 			row->userTruckOKImg->setImageTexture("arrow_down_grey.png");
 			tmp = _L("no truck loaded");
@@ -260,17 +261,17 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 		}
 
 		int rok = BeamFactory::getSingleton().checkStreamsRemoteOK(c->uniqueid);
-		if(rok == 0)
+		if (rok == 0)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up_red.png");
 			tmp = _L("Remote Truck loading errors");
 			row->userTruckOKRemoteImg->setUserString("tooltip", tmp.asUTF8());
-		} else if(rok == 1)
+		} else if (rok == 1)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up.png");
 			tmp = _L("Remote Truck loaded correctly, no errors");
 			row->userTruckOKRemoteImg->setUserString("tooltip", tmp.asUTF8());
-		} else if(rok == 2)
+		} else if (rok == 2)
 		{
 			row->userTruckOKRemoteImg->setImageTexture("arrow_up_grey.png");
 			tmp = _L("No Trucks loaded");
@@ -286,7 +287,7 @@ void GUI_Multiplayer::updateSlot(player_row_t *row, user_info_t *c, bool self)
 	row->usergoimg->setVisible(false);
 	/*
 	// disabled for now, since no use
-	if(!self)
+	if (!self)
 	{
 		row->usergoimg->setVisible(true);
 		row->usergoimg->setPosition(x, y);
@@ -323,13 +324,13 @@ int GUI_Multiplayer::update()
 
 	// add remote players
 	int res = net->getClientInfos(clients);
-	if(res) return 1;
-	for(int i = 0; i < MAX_PEERS; i++)
+	if (res) return 1;
+	for (int i = 0; i < MAX_PEERS; i++)
 	{
 		client_t *c = &clients[i];
 		player_row_t *row = &player_rows[slotid];
 		// only count up slotid for used slots, so there are no gap in the list
-		if(c->used)
+		if (c->used)
 		{
 			// used
 			slotid++;
@@ -354,10 +355,10 @@ int GUI_Multiplayer::update()
 	int height = lineheight * (slotid + 1);
 	mpPanel->setSize(sidebarWidth, height);
 	
-	if(globalEnvironment->frameListener && globalEnvironment-network>getNetQuality(true) != 0)
+	if (globalEnvironment->frameListener && globalEnvironment->network->getNetQuality(true) != 0)
 	{
 		netmsgwin->setVisible(true);
-	} else if(globalEnvironment->frameListener && globalEnvironment-network>getNetQuality(true) == 0)
+	} else if (globalEnvironment->frameListener && globalEnvironment->network->getNetQuality(true) == 0)
 	{
 		netmsgwin->setVisible(false);
 	}
@@ -368,9 +369,10 @@ int GUI_Multiplayer::update()
 void GUI_Multiplayer::clickUserGoIcon(MyGUI::WidgetPtr sender)
 {
 	int uid = StringConverter::parseInt(sender->getUserString("uid"));
-	if (!globalEnvironment->frameListener)
-		return;
-	if(globalEnvironment->frameListener->getNetPointToUID() == uid)
+
+	if (!globalEnvironment->frameListener) return;
+
+	if (globalEnvironment->frameListener->getNetPointToUID() == uid)
 		globalEnvironment->frameListener->setNetPointToUID(-1);
 	else
 		globalEnvironment->frameListener->setNetPointToUID(uid);
@@ -384,10 +386,10 @@ void GUI_Multiplayer::clickInfoIcon(MyGUI::WidgetPtr sender)
 
 void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipInfo &t)
 {
-	if(t.type == MyGUI::ToolTipInfo::Show)
+	if (t.type == MyGUI::ToolTipInfo::Show)
 	{
 		String txt = sender->getUserString("tooltip");
-		if(!txt.empty())
+		if (!txt.empty())
 		{
 			tooltipText->setCaption(txt);
 			MyGUI::IntSize s = tooltipText->getTextSize();
@@ -397,7 +399,7 @@ void GUI_Multiplayer::openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipI
 			tooltipText->setSize(newWidth, 16);
 			tooltipPanel->setVisible(true);
 		}
-	} else if(t.type == MyGUI::ToolTipInfo::Hide)
+	} else if (t.type == MyGUI::ToolTipInfo::Hide)
 	{
 		tooltipPanel->setVisible(false);
 	}
