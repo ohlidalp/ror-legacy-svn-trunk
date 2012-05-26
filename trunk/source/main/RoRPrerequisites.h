@@ -39,6 +39,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreQuaternion.h>
 #include <OgreUTFString.h>
 
+#include "GEnv.h"
+
 // some config for angelscript, doesnt matter if we compile with angelscript or not as its just a definition
 #ifdef USE_ANGELSCRIPT
 #ifndef AS_USE_NAMESPACE
@@ -231,5 +233,7 @@ enum VisibilityMasks {
 	DEPTHMAP_DISABLED = BITMASK(2),
 	HIDE_MIRROR       = BITMASK(3),
 };
+
+extern GEnv *gEnv;
 
 #endif // __RoRPrerequisites_H_
