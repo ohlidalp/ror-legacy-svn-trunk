@@ -17,22 +17,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef TERRAINOBJECTMANAGER_H__
-#define TERRAINOBJECTMANAGER_H__
+#ifndef __TerrainObjectManager_H_
+#define __TerrainObjectManager_H_
 
 #include "RoRPrerequisites.h"
 
 class TerrainObjectManager
 {
 public:
-	TerrainObjectManager(Ogre::SceneManager *smgr, TerrainManager *terrainManager);
+
+	TerrainObjectManager(TerrainManager *terrainManager);
 	~TerrainObjectManager();
 
 
 	void loadObjectConfigFile(Ogre::String filename);
 
 protected:
-	Ogre::SceneManager *mSceneMgr;
+
 	TerrainManager *terrainManager;
 
 	typedef struct {
@@ -57,16 +58,11 @@ protected:
 
 	Road *road;
 
-	std::map< std::string, loaded_object_t >  loadedObjects;
-	std::map< std::string, spawn_location_t > netSpawnPos;
-	std::vector< animated_object_t >          animatedObjects;
-
 	localizer_t localizers[64];
 
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
 	bool updateAnimatedObjects(float dt);
 };
-#endif // TERRAINOBJECTMANAGER_H__
 
-
+#endif // __TerrainObjectManager_H_

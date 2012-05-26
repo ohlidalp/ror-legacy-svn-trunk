@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef TERRAINMANAGER_H__
-#define TERRAINMANAGER_H__
+#ifndef __TerrainManager_H_
+#define __TerrainManager_H_
 
 #include "RoRPrerequisites.h"
 #include <OgreConfigFile.h>
@@ -26,82 +26,77 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class TerrainManager
 {
 public:
-	TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *person);
+
+	TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *character);
 	~TerrainManager();
 
 	void loadTerrain(Ogre::String filename);
-
-	void setGravity(float value);
-	float getGravity();
-
-
+	
 	inline Collisions *getCollisions() { return collisions; };
 	inline Water *getWater() { return water; };
 	inline Envmap *getEnvmap() { return envmap; };
 
+	void setGravity(float value);
+	float getGravity() { return gravity; };
+
 protected:
 	// members
-	Ogre::SceneManager *mSceneMgr;
-	Ogre::RenderWindow *mWindow;
 	Ogre::Camera *mCamera;
-	Ogre::ConfigFile terrainConfig;
-	Character *person;
+	Ogre::ConfigFile mTerrainConfig;
+	Ogre::RenderWindow *mWindow;
+	Ogre::SceneManager *mSceneMgr;
+	Character *mCharacter;
 
 	// subsystems
-	TerrainObjectManager *objectManager;
-	TerrainGeometryManager *geometryManager;
-	TerrainHeightFinder *heightFinder;
-	ShadowManager *shadowManager;
-	SkyManager *skyManager;
-	Envmap *envmap;
-	Dashboard *dashboard;
+	Character *character;
 	Collisions *collisions;
-	Water *water;
-	MapControl *surveyMap;
-
-	// subsystem properties
-	HDRListener *hdrListener;
-
+	Dashboard *dashboard;
+	Envmap *envmap;
+	HDRListener *hdr_listener;
+	MapControl *survey_map;
+	ShadowManager *shadow_manager;
+	SkyManager *sky_manager;
+	TerrainGeometryManager *geometry_manager;
+	TerrainHeightFinder *height_finder;
+	TerrainObjectManager *object_manager;
+	Water *water;	
 
 	// properties
+	Ogre::ColourValue ambient_color;
+	Ogre::ColourValue fade_color;
+	Ogre::Light *main_light;
 	Ogre::String fileHash;
-	Ogre::String terrainName;
-	Ogre::String ogreTerrainConfigFilename;
-
-	float waterLine;
-	Ogre::ColourValue ambientColor;
-	Ogre::Vector3 startPosition;
-	bool useCaelum;
-	int farclip;
+	Ogre::String ogre_terrain_config_filename;
+	Ogre::String terrain_name;
+	Ogre::Vector3 start_position;
+	bool use_caelum;
 	float gravity;
-
-
-	Ogre::Light *mainLight;
-
+	float water_height;
+	int farclip;
+	int loading_state;
 
 	// internal methods
-	void initSubSystems();
 	void initCamera();
-	void initSkySubSystem();
-	void initLight();
-	void initFog();
-	void initVegetation();
-	void initHDR();
-	void initGlow();
-	void initMotionBlur();
-	void initSunburn();
-	void initWater();
-	void initEnvironmentMap();
-	void initDashboards();
-	void initHeightFinder();
-	void initShadows();
 	void initCollisions();
+	void initDashboards();
+	void initEnvironmentMap();
+	void initFog();
+	void initGlow();
+	void initHDR();
+	void initLight();
+	void initMotionBlur();
 	void initScripting();
+	void initShadows();
+	void initSkySubSystem();
+	void initSubSystems();
+	void initSunburn();
+	void initVegetation();
+	void initWater();
 	void initSurveyMap();
 
 	void fixCompositorClearColor();
 
 	void loadTerrainObjects();
 };
-#endif // TERRAINMANAGER_H__
 
+#endif // __TerrainManager_H_

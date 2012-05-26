@@ -26,9 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-TerrainGeometryManager::TerrainGeometryManager(Ogre::SceneManager *smgr, TerrainManager *terrainManager) :
-	  mSceneMgr(smgr)
-	, terrainManager(terrainManager)
+TerrainGeometryManager::TerrainGeometryManager(TerrainManager *terrainManager) :
+	  terrainManager(terrainManager)
 	, disableCaching(false)
 	, mTerrainsImported(false)
 {

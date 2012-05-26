@@ -19,23 +19,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TerrainManager.h"
 
+#include "BeamData.h"
 #include "BeamFactory.h"
-#include "CameraManager.h"
-#include "RoRFrameListener.h"
-#include "SkyManager.h"
-#include "TerrainObjectManager.h"
-#include "TerrainGeometryManager.h"
-#include "TerrainHeightFinder.h"
-
+#include "Character.h"
+#include "DustManager.h"
+#include "GlowMaterialListener.h"
 #include "ScriptEngine.h"
-
+#include "Settings.h"
 #include "ShadowManager.h"
+#include "SkyManager.h"
+#include "SoundScriptManager.h"
+#include "TerrainGeometryManager.h"
+#include "TerrainObjectManager.h"
 #include "dashboard.h"
-
+#include "envmap.h"
+#include "errorutils.h"
+#include "gui_friction.h"
 #include "Character.h"
 
 #include "hdrlistener.h"
-
+#include "language.h"
 #include "utils.h"
 
 using namespace Ogre;
@@ -44,8 +47,9 @@ TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *win
 	  mSceneMgr(smgr)
 	, mWindow(window)
 	, mCamera(camera)
-	, waterLine(-9999)
-	, person(person)
+	, mCharacter(person)
+	, loading_state(NONE_LOADED)
+	, water_height(-9999)
 {
 
 }
@@ -55,10 +59,10 @@ TerrainManager::~TerrainManager()
 
 }
 
-void TerrainManager::loadTerrain( Ogre::String filename )
+void TerrainManager::loadTerrain(String filename)
 {
-	char line[1024] = "";
 	DataStreamPtr ds;
+
 	try
 	{
 		ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
@@ -72,51 +76,42 @@ void TerrainManager::loadTerrain( Ogre::String filename )
 	// now generate the hash of it
 	fileHash = generateHashFromDataStream(ds);
 
-	terrainConfig.load(ds, "\t:=", false);
+	mTerrainConfig.load(ds, "\t:=", false);
 
 	// read in the settings
-	terrainName = terrainConfig.getSetting("Name");
-	ogreTerrainConfigFilename = terrainConfig.getSetting("GeometryConfig");
+	terrain_name = mTerrainConfig.getSetting("Name");
+
+	ogre_terrain_config_filename = mTerrainConfig.getSetting("GeometryConfig");
 	// otc = ogre terrain config
-	if (ogreTerrainConfigFilename.find(".otc") == String::npos)
+	if (ogre_terrain_config_filename.find(".otc") == String::npos)
 	{
 		showError(_L("Terrain loading error"), _L("the new terrain mode only supports .otc configurations"));
 		exit(125);
 	}
 
-	if(!terrainConfig.getSetting("WaterLine").empty())
-		waterLine = StringConverter::parseReal(terrainConfig.getSetting("WaterLine"));
+	if (!mTerrainConfig.getSetting("WaterLine").empty())
+	{
+		water_height = StringConverter::parseReal(mTerrainConfig.getSetting("WaterLine"));
+	}
 
-	ambientColor = StringConverter::parseColourValue(terrainConfig.getSetting("AmbientColor"));
-	startPosition = StringConverter::parseVector3(terrainConfig.getSetting("StartPosition"));
+	ambient_color = StringConverter::parseColourValue(mTerrainConfig.getSetting("AmbientColor"));
+	start_position = StringConverter::parseVector3(mTerrainConfig.getSetting("StartPosition"));
 
 	// then, init the subsystems, order is important :)
 	initSubSystems();
 
 	fixCompositorClearColor();
 
-
-	// fix the person starting position
-	/*
-	if (persostart.isZeroLength() && !spl.pos.isZeroLength())
-	{
-		if (hfinder)
-			persostart = Vector3(spl.pos.x, hfinder->getHeightAt(spl.pos.x, spl.pos.z), spl.pos.z);
-		else
-			persostart = spl.pos;
-	}
-	*/
-
 	loadTerrainObjects();
 
 	collisions->printStats();
 
-	loading_state=TERRAIN_LOADED;
+	loading_state = TERRAIN_LOADED;
 
 
 
-	if (debugCollisions)
-		collisions->createCollisionDebugVisualization();
+	//if (debugCollisions)
+		//collisions->createCollisionDebugVisualization();
 
 	// bake the decals
 	//finishTerrainDecal();
@@ -127,13 +122,10 @@ void TerrainManager::loadTerrain( Ogre::String filename )
 void TerrainManager::initSubSystems()
 {
 	// objects  - .odef support
-	objectManager   = new TerrainObjectManager(mSceneMgr, this);
+	object_manager   = new TerrainObjectManager(this);
 	
 	// geometry - ogre terrain things
-	geometryManager = new TerrainGeometryManager(mSceneMgr, this);
-
-	// collision integration
-	initHeightFinder();
+	geometry_manager = new TerrainGeometryManager(this);
 	
 	// shadows
 	initShadows();
@@ -150,79 +142,74 @@ void TerrainManager::initSubSystems()
 	initVegetation();
 
 	if (BSETTING("HDR", false))
+	{
 		initHDR();
-
+	}
 	if (BSETTING("Glow", false))
+	{
 		initGlow();
-
+	}
 	if (BSETTING("Motion blur", false))
+	{
 		initMotionBlur();
-	
-
+	}
 	if (BSETTING("Sunburn", false))
+	{
 		initSunburn();
-
-	if(waterLine != -9999)
+	}
+	if (water_height != -9999)
+	{
 		initWater();
-
-	//environment map
-	if(!BSETTING("Envmapdisable", false))
+	}
+	// environment map
+	if (!BSETTING("Envmapdisable", false))
+	{
 		initEnvironmentMap();
-
-	// map must be loaded before the script engine
+	}
 	// init the map
 	if (!BSETTING("disableOverViewMap", false))
+	{
 		initSurveyMap();
-
-
+	}
 	initDashboards();
 }
 
 void TerrainManager::initCamera()
 {
-	mCamera->getViewport()->setBackgroundColour(ambientColor);
+	mCamera->getViewport()->setBackgroundColour(ambient_color);
 
-	// still required?
-	farclip = ISETTING("SightRange", 2000);
-	bool inifite_farclip = false;
-	if (farclip == 5000 && mRoot->getRenderSystem()->getCapabilities()->hasCapability(Ogre::RSC_INFINITE_FAR_PLANE))
-	{
-		mCamera->setFarClipDistance(0);   // enable infinite far clip distance if we can
-		inifite_farclip = true;
-	} else
-	{
-		farclip = std::min((float)farclip, terrainzsize * 1.8f);
-		mCamera->setFarClipDistance(farclip);
-	}
+	//mCamera->setFarClipDistance(0);
 
-	mCamera->setPosition(startPosition);
+	mCamera->setPosition(start_position);
 }
 
 void TerrainManager::initSkySubSystem()
 {
 #ifdef USE_CAELUM
-	//Caelum skies
-	useCaelum = SSETTING("Sky effects", "Caelum (best looking, slower)")=="Caelum (best looking, slower)";
+	// Caelum skies
+	bool useCaelum = SSETTING("Sky effects", "Caelum (best looking, slower)")=="Caelum (best looking, slower)";
+
 	if (useCaelum)
 	{
-		skyManager = new SkyManager(mSceneMgr, mWindow, mCamera);
+		sky_manager = new SkyManager(mSceneMgr, mWindow, mCamera);
 
 		// try to load caelum config
-		String caelumConfig = terrainConfig.getSetting("CaelumConfigFile");
-		if(!caelumConfig.empty() && ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(caelumConfig))
+		String caelumConfig = mTerrainConfig.getSetting("CaelumConfigFile");
+
+		if (!caelumConfig.empty() && ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(caelumConfig))
 		{
 			// config provided and existing, use it :)
-			skyManager->loadScript(caelumConfig);
+			sky_manager->loadScript(caelumConfig);
 		} else
 		{
 			// no config provided, fall back to the default one
-			skyManager->loadScript("ror_default_sky");
+			sky_manager->loadScript("ror_default_sky");
 		}
-#endif //USE_CAELUM
 	} else
-#endif //CAELUM
+#endif //USE_CAELUM
 	{
-		String sandStormConfig = terrainConfig.getSetting("SandStormCubeMap");
+		String sandStormConfig = mTerrainConfig.getSetting("SandStormCubeMap");
+
 		if (!sandStormConfig.empty())
 		{
 			// use custom
@@ -237,27 +224,27 @@ void TerrainManager::initSkySubSystem()
 
 void TerrainManager::initLight()
 {
-	if(useCaelum)
+	if (use_caelum)
 	{
-		mainLight = skyManager->getMainLight();
+		main_light = sky_manager->getMainLight();
 	} else
 	{
 		// screw caelum, we will roll our own light
 
 		// Create a light
-		mainLight = mSceneMgr->createLight("MainLight");
+		main_light = mSceneMgr->createLight("MainLight");
 		//directional light for shadow
-		mainLight->setType(Light::LT_DIRECTIONAL);
-		mainLight->setDirection(0.785, -0.423, 0.453);
+		main_light->setType(Light::LT_DIRECTIONAL);
+		main_light->setDirection(0.785, -0.423, 0.453);
 
-		mainLight->setDiffuseColour(ambientColor);
-		mainLight->setSpecularColour(ambientColor);
+		main_light->setDiffuseColour(ambient_color);
+		main_light->setSpecularColour(ambient_color);
 	}
 }
 
 void TerrainManager::initFog()
 {
-	mSceneMgr->setFog(FOG_LINEAR, ambientColor,  0, farclip * 0.7, farclip * 0.9);
+	mSceneMgr->setFog(FOG_LINEAR, ambient_color,  0, farclip * 0.7, farclip * 0.9);
 }
 
 void TerrainManager::initVegetation()
@@ -291,14 +278,14 @@ void TerrainManager::initVegetation()
 void TerrainManager::initHDR()
 {
 	Viewport *vp = mCamera->getViewport();
-	Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
-	Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
+	CompositorInstance *instance = CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
+	CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
 
 	// HDR needs a special listener
-	hdrListener = new HDRListener();
-	instance->addListener(hdrListener);
-	hdrListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
-	hdrListener->notifyCompositor(instance);
+	hdr_listener = new HDRListener();
+	instance->addListener(hdr_listener);
+	hdr_listener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+	hdr_listener->notifyCompositor(instance);
 }
 
 void TerrainManager::initGlow()
@@ -306,7 +293,7 @@ void TerrainManager::initGlow()
 	CompositorManager::getSingleton().addCompositor(mCamera->getViewport(), "Glow");
 	CompositorManager::getSingleton().setCompositorEnabled(mCamera->getViewport(), "Glow", true);
 	GlowMaterialListener *gml = new GlowMaterialListener();
-	Ogre::MaterialManager::getSingleton().addListener(gml);
+	MaterialManager::getSingleton().addListener(gml);
 }
 
 void TerrainManager::initMotionBlur()
@@ -410,7 +397,7 @@ void TerrainManager::fixCompositorClearColor()
 	// now with extensive error checking
 	if (CompositorManager::getSingleton().hasCompositorChain(mCamera->getViewport()))
 	{
-		//	//CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fadeColour);
+		//	//CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fade_color);
 		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(mCamera->getViewport())->_getOriginalSceneCompositor();
 		if (co)
 		{
@@ -422,7 +409,9 @@ void TerrainManager::fixCompositorClearColor()
 				{
 					CompositionPass *p = ctp->getPass(0);
 					if (p)
-						p->setClearColour(fadeColour);
+					{
+						p->setClearColour(fade_color);
+					}
 				}
 			}
 		}
@@ -432,7 +421,7 @@ void TerrainManager::fixCompositorClearColor()
 void TerrainManager::initWater()
 {
 	//water!
-	if (waterLine != -9999)
+	if (water_height != -9999)
 	{
 		bool usewaves=(BSETTING("Waves", false));
 
@@ -453,98 +442,67 @@ void TerrainManager::initWater()
 		else if (waterSettingsString == "Reflection + refraction (quality optimized)")
 			water = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 	}
-	if (water) water->setFadeColour(ambientColor);
-	if (person) person->setWater(water);
+	if (water) water->setFadeColour(ambient_color);
+	if (mCharacter) mCharacter->setWater(water);
 	BeamFactory::getSingleton().w = water;
 	DustManager::getSingleton().setWater(water);
 }
 
 void TerrainManager::initEnvironmentMap()
 {
-	envmap = new Envmap(mSceneMgr, mWindow, mCamera, BSETTING("Envmap", false), ISETTING("EnvmapUpdateRate", 1));
+	envmap = new Envmap(this);
 }
 
 void TerrainManager::initDashboards()
 {
-	dashboard = new Dashboard(mSceneMgr);
-}
-
-void TerrainManager::initHeightFinder()
-{
-	heightFinder = new TerrainHeightFinder(geometryManager);
-	collisions->setHfinder(heightFinder);
-
-	if (person)
-		person->setHFinder(heightFinder);
-
-	// update hfinder instance in factory
-	BeamFactory::getSingleton().mfinder = heightFinder;
+	dashboard = new Dashboard(this);
 }
 
 void TerrainManager::initShadows()
 {
-	shadowManager   = new ShadowManager(mSceneMgr, mWindow, mCamera);
-	shadowManager->loadConfiguration();
+	shadow_manager   = new ShadowManager(this);
+	shadow_manager->loadConfiguration();
 }
 
 void TerrainManager::loadTerrainObjects()
 {
-	Ogre::ConfigFile::SettingsIterator objectsIterator = terrainConfig.getSettingsIterator("Objects");
-	Ogre::String svalue, sname;
+	ConfigFile::SettingsIterator objectsIterator = mTerrainConfig.getSettingsIterator("Objects");
+	String svalue, sname;
 	while (objectsIterator.hasMoreElements())
 	{
 		sname = objectsIterator.peekNextKey();
-		Ogre::StringUtil::trim(sname);
+		StringUtil::trim(sname);
 		svalue = objectsIterator.getNext();
-		Ogre::StringUtil::trim(svalue);
+		StringUtil::trim(svalue);
 
-		objectManager->loadObjectConfigFile(sname);
+		object_manager->loadObjectConfigFile(sname);
 	}
 }
 
 void TerrainManager::initCollisions()
 {
-	collisions = new Collisions(this, mSceneMgr, debugCollisions);
-
-	// load AS
-#ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().setCollisions(collisions);
-
-	// update icollisions instance in factory
-	BeamFactory::getSingleton().icollisions = collisions;
-
-	if (person) person->setCollisions(collisions);
-#ifdef USE_MYGUI
-	if (GUI_Friction::getSingletonPtr())
-		GUI_Friction::getSingleton().setCollisions(collisions);
-#endif //MYGUI
-
-	// advanced camera collision tools
-	mCollisionTools = new MOC::CollisionTools(mSceneMgr);
-	// set how far we want the camera to be above ground
-	mCollisionTools->setHeightAdjust(0.2f);
+	collisions = new Collisions(this);
+	gEnv->collisions = collisions;
 }
 
 void TerrainManager::initScripting()
 {
 #ifdef USE_ANGELSCRIPT
-	if (!netmode)
+	if (!BSETTING("netmode", false))
 	{
-		Ogre::ConfigFile::SettingsIterator objectsIterator = terrainConfig.getSettingsIterator("scripts");
-		Ogre::String svalue, sname;
-		int loaded = 0;
+		ConfigFile::SettingsIterator objectsIterator = mTerrainConfig.getSettingsIterator("scripts");
+		bool loaded = false;
 		while (objectsIterator.hasMoreElements())
 		{
-			sname = objectsIterator.peekNextKey();
-			Ogre::StringUtil::trim(sname);
-			svalue = objectsIterator.getNext();
-			Ogre::StringUtil::trim(svalue);
+			String sname = objectsIterator.peekNextKey();
+			StringUtil::trim(sname);
+			String svalue = objectsIterator.getNext();
+			StringUtil::trim(svalue);
 
 			ScriptEngine::getSingleton().loadScript(sname);
-			loaded++;
+			loaded = true;
 		}
-
-		if(loaded == 0)
+		if (loaded)
 		{
 			// load a default script that does the most basic things
 			ScriptEngine::getSingleton().loadScript("default.as");
@@ -566,12 +524,7 @@ void TerrainManager::setGravity(float value)
 	BeamFactory::getSingleton().recalcGravityMasses();
 }
 
-float TerrainManager::getGravity()
-{
-	return gravity;
-}
-
 void TerrainManager::initSurveyMap()
 {
-	surveyMap = new MapControl(mapsizex, mapsizey, mapsizez);
+	//survey_map = new MapControl(mapsizex, mapsizey, mapsizez);
 }
