@@ -36,7 +36,7 @@ public:
 
 
 	inline Collisions *getCollisions() { return collisions; };
-	inline Water *getWater() { return w; };
+	inline Water *getWater() { return water; };
 	inline Envmap *getEnvmap() { return envmap; };
 
 protected:
@@ -55,6 +55,7 @@ protected:
 	Envmap *envmap;
 	Dashboard *dashboard;
 	Collisions *collisions;
+	Water *water;
 
 	// subsystem properties
 	HDRListener *hdrListener;
