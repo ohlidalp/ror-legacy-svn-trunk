@@ -79,7 +79,7 @@ public:
 
 	void gpws_update(float spawnheight);
 
-	void getRadioFix(localizer_t *localizers, int free_localizer, float *vdev, float *hdev);
+	void getRadioFix(TerrainObjectManager::localizer_t *localizers, int free_localizer, float *vdev, float *hdev);
 };
 
 
