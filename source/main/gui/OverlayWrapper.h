@@ -41,7 +41,7 @@ class OverlayWrapper : public RoRSingletonNoCreation<OverlayWrapper>
 
 public:
 
-	OverlayWrapper(Ogre::RenderWindow* win);
+	OverlayWrapper();
 	~OverlayWrapper();
 
 	// functions
@@ -50,7 +50,7 @@ public:
 	void showPressureOverlay(bool show);
 	void showEditorOverlay(bool show);
 
-	void windowResized(Ogre::RenderWindow* rw);
+	void windowResized();
 	void resizeOverlay(struct loadedOverlay_t);
 
 	int getDashBoardHeight();

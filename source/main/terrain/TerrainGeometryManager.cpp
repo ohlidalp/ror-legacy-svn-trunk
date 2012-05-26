@@ -29,7 +29,6 @@ TerrainGeometryManager::TerrainGeometryManager(TerrainManager *terrainManager) :
 	, disableCaching(false)
 	, mTerrainsImported(false)
 {
-	gEnv->heightFinder = this;
 }
 
 TerrainGeometryManager::~TerrainGeometryManager()

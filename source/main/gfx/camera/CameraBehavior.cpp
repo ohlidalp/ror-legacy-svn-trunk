@@ -106,9 +106,9 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 			, cos(targetDirection.valueRadians() + camRotX.valueRadians()) * cos(targetPitch.valueRadians() + camRotY.valueRadians())
 			);
 
-	if ( gEnv->heightFinder )
+	if ( gEnv->terrainManager->getHeightFinder() )
 	{
-		float h = gEnv->heightFinder->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
+		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
 
 		desiredPosition.y = std::max(h, desiredPosition.y);
 	}

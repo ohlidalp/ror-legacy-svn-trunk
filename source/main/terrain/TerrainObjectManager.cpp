@@ -39,7 +39,7 @@ TerrainObjectManager::~TerrainObjectManager()
 void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 {
 	//prepare for baking
-	SceneNode *bakeNode=mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	SceneNode *bakeNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 
 #ifdef USE_PAGED
 	treeLoader = 0;
@@ -135,7 +135,7 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
-			SceneNode *n = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			n->setPosition(pos);
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
@@ -245,7 +245,7 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 				treeLoader->setColorMap(ColorMap);
 			}
 
-			curTree = mSceneMgr->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
+			curTree = gEnv->ogreSceneManager->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
 
 			if (gridspacing > 0)
 			{
@@ -585,7 +585,7 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 
 
 	// okay, now bake everything
-	bakesg = mSceneMgr->createStaticGeometry("bakeSG");
+	bakesg = gEnv->ogreSceneManager->createStaticGeometry("bakeSG");
 	bakesg->setCastShadows(true);
 	bakesg->addSceneNode(bakeNode);
 	bakesg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -729,12 +729,12 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		objcounter++;
 
 
-		SceneNode *tenode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		SceneNode *tenode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		bool background_loading = BSETTING("Background Loading", false);
 
 		MeshObject *mo = NULL;
 		if (String(mesh) != "none")
-			mo = new MeshObject(mSceneMgr, mesh, oname, tenode, NULL, background_loading);
+			mo = new MeshObject(gEnv->ogreSceneManager, mesh, oname, tenode, NULL, background_loading);
 
 		//mo->setQueryFlags(OBJECTS_MASK);
 		//tenode->attachObject(te);
@@ -937,11 +937,11 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 				// hacky: prevent duplicates
 				String paname = String(pname);
-				while(mSceneMgr->hasParticleSystem(paname))
+				while(gEnv->ogreSceneManager->hasParticleSystem(paname))
 					paname += "_";
 
 				// create particle system
-				ParticleSystem* pParticleSys = mSceneMgr->createParticleSystem(paname, String(sname));
+				ParticleSystem* pParticleSys = gEnv->ogreSceneManager->createParticleSystem(paname, String(sname));
 				pParticleSys->setCastShadows(false);
 				pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 

@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h"
 #include "IHeightFinder.h"
 #include "SoundScriptManager.h"
+#include "TerrainManager.h"
 #include "Water.h"
 
 using namespace Ogre;
@@ -269,10 +270,10 @@ void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
 	if (SoundScriptManager::getSingleton().isDisabled()) return;
-	if (mode_gpws && gEnv->heightFinder && ref_b)
+	if (mode_gpws && gEnv->terrainManager->getHeightFinder() && ref_b)
 	{
-		float groundalt=gEnv->heightFinder->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
-		if (gEnv->water && groundalt<gEnv->water->getHeight()) groundalt=gEnv->water->getHeight();
+		float groundalt=gEnv->terrainManager->getHeightFinder()->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
+		if (gEnv->terrainManager->getWater() && groundalt<gEnv->terrainManager->getWater()->getHeight()) groundalt=gEnv->terrainManager->getWater()->getHeight();
 		float height=(ref_c->AbsPosition.y-groundalt-spawnheight)*3.28083f; //in feet!
 		//skip height warning sounds when the plane is slower then ~10 knots
 		if (( ref_c->Velocity.length() * 1.9685f) > 10.0f)

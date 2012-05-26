@@ -37,7 +37,6 @@ public:
 		  collisions(0)
 		, embeddedMode(false)
 		, frameListener(0)
-		, heightFinder(0)
 		, network(0)
 		, ogreCamera(0)
 		, ogreRenderWindow(0)
@@ -47,7 +46,6 @@ public:
 		, sky(0)
 		, surveyMap(0)
 		, terrainManager(0)
-		, water(0)
 	    , ogreRoot(0)
 	{
 	}
@@ -60,13 +58,11 @@ public:
 
 	Character *player;
 	Collisions *collisions;
-	IHeightFinder *heightFinder;
 	MapControl *surveyMap;
 	Network *network;
 	RoRFrameListener *frameListener;
 	SkyManager *sky;
 	TerrainManager *terrainManager;
-	Water *water;
 
 	bool embeddedMode;
 };

@@ -326,7 +326,7 @@ void Skidmark::updatePoint()
 	/*
 	// debug code: adds boxes to the average point
 	SceneNode *sn = mNode->getParentSceneNode()->createChildSceneNode();
-	sn->attachObject(scm->createEntity("addPointTRACK"+TOSTRING(objects.back().lastPointAv) +TOSTRING(axis), "beam.mesh"));
+	sn->attachObject(gEnv->ogreSceneManager->createEntity("addPointTRACK"+TOSTRING(objects.back().lastPointAv) +TOSTRING(axis), "beam.mesh"));
 	sn->setPosition(thisPointAV);
 	sn->setScale(0.1f, 0.01f, 0.1f);
 	*/

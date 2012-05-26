@@ -21,6 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __TerrainManager_H_
 
 #include "RoRPrerequisites.h"
+
 #include <OgreConfigFile.h>
 
 class TerrainManager
@@ -33,9 +34,10 @@ public:
 	void loadTerrain(Ogre::String filename);
 	
 	Collisions *getCollisions() { return collisions; };
-	Water *getWater() { return water; };
 	Envmap *getEnvmap() { return envmap; };
+	IHeightFinder *getHeightFinder() { return reinterpret_cast<IHeightFinder *>(geometry_manager); };
 	SkyManager *getSkyManager() { return sky_manager; };
+	Water *getWater() { return water; };
 
 	void setGravity(float value);
 	float getGravity() { return gravity; };
@@ -56,7 +58,6 @@ protected:
 	ShadowManager *shadow_manager;
 	SkyManager *sky_manager;
 	TerrainGeometryManager *geometry_manager;
-	TerrainHeightFinder *height_finder;
 	TerrainObjectManager *object_manager;
 	Water *water;	
 

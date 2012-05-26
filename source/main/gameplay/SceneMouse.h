@@ -17,22 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 11th of March 2011
-
-#ifndef SCENEMOUSE_H__
-#define SCENEMOUSE_H__
+#ifndef __SceneMouse_H_
+#define __SceneMouse_H_
 
 #include "RoRPrerequisites.h"
-#include <OgrePrerequisites.h>
+
 #include "Singleton.h"
 #include <OIS.h>
 
-
 class SceneMouse : public RoRSingletonNoCreation < SceneMouse >
 {
-	friend class RoRSingletonNoCreation<SceneMouse>;
 public:
+
 	SceneMouse();
 	~SceneMouse();
 
@@ -47,6 +44,7 @@ public:
 	bool isMouseGrabbed() { return mouseGrabState != 0; };
 
 protected:
+
 	Ogre::ManualObject *pickLine;
 	Ogre::SceneNode *pickLineNode;
 	float mouseGrabForce;
@@ -63,6 +61,4 @@ protected:
 	Ogre::Ray getMouseRay();
 };
 
-
-
-#endif //SCENEMOUSE_H__
+#endif // __SceneMouse_H_

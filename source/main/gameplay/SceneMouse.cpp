@@ -22,7 +22,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "BeamFactory.h"
 #include "CameraManager.h"
-#include "RoRFrameListener.h"
 
 #ifdef USE_MYGUI
 # include <MyGUI.h>

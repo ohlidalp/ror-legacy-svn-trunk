@@ -324,7 +324,7 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 		if(truck && truck->materialReplacer)
 			truck->materialReplacer->addMaterialReplace(mat->getName(), newMaterialName);
 
-		VideoCamera *v  = new VideoCamera(mSceneMgr, camera, truck);
+		VideoCamera *v  = new VideoCamera(gEnv->ogreSceneManager, camera, truck);
 		v->fov          = fov;
 		v->minclip      = minclip;
 		v->maxclip      = maxclip;

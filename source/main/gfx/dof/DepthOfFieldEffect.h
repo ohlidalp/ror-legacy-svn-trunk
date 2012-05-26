@@ -22,8 +22,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //
 // This code is in the public domain. You may do whatever you want with it.
 
-#ifndef __DepthOfFieldEffect_H__
-#define __DepthOfFieldEffect_H__
+#ifndef __DepthOfFieldEffect_H_
+#define __DepthOfFieldEffect_H_
 
 #include "RoRPrerequisites.h"
 
@@ -40,7 +40,8 @@ class DepthOfFieldEffect : public Ogre::CompositorInstance::Listener,
 						   public Ogre::RenderQueue::RenderableListener
 {
 public:
-	DepthOfFieldEffect(Ogre::Viewport *mViewport, Ogre::Camera *cam);
+
+	DepthOfFieldEffect();
 	~DepthOfFieldEffect();
 
 	float getNearDepth() const {return mNearDepth; }
@@ -53,6 +54,7 @@ public:
 	void setEnabled(bool value);
 
 private:
+
 	// Implementation of Ogre::CompositorInstance::Listener
 	virtual void notifyMaterialSetup(Ogre::uint32 passId, Ogre::MaterialPtr& material);
 
@@ -81,8 +83,6 @@ private:
 	Ogre::MaterialPtr mDepthMaterial;
 	Ogre::Technique* mDepthTechnique;
 	Ogre::CompositorInstance* mCompositor;
-	Ogre::Viewport *mViewport;
-	Ogre::Camera *mCamera;
 
 	float mNearDepth;
 	float mFocalDepth;
@@ -100,7 +100,7 @@ private:
 class DOFManager : public Ogre::FrameListener
 {
 public:
-	DOFManager(Ogre::SceneManager *m, Ogre::Viewport *v, Ogre::Root *r, Ogre::Camera *cam);
+	DOFManager();
 	~DOFManager();
 
 
@@ -120,14 +120,13 @@ public:
 	void setFocus(float f);
 
 protected:
+
 	virtual bool frameStarted(const Ogre::FrameEvent& evt);
 
-	Ogre::Root *mRoot;
-	Ogre::Camera *mCamera;
-	Ogre::RaySceneQuery *mRaySceneQuery;
-	Ogre::SceneManager *mSceneMgr;
-
 	void cleanup();
+
+
+	Ogre::RaySceneQuery *mRaySceneQuery;
 	DepthOfFieldEffect* mDepthOfFieldEffect;
 	Lens* mLens;
 	FocusMode mFocusMode;
@@ -137,4 +136,4 @@ protected:
 	Ogre::SceneNode *debugNode;
 };
 
-#endif // __DepthOfFieldEffect_H__
+#endif // __DepthOfFieldEffect_H_

@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "network.h"
 #include "NetworkStreamManager.h"
 #include "PlayerColours.h"
+#include "TerrainManager.h"
 #include "utils.h"
 #include "Water.h"
 
@@ -322,7 +323,7 @@ void Character::update(float dt)
 		mLastPosition = position;
 
 		// ground contact
-		float pheight = gEnv->heightFinder->getHeightAt(position.x,position.z);
+		float pheight = gEnv->terrainManager->getHeightFinder()->getHeightAt(position.x,position.z);
 
 		if (position.y < pheight)
 		{
@@ -335,9 +336,9 @@ void Character::update(float dt)
 		bool isswimming = false;
 		float wheight = -99999;
 
-		if (gEnv->water)
+		if (gEnv->terrainManager->getWater())
 		{
-			wheight = gEnv->water->getHeightWaves(position);
+			wheight = gEnv->terrainManager->getWater()->getHeightWaves(position);
 			if (position.y < wheight - 1.8f)
 			{
 				position.y = wheight - 1.8f;
@@ -346,7 +347,7 @@ void Character::update(float dt)
 		}
 
 		// 0.1 due to 'jumping' from waves -> not nice looking
-		if (gEnv->water && (wheight - pheight > 1.8f) && (position.y + 0.1f <= wheight))
+		if (gEnv->terrainManager->getWater() && (wheight - pheight > 1.8f) && (position.y + 0.1f <= wheight))
 		{
 			isswimming = true;
 		}

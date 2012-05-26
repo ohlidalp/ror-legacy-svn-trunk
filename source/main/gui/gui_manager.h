@@ -19,14 +19,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
 
-#ifndef GUI_MANAGER_H__
-#define GUI_MANAGER_H__
+#ifndef __GUI_Manager_H_
+#define __GUI_Manager_H_
 
 #include "RoRPrerequisites.h"
+
 #include "gui_inputmanager.h"
+#include "Ogre.h"
 #include "Singleton.h"
 
-#include <Ogre.h>
 #include <MyGUI.h>
 
 #define GETMYGUI GUIManager::getSingleton().getGUI()
@@ -40,6 +41,7 @@ class GUIManager :
 	, public Ogre::WindowEventListener
 {
 public:
+
 	GUIManager();
 	virtual ~GUIManager();
 
@@ -52,8 +54,9 @@ public:
 	static Ogre::String getRandomWallpaperImage();
 
 	void windowResized(Ogre::RenderWindow* _rw);
-protected:
+
 private:
+
 	bool create();
 	void createGui();
 	void destroyGui();
@@ -66,6 +69,7 @@ private:
 
 
 private:
+
 	MyGUI::Gui* mGUI;
 	MyGUI::OgrePlatform* mPlatform;
 
@@ -74,6 +78,6 @@ private:
 	Ogre::String mResourceFileName;
 };
 
-#endif // GUI_MANAGER_H__
+#endif // __GUI_Manager_H_
 
-#endif //MYGUI
+#endif // USE_MYGUI

@@ -17,17 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef __Road2_H_
 #define __Road2_H_
 
 #include "RoRPrerequisites.h"
 
-
-#include "collisions.h"
+#include "Ogre.h"
 
 // dynamic roads
-
 class Road2
 {
 public:

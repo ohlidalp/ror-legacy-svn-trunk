@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-OverlayWrapper::OverlayWrapper(RenderWindow* win) : win(win)
+OverlayWrapper::OverlayWrapper()
 {
 	setSingleton(this);
 	init();
@@ -100,7 +100,7 @@ void OverlayWrapper::resizeOverlay(struct loadedOverlay_t lo)
 	lo.o->scroll(1 - s, s - 1);
 }
 
-void OverlayWrapper::windowResized(RenderWindow *rw)
+void OverlayWrapper::windowResized()
 {
 	for(std::vector<struct loadedOverlay_t>::iterator it = overlays.begin(); it != overlays.end(); it++)
 	{
@@ -347,36 +347,36 @@ int OverlayWrapper::init()
 	airtorque4texture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/airtorque4needle_mat")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
 	//		speedotexture=((MaterialPtr)(MaterialManager::getSingleton().getByName("tracks/speedoneedle")))->getTechnique(0)->getPass(0)->getTextureUnitState(0);
 
-	//        Entity *ecs=scm->createEntity("speed_needle", "needle.mesh");
-	//        speed_node=scm->getRootSceneNode()->createChildSceneNode();
+	//        Entity *ecs=gEnv->ogreSceneManager->createEntity("speed_needle", "needle.mesh");
+	//        speed_node=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//        speed_node->attachObject(ecs);
 	//		needlesOverlay->add3D(speed_node);
 	//		placeNeedle(win, speed_node, 1189, 936, 1.0);
 	//tacho
-	//        Entity *ect=scm->createEntity("tacho_needle", "needle.mesh");
-	//        tach_node=scm->getRootSceneNode()->createChildSceneNode();
+	//        Entity *ect=gEnv->ogreSceneManager->createEntity("tacho_needle", "needle.mesh");
+	//        tach_node=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//        tach_node->attachObject(ect);
 	//		needlesOverlay->add3D(tach_node);
 	//		placeNeedle(win, tach_node, 1011, 935, 1.0);
 	//		//pitch
-	//        Entity *ecp=scm->createEntity("pitch_needle", "needle.mesh");
+	//        Entity *ecp=gEnv->ogreSceneManager->createEntity("pitch_needle", "needle.mesh");
 	//		ecp->setMaterialName("tracks/whiteneedle");
-	//        pitch_node=scm->getRootSceneNode()->createChildSceneNode();
+	//        pitch_node=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//        pitch_node->attachObject(ecp);
 	//		needlesOverlay->add3D(pitch_node);
 	//		placeNeedle(win, pitch_node, 876, 1014, 1.0);
 	//roll
-	//        Entity *ecr=scm->createEntity("roll_needle", "needle.mesh");
+	//        Entity *ecr=gEnv->ogreSceneManager->createEntity("roll_needle", "needle.mesh");
 	//		ecr->setMaterialName("tracks/whiteneedle");
-	//        roll_node=scm->getRootSceneNode()->createChildSceneNode();
+	//        roll_node=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//        roll_node->attachObject(ecr);
 	//		needlesOverlay->add3D(roll_node);
 	//		placeNeedle(win, roll_node, 876, 924, 1.0);
 
 	//rollcorr
-	//		Entity *ecrc=scm->createEntity("rollcorr_needle", "needle.mesh");
+	//		Entity *ecrc=gEnv->ogreSceneManager->createEntity("rollcorr_needle", "needle.mesh");
 	//		ecrc->setMaterialName("tracks/stabneedle");
-	//		rollcorr_node=scm->getRootSceneNode()->createChildSceneNode();
+	//		rollcorr_node=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//		rollcorr_node->attachObject(ecrc);
 	//		needlesOverlay->add3D(rollcorr_node);
 	//		placeNeedle(win, rollcorr_node, 876, 924, 0.8);
