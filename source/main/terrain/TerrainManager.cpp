@@ -423,7 +423,7 @@ void TerrainManager::fixCompositorClearColor()
 void TerrainManager::initWater()
 {
 	//water!
-	if (waterline != -9999)
+	if (waterLine != -9999)
 	{
 		bool usewaves=(BSETTING("Waves", false));
 
@@ -434,20 +434,20 @@ void TerrainManager::initWater()
 		String waterSettingsString = SSETTING("Water effects", "Reflection + refraction (speed optimized)");
 
 		if      (waterSettingsString == "None")
-			w = 0;
+			water = 0;
 		else if (waterSettingsString == "Basic (fastest)")
-			w = new WaterOld(WaterOld::WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			water = new WaterOld(WaterOld::WATER_BASIC, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection")
-			w = new WaterOld(WaterOld::WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			water = new WaterOld(WaterOld::WATER_REFLECT, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection + refraction (speed optimized)")
-			w = new WaterOld(WaterOld::WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			water = new WaterOld(WaterOld::WATER_FULL_SPEED, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 		else if (waterSettingsString == "Reflection + refraction (quality optimized)")
-			w = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
+			water = new WaterOld(WaterOld::WATER_FULL_QUALITY, mCamera, mSceneMgr, mWindow, waterline, &mapsizex, &mapsizez, usewaves);
 	}
-	if (w) w->setFadeColour(fadeColour);
-	if (person) person->setWater(w);
-	BeamFactory::getSingleton().w = w;
-	DustManager::getSingleton().setWater(w);
+	if (water) water->setFadeColour(ambientColor);
+	if (person) person->setWater(water);
+	BeamFactory::getSingleton().w = water;
+	DustManager::getSingleton().setWater(water);
 }
 
 void TerrainManager::initEnvironmentMap()
