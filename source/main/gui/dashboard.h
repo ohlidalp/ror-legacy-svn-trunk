@@ -33,7 +33,7 @@ class Dashboard
 {
 public:
 
-	Dashboard(Ogre::SceneManager *mSceneMgr);
+	Dashboard();
 
 	void setEnable(bool en);
 	void prepareShutdown();

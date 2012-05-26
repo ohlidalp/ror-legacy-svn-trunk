@@ -71,7 +71,7 @@ protected:
 	Ogre::Vector3 start_position;
 	bool use_caelum;
 	float gravity;
-	float water_height;
+	float water_line;
 	int farclip;
 	int loading_state;
 

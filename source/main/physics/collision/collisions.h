@@ -148,10 +148,7 @@ public:
 
 	eventsource_t *getEvent(int eventID) { return &eventsources[eventID]; };
 
-	Collisions() {}; // for wrapper, DO NOT USE!
-
-	Collisions(RoRFrameListener *efl, Ogre::SceneManager *mgr, bool debugMode);
-
+	Collisions();
 
 	Ogre::Vector3 getPosition(char* instance, char* box);
 	Ogre::Quaternion getDirection(char* instance, char* box);

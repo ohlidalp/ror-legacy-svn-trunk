@@ -26,7 +26,7 @@ class Envmap
 {
 public:
 		
-	Envmap(Ogre::SceneManager *scm, Ogre::RenderWindow *rw, Ogre::Camera *cam, bool dynamic, int updateRate = 1);
+	Envmap();
 
 	void prepareShutdown() {};
 

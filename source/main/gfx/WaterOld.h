@@ -30,7 +30,7 @@ extern float mrtime;
 class WaterOld : public Water
 {
 public:
-	WaterOld(int type, Ogre::Camera *camera, Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, float wheight, float *mapsizex, float *mapsizez, bool usewaves);
+	WaterOld(const Ogre::ConfigFile &mTerrainConfig);
 
 	float getHeight();
 	float getHeightWaves(Ogre::Vector3 pos);
