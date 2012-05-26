@@ -176,8 +176,8 @@ void VideoCamera::update(float dt)
 {
 #ifdef USE_CAELUM
 	// caelum needs to know that we changed the cameras
-	if(SkyManager::getSingletonPtr())
-		SkyManager::getSingleton().notifyCameraChanged(mVidCam);
+	if(gEnv->sky)
+		gEnv->sky->notifyCameraChanged(mVidCam);
 #endif // USE_CAELUM
 
 	// update the texture now, otherwise shuttering

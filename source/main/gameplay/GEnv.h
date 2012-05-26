@@ -28,6 +28,7 @@ class Water;
 class Network;
 class MapControl;
 class Character;
+class SkyManager;
 
 class GlobalEnvironment
 {
@@ -46,6 +47,7 @@ public:
 		, network(0)
 		, surveyMap(0)
 		, player(0)
+		, sky(0)
 	{
 	}
 	Ogre::Root *ogreRoot;
@@ -62,6 +64,7 @@ public:
 	Network *network;
 	MapControl *surveyMap;
 	Character *player;
+	SkyManager *sky;
 };
 
 #endif // GEnv_H__
