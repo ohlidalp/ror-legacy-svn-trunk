@@ -27,10 +27,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 TerrainGeometryManager::TerrainGeometryManager(TerrainManager *terrainManager) :
-	  terrainManager(terrainManager)
+	  mSceneMgr(0)
+	, terrainManager(terrainManager)
 	, disableCaching(false)
 	, mTerrainsImported(false)
 {
+	mSceneMgr = gEnv->ogreSceneManager;
+	gEnv->heightFinder = this;
 }
 
 TerrainGeometryManager::~TerrainGeometryManager()

@@ -23,20 +23,36 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class RoRFrameListener;
 class TerrainManager;
 class Collisions;
+class IHeightFinder;
+class Water;
 
 class GlobalEnvironment
 {
 public:
+	GlobalEnvironment() :
+	      ogreRoot(0)
+		, ogreViewPort(0)
+		, ogreRenderWindow(0)
+		, ogreCamera(0)
+		, ogreSceneManager(0)
+		, frameListener(0)
+		, terrainManager(0)
+		, collisions(0)
+		, heightFinder(0)
+		, water(0)
+	{
+	}
 	Ogre::Root *ogreRoot;
 	Ogre::Viewport *ogreViewPort;
 	Ogre::RenderWindow *ogreRenderWindow;
 	Ogre::Camera *ogreCamera;
 	Ogre::SceneManager *ogreSceneManager;
 
-	RoRFrameListener *framelistener;
+	RoRFrameListener *frameListener;
 	TerrainManager *terrainManager;
 	Collisions *collisions;
-
+	IHeightFinder *heightFinder;
+	Water *water;
 };
 
 #endif // GEnv_H__

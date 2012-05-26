@@ -23,14 +23,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "heightfinder.h"
 #include "IWater.h"
 #include "SoundScriptManager.h"
+#include "IHeightFinder.h"
 
 using namespace Ogre;
 
-Autopilot::Autopilot(HeightFinder *hfd, Water *w, int trucknum)
+Autopilot::Autopilot(int trucknum)
 {
 	this->trucknum=trucknum;
-	water=w;
-	hf=hfd;
 	ref_l=NULL;
 	ref_r=NULL;
 	ref_b=NULL;
@@ -271,10 +270,10 @@ void Autopilot::gpws_update(float spawnheight)
 {
 #ifdef USE_OPENAL
 	if (SoundScriptManager::getSingleton().isDisabled()) return;
-	if (mode_gpws && hf && ref_b)
+	if (mode_gpws && gEnv->heightFinder && ref_b)
 	{
-		float groundalt=hf->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
-		if (water && groundalt<water->getHeight()) groundalt=water->getHeight();
+		float groundalt=gEnv->heightFinder->getHeightAt(ref_c->AbsPosition.x, ref_c->AbsPosition.z);
+		if (gEnv->water && groundalt<gEnv->water->getHeight()) groundalt=gEnv->water->getHeight();
 		float height=(ref_c->AbsPosition.y-groundalt-spawnheight)*3.28083f; //in feet!
 		//skip height warning sounds when the plane is slower then ~10 knots
 		if (( ref_c->Velocity.length() * 1.9685f) > 10.0f)

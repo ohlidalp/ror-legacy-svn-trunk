@@ -40,10 +40,8 @@ private:
 	float last_elevator;
 	float last_aileron;
 	float last_rudder;
-	HeightFinder *hf;
 	float last_gpws_height;
 	float last_pullup_height;
-	Water *water;
 	float lastradiov;
 	float lastradioh;
 	float lastradiorwh;
@@ -60,7 +58,7 @@ public:
 	int heading;
 	bool wantsdisconnect;
 
-	Autopilot(HeightFinder *hfd, Water *w, int trucknum);
+	Autopilot(int trucknum);
 	void reset();
 	void disconnect();
 	void setInertialReferences(node_t *refl, node_t *refr, node_t *refb, node_t *refc);
