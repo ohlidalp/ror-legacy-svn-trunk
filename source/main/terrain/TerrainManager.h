@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class TerrainManager
 {
 public:
-	TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera);
+	TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *person);
 	~TerrainManager();
 
 	void loadTerrain(Ogre::String filename);
@@ -45,6 +45,7 @@ protected:
 	Ogre::RenderWindow *mWindow;
 	Ogre::Camera *mCamera;
 	Ogre::ConfigFile terrainConfig;
+	Character *person;
 
 	// subsystems
 	TerrainObjectManager *objectManager;
