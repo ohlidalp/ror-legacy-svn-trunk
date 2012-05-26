@@ -60,7 +60,8 @@ public:
 		CAMERA_BEHAVIOR_VEHICLE_CINECAM,
 		CAMERA_BEHAVIOR_END,
 		CAMERA_BEHAVIOR_FREE,
-		CAMERA_BEHAVIOR_FIXED
+		CAMERA_BEHAVIOR_FIXED,
+		CAMERA_BEHAVIOR_ISOMETRIC
 	};
 
 	void update(float dt);
@@ -74,6 +75,8 @@ public:
 	bool hasActiveVehicleBehavior();
 
 	int getCameraBehavior();
+
+	bool enableGameControls();
 
 protected:
 

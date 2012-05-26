@@ -48,33 +48,6 @@ public:
 };
 
 /**
- * New terrain Height-Finder. For the new terrain from Ogre 1.7
- */
-class NTHeightFinder : public HeightFinder
-{
-public:
-
-	NTHeightFinder(TerrainManager *tm, Ogre::Vector3 tp) : mTerrainGroup(0), mTerrainPos(tp)
-	{
-		mTerrainGroup = tm->getTerrainGroup();
-	}
-	
-	~NTHeightFinder()
-	{
-	}
-
-	float getHeightAt(float x, float z)
-	{
-		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
-	}
-
-protected:
-
-	Ogre::TerrainGroup *mTerrainGroup;
-	Ogre::Vector3 mTerrainPos;
-};
-
-/**
  * Height-Finder for the standard Ogre Terrain Manager
  */
 class TSMHeightFinder : public HeightFinder

@@ -34,15 +34,7 @@ using namespace Ogre;
 using namespace Caelum;
 
 //---------------------------------------------------------------------
-SkyManager::SkyManager() : mCamera(0), mCaelumSystem(0)
-{
-}
-
-SkyManager::~SkyManager()
-{
-}
-
-void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera)
+SkyManager::SkyManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera) : mCamera(mCamera), mCaelumSystem(0)
 {
 	// Initialise CaelumSystem.
 	this->mCamera = mCamera;
@@ -60,8 +52,10 @@ void SkyManager::init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, O
 	// Register caelum as a listener.
 	mWindow->addListener (mCaelumSystem);
 	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
+}
 
-	
+SkyManager::~SkyManager()
+{
 }
 
 void SkyManager::notifyCameraChanged(Camera *cam)

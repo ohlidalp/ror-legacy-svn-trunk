@@ -37,6 +37,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TextureToolWindow.h"
 #include "utils.h"
 
+#include "CameraManager.h"
+
 using namespace Ogre;
 
 GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) :
@@ -72,6 +74,8 @@ GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) :
 	p->addItem("-", MyGUI::MenuItemType::Separator);
 	p->addItem(_L("Save Scenery"), MyGUI::MenuItemType::Normal);
 	p->addItem(_L("Load Scenery"), MyGUI::MenuItemType::Normal);
+	p->addItem("-", MyGUI::MenuItemType::Separator);
+	p->addItem(_L("Terrain Editor Mode"), MyGUI::MenuItemType::Normal);
 	p->addItem("-", MyGUI::MenuItemType::Separator);
 	p->addItem(_L("Exit"), MyGUI::MenuItemType::Normal);
 	pop.push_back(p);
@@ -338,6 +342,12 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		{
 			s.load(fname);
 		}
+
+	} else if(miname == _L("Terrain Editor Mode"))
+	{
+		mefl->loading_state = RoRFrameListener::TERRAIN_EDITOR;
+		CameraManager::getSingleton().switchBehavior(CameraManager::CAMERA_BEHAVIOR_ISOMETRIC, true);
+		
 
 	} else if(miname == _L("remove current Vehicle"))
 	{
