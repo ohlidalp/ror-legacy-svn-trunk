@@ -550,3 +550,14 @@ void TerrainManager::initScripting()
 	ScriptEngine::getSingleton().activateLogging();
 #endif
 }
+
+void TerrainManager::setGravity(float value)
+{
+	gravity = value;
+	BeamFactory::getSingleton().recalcGravityMasses();
+}
+
+static float TerrainManager::getGravity()
+{
+	return gravity;
+}
