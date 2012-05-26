@@ -5694,7 +5694,7 @@ void Beam::updateAI(float dt)
 
 	/*
 	String txt = "AI:"+TOSTRING(mSteeringForce);
-	RoRFrameListener::eflsingleton->getOverlayWrapper()->flashMessage(txt, 1, -1);
+	gEnv->frameListener->getOverlayWrapper()->flashMessage(txt, 1, -1);
 	*/
 
 	// actually steer
@@ -6190,9 +6190,9 @@ Vector3 Beam::getGForces()
 
 		float gravity = DEFAULT_GRAVITY;
 
-		if (RoRFrameListener::eflsingleton)
+		if (gEnv->frameListener)
 		{
-			gravity = RoRFrameListener::eflsingleton->getGravity();
+			gravity = gEnv->frameListener->getGravity();
 		}
 
 		float vertacc = std::abs(gravity) - acc.dotProduct(-upv);

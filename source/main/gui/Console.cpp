@@ -561,7 +561,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 
 		} else if(msg == "/quit")
 		{
-			RoRFrameListener::eflsingleton->shutdown_final();
+			gEnv->frameListener->shutdown_final();
 			return;
 
 		} else if(msg == "/save")

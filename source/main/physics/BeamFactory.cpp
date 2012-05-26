@@ -530,16 +530,16 @@ void BeamFactory::setCurrentTruck(int new_truck)
 	int previous_truck = current_truck;
 	current_truck = new_truck;
 
-	if (RoRFrameListener::eflsingleton)
+	if (gEnv->frameListener)
 	{
 		if (previous_truck >= 0 && current_truck >= 0)
-			RoRFrameListener::eflsingleton->changedCurrentTruck(trucks[previous_truck], trucks[current_truck]);
+			gEnv->frameListener->changedCurrentTruck(trucks[previous_truck], trucks[current_truck]);
 		else if (previous_truck >= 0)
-			RoRFrameListener::eflsingleton->changedCurrentTruck(trucks[previous_truck], 0);
+			gEnv->frameListener->changedCurrentTruck(trucks[previous_truck], 0);
 		else if (current_truck >= 0)
-			RoRFrameListener::eflsingleton->changedCurrentTruck(0, trucks[current_truck]);
+			gEnv->frameListener->changedCurrentTruck(0, trucks[current_truck]);
 		else
-			RoRFrameListener::eflsingleton->changedCurrentTruck(0, 0);
+			gEnv->frameListener->changedCurrentTruck(0, 0);
 	}
 }
 
