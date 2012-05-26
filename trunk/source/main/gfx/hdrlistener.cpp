@@ -19,6 +19,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "hdrlistener.h"
 
+#include "Ogre.h"
+
+using namespace Ogre;
+
 void HDRListener::notifyViewportSize(int width, int height)
 {
 	mVpWidth = width;
@@ -117,4 +121,3 @@ void HDRListener::notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &m
 void HDRListener::notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat)
 {
 }
-

@@ -20,13 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of October 2009
 
 #include "DustManager.h"
-#include "Ogre.h"
+
 #include "DustPool.h"
 #include "Settings.h"
-#include "collisions.h"
-#include "BeamData.h"
-
-#include "language.h"
 
 using namespace Ogre;
 
@@ -35,7 +31,6 @@ DustManager::DustManager() : mEnabled(false)
 	setSingleton(this);
 	mEnabled = BSETTING("Particles", true);
 
-	
 	if (mEnabled)
 	{
 		dustpools["dust"]   = new DustPool("tracks/Dust", 20 );
@@ -45,7 +40,6 @@ DustManager::DustManager() : mEnabled(false)
 		dustpools["splash"] = new DustPool("tracks/Splash", 20 );
 		dustpools["ripple"] = new DustPool("tracks/Ripple", 20 );
 	}
-
 }
 
 DustManager::~DustManager()

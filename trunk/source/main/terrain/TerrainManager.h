@@ -32,9 +32,10 @@ public:
 
 	void loadTerrain(Ogre::String filename);
 	
-	inline Collisions *getCollisions() { return collisions; };
-	inline Water *getWater() { return water; };
-	inline Envmap *getEnvmap() { return envmap; };
+	Collisions *getCollisions() { return collisions; };
+	Water *getWater() { return water; };
+	Envmap *getEnvmap() { return envmap; };
+	SkyManager *getSkyManager() { return sky_manager; };
 
 	void setGravity(float value);
 	float getGravity() { return gravity; };

@@ -17,23 +17,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 12th of October 2009
-
-#ifndef GUI_DUSTMANAGER_H__
-#define GUI_DUSTMANAGER_H__
+#ifndef __DustManager_H_
+#define __DustManager_H_
 
 #include "RoRPrerequisites.h"
-#include "Singleton.h"
-#include "OgrePrerequisites.h"
 
 #include "Singleton.h"
-
-
 
 class DustManager : public RoRSingletonNoCreation < DustManager >
 {
 public:
+
 	DustManager();
 	~DustManager();
 
@@ -46,9 +41,9 @@ public:
 	DustPool *getDustPool(Ogre::String name);
 	
 protected:
+
 	bool mEnabled;
 	std::map < Ogre::String , DustPool * > dustpools;
-	//void addNewDustPool(ground_model_t *g);
 };
 
-#endif //GUI_FRICTION_H__
+#endif // __DustManager_H_

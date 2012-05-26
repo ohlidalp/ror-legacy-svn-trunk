@@ -30,10 +30,8 @@ using namespace Ogre;
 // DecalManager
 DecalManager::DecalManager()
 {
-
 	terrain_decals_snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	terrain_decal_count = 0;
-
 }
 
 DecalManager::~DecalManager()
@@ -314,7 +312,11 @@ int DecalManager::parseLine(char *line)
 }
 
 // DecalSpline
-DecalSpline::DecalSpline(SceneManager *manager, SceneNode *parent) : gEnv->ogreSceneManager(manager), mo_spline(0), mo_spline_node(0), snparent(parent), spline(0)
+DecalSpline::DecalSpline(Ogre::SceneNode* parent) : 
+	  mo_spline(0)
+	, mo_spline_node(0)
+	, snparent(parent)
+	, spline(0)
 {
 }
 

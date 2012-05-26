@@ -23,16 +23,19 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #include "Settings.h"
 #include "SkyManager.h"
+#include "TerrainManager.h"
 
 using namespace Ogre;
 
-Envmap::Envmap(bool dynamic, int updateRate /* = 1 */) :
-	  mDebugSceneNode(0)
-	, mInitiated(false)
-	, mIsDynamic(dynamic)
+Envmap::Envmap() :
+	  mInitiated(false)
+	, mIsDynamic(false)
 	, mRound(0)
-	, updateRate(updateRate)
+	, updateRate(1)
 {
+	mIsDynamic = BSETTING("Envmap", false);
+	updateRate = ISETTING("EnvmapUpdateRate", 1);
+
 	TexturePtr texture = TextureManager::getSingleton().createManual("EnvironmentTexture",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_CUBE_MAP, 256, 256, 0,
 		PF_R8G8B8, TU_RENDERTARGET);
@@ -40,18 +43,18 @@ Envmap::Envmap(bool dynamic, int updateRate /* = 1 */) :
 	for (int face=0; face < NUM_FACES; face++)
 	{
 		mRenderTargets[face] = texture->getBuffer(face)->getRenderTarget();
-		mCameras[face] = scm->createCamera("EnvironmentCamera-" + TOSTRING(face));
+		mCameras[face] = gEnv->ogreSceneManager->createCamera("EnvironmentCamera-" + TOSTRING(face));
 		mCameras[face]->setAspectRatio(1.0);
 		mCameras[face]->setProjectionType(PT_PERSPECTIVE);
 		mCameras[face]->setFixedYawAxis(false);
 		mCameras[face]->setFOVy(Degree(90));
 		mCameras[face]->setNearClipDistance(0.1f);
-		mCameras[face]->setFarClipDistance(cam->getFarClipDistance());
+		mCameras[face]->setFarClipDistance(gEnv->ogreCamera->getFarClipDistance());
 
 		Viewport *v = mRenderTargets[face]->addViewport(mCameras[face]);
 		v->setOverlaysEnabled(false);
 		v->setClearEveryFrame(true);
-		v->setBackgroundColour(cam->getViewport()->getBackgroundColour());
+		v->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
 		mRenderTargets[face]->setAutoUpdated(false);
 
 		switch (face)
@@ -186,13 +189,13 @@ Envmap::Envmap(bool dynamic, int updateRate /* = 1 */) :
 			mesh->_setBoundingSphereRadius(10);
 			mesh->load();
 
-			Entity *e = scm->createEntity(mesh->getName());
+			Entity *e = gEnv->ogreSceneManager->createEntity(mesh->getName());
 			e->setCastShadows(false);
 			e->setRenderQueueGroup(RENDER_QUEUE_OVERLAY-1);
 			e->setVisible(true);
 
 			e->setMaterialName("tracks/EnvMapDebug");
-			mDebugSceneNode = new SceneNode(scm);
+			Ogre::SceneNode* mDebugSceneNode = new SceneNode(gEnv->ogreSceneManager);
 			mDebugSceneNode->attachObject(e);
 			mDebugSceneNode->setPosition(Vector3(0, 0, -5));
 			mDebugSceneNode->setFixedYawAxis(true, Vector3::UNIT_Y);
@@ -244,18 +247,18 @@ void Envmap::update(Ogre::Vector3 center, Beam *beam /* = 0 */)
 	{
 		// caelum needs to know that we changed the cameras
 	#ifdef USE_CAELUM
-		if (SkyManager::singletonExists())
+		if (gEnv->terrainManager->getSkyManager())
 		{
-			SkyManager::getSingleton().notifyCameraChanged(mCameras[mRound]);
+			gEnv->terrainManager->getSkyManager()->notifyCameraChanged(mCameras[mRound]);
 		}
 	#endif // USE_CAELUM
 		mRenderTargets[mRound]->update();
 		mRound = (mRound + 1) % NUM_FACES;
 	}
 #ifdef USE_CAELUM
-	if (SkyManager::singletonExists())
+	if (gEnv->terrainManager->getSkyManager())
 	{
-		SkyManager::getSingleton().notifyCameraChanged(mMainCamera);
+		gEnv->terrainManager->getSkyManager()->notifyCameraChanged(gEnv->ogreCamera);
 	}
 #endif // USE_CAELUM
 

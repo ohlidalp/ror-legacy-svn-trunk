@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __HeatHaze_H__
-#define __HeatHaze_H__
+#ifndef __HeatHaze_H_
+#define __HeatHaze_H_
 
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
@@ -26,25 +26,26 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class HeatHazeListener : public Ogre::RenderTargetListener
 {
 public:
+
 	HeatHazeListener();
     void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
-
-private:
 };
 
 class HeatHaze
 {
 public:
+
 	HeatHaze();
 	void setEnable(bool en);
 	void prepareShutdown();
 	void update();
 
 private:
+
 	HeatHazeListener *listener;
 	Ogre::TextureUnitState *tex;
 	Ogre::RenderTexture* rttTex;
 };
 
-#endif // __HeatHaze_H__
+#endif // __HeatHaze_H_

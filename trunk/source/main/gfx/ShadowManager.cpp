@@ -21,16 +21,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 #include "OgreShadowCameraSetup.h"
-
 #include "OgreTerrain.h"
 #include "OgreTerrainMaterialGeneratorA.h"
 
 #include "Settings.h"
 
-//using namespace std;
 using namespace Ogre;
 
-//---------------------------------------------------------------------
 ShadowManager::ShadowManager() : mPSSMSetup()
 {
 	mDepthShadows = true;
@@ -77,8 +74,6 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
-
-
 
 		// General scene setup
 

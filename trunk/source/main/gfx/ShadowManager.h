@@ -18,35 +18,30 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by thomas{AT}thomasfischer{DOT}biz, 5th of July 2010
-#ifndef SHADOWMANAGER_H__
-#define SHADOWMANAGER_H__
+#ifndef __ShadowManager_H_
+#define __ShadowManager_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
-#ifdef USE_CAELUM
-#include "CaelumPrerequisites.h"
-#endif // USE_CAELUM
-#include "OgreCommon.h"
-#include "Singleton.h"
-#include "OgreShadowCameraSetup.h"
 
 #include "OgreTerrain.h"
 
 class ShadowManager
 {
 public:
+
 	ShadowManager();
 	~ShadowManager();
 
 	int changeShadowTechnique(Ogre::ShadowTechnique tech);
 	void loadConfiguration();
 
-	void updatePSSM(Ogre::Terrain* terrain=0);
+	void updatePSSM(Ogre::Terrain* terrain = 0);
 protected:
+
 	Ogre::ShadowCameraSetupPtr mPSSMSetup;
 	bool mDepthShadows;
 
 	void setMaterialSplitPoints(Ogre::String materialName, Ogre::Vector4 &splitPoints);
 };
 
-#endif //SHADOWMANAGER_H__
+#endif // __ShadowManager_H_

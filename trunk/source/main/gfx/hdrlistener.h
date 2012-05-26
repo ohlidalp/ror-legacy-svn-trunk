@@ -21,18 +21,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __HDRListener_H_
 
 #include "RoRPrerequisites.h"
-#include "Ogre.h"
-//#include "OgreCompositorInstance.h"
+
+#include "OgreCompositorInstance.h"
 
 class HDRListener: public Ogre::CompositorInstance::Listener
 {
 public:
+
 	void notifyViewportSize(int width, int height);
 	void notifyCompositor(Ogre::CompositorInstance* instance);
 	virtual void notifyMaterialSetup(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
 	virtual void notifyMaterialRender(Ogre::uint32 pass_id, Ogre::MaterialPtr &mat);
 
 protected:
+
 	int mVpWidth;
 	int mVpHeight;
 	int mBloomSize;
