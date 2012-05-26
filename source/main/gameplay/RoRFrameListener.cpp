@@ -1967,6 +1967,7 @@ bool RoRFrameListener::updateEvents(float dt)
 								} else if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SHIFT_DOWN))
 								{
 									if (shiftmode  > BeamEngine::SEMIAUTO ||
+										shiftmode == BeamEngine::SEMIAUTO  && !arcadeControls ||
 										shiftmode == BeamEngine::SEMIAUTO  && curr_truck->engine->getGear() > 0 ||
 										shiftmode == BeamEngine::AUTOMATIC && curr_truck->engine->getGear() > 1)
 									{
