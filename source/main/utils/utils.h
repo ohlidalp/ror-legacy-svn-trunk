@@ -19,13 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 9th of August 2009
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef __UTILS_H_
+#define __UTILS_H_
 
 #include "RoRPrerequisites.h"
 
-#include <OgrePrerequisites.h>
-#include <OgreUTFString.h>
 #include <OgreDataStream.h>
 
 #ifdef USE_MYGUI
@@ -136,7 +134,8 @@ inline Ogre::String getThreadIDAsString()
 
 Ogre::Real Round(Ogre::Real value, unsigned short ndigits = 0);
 
-// generates a hash from a Datastream, beware, its loading the whole thing into a bufer, so its not suited for big files
+// generates a hash from a DataStream, beware, its loading the whole thing into a buffer, so its not suited for big files
 Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds);
 Ogre::String generateHashFromFile(Ogre::String filename);
-#endif //UTILS_H_
+
+#endif // __UTILS_H_

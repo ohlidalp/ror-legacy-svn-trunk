@@ -19,17 +19,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "utils.h"
 
-#include "RoRPrerequisites.h"
+#include "Ogre.h"
 #include "rornet.h"
 #include "RoRVersion.h"
+#include "sha1.h"
 
 #ifndef WIN32
 #include <iconv.h>
 #endif //WIN32
 
-#include "sha1.h"
-
-#include "Ogre.h"
 using namespace Ogre;
 
 String hexdump(void *pAddressIn, long  lSize)
@@ -371,7 +369,7 @@ Real Round(Real value, unsigned short ndigits /* = 0 */)
 	return value;
 }
 
-Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds)
+String generateHashFromDataStream(DataStreamPtr &ds)
 {
 	// copy whole file into a buffer
 	uint8_t *buf = 0;
@@ -398,7 +396,7 @@ Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds)
 	return String(hash_result);
 }
 
-Ogre::String generateHashFromFile(Ogre::String filename)
+String generateHashFromFile(String filename)
 {
 	// no exception handling in here
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
