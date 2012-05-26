@@ -17,16 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef IHEightFinder_H__
-#define IHEightFinder_H__
+#ifndef __I_HeightFinder_H_
+#define __I_HeightFinder_H_
 
 #include "RoRPrerequisites.h"
 
 class IHeightFinder
 {
 public:
+
 	virtual float getHeightAt(float x, float z) = 0;
 	virtual Ogre::Vector3 getNormalAt(float x, float y, float z, float precision = 0.1f) = 0;
 };
 
-#endif // IHEightFinder_H__
+#endif // __I_HeightFinder_H_
