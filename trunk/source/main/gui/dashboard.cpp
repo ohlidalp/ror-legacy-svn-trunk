@@ -35,7 +35,7 @@ Dashboard::Dashboard() :
 	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 
-	mDashCam = gEnv->ogreSceneManager->createCamera("DashCam");
+	mDashCam = globalEnvironment->ogreSceneManager->createCamera("DashCam");
 	mDashCam->setNearClipDistance(1.0);
 	mDashCam->setFarClipDistance(10.0);
 	mDashCam->setPosition(Vector3(0.0, -10000.0, 0.0));
@@ -50,7 +50,7 @@ Dashboard::Dashboard() :
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
 	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("dashtexture");
 
-	mDashboardListener = new DashboardListener(gEnv->ogreSceneManager);
+	mDashboardListener = new DashboardListener(globalEnvironment->ogreSceneManager);
 
 	rttTex->addListener(mDashboardListener);
 

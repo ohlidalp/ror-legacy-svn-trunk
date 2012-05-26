@@ -174,7 +174,7 @@ void Skidmark::addObject(Vector3 start, String texture)
 	skid.points.resize(lenght);
 	skid.faceSizes.resize(lenght);
 	skid.groundTexture.resize(lenght);
-	skid.obj = gEnv->ogreSceneManager->createManualObject("skidmark" + TOSTRING(instanceCounter++));
+	skid.obj = globalEnvironment->ogreSceneManager->createManualObject("skidmark" + TOSTRING(instanceCounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
@@ -202,7 +202,7 @@ void Skidmark::limitObjects()
 		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
 		objects.front().faceSizes.clear();
-		gEnv->ogreSceneManager->destroyManualObject(objects.front().obj);
+		globalEnvironment->ogreSceneManager->destroyManualObject(objects.front().obj);
 		objects.pop();
 	}
 }
@@ -326,7 +326,7 @@ void Skidmark::updatePoint()
 	/*
 	// debug code: adds boxes to the average point
 	SceneNode *sn = mNode->getParentSceneNode()->createChildSceneNode();
-	sn->attachObject(gEnv->ogreSceneManager->createEntity("addPointTRACK"+TOSTRING(objects.back().lastPointAv) +TOSTRING(axis), "beam.mesh"));
+	sn->attachObject(globalEnvironment->ogreSceneManager->createEntity("addPointTRACK"+TOSTRING(objects.back().lastPointAv) +TOSTRING(axis), "beam.mesh"));
 	sn->setPosition(thisPointAV);
 	sn->setScale(0.1f, 0.01f, 0.1f);
 	*/

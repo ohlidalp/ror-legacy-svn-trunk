@@ -95,27 +95,27 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 		mRotY -= mRotScale;
 	}
 
-	gEnv->ogreCamera->yaw(mRotX);
-	gEnv->ogreCamera->pitch(mRotY);
+	globalEnvironment->ogreCamera->yaw(mRotX);
+	globalEnvironment->ogreCamera->pitch(mRotY);
 
-	Vector3 camPosition = gEnv->ogreCamera->getPosition() + gEnv->ogreCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
+	Vector3 camPosition = globalEnvironment->ogreCamera->getPosition() + globalEnvironment->ogreCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
-	if ( gEnv->terrainManager->getHeightFinder() )
+	if ( globalEnvironment->terrainManager->getHeightFinder() )
 	{
-		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
+		float h = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
 
 		camPosition.y = std::max(h, camPosition.y);
 	}
 
-	gEnv->ogreCamera->setPosition(camPosition);
+	globalEnvironment->ogreCamera->setPosition(camPosition);
 }
 
 bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
-	gEnv->ogreCamera->yaw(Degree(-ms.X.rel * 0.13f));
-	gEnv->ogreCamera->pitch(Degree(-ms.Y.rel * 0.13f));
+	globalEnvironment->ogreCamera->yaw(Degree(-ms.X.rel * 0.13f));
+	globalEnvironment->ogreCamera->pitch(Degree(-ms.Y.rel * 0.13f));
 
 #ifdef USE_MYGUI
 	MyGUI::PointerManager::getInstance().setVisible(false);

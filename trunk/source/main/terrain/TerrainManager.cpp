@@ -164,11 +164,11 @@ void TerrainManager::initSubSystems()
 
 void TerrainManager::initCamera()
 {
-	gEnv->ogreCamera->getViewport()->setBackgroundColour(ambient_color);
+	globalEnvironment->ogreCamera->getViewport()->setBackgroundColour(ambient_color);
 
-	//gEnv->ogreCamera->setFarClipDistance(0);
+	//globalEnvironment->ogreCamera->setFarClipDistance(0);
 
-	gEnv->ogreCamera->setPosition(start_position);
+	globalEnvironment->ogreCamera->setPosition(start_position);
 }
 
 void TerrainManager::initSkySubSystem()
@@ -180,7 +180,7 @@ void TerrainManager::initSkySubSystem()
 	if (useCaelum)
 	{
 		sky_manager = new SkyManager();
-		gEnv->sky = sky_manager;
+		globalEnvironment->sky = sky_manager;
 
 		// try to load caelum config
 		String caelumConfig = mTerrainConfig.getSetting("CaelumConfigFile");
@@ -203,11 +203,11 @@ void TerrainManager::initSkySubSystem()
 		if (!sandStormConfig.empty())
 		{
 			// use custom
-			gEnv->ogreSceneManager->setSkyBox(true, sandStormConfig, 100, true);
+			globalEnvironment->ogreSceneManager->setSkyBox(true, sandStormConfig, 100, true);
 		} else
 		{
 			// use default
-			gEnv->ogreSceneManager->setSkyBox(true, "tracks/skyboxcol", 100, true);
+			globalEnvironment->ogreSceneManager->setSkyBox(true, "tracks/skyboxcol", 100, true);
 		}
 	}
 }
@@ -222,7 +222,7 @@ void TerrainManager::initLight()
 		// screw caelum, we will roll our own light
 
 		// Create a light
-		main_light = gEnv->ogreSceneManager->createLight("MainLight");
+		main_light = globalEnvironment->ogreSceneManager->createLight("MainLight");
 		//directional light for shadow
 		main_light->setType(Light::LT_DIRECTIONAL);
 		main_light->setDirection(0.785, -0.423, 0.453);
@@ -234,7 +234,7 @@ void TerrainManager::initLight()
 
 void TerrainManager::initFog()
 {
-	gEnv->ogreSceneManager->setFog(FOG_LINEAR, ambient_color,  0, farclip * 0.7, farclip * 0.9);
+	globalEnvironment->ogreSceneManager->setFog(FOG_LINEAR, ambient_color,  0, farclip * 0.7, farclip * 0.9);
 }
 
 void TerrainManager::initVegetation()
@@ -267,7 +267,7 @@ void TerrainManager::initVegetation()
 
 void TerrainManager::initHDR()
 {
-	Viewport *vp = gEnv->ogreCamera->getViewport();
+	Viewport *vp = globalEnvironment->ogreCamera->getViewport();
 	CompositorInstance *instance = CompositorManager::getSingleton().addCompositor(vp, "HDR", 0);
 	CompositorManager::getSingleton().setCompositorEnabled(vp, "HDR", true);
 
@@ -280,8 +280,8 @@ void TerrainManager::initHDR()
 
 void TerrainManager::initGlow()
 {
-	CompositorManager::getSingleton().addCompositor(gEnv->ogreCamera->getViewport(), "Glow");
-	CompositorManager::getSingleton().setCompositorEnabled(gEnv->ogreCamera->getViewport(), "Glow", true);
+	CompositorManager::getSingleton().addCompositor(globalEnvironment->ogreCamera->getViewport(), "Glow");
+	CompositorManager::getSingleton().setCompositorEnabled(globalEnvironment->ogreCamera->getViewport(), "Glow", true);
 	GlowMaterialListener *gml = new GlowMaterialListener();
 	MaterialManager::getSingleton().addListener(gml);
 }
@@ -371,24 +371,24 @@ void TerrainManager::initMotionBlur()
 			}
 		}
 	}
-	CompositorManager::getSingleton().addCompositor(gEnv->ogreCamera->getViewport(),"MotionBlur");
-	CompositorManager::getSingleton().setCompositorEnabled(gEnv->ogreCamera->getViewport(), "MotionBlur", true);
+	CompositorManager::getSingleton().addCompositor(globalEnvironment->ogreCamera->getViewport(),"MotionBlur");
+	CompositorManager::getSingleton().setCompositorEnabled(globalEnvironment->ogreCamera->getViewport(), "MotionBlur", true);
 }
 
 void TerrainManager::initSunburn()
 {
-	CompositorManager::getSingleton().addCompositor(gEnv->ogreCamera->getViewport(),"Sunburn");
-	CompositorManager::getSingleton().setCompositorEnabled(gEnv->ogreCamera->getViewport(), "Sunburn", true);
+	CompositorManager::getSingleton().addCompositor(globalEnvironment->ogreCamera->getViewport(),"Sunburn");
+	CompositorManager::getSingleton().setCompositorEnabled(globalEnvironment->ogreCamera->getViewport(), "Sunburn", true);
 }
 
 void TerrainManager::fixCompositorClearColor()
 {
 	//hack
 	// now with extensive error checking
-	if (CompositorManager::getSingleton().hasCompositorChain(gEnv->ogreCamera->getViewport()))
+	if (CompositorManager::getSingleton().hasCompositorChain(globalEnvironment->ogreCamera->getViewport()))
 	{
-		//	//CompositorManager::getSingleton().getCompositorChain(gEnv->ogreCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fade_color);
-		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(gEnv->ogreCamera->getViewport())->_getOriginalSceneCompositor();
+		//	//CompositorManager::getSingleton().getCompositorChain(globalEnvironment->ogreCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fade_color);
+		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(globalEnvironment->ogreCamera->getViewport())->_getOriginalSceneCompositor();
 		if (co)
 		{
 			CompositionTechnique *ct = co->getTechnique();
@@ -447,7 +447,7 @@ void TerrainManager::loadTerrainObjects()
 void TerrainManager::initCollisions()
 {
 	collisions = new Collisions();
-	gEnv->collisions = collisions;
+	globalEnvironment->collisions = collisions;
 }
 
 void TerrainManager::initScripting()

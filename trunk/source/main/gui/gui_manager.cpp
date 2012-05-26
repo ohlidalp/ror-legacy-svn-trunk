@@ -24,22 +24,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "Console.h"
-#include "RTTLayer.h"
-#include "RoRWindowEventUtilities.h"
-#include "Settings.h"
 #include "language.h"
+#include "RoRWindowEventUtilities.h"
+#include "RTTLayer.h"
+#include "Settings.h"
+#include "TerrainManager.h"
 
 #include <MyGUI_OgrePlatform.h>
 
 using namespace Ogre;
 
-GUIManager::GUIManager(Root *root, SceneManager *mgr, RenderWindow *win) :
+GUIManager::GUIManager() :
+	mExit(false),
 	mGUI(nullptr),
 	mPlatform(nullptr),
-	mRoot(root),
-	mSceneManager(mgr),
-	mWindow(win),
-	mExit(false),
 	mResourceFileName("MyGUI_Core.xml")
 {
 	setSingleton(this);
@@ -52,10 +50,10 @@ GUIManager::~GUIManager()
 
 bool GUIManager::create()
 {
-	mRoot->addFrameListener(this);
-	RoRWindowEventUtilities::addWindowEventListener(mWindow, this);
+	globalEnvironment->ogreRoot->addFrameListener(this);
+	RoRWindowEventUtilities::addWindowEventListener(globalEnvironment->ogreRenderWindow, this);
 
-	windowResized(mWindow);
+	windowResized();
 	createGui();
 #ifdef WIN32
 	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
@@ -78,7 +76,7 @@ void GUIManager::createGui()
 {
 	String gui_logfilename = SSETTING("Log Path", "") + "mygui.log";
 	mPlatform = new MyGUI::OgrePlatform();
-	mPlatform->initialise(mWindow, mSceneManager, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
+	mPlatform->initialise(globalEnvironment->ogreRenderWindow, globalEnvironment->ogreSceneManager, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
 
 	// empty init
@@ -93,7 +91,7 @@ void GUIManager::createGui()
 	MyGUI::ResourceManager::getInstance().load(LanguageEngine::getSingleton().getMyGUIFontConfigFilename());
 
 	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)
-	MyGUI::InputManager::getInstance().injectMouseMove(mWindow->getWidth()*0.5f, mWindow->getHeight()*0.5f, 0);
+	MyGUI::InputManager::getInstance().injectMouseMove(globalEnvironment->ogreRenderWindow->getWidth()*0.5f, globalEnvironment->ogreRenderWindow->getHeight()*0.5f, 0);
 
 	// now find that font texture and save it - for debugging purposes
 	/*
@@ -156,10 +154,10 @@ bool GUIManager::frameEnded(const FrameEvent& evt)
 	return true;
 };
 
-void GUIManager::windowResized(RenderWindow* _rw)
+void GUIManager::windowResized()
 {
-	int width = (int)_rw->getWidth();
-	int height = (int)_rw->getHeight();
+	int width = (int)globalEnvironment->ogreRenderWindow->getWidth();
+	int height = (int)globalEnvironment->ogreRenderWindow->getHeight();
 	setInputViewSize(width, height);
 
 	BeamFactory *bf = BeamFactory::getSingletonPtr();
@@ -169,7 +167,7 @@ void GUIManager::windowResized(RenderWindow* _rw)
 	if(c) c->resized();
 }
 
-void GUIManager::windowClosed(RenderWindow* _rw)
+void GUIManager::windowClosed()
 {
 	mExit = true;
 }

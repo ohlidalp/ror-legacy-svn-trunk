@@ -70,7 +70,7 @@ void TruckHUD::checkOverflow(OverlayElement* e)
 	}
 }
 
-bool TruckHUD::update(float dt, Beam *truck, SceneManager *gEnv->ogreSceneManager, Camera* mCamera, RenderWindow* mWindow, bool visible)
+bool TruckHUD::update(float dt, Beam *truck, SceneManager *globalEnvironment->ogreSceneManager, Camera* mCamera, RenderWindow* mWindow, bool visible)
 {
 	OverlayElement *overlayElement = 0;
 

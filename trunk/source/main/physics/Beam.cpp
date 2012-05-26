@@ -99,7 +99,7 @@ Beam::Beam(int tnum , Vector3 pos , Quaternion rot , const char* fname , bool ne
 	, cameranodeacc(Vector3::ZERO)
 	, cameranodecount(0)
 	, canwork(1)
-	, collisions(gEnv->collisions)
+	, collisions(globalEnvironment->collisions)
 	, cparticle_mode(false)
 	, currentScale(1)
 	, currentcamera(-1) // -1 = external
@@ -311,17 +311,17 @@ Beam::Beam(int tnum , Vector3 pos , Quaternion rot , const char* fname , bool ne
 	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
 	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
 
-	submesh_ground_model = gEnv->collisions->defaultgm;
+	submesh_ground_model = globalEnvironment->collisions->defaultgm;
 
 	realtruckfilename = String(fname);
 	sprintf(truckname, "t%i", tnum);
 	
 	strcpy(uniquetruckid,"-1");
 
-	simpleSkeletonNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	simpleSkeletonNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(simpleSkeletonNode);
 	
-	beamsRoot=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	beamsRoot=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(netLabelNode);
 	// skidmark stuff
 	useSkidmarks = BSETTING("Skidmarks", false);
@@ -513,7 +513,7 @@ Beam::~Beam()
 		{
 			if (!deletion_sceneNodes[i]) continue;
 			deletion_sceneNodes[i]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(deletion_sceneNodes[i]);
+			globalEnvironment->ogreSceneManager->destroySceneNode(deletion_sceneNodes[i]);
 
 			deletion_sceneNodes[i]=0;
 		}
@@ -528,7 +528,7 @@ Beam::~Beam()
 		if (wings[i].cnode)
 		{
 			wings[i].cnode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(wings[i].cnode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(wings[i].cnode);
 		}
 	}
 
@@ -565,7 +565,7 @@ Beam::~Beam()
 		if (vwheels[i].cnode)
 		{
 			vwheels[i].cnode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(vwheels[i].cnode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(vwheels[i].cnode);
 		}
 	}
 
@@ -575,37 +575,37 @@ Beam::~Beam()
 		if (props[i].bbsnode[0])
 		{
 			props[i].bbsnode[0]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[0]);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].bbsnode[0]);
 		}
 		if (props[i].bbsnode[1])
 		{
 			props[i].bbsnode[1]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[1]);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].bbsnode[1]);
 		}
 		if (props[i].bbsnode[2])
 		{
 			props[i].bbsnode[2]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[2]);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].bbsnode[2]);
 		}
 		if (props[i].bbsnode[3])
 		{
 			props[i].bbsnode[3]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[3]);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].bbsnode[3]);
 		}
 		if (props[i].snode)
 		{
 			props[i].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].snode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].snode);
 		}
 		if (props[i].wheel)
 		{
 			props[i].wheel->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].wheel);
+			globalEnvironment->ogreSceneManager->destroySceneNode(props[i].wheel);
 		}
-		if (props[i].light[0]) gEnv->ogreSceneManager->destroyLight(props[i].light[0]);
-		if (props[i].light[1]) gEnv->ogreSceneManager->destroyLight(props[i].light[1]);
-		if (props[i].light[2]) gEnv->ogreSceneManager->destroyLight(props[i].light[2]);
-		if (props[i].light[3]) gEnv->ogreSceneManager->destroyLight(props[i].light[3]);
+		if (props[i].light[0]) globalEnvironment->ogreSceneManager->destroyLight(props[i].light[0]);
+		if (props[i].light[1]) globalEnvironment->ogreSceneManager->destroyLight(props[i].light[1]);
+		if (props[i].light[2]) globalEnvironment->ogreSceneManager->destroyLight(props[i].light[2]);
+		if (props[i].light[3]) globalEnvironment->ogreSceneManager->destroyLight(props[i].light[3]);
 	}
 
 	// delete flares
@@ -614,9 +614,9 @@ Beam::~Beam()
 		if (flares[i].snode)
 		{
 			flares[i].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(flares[i].snode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(flares[i].snode);
 		}
-		if (flares[i].light) gEnv->ogreSceneManager->destroyLight(flares[i].light);
+		if (flares[i].light) globalEnvironment->ogreSceneManager->destroyLight(flares[i].light);
 
 	}
 
@@ -626,13 +626,13 @@ Beam::~Beam()
 		if (it->smokeNode)
 		{
 			it->smokeNode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(it->smokeNode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(it->smokeNode);
 		}
 		if (it->smoker)
 		{
 			it->smoker->removeAllAffectors();
 			it->smoker->removeAllEmitters();
-			gEnv->ogreSceneManager->destroyParticleSystem(it->smoker);
+			globalEnvironment->ogreSceneManager->destroyParticleSystem(it->smoker);
 		}
 	}
 
@@ -642,13 +642,13 @@ Beam::~Beam()
 		if (cparticles[free_cparticle].snode)
 		{
 			cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(cparticles[free_cparticle].snode);
+			globalEnvironment->ogreSceneManager->destroySceneNode(cparticles[free_cparticle].snode);
 		}
 		if (cparticles[free_cparticle].psys)
 		{
 			cparticles[free_cparticle].psys->removeAllAffectors();
 			cparticles[free_cparticle].psys->removeAllEmitters();
-			gEnv->ogreSceneManager->destroyParticleSystem(cparticles[free_cparticle].psys);
+			globalEnvironment->ogreSceneManager->destroyParticleSystem(cparticles[free_cparticle].psys);
 		}
 
 	}
@@ -660,7 +660,7 @@ Beam::~Beam()
 		if (beams[i].mSceneNode)
 		{
 			beams[i].mSceneNode->removeAndDestroyAllChildren();
-			//gEnv->ogreSceneManager->destroySceneNode(beams[i].mSceneNode);
+			//globalEnvironment->ogreSceneManager->destroySceneNode(beams[i].mSceneNode);
 		}
 	}
 
@@ -761,7 +761,7 @@ void Beam::scaleTruck(float value)
 void Beam::initSimpleSkeleton()
 {
 	// create
-	simpleSkeletonManualObject =  gEnv->ogreSceneManager->createManualObject();
+	simpleSkeletonManualObject =  globalEnvironment->ogreSceneManager->createManualObject();
 
 	simpleSkeletonManualObject->estimateIndexCount(free_beam*2);
 	simpleSkeletonManualObject->setCastShadows(false);
@@ -1293,7 +1293,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 				LOG("Node " + TOSTRING(i) +" mass ("+TOSTRING(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ TOSTRING(minimass) +"kg).");
 			nodes[i].mass=minimass;
 		}
-		nodes[i].gravimass=Vector3(0, gEnv->terrainManager->getGravity() * nodes[i].mass, 0);
+		nodes[i].gravimass=Vector3(0, globalEnvironment->terrainManager->getGravity() * nodes[i].mass, 0);
 	}
 
     // update inverted mass cache
@@ -1678,7 +1678,7 @@ void Beam::resetAngle(float rot)
 
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
 {
-	if (!gEnv->terrainManager->getHeightFinder()) return;
+	if (!globalEnvironment->terrainManager->getHeightFinder()) return;
 	// horizontal displacement
 	Vector3 offset = Vector3(px, -iPosition.y, pz) - nodes[0].AbsPosition;
 	for (int i=0; i<free_node; i++)
@@ -1689,10 +1689,10 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	float minoffset=0.0;
 	if (miny<-9000)
 	{
-		minoffset=nodes[0].AbsPosition.y-gEnv->terrainManager->getHeightFinder()->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
+		minoffset=nodes[0].AbsPosition.y-globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
 		for (int i=1; i<free_node; i++)
 		{
-			Vector3 pos=Vector3(nodes[i].AbsPosition.x,gEnv->terrainManager->getHeightFinder()->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
+			Vector3 pos=Vector3(nodes[i].AbsPosition.x,globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
 			//if (water && pos.y<water->getHeight()) pos.y=water->getHeight();
 			collisions->collisionCorrect(&pos);
 			float offset=nodes[i].AbsPosition.y-pos.y;
@@ -4247,12 +4247,12 @@ void Beam::setDetailLevel(int v)
 		if (detailLevel == 0 && v == 1)
 		{
 			// detach
-			gEnv->ogreSceneManager->getRootSceneNode()->removeChild(beamsRoot);
+			globalEnvironment->ogreSceneManager->getRootSceneNode()->removeChild(beamsRoot);
 		}
 		if (detailLevel == 1 && v == 0)
 		{
 			// attach
-			gEnv->ogreSceneManager->getRootSceneNode()->addChild(beamsRoot);
+			globalEnvironment->ogreSceneManager->getRootSceneNode()->addChild(beamsRoot);
 		}
 		detailLevel = v;
 	}
@@ -5128,14 +5128,14 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::White);
 			t.txt->setRenderingDistance(2);
 
-			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			t.node = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 			t.node->setPosition(nodes[i].smoothpos);
 			t.node->setScale(Vector3(0.5,0.5,0.5));
 
 			// collision nodes debug, also mimics as node visual
 			SceneNode *s = t.node->createChildSceneNode();
-			Entity *b = gEnv->ogreSceneManager->createEntity(entName, "sphere.mesh");
+			Entity *b = globalEnvironment->ogreSceneManager->createEntity(entName, "sphere.mesh");
 			b->setMaterialName("tracks/transgreen");
 			s->attachObject(b);
 			float f = 0.005f;
@@ -5172,7 +5172,7 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::Black);
 			t.txt->setRenderingDistance(2);
 
-			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			t.node = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 
 			Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
@@ -5361,7 +5361,7 @@ void Beam::updateNetworkInfo()
 		}
 		*/
 
-		netLabelNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		netLabelNode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		netLabelNode->attachObject(netMT);
 		netLabelNode->setPosition(position);
 		netLabelNode->setVisible(true);
@@ -5655,8 +5655,8 @@ void Beam::updateAI(float dt)
 	static SceneNode *n = 0;
 	if (!n)
 	{
-		Entity *e = gEnv->ogreSceneManager->createEntity("axes.mesh");
-		n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		Entity *e = globalEnvironment->ogreSceneManager->createEntity("axes.mesh");
+		n = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(e);
 	}
 	n->setPosition(mAgentPosition);
@@ -5686,7 +5686,7 @@ void Beam::updateAI(float dt)
 
 	/*
 	String txt = "AI:"+TOSTRING(mSteeringForce);
-	gEnv->frameListener->getOverlayWrapper()->flashMessage(txt, 1, -1);
+	globalEnvironment->frameListener->getOverlayWrapper()->flashMessage(txt, 1, -1);
 	*/
 
 	// actually steer
@@ -5937,7 +5937,7 @@ void Beam::updateDashBoards(float &dt)
 			if (low_node != -1)
 			{
 				Vector3 pos = nodes[low_node].AbsPosition;
-				float depth =  pos.y - gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
+				float depth =  pos.y - globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 				dash->setFloat(DD_WATER_DEPTH, depth);
 			}
 		}
@@ -6182,9 +6182,9 @@ Vector3 Beam::getGForces()
 
 		float gravity = DEFAULT_GRAVITY;
 
-		if (gEnv->terrainManager)
+		if (globalEnvironment->terrainManager)
 		{
-			gravity = gEnv->terrainManager->getGravity();
+			gravity = globalEnvironment->terrainManager->getGravity();
 		}
 
 		float vertacc = std::abs(gravity) - acc.dotProduct(-upv);

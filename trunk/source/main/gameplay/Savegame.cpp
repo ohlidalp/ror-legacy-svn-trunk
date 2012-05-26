@@ -73,36 +73,36 @@ int Savegame::save(Ogre::String &filename)
 
 		{
 			// and generic things like character and camera
-			if(gEnv->player)
+			if(globalEnvironment->player)
 			{
-				Vector3 pos = gEnv->player->getPosition();
+				Vector3 pos = globalEnvironment->player->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if(gEnv->ogreCamera)
+			if(globalEnvironment->ogreCamera)
 			{
-				Vector3 pos = gEnv->ogreCamera->getPosition();
+				Vector3 pos = globalEnvironment->ogreCamera->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}
 			
 			// TODO: FIX savegame camera integration
-			//h.camRotX = gEnv->frameListener->camRotX.valueRadians();
-			//h.camRotY = gEnv->frameListener->camRotY.valueRadians();
-			//h.camDist = gEnv->frameListener->camDist;
+			//h.camRotX = globalEnvironment->frameListener->camRotX.valueRadians();
+			//h.camRotY = globalEnvironment->frameListener->camRotY.valueRadians();
+			//h.camDist = globalEnvironment->frameListener->camDist;
 
 
-			//memcpy(&h.cam_ideal_pos, gEnv->frameListener->camIdealPosition.ptr(), sizeof(float) * 3);
+			//memcpy(&h.cam_ideal_pos, globalEnvironment->frameListener->camIdealPosition.ptr(), sizeof(float) * 3);
 
-			//h.pushcamRotX = gEnv->frameListener->pushcamRotX.valueRadians();
-			//h.pushcamRotY = gEnv->frameListener->pushcamRotY.valueRadians();
-			//h.mMoveScale  = gEnv->frameListener->mMoveScale;
-			//h.mRotScale   = gEnv->frameListener->mRotScale.valueRadians();
+			//h.pushcamRotX = globalEnvironment->frameListener->pushcamRotX.valueRadians();
+			//h.pushcamRotY = globalEnvironment->frameListener->pushcamRotY.valueRadians();
+			//h.mMoveScale  = globalEnvironment->frameListener->mMoveScale;
+			//h.mRotScale   = globalEnvironment->frameListener->mRotScale.valueRadians();
 
-			//memcpy(&h.lastPosition, gEnv->frameListener->lastPosition.ptr(), sizeof(float) * 3);
+			//memcpy(&h.lastPosition, globalEnvironment->frameListener->lastPosition.ptr(), sizeof(float) * 3);
 
-			//h.cameramode     = gEnv->frameListener->cameramode;
-			//h.lastcameramode = gEnv->frameListener->lastcameramode;
+			//h.cameramode     = globalEnvironment->frameListener->cameramode;
+			//h.lastcameramode = globalEnvironment->frameListener->lastcameramode;
 		}
 
 		// write header to file
@@ -248,33 +248,33 @@ int Savegame::load(Ogre::String &filename)
 	// restore generic things: characer and camera
 	{
 		// and generic things like character and camera
-		if(gEnv->player)
+		if(globalEnvironment->player)
 		{
-			gEnv->player->setPosition(Vector3(h.player_pos));
+			globalEnvironment->player->setPosition(Vector3(h.player_pos));
 		}
 
 		// TODO: FIX savegame camera integration
 		/*
-		if(gEnv->frameListener->getCamera())
+		if(globalEnvironment->frameListener->getCamera())
 		{
-			gEnv->frameListener->getCamera()->setPosition(Vector3(h.cam_pos));
+			globalEnvironment->frameListener->getCamera()->setPosition(Vector3(h.cam_pos));
 		}
 
-		gEnv->frameListener->camRotX = Radian(h.camRotX);
-		gEnv->frameListener->camRotY = Radian(h.camRotY);
-		gEnv->frameListener->camDist = h.camDist;
+		globalEnvironment->frameListener->camRotX = Radian(h.camRotX);
+		globalEnvironment->frameListener->camRotY = Radian(h.camRotY);
+		globalEnvironment->frameListener->camDist = h.camDist;
 
-		gEnv->frameListener->camIdealPosition = Vector3(h.cam_ideal_pos);
+		globalEnvironment->frameListener->camIdealPosition = Vector3(h.cam_ideal_pos);
 
-		gEnv->frameListener->pushcamRotX = Radian(h.pushcamRotX);
-		gEnv->frameListener->pushcamRotY = Radian(h.pushcamRotY);
-		gEnv->frameListener->mMoveScale  = h.mMoveScale;
-		gEnv->frameListener->mRotScale   = Radian(h.mRotScale);
+		globalEnvironment->frameListener->pushcamRotX = Radian(h.pushcamRotX);
+		globalEnvironment->frameListener->pushcamRotY = Radian(h.pushcamRotY);
+		globalEnvironment->frameListener->mMoveScale  = h.mMoveScale;
+		globalEnvironment->frameListener->mRotScale   = Radian(h.mRotScale);
 
-		gEnv->frameListener->lastPosition = Vector3(h.lastPosition);
+		globalEnvironment->frameListener->lastPosition = Vector3(h.lastPosition);
 
-		gEnv->frameListener->cameramode = h.cameramode;
-		gEnv->frameListener->lastcameramode = h.lastcameramode;
+		globalEnvironment->frameListener->cameramode = h.cameramode;
+		globalEnvironment->frameListener->lastcameramode = h.lastcameramode;
 		*/
 	}
 

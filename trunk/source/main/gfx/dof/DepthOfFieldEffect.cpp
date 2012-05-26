@@ -42,8 +42,8 @@ DepthOfFieldEffect::DepthOfFieldEffect() :
 	, mFocalDepth(100.0)
 	, mNearDepth(10.0)
 {
-	mWidth = gEnv->ogreViewPort->getActualWidth();
-	mHeight = gEnv->ogreViewPort->getActualHeight();
+	mWidth = globalEnvironment->ogreViewPort->getActualWidth();
+	mHeight = globalEnvironment->ogreViewPort->getActualHeight();
 	
 	mDepthTexture.setNull();
 	mDepthMaterial.setNull();
@@ -90,7 +90,7 @@ void DepthOfFieldEffect::createDepthRenderTexture()
 
 	// Get its render target and add a viewport to it
 	mDepthTarget = mDepthTexture->getBuffer()->getRenderTarget();
-	mDepthViewport = mDepthTarget->addViewport(gEnv->ogreCamera);
+	mDepthViewport = mDepthTarget->addViewport(globalEnvironment->ogreCamera);
 
 	// Register 'this' as a render target listener
 	mDepthTarget->addListener(this);
@@ -141,7 +141,7 @@ void DepthOfFieldEffect::destroyDepthRenderTexture()
 
 void DepthOfFieldEffect::addCompositor()
 {
-	mCompositor = CompositorManager::getSingleton().addCompositor(gEnv->ogreViewPort, "DoF_Compositor_test");
+	mCompositor = CompositorManager::getSingleton().addCompositor(globalEnvironment->ogreViewPort, "DoF_Compositor_test");
 	mCompositor->addListener(this);
 
 	mCompositor->setEnabled(true);
@@ -152,7 +152,7 @@ void DepthOfFieldEffect::removeCompositor()
 	mCompositor->setEnabled(false);
 
 	mCompositor->removeListener(this);
-	CompositorManager::getSingleton().removeCompositor(gEnv->ogreViewPort, "DoF_Compositor_test");
+	CompositorManager::getSingleton().removeCompositor(globalEnvironment->ogreViewPort, "DoF_Compositor_test");
 }
 
 void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& material)
@@ -162,8 +162,8 @@ void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& materia
 	case BlurPass:
 		{
 			//float pixelSize[2] = {
-			//	1.0f / (gEnv->ogreViewPort->getActualWidth() / BLUR_DIVISOR),
-			//	1.0f / (gEnv->ogreViewPort->getActualHeight() / BLUR_DIVISOR)};
+			//	1.0f / (globalEnvironment->ogreViewPort->getActualWidth() / BLUR_DIVISOR),
+			//	1.0f / (globalEnvironment->ogreViewPort->getActualHeight() / BLUR_DIVISOR)};
 
 			// Adjust fragment program parameters
 			Ogre::Vector3 ps = Ogre::Vector3(1.0f / (mWidth / BLUR_DIVISOR),1.0f / (mHeight / BLUR_DIVISOR), 1.0f);
@@ -242,13 +242,13 @@ DOFManager::DOFManager()
 	targetFocalDistance = 5;
 
 	mDepthOfFieldEffect = new DepthOfFieldEffect();
-	mLens = new Lens(gEnv->ogreCamera->getFOVy(), 1);
+	mLens = new Lens(globalEnvironment->ogreCamera->getFOVy(), 1);
 	mLens->setFocalDistance(5);
 	//mLens->setFStop(10);
 //	mDepthOfFieldEffect->setEnabled(false);
-	gEnv->ogreRoot->addFrameListener(this);
+	globalEnvironment->ogreRoot->addFrameListener(this);
 
-	mRaySceneQuery = gEnv->ogreSceneManager->createRayQuery(Ogre::Ray());
+	mRaySceneQuery = globalEnvironment->ogreSceneManager->createRayQuery(Ogre::Ray());
 	mRaySceneQuery->setSortByDistance(true);
 	//mRaySceneQuery->setQueryMask(queryMask);
 
@@ -260,8 +260,8 @@ DOFManager::DOFManager()
 		Overlay* overlay = OverlayManager::getSingleton().getByName("DoF_DepthDebugOverlay");
 		overlay->show();
 
-		debugNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-		Entity *ent = gEnv->ogreSceneManager->createEntity("sphere.mesh");
+		debugNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		Entity *ent = globalEnvironment->ogreSceneManager->createEntity("sphere.mesh");
 		debugNode->attachObject(ent);
 		debugNode->setScale(0.5, 0.5, 0.5);
 	}
@@ -274,7 +274,7 @@ DOFManager::~DOFManager()
 
 void DOFManager::cleanup()
 {
-	gEnv->ogreRoot->removeFrameListener(this);
+	globalEnvironment->ogreRoot->removeFrameListener(this);
 
 	delete mLens;
 	mLens = NULL;
@@ -297,12 +297,12 @@ void DOFManager::setEnabled(bool enabled)
 	{
 		// turn on
 		mDepthOfFieldEffect->setEnabled(true);
-		gEnv->ogreRoot->addFrameListener(this);
+		globalEnvironment->ogreRoot->addFrameListener(this);
 	} else if(!enabled && mDepthOfFieldEffect->getEnabled())
 	{
 		// turn off
 		mDepthOfFieldEffect->setEnabled(false);
-		gEnv->ogreRoot->removeFrameListener(this);
+		globalEnvironment->ogreRoot->removeFrameListener(this);
 	}
 	*/
 }
@@ -318,7 +318,7 @@ void DOFManager::zoomView(float delta)
 	fieldOfView += delta;
 	fieldOfView = std::max<Real>(0.1, std::min<Real>(fieldOfView, 2.0));
 	mLens->setFieldOfView(Radian(fieldOfView));
-	gEnv->ogreCamera->setFOVy(Radian(fieldOfView));
+	globalEnvironment->ogreCamera->setFOVy(Radian(fieldOfView));
 }
 
 void DOFManager::Aperture(float delta)
@@ -341,7 +341,7 @@ void  DOFManager::setZoom(float f)
 	Real fieldOfView = Degree(Real(f)).valueRadians();
 	fieldOfView = std::max<Real>(0.1, std::min<Real>(fieldOfView, 2.0));
 	mLens->setFieldOfView(Radian(fieldOfView));
-	gEnv->ogreCamera->setFOVy(Radian(fieldOfView));
+	globalEnvironment->ogreCamera->setFOVy(Radian(fieldOfView));
 }
 
 void  DOFManager::setLensFOV(Radian fov)
@@ -365,7 +365,7 @@ void  DOFManager::setFocus(float f)
 
 bool DOFManager::frameStarted(const FrameEvent& evt)
 {
-	Camera *camera = gEnv->ogreCamera;
+	Camera *camera = globalEnvironment->ogreCamera;
 	// Focusing
 	switch (mFocusMode)
 	{
@@ -396,7 +396,7 @@ bool DOFManager::frameStarted(const FrameEvent& evt)
 					if(it->worldFragment)
 					{
 						if(debugNode) debugNode->setPosition(it->worldFragment->singleIntersection + Vector3(0.5,0,0));
-						targetFocalDistance = (gEnv->ogreCamera->getPosition() - it->worldFragment->singleIntersection).length();
+						targetFocalDistance = (globalEnvironment->ogreCamera->getPosition() - it->worldFragment->singleIntersection).length();
 						break;
 					} else
 					{

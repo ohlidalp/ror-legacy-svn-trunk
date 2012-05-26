@@ -17,9 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __InputEngine_H__
-#define __InputEngine_H__
+#ifndef __InputEngine_H_
+#define __InputEngine_H_
 
 #include "RoRPrerequisites.h"
 
@@ -429,7 +428,7 @@ public:
 	bool getEventBoolValueBounce(int eventID, float time=0.2f);
 	float getEventBounceTime(int eventID);
 	// we need to use hwnd here, as we are also using this in the configurator
-	bool setup(Ogre::RenderWindow* rw, Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
+	bool setup(Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
 	Ogre::String getKeyForCommand(int eventID);
 	bool isKeyDown(OIS::KeyCode mod);
 
@@ -458,7 +457,7 @@ public:
 	static Ogre::String eventIDToName(int eventID);
 	event_trigger_t *getEventBySUID(int suid);
 
-	void setupDefault(Ogre::RenderWindow *win, Ogre::String inputhwnd=Ogre::String());
+	void setupDefault(Ogre::String inputhwnd=Ogre::String());
 
 	bool isEventDefined(int eventID);
 	void addEvent(int eventID, event_trigger_t t);
@@ -467,7 +466,7 @@ public:
 	void prepareShutdown();
 	OIS::MouseState getMouseState();
 	// some custom methods
-	void windowResized(Ogre::RenderWindow* rw);
+	void windowResized();
 
 	bool reloadConfig(std::string outfile=CONFIGFILENAME);
 	bool updateConfigline(event_trigger_t *t);
@@ -492,6 +491,7 @@ public:
 #endif // USE_OIS_G27
 
 protected:
+
 	InputEngine();
 	~InputEngine();
 	InputEngine(const InputEngine&);
@@ -505,8 +505,6 @@ protected:
 	OIS::JoyStick* mJoy[MAX_JOYSTICKS];
 	int free_joysticks;
 	OIS::ForceFeedback* mForceFeedback;
-
-	Ogre::RenderWindow *renderWindow;
 
 	// JoyStickListener
 	bool buttonPressed( const OIS::JoyStickEvent &arg, int button );
@@ -556,4 +554,4 @@ protected:
 	event_trigger_t newEvent();
 };
 
-#endif
+#endif // __InputEngine_H_

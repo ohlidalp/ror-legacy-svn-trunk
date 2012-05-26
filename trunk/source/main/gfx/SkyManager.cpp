@@ -31,8 +31,8 @@ using namespace Ogre;
 SkyManager::SkyManager() : mCaelumSystem(0)
 {
 	// Initialise CaelumSystem.
-	mCaelumSystem = new Caelum::CaelumSystem (gEnv->ogreRoot, gEnv->ogreSceneManager, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-	mCaelumSystem->attachViewport(gEnv->ogreViewPort);
+	mCaelumSystem = new Caelum::CaelumSystem (globalEnvironment->ogreRoot, globalEnvironment->ogreSceneManager, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+	mCaelumSystem->attachViewport(globalEnvironment->ogreViewPort);
 
 	/*
 	// TODO: set real time, and let the user select his true location
@@ -43,8 +43,8 @@ SkyManager::SkyManager() : mCaelumSystem(0)
 	*/
 
 	// Register caelum as a listener.
-	gEnv->ogreRenderWindow->addListener (mCaelumSystem);
-	gEnv->ogreRoot->addFrameListener(mCaelumSystem);
+	globalEnvironment->ogreRenderWindow->addListener (mCaelumSystem);
+	globalEnvironment->ogreRoot->addFrameListener(mCaelumSystem);
 }
 
 SkyManager::~SkyManager()
@@ -73,10 +73,10 @@ void SkyManager::loadScript(String script)
 		// overwrite some settings
 #ifdef CAELUM_VERSION_SEC
 		// important: overwrite fog setings if not using infinite farclip
-		if(gEnv->ogreCamera->getFarClipDistance() > 0)
+		if(globalEnvironment->ogreCamera->getFarClipDistance() > 0)
 		{
 			// non infinite farclip
-			Real farclip = gEnv->ogreCamera->getFarClipDistance();
+			Real farclip = globalEnvironment->ogreCamera->getFarClipDistance();
 			mCaelumSystem->setManageSceneFog(FOG_LINEAR);
 			mCaelumSystem->setManageSceneFogStart(farclip * 0.7f);
 			mCaelumSystem->setManageSceneFogEnd(farclip * 0.9f);

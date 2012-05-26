@@ -121,7 +121,7 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	if(!handled)
 	{
 		// update the old airplane / autopilot gui
-		handled = gEnv->frameListener->getOverlayWrapper()->mouseMoved(_arg);
+		handled = globalEnvironment->frameListener->getOverlayWrapper()->mouseMoved(_arg);
 	}
 
 	if(!handled)
@@ -177,7 +177,7 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 	if(!handled)
 	{
 		// update the old airplane / autopilot gui
-		handled = gEnv->frameListener->getOverlayWrapper()->mousePressed(_arg, _id);
+		handled = globalEnvironment->frameListener->getOverlayWrapper()->mousePressed(_arg, _id);
 	}
 
 	if(!handled)
@@ -209,7 +209,7 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 	if(!handled)
 	{
 		// update the old airplane / autopilot gui
-		handled = gEnv->frameListener->getOverlayWrapper()->mouseReleased(_arg, _id);
+		handled = globalEnvironment->frameListener->getOverlayWrapper()->mouseReleased(_arg, _id);
 	}
 
 	if(!handled)

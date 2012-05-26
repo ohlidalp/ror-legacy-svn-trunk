@@ -106,14 +106,14 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 			, cos(targetDirection.valueRadians() + camRotX.valueRadians()) * cos(targetPitch.valueRadians() + camRotY.valueRadians())
 			);
 
-	if ( gEnv->terrainManager->getHeightFinder() )
+	if ( globalEnvironment->terrainManager->getHeightFinder() )
 	{
-		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
+		float h = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
 
 		desiredPosition.y = std::max(h, desiredPosition.y);
 	}
 
-	Vector3 precedingPosition = gEnv->ogreCamera->getPosition(); 
+	Vector3 precedingPosition = globalEnvironment->ogreCamera->getPosition(); 
 	
 	if ( ctx.mCurrTruck )
 	{
@@ -122,8 +122,8 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = (1.0f / (camRatio + 1.0f)) * desiredPosition + (camRatio / (camRatio + 1.0f)) * precedingPosition;
 
-	gEnv->ogreCamera->setPosition(camPosition);
-	gEnv->ogreCamera->lookAt(camLookAt);
+	globalEnvironment->ogreCamera->setPosition(camPosition);
+	globalEnvironment->ogreCamera->lookAt(camLookAt);
 }
 
 bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
@@ -144,5 +144,5 @@ bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const
 void CameraBehavior::reset(const CameraManager::cameraContext_t &ctx)
 {
 	camRotX = 0.0f;
-	gEnv->ogreCamera->setFOVy(ctx.fovExternal);
+	globalEnvironment->ogreCamera->setFOVy(ctx.fovExternal);
 }

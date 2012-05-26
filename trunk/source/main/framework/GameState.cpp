@@ -16,7 +16,7 @@ void GameState::enter()
     LOG("Entering GameState...");
 
 	m_pSceneMgr = OgreFramework::getSingletonPtr()->m_pRoot->createSceneManager(ST_EXTERIOR_CLOSE);
-	gEnv->ogreSceneManager = m_pSceneMgr;
+	globalEnvironment->ogreSceneManager = m_pSceneMgr;
 
 	//CREATE CAMERA
 	LOG("Creating camera");
@@ -32,7 +32,7 @@ void GameState::enter()
 	m_pCamera->setAutoAspectRatio(true);
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
 
-	gEnv->ogreCamera = m_pCamera;
+	globalEnvironment->ogreCamera = m_pCamera;
 
 	// TO BE DONE:
 	//m_pSceneMgr->setCameraRelativeRendering(true);
@@ -43,7 +43,7 @@ void GameState::enter()
 	
 	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
 
-	gEnv->frameListener = mFrameListener;
+	globalEnvironment->frameListener = mFrameListener;
 	
 }
 

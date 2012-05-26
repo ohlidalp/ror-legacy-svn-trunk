@@ -52,8 +52,8 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 
 	Quaternion orientation = Quaternion(camRotX, up) * Quaternion(Degree(180.0) + camRotY, roll) * Quaternion(roll, up, dir);
 
-	gEnv->ogreCamera->setPosition(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos);
-	gEnv->ogreCamera->setOrientation(orientation);
+	globalEnvironment->ogreCamera->setPosition(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cinecameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos);
+	globalEnvironment->ogreCamera->setOrientation(orientation);
 }
 
 void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
@@ -70,7 +70,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 
 	currTruck = ctx.mCurrTruck;
 
-	gEnv->ogreCamera->setFOVy(ctx.fovInternal);
+	globalEnvironment->ogreCamera->setFOVy(ctx.fovInternal);
 
 	ctx.mCurrTruck->prepareInside(true);
 
@@ -94,7 +94,7 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 		return;
 	}
 
-	gEnv->ogreCamera->setFOVy(ctx.fovExternal);
+	globalEnvironment->ogreCamera->setFOVy(ctx.fovExternal);
 		
 	currTruck->prepareInside(false);
 
@@ -114,7 +114,7 @@ void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &c
 {
 	CameraBehavior::reset(ctx);
 	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
-	gEnv->ogreCamera->setFOVy(ctx.fovInternal);
+	globalEnvironment->ogreCamera->setFOVy(ctx.fovInternal);
 }
 
 bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
