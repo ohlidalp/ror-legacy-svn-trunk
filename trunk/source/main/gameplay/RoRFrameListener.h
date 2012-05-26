@@ -102,10 +102,6 @@ protected:
 	Forests::TreeLoader2D *treeLoader;
 #endif //USE_PAGED
 
-#ifdef HAS_EDITOR
-	TruckEditor *trucked;
-#endif //HAS_EDITOR
-
 #ifdef USE_MPLATFORM
 	MPlatform_Base *mplatform;
 #endif //USE_MPLATFORM
@@ -117,8 +113,6 @@ protected:
 	AppState *parentState;
 	Dashboard *dashboard;
 	DOFManager *dof;
-	Editor *editor;
-	FILE *editorfd;
 	ForceFeedback *forcefeedback;
 	HeatHaze *heathaze;
 	MapControl *surveyMap;

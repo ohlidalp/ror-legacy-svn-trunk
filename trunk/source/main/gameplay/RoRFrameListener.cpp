@@ -42,7 +42,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DashBoardManager.h"
 #include "DepthOfFieldEffect.h"
 #include "DustManager.h"
-#include "editor.h"
 #include "envmap.h"
 #include "errorutils.h"
 #include "ExtinguishableFireAffector.h"
@@ -96,6 +95,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapEntity.h"
 #endif //USE_MYGUI
 
+#include "IHeightFinder.h"
+
 #include "ResourceBuffer.h"
 
 #ifdef USE_PAGED
@@ -110,10 +111,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MPLATFORM
 #include "mplatform_fd.h"
 #endif //USE_MPLATFORM
-
-#ifdef HAS_EDITOR
-#include "truckeditor.h"
-#endif //HAS_EDITOR
 
 #ifdef FEAT_TIMING
 #include "BeamStats.h"
@@ -143,35 +140,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Forests;
 #endif //USE_PAGED
 
-float RoRFrameListener::gravity = DEFAULT_GRAVITY;
-
-/// This class just pretends to provide procedural page content to avoid page loading
-class DummyPageProvider : public PageProvider
-{
-public:
-	bool prepareProceduralPage(Page* page, PagedWorldSection* section) { return true; }
-	bool loadProceduralPage(Page* page, PagedWorldSection* section) { return true; }
-	bool unloadProceduralPage(Page* page, PagedWorldSection* section) { return true; }
-	bool unprepareProceduralPage(Page* page, PagedWorldSection* section) { return true; }
-};
-DummyPageProvider mDummyPageProvider;
-
 Material *terrainmaterial = 0;
 
 char terrainoriginalmaterial[100];
 bool shutdownall=false;
 
-// static height finder
-HeightFinder *RoRFrameListener::hfinder = 0;
-// static elf singleton
-RoRFrameListener *RoRFrameListener::eflsingleton = 0;
-
 //workaround for pagedgeometry
 inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
 {
-	if (!RoRFrameListener::hfinder)
+	if (!gEnv->heightFinder)
 		return 1;
-	return RoRFrameListener::hfinder->getHeightAt(x, z);
+	return gEnv->heightFinder->getHeightAt(x, z);
 }
 
 void RoRFrameListener::startTimer()
@@ -296,23 +275,6 @@ void RoRFrameListener::updateGUI(float dt)
 	{
 		//TRUCK
 		if (!curr_truck->engine) return;
-
-		//special case for the editor
-		if (curr_truck->editorId>=0 && editor)
-		{
-			ow->editor_pos->setCaption("Position: X=" +
-				TOSTRING(curr_truck->nodes[curr_truck->editorId].AbsPosition.x)+
-				"  Y="+TOSTRING(curr_truck->nodes[curr_truck->editorId].AbsPosition.y)+
-				"  Z="+TOSTRING(curr_truck->nodes[curr_truck->editorId].AbsPosition.z)
-				);
-			ow->editor_angles->setCaption("Angles: 0.0 " +
-				TOSTRING(editor->pturn)+
-				"  "+TOSTRING(editor->ppitch)
-				);
-			char type[256];
-			sprintf(type, "Object: %s", editor->curtype);
-			ow->editor_object->setCaption(type);
-		}
 
 		// gears
 		int truck_getgear = curr_truck->engine->getGear();
@@ -734,8 +696,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	dashboard(0),
 	debugCollisions(false),
 	dof(0),
-	editor(0),
-	editorfd(0),
 	envmap(0),
 	flaresMode(3), // on by default
 	forcefeedback(0),
@@ -856,9 +816,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	ScriptEngine::getSingleton().scriptLog->logMessage("ScriptEngine running");
 #endif
 
-#ifdef HAS_EDITOR
-	trucked = 0;
-#endif
 
 	gameStartTime = getTimeStamp();
 
@@ -1672,30 +1629,6 @@ bool RoRFrameListener::updateEvents(float dt)
 
 				if (curr_truck->driveable==TRUCK)
 				{
-					//road construction stuff
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_SELECTROAD, 0.5f) && curr_truck->editorId>=0 && !curr_truck->replaymode)
-					{
-						if (road)
-							road->reset(curr_truck->nodes[curr_truck->editorId].AbsPosition);
-						else
-							road=new Road(mSceneMgr, curr_truck->nodes[curr_truck->editorId].AbsPosition);
-					}
-
-					//editor stuff
-					if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEOBJECT) && curr_truck->editorId>=0 && !curr_truck->replaymode)
-					{
-						if (editor)
-							editor->toggleType();
-						else
-							editor=new Editor(mSceneMgr, this);
-					}
-
-					//this should not be there
-					if (editor && curr_truck->editorId>=0)
-					{
-						editor->setPos(curr_truck->nodes[curr_truck->editorId].AbsPosition);
-					}
-
 					if (!curr_truck->replaymode)
 					{
 						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LEFT_MIRROR_LEFT))
@@ -1710,86 +1643,6 @@ bool RoRFrameListener::updateEvents(float dt)
 						if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_RIGHT_MIRROR_RIGHT))
 							curr_truck->rightMirrorAngle+=0.001;
 
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATELEFT, 0.1f))
-						{
-							float value = 0.5;
-							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
-							if (road) {road->dturn(+value);}
-							else if (editor) {editor->dturn(+1);}
-						}
-
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_ROTATERIGHT, 0.1f))
-						{
-							float value = 0.5;
-							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT)) value = 4;
-							if (road) {road->dturn(-value);}
-							else if (editor) {editor->dturn(-1);}
-						}
-
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHBACKWARD, 0.1f))
-						{
-							float value = 0.5;
-							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-								value = 4;
-							if (road) {road->dpitch(-value);}
-							else if (editor) {editor->dpitch(-1);}
-						}
-
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_PITCHFOREWARD, 0.1f))
-						{
-							float value = 0.5;
-							if (INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT))
-							value = 4;
-							if (road) {road-> dpitch(value);}
-							else if (editor) {editor->dpitch(1);}
-						}
-
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_TOGGLEROADTYPE, 0.5f))
-						{
-							if (road)
-								road->toggleType();
-						}
-
-						if (INPUTENGINE.getEventBoolValueBounce(EV_TERRAINEDITOR_BUILT, 0.5f))
-						{
-							if (road)
-							{
-								if (!editorfd)
-								{
-									String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
-									editorfd = fopen(editorfn.c_str(), "a");
-									fprintf(editorfd, " ==== new session\n");
-								}
-								road->append();
-								fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, road->curtype);
-								LOG(TOSTRING(road->rpos.x)+", "+
-									TOSTRING(road->rpos.y)+", "+
-									TOSTRING(road->rpos.z)+", "+
-									TOSTRING(road->rrot.x)+", "+
-									TOSTRING(road->rrot.y)+", "+
-									TOSTRING(road->rrot.z)+", "+road->curtype);
-
-								loadObject(road->curtype, road->rpos.x, road->rpos.y, road->rpos.z, road->rrot.x, road->rrot.y, road->rrot.z, 0, "generic");
-							}
-
-							if (editor)
-							{
-								if (!editorfd)
-								{
-									String editorfn = SSETTING("Log Path", "") + "editor_out.txt";
-									editorfd = fopen(editorfn.c_str(), "a");
-									fprintf(editorfd, " ==== new session\n");
-								}
-								fprintf(editorfd, "%f, %f, %f, %f, %f, %f, %s\n", editor->ppos.x, editor->ppos.y, editor->ppos.z, 0.0, editor->pturn, editor->ppitch, editor->curtype);
-								LOG(TOSTRING(editor->ppos.x)+", "+
-									TOSTRING(editor->ppos.y)+", "+
-									TOSTRING(editor->ppos.z)+", "+
-									TOSTRING(0)+", "+
-									TOSTRING(editor->pturn)+", "+
-									TOSTRING(editor->ppitch)+", "+editor->curtype);
-								loadObject(editor->curtype, editor->ppos.x, editor->ppos.y, editor->ppos.z, 0, editor->pturn, editor->ppitch, 0, "generic", false);
-							}
-						}
 					} // end of (!curr_truck->replaymode) block
 
 					if (!curr_truck->replaymode)
@@ -2899,11 +2752,8 @@ bool RoRFrameListener::updateEvents(float dt)
 	//update window
 	if (!mWindow->isAutoUpdated())
 	{
-#ifdef HAS_EDITOR
-		if ((trucked && trucked->dirty)||dirty) {trucked->dirty=false;mWindow->update();}
-#else
-		if (dirty) {mWindow->update();}
-#endif
+		if (dirty)
+			mWindow->update();
 		else
 			sleepMilliSeconds(10);
 	}
@@ -2931,7 +2781,6 @@ void RoRFrameListener::shutdown_final()
 #endif //OIS_G27
 
 	LOG(" ** Shutdown final");
-	if (editorfd) fclose(editorfd);
 	if (w) w->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
 	if (envmap) envmap->prepareShutdown();
@@ -3215,7 +3064,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			//person->setVisible(true);
 		}
 		if (ow) ow->showDashboardOverlays(false, currentTruck);
-		if (ow) ow->showEditorOverlay(false);
 #ifdef USE_OPENAL
 		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_AIR);
 		SoundScriptManager::getSingleton().trigStop(previousTruck, SS_TRIG_PUMP);
@@ -3242,7 +3090,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		if (ow &&!hidegui)
 		{
 			ow->showDashboardOverlays(true, currentTruck);
-			ow->showEditorOverlay(currentTruck->editorId>=0);
 		}
 
 		currentTruck->activate();
@@ -3670,7 +3517,6 @@ void RoRFrameListener::hideGUI(bool visible)
 	if (visible)
 	{
 		if (ow) ow->showDashboardOverlays(false, curr_truck);
-		if (ow) ow->showEditorOverlay(false);
 		if (ow) ow->truckhud->show(false);
 		//if (bigMap) bigMap->setVisibility(false);
 #ifdef USE_MYGUI

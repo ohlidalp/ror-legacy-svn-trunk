@@ -214,8 +214,7 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	Camera *cam = RoRFrameListener::eflsingleton->getCamera();
-	Viewport *vp = cam->getViewport();
+	Viewport *vp = gEnv->ogreCamera->getViewport();
 
-	return cam->getCameraToViewportRay((float)lastMouseX / (float)vp->getActualWidth(), (float)lastMouseY / (float)vp->getActualHeight());
+	return gEnv->ogreCamera->getCameraToViewportRay((float)lastMouseX / (float)vp->getActualWidth(), (float)lastMouseY / (float)vp->getActualHeight());
 }
