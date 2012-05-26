@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef GEnv_H__
-#define GEnv_H__
+#ifndef __GlobalEnvironment_H_
+#define __GlobalEnvironment_H_
 
 class RoRFrameListener;
 class TerrainManager;
@@ -34,40 +34,41 @@ class GlobalEnvironment
 {
 public:
 	GlobalEnvironment() :
-	      ogreRoot(0)
-		, ogreViewPort(0)
-		, ogreRenderWindow(0)
-		, ogreCamera(0)
-		, ogreSceneManager(0)
+		  collisions(0)
+		, embeddedMode(false)
 		, frameListener(0)
-		, terrainManager(0)
-		, collisions(0)
 		, heightFinder(0)
-		, water(0)
 		, network(0)
-		, surveyMap(0)
+		, ogreCamera(0)
+		, ogreRenderWindow(0)
+		, ogreSceneManager(0)
+		, ogreViewPort(0)
 		, player(0)
 		, sky(0)
-		, embeddedMode(false)
+		, surveyMap(0)
+		, terrainManager(0)
+		, water(0)
+	    , ogreRoot(0)
 	{
 	}
-	Ogre::Root *ogreRoot;
-	Ogre::Viewport *ogreViewPort;
-	Ogre::RenderWindow *ogreRenderWindow;
-	Ogre::Camera *ogreCamera;
-	Ogre::SceneManager *ogreSceneManager;
 
-	RoRFrameListener *frameListener;
-	TerrainManager *terrainManager;
+	Ogre::Camera *ogreCamera;
+	Ogre::RenderWindow *ogreRenderWindow;
+	Ogre::Root *ogreRoot;
+	Ogre::SceneManager *ogreSceneManager;
+	Ogre::Viewport *ogreViewPort;
+
+	Character *player;
 	Collisions *collisions;
 	IHeightFinder *heightFinder;
-	Water *water;
-	Network *network;
 	MapControl *surveyMap;
-	Character *player;
+	Network *network;
+	RoRFrameListener *frameListener;
 	SkyManager *sky;
+	TerrainManager *terrainManager;
+	Water *water;
 
 	bool embeddedMode;
 };
 
-#endif // GEnv_H__
+#endif // __GlobalEnvironment_H_

@@ -18,29 +18,29 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 //created by thomas fischer 23 February 2009
-#ifndef __Tractionmap_H__
-#define __Tractionmap_H__
+#if 0
+#ifndef __LandUseMap_H_
+#define __LandUseMap_H_
 
 #include "RoRPrerequisites.h"
-#include <OgrePrerequisites.h>
-#include <OgreVector3.h>
-#include "collisions.h"
 
 class Landusemap
 {
-protected:
-	ground_model_t **data;
-	int mapsizex;
-	int mapsizez;
-	ground_model_t *default_ground_model;
-	Collisions *coll;
-
 public:
-	Landusemap(Ogre::String cfgfilename, Collisions *c, int mapsizex, int mapsizez);
+
+	Landusemap(Ogre::String cfgfilename);
 	~Landusemap();
 
 	ground_model_t *getGroundModelAt(int x, int z);
 	int loadConfig(Ogre::String filename);
+
+protected:
+
+	ground_model_t **data;
+	ground_model_t *default_ground_model;
+
+	Ogre::Vector3 mapsize;
 };
 
-#endif
+#endif // __LandUseMap_H_
+#endif 0

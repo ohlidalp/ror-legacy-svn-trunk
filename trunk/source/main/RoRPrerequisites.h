@@ -39,7 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreQuaternion.h>
 #include <OgreUTFString.h>
 
-#include "GEnv.h"
+#include "GlobalEnvironment.h"
 
 // some config for angelscript, doesnt matter if we compile with angelscript or not as its just a definition
 #ifdef USE_ANGELSCRIPT
