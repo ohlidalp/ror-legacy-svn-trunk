@@ -1241,7 +1241,7 @@ RoRFrameListener::~RoRFrameListener()
 
 
 
-void updateCruiseControl(Beam* curr_truck, float dt)
+void RoRFrameListener::updateCruiseControl(Beam* curr_truck, float dt)
 {
 	if (INPUTENGINE.getEventValue(EV_TRUCK_BRAKE) > 0.05f ||
 		INPUTENGINE.getEventValue(EV_TRUCK_MANUAL_CLUTCH) > 0.05f ||
@@ -1325,7 +1325,7 @@ void updateCruiseControl(Beam* curr_truck, float dt)
 	}
 }
 
-void checkSpeedlimit(Beam* curr_truck, float dt)
+void RoRFrameListener::checkSpeedlimit(Beam* curr_truck, float dt)
 {
 	if (curr_truck->sl_enabled && curr_truck->engine->getGear() != 0)
 	{
