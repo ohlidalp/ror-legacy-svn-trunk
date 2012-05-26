@@ -226,7 +226,6 @@ FWDCLSTRUCT(hook);
 FWDCLSTRUCT(ground_model);
 FWDCLSTRUCT(client);
 FWDCLSTRUCT(authorinfo);
-FWDCLSTRUCT(localizer);
 
 enum VisibilityMasks {
 	DEPTHMAP_ENABLED  = BITMASK(1),

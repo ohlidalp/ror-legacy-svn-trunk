@@ -50,7 +50,7 @@ void GameState::enter()
 	
 	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
 
-	gEnv->framelistener = mFrameListener;
+	gEnv->frameListener = mFrameListener;
 	
 }
 

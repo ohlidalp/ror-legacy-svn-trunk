@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "BeamData.h" // for localizer_t
+#include "BeamData.h"
 #include "Ogre.h"
 
 #include <pthread.h>

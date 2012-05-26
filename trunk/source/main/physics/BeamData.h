@@ -1121,11 +1121,4 @@ struct authorinfo
 	Ogre::String email;
 };
 
-struct localizer
-{
-	int type;
-	Ogre::Vector3 position;
-	Ogre::Quaternion rotation;
-};
-
 #endif //BEAMDATA_H__
