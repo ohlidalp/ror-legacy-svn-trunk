@@ -33,16 +33,18 @@ public:
 
 	void loadTerrain(Ogre::String filename);
 	
-	Collisions *getCollisions() { return collisions; };
-	Envmap *getEnvmap() { return envmap; };
-	IHeightFinder *getHeightFinder() { return reinterpret_cast<IHeightFinder *>(geometry_manager); };
-	SkyManager *getSkyManager() { return sky_manager; };
-	Water *getWater() { return water; };
+	void update(float dt) {};
 
 	void setGravity(float value);
 	float getGravity() { return gravity; };
 
 	Ogre::Vector3 getMax() { return Ogre::Vector3::ZERO; };
+
+	Collisions *getCollisions() { return collisions; };
+	Envmap *getEnvmap() { return envmap; };
+	IHeightFinder *getHeightFinder() { return reinterpret_cast<IHeightFinder *>(geometry_manager); };
+	SkyManager *getSkyManager() { return sky_manager; };
+	Water *getWater() { return water; };
 
 protected:
 	// members
