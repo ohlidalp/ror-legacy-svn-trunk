@@ -299,7 +299,7 @@ void Autopilot::gpws_update(float spawnheight)
 #endif //OPENAL
 }
 
-void Autopilot::getRadioFix(localizer_t *localizers, int free_localizer, float *vdev, float *hdev)
+void Autopilot::getRadioFix(TerrainObjectManager::localizer_t *localizers, int free_localizer, float *vdev, float *hdev)
 {
 	if(!ref_l || !ref_r)
 		return;

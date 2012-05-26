@@ -25,6 +25,8 @@ class TerrainManager;
 class Collisions;
 class IHeightFinder;
 class Water;
+class Network;
+class MapControl;
 
 class GlobalEnvironment
 {
@@ -40,6 +42,8 @@ public:
 		, collisions(0)
 		, heightFinder(0)
 		, water(0)
+		, network(0)
+		, surveyMap(0)
 	{
 	}
 	Ogre::Root *ogreRoot;
@@ -53,6 +57,8 @@ public:
 	Collisions *collisions;
 	IHeightFinder *heightFinder;
 	Water *water;
+	Network *network;
+	MapControl *surveyMap;
 };
 
 #endif // GEnv_H__

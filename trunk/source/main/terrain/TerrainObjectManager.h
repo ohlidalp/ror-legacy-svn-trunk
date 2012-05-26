@@ -32,6 +32,13 @@ public:
 
 	void loadObjectConfigFile(Ogre::String filename);
 
+	typedef struct localizer_t
+	{
+		int type;
+		Ogre::Vector3 position;
+		Ogre::Quaternion rotation;
+	} localizer_t;
+
 protected:
 
 	TerrainManager *terrainManager;
@@ -58,12 +65,7 @@ protected:
 
 	Road *road;
 
-	typedef struct localizer_t
-	{
-		int type;
-		Ogre::Vector3 position;
-		Ogre::Quaternion rotation;
-	} localizer_t;
+
 
 	localizer_t localizers[64];
 

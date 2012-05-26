@@ -32,7 +32,7 @@ class Character : public Streamable
 
 public:
 
-	Character(Ogre::Camera *cam, Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, Ogre::SceneManager *scm, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
+	Character(int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~Character();
 
 	Ogre::Radian getRotation() { return characterRotation; };
@@ -44,14 +44,12 @@ public:
 	bool isRemote() { return remote; };
 
 	void setBeamCoupling(bool enabled, Beam *truck = 0);
-	void setCollisions(Collisions *collisions);
 	void setColour(int color) { this->colourNumber = color; };
 	void setHFinder(HeightFinder *hFinder);
 	void setPhysicsEnabled(bool enabled) { physicsEnabled = enabled; };
 	void setPosition(Ogre::Vector3 position);
 	void setRotation(Ogre::Radian rotation);
 	void setVisible(bool visible);
-	void setWater(Water *water);
 
 	void move(Ogre::Vector3 offset);
 
@@ -66,12 +64,7 @@ public:
 protected:
 
 	Beam *beamCoupling;
-	Collisions *collisions;
-	HeightFinder *hFinder;
-	MapControl *mapControl;
 	MapEntity *mapEntity;
-	Network *net;
-	Water *water;
 
 	bool canJump;
 	bool physicsEnabled;
