@@ -53,7 +53,7 @@ class Skidmark
 public:
 
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark( wheel_t *wheel, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
+	Skidmark( wheel_t *wheel, Ogre::SceneNode *snode, int lenght = 500, int bucketCount = 20);
 	virtual ~Skidmark();
 
 	void updatePoint();

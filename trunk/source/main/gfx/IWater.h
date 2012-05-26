@@ -23,12 +23,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 // interface only
-class Water
+class IWater
 {
 public:
-	Water() {};
-	Water(int type, float wHeight, float *MapSizeX, float *MapSizeZ, bool useWaves);
-	virtual ~Water() {};
+	IWater() {};
+	IWater(int type, float wHeight, float *MapSizeX, float *MapSizeZ, bool useWaves);
+	virtual ~IWater() {};
 
 	virtual float getHeight() = 0;
 	virtual float getHeightWaves(Ogre::Vector3 pos) = 0;

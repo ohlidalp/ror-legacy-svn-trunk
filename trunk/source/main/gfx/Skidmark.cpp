@@ -126,11 +126,10 @@ int SkidmarkManager::getTexture(String model, String ground, float slip, String 
 // this is a hardcoded array which we use to map ground types to a certain texture with UV/ coords
 Vector2 Skidmark::tex_coords[4] = {Vector2(0,0), Vector2(0,1), Vector2(1,0), Vector2(1,1)};
 
-Skidmark::Skidmark(wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int _lenght, int bucketCount) :
+Skidmark::Skidmark(wheel_t *wheel, Ogre::SceneNode *snode, int lenght /* = 500 */, int bucketCount /* = 20 */) :
 	  mNode(snode)
-	, hfinder(hfinder)
 	, mDirty(true)
-	, lenght((_lenght%2) ? (_lenght-(_lenght%2)) : _lenght)
+	, lenght(lenght)
 	, bucketCount(bucketCount)
 	, wheel(wheel)
 	, minDistance(0.1f)
@@ -138,6 +137,10 @@ Skidmark::Skidmark(wheel_t *wheel, HeightFinder *hfinder, SceneNode *snode, int 
 	, minDistanceSquared(minDistance * minDistance)
 	, maxDistanceSquared(maxDistance * maxDistance)
 {
+	if (lenght % 2)
+	{
+		lenght--;
+	}
 }
 
 Skidmark::~Skidmark()
@@ -171,7 +174,7 @@ void Skidmark::addObject(Vector3 start, String texture)
 	skid.points.resize(lenght);
 	skid.faceSizes.resize(lenght);
 	skid.groundTexture.resize(lenght);
-	skid.obj = scm->createManualObject("skidmark" + TOSTRING(instanceCounter++));
+	skid.obj = gEnv->ogreSceneManager->createManualObject("skidmark" + TOSTRING(instanceCounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
@@ -199,7 +202,7 @@ void Skidmark::limitObjects()
 		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
 		objects.front().faceSizes.clear();
-		scm->destroyManualObject(objects.front().obj);
+		gEnv->ogreSceneManager->destroyManualObject(objects.front().obj);
 		objects.pop();
 	}
 }
