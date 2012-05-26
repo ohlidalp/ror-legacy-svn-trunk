@@ -71,18 +71,17 @@ int Savegame::save(Ogre::String &filename)
 		h.entries       = free_truck;
 		h.current_truck = current_truck;
 
-		if(RoRFrameListener::eflsingleton)
 		{
 			// and generic things like character and camera
-			if(RoRFrameListener::eflsingleton->person)
+			if(gEnv->player)
 			{
-				Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
+				Vector3 pos = gEnv->player->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if(RoRFrameListener::eflsingleton->getCamera())
+			if(gEnv->ogreCamera)
 			{
-				Vector3 pos = RoRFrameListener::eflsingleton->getCamera()->getPosition();
+				Vector3 pos = gEnv->ogreCamera->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}
@@ -247,12 +246,11 @@ int Savegame::load(Ogre::String &filename)
 	}
 
 	// restore generic things: characer and camera
-	if(RoRFrameListener::eflsingleton)
 	{
 		// and generic things like character and camera
-		if(RoRFrameListener::eflsingleton->person)
+		if(gEnv->player)
 		{
-			RoRFrameListener::eflsingleton->person->setPosition(Vector3(h.player_pos));
+			gEnv->player->setPosition(Vector3(h.player_pos));
 		}
 
 		// TODO: FIX savegame camera integration

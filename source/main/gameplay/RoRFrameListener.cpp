@@ -1100,6 +1100,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 		int colourNum = 0;
 		if (net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
 		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
+		gEnv->player = person;
 
 		// network chat stuff
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
