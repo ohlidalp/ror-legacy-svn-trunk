@@ -548,7 +548,8 @@ void RoRFrameListener::updateGUI(float dt)
 			ow->hsibugtexture->setTextureRotate(Radian(dirangle)-Degree(curr_truck->autopilot->heading));
 			float vdev=0;
 			float hdev=0;
-			curr_truck->autopilot->getRadioFix(localizers, free_localizer, &vdev, &hdev);
+			// TODO: FIXME
+			//curr_truck->autopilot->getRadioFix(localizers, free_localizer, &vdev, &hdev);
 			if (hdev>15) hdev=15;
 			if (hdev<-15) hdev=-15;
 			ow->hsivtexture->setTextureUScroll(-hdev*0.02);
@@ -667,7 +668,7 @@ void RoRFrameListener::updateGUI(float dt)
 		if (curr_truck->getLowestNode() != -1)
 		{
 			Vector3 pos = curr_truck->nodes[curr_truck->getLowestNode()].AbsPosition;
-			float height =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
+			float height =  pos.y - gEnv->heightFinder->getHeightAt(pos.x, pos.z);
 			if (height>0.1 && height < 99.9)
 			{
 				sprintf(tmp, "%2.1f", height);
@@ -692,35 +693,27 @@ void RoRFrameListener::updateGUI(float dt)
 // Constructor takes a RenderWindow because it uses that to determine input context
 RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Camera* cam, SceneManager* scm, Root* root, bool isEmbedded, Ogre::String inputhwnd) :
 	clutch(0),
-	collisions(0),
 	dashboard(0),
 	debugCollisions(false),
 	dof(0),
-	envmap(0),
 	flaresMode(3), // on by default
 	forcefeedback(0),
 	freeTruckPosition(false),
 	free_localizer(0),
-	hdrListener(0),
 	heathaze(0),
 	hidegui(false),
 	initialized(false),
 	inputhwnd(inputhwnd),
 	isEmbedded(isEmbedded),
 	joyshiftlock(0),
-	loadedTerrain("none"),
 	loading_state(NONE_LOADED),
 	mCamera(cam),
-	mCollisionTools(0),
 	mRoot(root),
 	mSceneMgr(scm),
 	mStatsOn(0),
 	mTimeUntilNextToggle(0),
 	mTruckInfoOn(false),
 	mWindow(win),
-	mapsizex(3000),
-	mapsizey(1000),
-	mapsizez(3000),
 	mtc(0),
 	net(0),
 	netChat(0),
@@ -737,24 +730,14 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	pressure_pressed(false),
 	raceStartTime(-1),
 	reload_box(0),
-	reload_pos(Vector3::ZERO),
-	road(0),
 	rtime(0),
 	shaderSchemeMode(1),
 	surveyMap(0),
 	surveyMapMode(SURVEY_MAP_NONE),
-	terrainFileHash(""),
-	terrainFileName(""),
-	terrainHasTruckShop(false),
-	terrainModHash(""),
-	terrainName(""),
 	terrainUID(""),
 	truck_preload_num(0),
-	w(0),
 	terrainManager(0)
 {
-	RoRFrameListener::eflsingleton = this;
-
 	pthread_mutex_init(&mutex_data, NULL);
 
 	// we don't use overlays in embedded mode
@@ -993,7 +976,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, RenderWindow* win, Cam
 	NetworkStreamManager::getSingleton();
 
 	// new factory for characters, net is INVALID, will be set later
-	new CharacterFactory(cam, 0, collisions, hfinder, w, surveyMap, mSceneMgr);
+	new CharacterFactory();
 	new ChatSystemFactory(0);
 
 	// notice: all factories must be available before starting the network!

@@ -32,7 +32,7 @@ class ChatSystem : public Streamable
 
 public:
 
-	ChatSystem(Network *net, int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
+	ChatSystem(int source=-1, unsigned int streamid=0, int colourNumber=0, bool remote=true);
 	~ChatSystem();
 
 	void sendChat(Ogre::UTFString chatline);
@@ -48,8 +48,6 @@ public:
 	static const Ogre::UTFString commandColour, normalColour, whisperColour, scriptCommandColour;
 
 protected:
-
-	Network *net;
 	int source;
 	int streamid;
 	int colourNumber;
@@ -67,18 +65,15 @@ class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSyst
 
 public:
 
-	ChatSystemFactory(Network *net);
+	ChatSystemFactory();
 	~ChatSystemFactory();
 
 	ChatSystem *createLocal(int playerColour);
 	ChatSystem *createRemoteInstance(stream_reg_t *reg);
 
-	void setNetwork(Network *net) { this->net = net; };
 	ChatSystem *getFirstChatSystem();
 
 protected:
-
-	Network *net;
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid) {};
 	void localUserAttributesChanged(int newid) {};
