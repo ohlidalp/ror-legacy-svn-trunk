@@ -21,13 +21,34 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "CameraManager.h"
+#include "language.h"
+#include "LoadingWindow.h"
+#include "Ogre.h"
+#include "ProceduralManager.h"
 #include "RoRFrameListener.h"
 #include "SkyManager.h"
+
+#ifdef USE_PAGED
+#include "BatchPage.h"
+#include "GrassLoader.h"
+#include "ImpostorPage.h"
+#include "PagedGeometry.h"
+#include "TreeLoader2D.h"
+#include "TreeLoader3D.h"
+#endif //USE_PAGED
+
+#ifdef USE_PAGED
+namespace Forests
+{
+	class PagedGeometry;
+	class TreeLoader2D;
+}
+#endif //USE_PAGED
 
 using namespace Ogre;
 
 TerrainObjectManager::TerrainObjectManager(TerrainManager *terrainManager) :
-terrainManager(terrainManager)
+	terrainManager(terrainManager)
 {
 }
 
@@ -36,13 +57,14 @@ TerrainObjectManager::~TerrainObjectManager()
 
 }
 
-void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
+void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 {
+#if 0
 	//prepare for baking
 	SceneNode *bakeNode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 
 #ifdef USE_PAGED
-	treeLoader = 0;
+	  Forests::TreeLoader2D *treeLoader = 0;
 	Entity *curTree = 0;
 	String treename = "";
 #endif
@@ -52,6 +74,11 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 	int r2oldmode = 0;
 	int lastprogress = -1;
 	bool proroad = false;
+	
+	String odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
+
+	long line = 0;
 
 	while (!ds->eof())
 	{
@@ -79,7 +106,7 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 		{
 			long amount = Collisions::MAX_COLLISION_TRIS;
 			sscanf(line, "collision-tris %ld", &amount);
-			collisions->resizeMemory(amount);
+			globalEnvironment->collisions->resizeMemory(amount);
 		}
 
 		if (!strncmp(line,"grid", 4))
@@ -167,7 +194,7 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 		}
 		if (!strncmp("landuse-config", line, 14))
 		{
-			collisions->setupLandUse(line+15);
+			globalEnvironment->collisions->setupLandUse(line+15);
 			continue;
 		}
 		if (!strncmp("gravity", line, 7))
@@ -250,9 +277,9 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 			if (gridspacing > 0)
 			{
 				// grid style
-				for(float x=0; x < mapsizex; x += gridspacing)
+				for (float x=0; x < mapsizex; x += gridspacing)
 				{
-					for(float z=0; z < mapsizez; z += gridspacing)
+					for (float z=0; z < mapsizez; z += gridspacing)
 					{
 						float density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
 						if (density < 0.8f) continue;
@@ -264,9 +291,9 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 						treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
 						if (strlen(treeCollmesh))
 						{
-							pos.y = hfinder->getHeightAt(pos.x, pos.z);
+							pos.y = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 							scale *= 0.1f;
-							collisions->addCollisionMesh(String(treeCollmesh), pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+							globalEnvironment->collisions->addCollisionMesh(String(treeCollmesh), pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
 						}
 					}
 				}
@@ -280,9 +307,9 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 				}
 				float hd = highdens;
 				// normal style, random
-				for(float x=0; x < mapsizex; x += gridsize)
+				for (float x=0; x < mapsizex; x += gridsize)
 				{
-					for(float z=0; z < mapsizez; z += gridsize)
+					for (float z=0; z < mapsizez; z += gridsize)
 					{
 						if (highdens < 0) hd = Math::RangeRandom(0, -highdens);
 						float density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
@@ -298,8 +325,8 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 							treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
 							if (strlen(treeCollmesh))
 							{
-								pos.y = hfinder->getHeightAt(pos.x, pos.z);
-								collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+								pos.y = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
+								globalEnvironment->collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
 							}
 						}
 					}
@@ -601,10 +628,12 @@ void TerrainObjectManager::loadObjectConfigFile( Ogre::String filename )
 		LOG("error while baking roads. ignoring.");
 
 	}
+#endif
 }
 
 void TerrainObjectManager::unloadObject(const char* instancename)
 {
+#if 0
 	if (loadedObjects.find(std::string(instancename)) == loadedObjects.end())
 	{
 		LOG("unable to unload object: " + std::string(instancename));
@@ -620,34 +649,36 @@ void TerrainObjectManager::unloadObject(const char* instancename)
 	// unload any collision tris
 	if (obj.collTris.size() > 0)
 	{
-		for(std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
+		for (std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
 		{
-			collisions->removeCollisionTri(*it);
+			globalEnvironment->collisions->removeCollisionTri(*it);
 		}
 	}
 
 	// and any collision boxes
 	if (obj.collBoxes.size() > 0)
 	{
-		for(std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
+		for (std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
 		{
-			collisions->removeCollisionBox(*it);
+			globalEnvironment->collisions->removeCollisionBox(*it);
 		}
 	}
 
 	obj.sceneNode->detachAllObjects();
 	obj.sceneNode->setVisible(false);
 	obj.enabled = false;
+#endif
 }
 
 void TerrainObjectManager::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int scripthandler, const char *type, bool uniquifyMaterial)
 {
+#if 0
 	ScopeLog log("object_"+String(name));
 	if (type && !strcmp(type, "grid"))
 	{
 		// some fast grid object hacks :)
-		for(int x=0;x<500;x+=50)
-			for(int z=0;z<500;z+=50)
+		for (int x=0;x<500;x+=50)
+			for (int z=0;z<500;z+=50)
 				loadObject(name, px+x, py, pz+z, rx, ry, rz, bakeNode, 0, enable_collisions, scripthandler, 0);
 		return;
 	}
@@ -755,7 +786,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 		if (mo && uniquifyMaterial && instancename)
 		{
-			for(unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
+			for (unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
 			{
 				SubEntity *se = mo->getEntity()->getSubEntity(i);
 				String matname = se->getMaterialName();
@@ -774,7 +805,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		bool rotating=false;
 		bool classic_ref=true;
 		// everything is of concrete by default
-		ground_model_t *gm = collisions->getGroundModelByString("concrete");
+		ground_model_t *gm = globalEnvironment->collisions->getGroundModelByString("concrete");
 		char eventname[256];
 		eventname[0]=0;
 		while (!ds->eof())
@@ -846,7 +877,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				event_filter=EVENT_NONE;
 				eventname[0]=0;
 				collmesh[0]=0;
-				gm = collisions->getGroundModelByString("concrete");
+				gm = globalEnvironment->collisions->getGroundModelByString("concrete");
 				continue;
 			};
 			if (!strncmp("boxcoords", ptline, 9))
@@ -879,13 +910,13 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			if (!strncmp("frictionconfig", ptline, 14) && strlen(ptline) > 15)
 			{
 				// load a custom friction config
-				collisions->loadGroundModelsConfigFile(String(ptline + 15));
+				globalEnvironment->collisions->loadGroundModelsConfigFile(String(ptline + 15));
 				continue;
 			}
 			if ((!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11)) && strlen(ptline) > 12)
 			{
 				String modelName = String(ptline + 12);
-				gm = collisions->getGroundModelByString(modelName);
+				gm = globalEnvironment->collisions->getGroundModelByString(modelName);
 				continue;
 			}
 			if (!strcmp("virtual", ptline)) {virt=true;continue;};
@@ -917,14 +948,14 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			{
 				if (enable_collisions)
 				{
-					int boxnum = collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
+					int boxnum = globalEnvironment->collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
 					obj->collBoxes.push_back((boxnum));
 				}
 				continue;
 			}
 			if (!strcmp("endmesh", ptline))
 			{
-				collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
+				globalEnvironment->collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
 				continue;
 			}
 
@@ -949,7 +980,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 #ifdef USE_ANGELSCRIPT
 				unsigned short affCount = pParticleSys->getNumAffectors();
 				ParticleAffector* pAff;
-				for(unsigned short i = 0; i<affCount; ++i)
+				for (unsigned short i = 0; i<affCount; ++i)
 				{
 					pAff = pParticleSys->getAffector(i);
 					if (pAff->getType()=="ExtinguishableFire")
@@ -1137,14 +1168,17 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 		}
 #endif //USE_MYGUI
+#endif
 }
 
 bool TerrainObjectManager::updateAnimatedObjects(float dt)
 {
-	if (animatedObjects.size() == 0)
-		return true;
+#if 0
+	if (animatedObjects.size() == 0) return true;
+
 	std::vector<animated_object_t>::iterator it;
-	for(it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
+
+	for (it=animatedObjects.begin(); it!=animatedObjects.end(); it++)
 	{
 		if (it->anim && it->speedfactor != 0)
 		{
@@ -1152,5 +1186,6 @@ bool TerrainObjectManager::updateAnimatedObjects(float dt)
 			it->anim->addTime(time);
 		}
 	}
+#endif
 	return true;
 }

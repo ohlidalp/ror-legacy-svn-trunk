@@ -56,7 +56,6 @@ public:
 
 	void getRadioFix(TerrainObjectManager::localizer_t *localizers, int free_localizer, float *vdev, float *hdev);
 
-
 private:
 
 	int mode_heading;

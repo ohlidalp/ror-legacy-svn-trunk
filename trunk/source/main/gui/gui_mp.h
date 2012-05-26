@@ -18,12 +18,11 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 18th of July 2010
-
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
 
-#ifndef GUI_MP_H__
-#define GUI_MP_H__
+#ifndef __GUI_MP_H_
+#define __GUI_MP_H_
 
 #include "RoRPrerequisites.h"
 
@@ -35,12 +34,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class GUI_Multiplayer : public RoRSingletonNoCreation< GUI_Multiplayer >
 {
 public:
-	GUI_Multiplayer(Network *net, Ogre::Camera *mCamera);
+
+	GUI_Multiplayer(Network *net);
 	~GUI_Multiplayer();
 
 	int update();
 	void setVisible(bool value);
 	bool getVisible();
+
 protected:
 
 	typedef struct player_row_t {
@@ -68,16 +69,13 @@ protected:
 	
 	void updateSlot(player_row_t *row, user_info_t *c, bool self);
 
-	Ogre::Camera *mCamera;
 	int lineheight;
 	client_t *clients;
 
 	static const int sidebarWidth = 250;
-
 };
 
-#endif //GUI_MP_H__
+#endif // __GUI_MP_H_
 
 #endif // USE_SOCKETW
 #endif // USE_MYGUI
-
