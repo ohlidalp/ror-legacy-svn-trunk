@@ -2986,7 +2986,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 		delete(terrainManager);
 	}
 
-	terrainManager = new TerrainManager();
+	terrainManager = new TerrainManager(mSceneMgr, mWindow, mCamera, person);
 	terrainManager->loadTerrain(terrainfile);
 
 	if (person) person->setVisible(true);

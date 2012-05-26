@@ -32,17 +32,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ShadowManager.h"
 #include "dashboard.h"
 
+#include "Character.h"
+
 #include "hdrlistener.h"
 
 #include "utils.h"
 
 using namespace Ogre;
 
-TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera) :
+TerrainManager::TerrainManager(Ogre::SceneManager *smgr, Ogre::RenderWindow *window, Ogre::Camera *camera, Character *person) :
 	  mSceneMgr(smgr)
 	, mWindow(window)
 	, mCamera(camera)
 	, waterLine(-9999)
+	, person(person)
 {
 
 }
