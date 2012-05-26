@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreConfigFile.h>
 
 // this class handles all interactions with the Ogre Terrain system
-class TerrainGeometryManager
+class TerrainGeometryManager : public HeightFinder
 {
 public:
 	TerrainGeometryManager(Ogre::SceneManager *smgr, TerrainManager *terrainManager);
@@ -40,6 +40,11 @@ public:
 	void loadOgreTerrainConfig(Ogre::String filename);
 
 	inline Ogre::TerrainGroup *getTerrainGroup() { return mTerrainGroup; };
+
+	inline float getHeightAt(float x, float z)
+	{
+		return mTerrainGroup->getHeightAtWorldPosition(x, 1000, z);
+	}
 
 protected:
 	bool disableCaching;
