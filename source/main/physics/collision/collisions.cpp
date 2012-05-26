@@ -26,9 +26,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Landusemap.h"
 #include "language.h"
 #include "MovableText.h"
-#include "RoRFrameListener.h"
 #include "Scripting.h"
 #include "Settings.h"
+#include "TerrainManager.h"
+//#include "TerrainGeometryManager.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -108,23 +109,22 @@ unsigned int sbox[] =
 using namespace Ogre;
 
 Collisions::Collisions() :
-	, debugMode(false)
-	, collision_count(0)
+	  collision_count(0)
 	, collision_tris(0)
+	, debugMode(false)
 	, forcecam(false)
 	, free_collision_box(0)
 	, free_collision_tri(0)
 	, free_eventsource(0)
 	, hashmask(0)
-	, hfinder(0)
+	, hFinder(0)
 	, landuse(0)
 	, largest_cellcount(0)
 	, last_called_cbox(0)
 	, last_used_ground_model(0)
 	, max_col_tris(MAX_COLLISION_TRIS)
 {
-
-	debugMode = BSETTING("Collision Debug Mode");
+	debugMode = BSETTING("Collision Debug Mode", false);
 	for (int i=0; i < HASH_POWER; i++)
 	{
 		hashmask = hashmask << 1;
@@ -144,7 +144,7 @@ Collisions::Collisions() :
 
 	if (debugMode)
 	{
-		debugmo = smgr->createManualObject();
+		debugmo = gEnv->ogreSceneManager->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
 	}
 }
@@ -353,12 +353,14 @@ Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vecto
 
 void Collisions::setupLandUse(const char *configfile)
 {
+#if 0
 #ifdef USE_PAGED
 	if(landuse) return;
-	landuse = new Landusemap(configfile, this, mefl->mapsizex, mefl->mapsizez);
+	landuse = new Landusemap(configfile);
 #else
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
 #endif //USE_PAGED
+#endif
 }
 
 ground_model_t *Collisions::getGroundModelByString(const String name)
@@ -369,9 +371,9 @@ ground_model_t *Collisions::getGroundModelByString(const String name)
 	return &ground_models[name];
 }
 
-void Collisions::setHfinder(HeightFinder *hfi)
+void Collisions::setHfinder(IHeightFinder *hFinder)
 {
-	hfinder=hfi;
+	hFinder = hFinder;
 }
 
 unsigned int Collisions::hashfunc(unsigned int cellid)
@@ -583,7 +585,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	
 	if (debugMode)
 	{
-		debugsn = smgr->getRootSceneNode()->createChildSceneNode();
+		debugsn = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	}
 
 	// set raw box
@@ -647,7 +649,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	{
 		debugsn->setPosition(p);
 		// box content
-		ManualObject *mo = smgr->createManualObject();
+		ManualObject *mo = gEnv->ogreSceneManager->createManualObject();
 		String matName = "tracks/debug/collision/box";
 		if(virt && scripthandler == -1)
 			matName = "tracks/debug/eventbox/unused";
@@ -693,7 +695,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		debugsn->attachObject(mo);
 
 		// the border
-		mo = smgr->createManualObject();
+		mo = gEnv->ogreSceneManager->createManualObject();
 		mo->begin(matName, Ogre::RenderOperation::OT_LINE_LIST);
 		mo->position(cube_points[0]);
 		mo->position(cube_points[1]);
@@ -735,7 +737,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 			mt->setColor(ColourValue::Black);
 			mt->setRenderingDistance(200);
 
-			SceneNode *n2 = smgr->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n2 = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			n2->attachObject(mt);
 			n2->setPosition(coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
 		}
@@ -895,7 +897,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	int refx, refz;
 	unsigned int k;
 
-	if (!(refpos->x>0 && refpos->x<mefl->mapsizex && refpos->z>0 && refpos->z<mefl->mapsizex)) return false;
+	if (!(refpos->x>0 && refpos->x<gEnv->terrainManager->getMax().x && refpos->z>0 && refpos->z<gEnv->terrainManager->getMax().z)) return false;
 
 	refx=(int)(refpos->x/(float)CELL_SIZE);
 	refz=(int)(refpos->z/(float)CELL_SIZE);
@@ -1334,19 +1336,19 @@ bool Collisions::isInside(Vector3 pos, collision_box_t *cbox, float border)
 
 bool Collisions::groundCollision(node_t *node, float dt, ground_model_t** ogm, float *nso)
 {
-	if (!hfinder) return false;
-	if (landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
+	if (!hFinder) return false;
+	//if (landuse) *ogm = landuse->getGroundModelAt(node->AbsPosition.x, node->AbsPosition.z);
 	// when landuse fails or we dont have it, use the default value
 	if (!*ogm) *ogm = defaultgroundgm;
 	last_used_ground_model = *ogm;
 
 	// new ground collision code
-	Real v=hfinder->getHeightAt(node->AbsPosition.x, node->AbsPosition.z);
+	Real v=hFinder->getHeightAt(node->AbsPosition.x, node->AbsPosition.z);
 	if (v>node->AbsPosition.y)
 	{
 
 		// collision!
-		Ogre::Vector3 normal = hfinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z);
+		Ogre::Vector3 normal = hFinder->getNormalAt(node->AbsPosition.x, v, node->AbsPosition.z);
 		primitiveCollision(node, node->Forces, node->Velocity, normal, dt, *ogm, nso, v-node->AbsPosition.y);
 		return true;
 	}
@@ -1504,9 +1506,9 @@ int Collisions::createCollisionDebugVisualization()
 		mat->setReceiveShadows(false);
 	}
 
-	for(int x=0; x<(int)(mefl->mapsizex); x+=(int)CELL_SIZE)
+	for(int x=0; x<(int)(gEnv->terrainManager->getMax().x); x+=(int)CELL_SIZE)
 	{
-		for(int z=0; z<(int)(mefl->mapsizez); z+=(int)CELL_SIZE)
+		for(int z=0; z<(int)(gEnv->terrainManager->getMax().z); z+=(int)CELL_SIZE)
 		{
 			int cellx = (int)(x/(float)CELL_SIZE);
 			int cellz = (int)(z/(float)CELL_SIZE);
@@ -1518,10 +1520,10 @@ int Collisions::createCollisionDebugVisualization()
 				float z2 = z+CELL_SIZE;
 
 				// find a good ground height for all corners of the cell ...
-				Real h1=hfinder->getHeightAt(x, z);
-				Real h2=hfinder->getHeightAt(x2, z);
-				Real h3=hfinder->getHeightAt(x, z2);
-				Real h4=hfinder->getHeightAt(x2, z2);
+				Real h1=hFinder->getHeightAt(x, z);
+				Real h2=hFinder->getHeightAt(x2, z);
+				Real h3=hFinder->getHeightAt(x, z2);
+				Real h4=hFinder->getHeightAt(x2, z2);
 				if(h1>groundheight)
 					groundheight = h1;
 				if(h2>groundheight)
@@ -1542,8 +1544,8 @@ int Collisions::createCollisionDebugVisualization()
 				String matName = "mat-coll-dbg-"+TOSTRING((int)(percentd*100));
 				String cell_name="("+TOSTRING(cellx)+","+ TOSTRING(cellz)+")";
 
-				ManualObject *mo =  smgr->createManualObject("collisionDebugVisualization"+cell_name);
-				SceneNode *mo_node = smgr->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
+				ManualObject *mo =  gEnv->ogreSceneManager->createManualObject("collisionDebugVisualization"+cell_name);
+				SceneNode *mo_node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
 
 				mo->begin(matName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
@@ -1598,7 +1600,7 @@ int Collisions::createCollisionDebugVisualization()
 int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm, std::vector<int> *collTris)
 {
 	// normal, non virtual collision box
-	Entity *ent = smgr->createEntity(meshname);
+	Entity *ent = gEnv->ogreSceneManager->createEntity(meshname);
 	ent->setMaterialName("tracks/debug/collision/mesh");
 
 	if(!gm)
@@ -1625,10 +1627,10 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 	delete[] indices;
 	if(!debugMode)
 	{
-		smgr->destroyEntity(ent);
+		gEnv->ogreSceneManager->destroyEntity(ent);
 	} else
 	{
-		SceneNode *n=smgr->getRootSceneNode()->createChildSceneNode();
+		SceneNode *n=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(ent);
 		n->setPosition(pos);
 		n->setScale(scale);
@@ -1768,7 +1770,7 @@ void Collisions::finishLoadingTerrain()
 {
 	if(debugMode)
 	{
-		SceneNode *debugsn = mefl->getSceneMgr()->getRootSceneNode()->createChildSceneNode();
+		SceneNode *debugsn = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		debugmo->end();
 		debugsn->setPosition(Vector3::ZERO);
 		debugsn->attachObject(debugmo);

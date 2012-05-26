@@ -120,10 +120,9 @@ private:
 	bool permitEvent(int filter);
 	bool envokeScriptCallback(collision_box_t *cbox, node_t *node=0);
 
-	HeightFinder *hfinder;
+	IHeightFinder *hFinder;
 	Landusemap *landuse;
 	Ogre::ManualObject *debugmo;
-	RoRFrameListener *mefl;
 	bool debugMode;
 	int collision_count;
 	int collision_version;
@@ -153,7 +152,7 @@ public:
 	Ogre::Quaternion getDirection(char* instance, char* box);
 	collision_box_t *getBox(char* instance, char* box);
 
-	void setHfinder(HeightFinder *hf);
+	void setHfinder(IHeightFinder *hf);
 
 	eventsource_t *isTruckInEventBox(Beam *truck);
 
