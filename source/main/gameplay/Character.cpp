@@ -37,7 +37,7 @@ using namespace Ogre;
 
 unsigned int Character::characterCounter = 0;
 
-Character::Character(Camera *cam, Collisions *c, Network *net, HeightFinder *h, Water *w, MapControl *m, SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote) :
+Character::Character(Camera *cam, Collisions *c, Network *net, MapControl *m, SceneManager *scm, int source, unsigned int streamid, int colourNumber, bool remote) :
 	  beamCoupling(0)
 	, canJump(false)
 	, characterRotation(0.0f)
@@ -45,7 +45,6 @@ Character::Character(Camera *cam, Collisions *c, Network *net, HeightFinder *h, 
 	, characterVSpeed(0.0f)
 	, collisions(c)
 	, colourNumber(colourNumber)
-	, hFinder(h)
 	, last_net_time(0)
 	, mAnimState(0)
 	, mCamera(cam)
@@ -252,11 +251,6 @@ void Character::setCollisions(Collisions *collisions)
 	this->collisions = collisions;
 }
 
-void Character::setHFinder(HeightFinder *hFinder)
-{
-	this->hFinder = hFinder;
-}
-
 void Character::setWater(Water *water)
 {
 	this->water = water;
@@ -344,7 +338,7 @@ void Character::update(float dt)
 		mLastPosition = position;
 
 		// ground contact
-		float pheight = hFinder->getHeightAt(position.x,position.z);
+		float pheight = gEnv->heightFinder->getHeightAt(position.x,position.z);
 
 		if (position.y < pheight)
 		{

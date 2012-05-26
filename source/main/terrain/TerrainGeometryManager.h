@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __TerrainGeometryManager_H_
-#define __TerrainGeometryManager_H_
+#ifndef TerrainGeometryManager_H__
+#define TerrainGeometryManager_H__
 
 #include "RoRPrerequisites.h"
 
@@ -30,11 +30,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreConfigFile.h>
 
+#include "IHeightFinder.h"
+
 // this class handles all interactions with the Ogre Terrain system
-class TerrainGeometryManager
+class TerrainGeometryManager : public IHeightFinder
 {
 public:
-
 	TerrainGeometryManager(TerrainManager *terrainManager);
 	~TerrainGeometryManager();
 
@@ -58,16 +59,16 @@ public:
 	}
 
 protected:
-
-	Ogre::ConfigFile terrainConfig;
-	Ogre::String baseName;
-	TerrainManager *terrainManager;
-	TerrainObjectManager *objectManager;
 	bool disableCaching;
 	bool mTerrainsImported;
+	Ogre::SceneManager *mSceneMgr;
+	TerrainManager *terrainManager;
 	int mapsizex, mapsizey, mapsizez, pageSize, terrainSize, worldSize;
+	Ogre::String baseName;
+	Ogre::ConfigFile terrainConfig;
 	int pageMinX, pageMaxX, pageMinY, pageMaxY;
 	int terrainLayers;
+	TerrainObjectManager *objectManager;
 
 	// terrain engine specific
 	Ogre::TerrainGroup *mTerrainGroup;
@@ -89,5 +90,6 @@ protected:
 	void initBlendMaps( Ogre::Terrain* t );
 	void getTerrainImage(int x, int y, Ogre::Image& img);
 };
+#endif // TerrainGeometryManager_H__
 
-#endif // __TerrainGeometryManager_H_
+
