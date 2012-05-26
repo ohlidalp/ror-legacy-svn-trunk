@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ChatSystem.h"
 #include "gui_manager.h"
 #include "gui_menu.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "HighScoreWindow.h"
 #include "language.h"
 #include "network.h"

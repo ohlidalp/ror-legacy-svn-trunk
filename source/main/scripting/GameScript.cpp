@@ -42,7 +42,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "Character.h"
 #include "Console.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "IWater.h"
 #include "language.h"
 #include "network.h"

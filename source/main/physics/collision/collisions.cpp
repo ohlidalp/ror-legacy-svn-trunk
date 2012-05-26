@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "approxmath.h"
 #include "BeamFactory.h"
 #include "errorutils.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "Landusemap.h"
 #include "language.h"
 #include "MovableText.h"
