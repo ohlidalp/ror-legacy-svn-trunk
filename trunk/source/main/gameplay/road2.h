@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "heightfinder.h"
+
 #include "collisions.h"
 
 // dynamic roads
@@ -32,7 +32,7 @@ class Road2
 {
 public:
 
-	Road2(Ogre::SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id);
+	Road2(int id);
 	~Road2();
 
 	void addBlock(Ogre::Vector3 pos, Ogre::Quaternion rot, int type, float width, float bwidth, float bheight, int pillartype=1);
@@ -66,7 +66,6 @@ private:
 
 	Ogre::MeshPtr msh;
 	Ogre::SubMesh* mainsub;
-	Ogre::SceneManager *smanager;
 
 	Ogre::Vector2 tex[MAX_VERTEX];
 	Ogre::Vector3 vertex[MAX_VERTEX];
@@ -74,8 +73,6 @@ private:
 	int vertexcount;
 	short tris[MAX_TRIS*3];
 
-	Collisions *coll;
-	HeightFinder* hfinder;
 	Ogre::Quaternion lastrot;
 	Ogre::SceneNode *snode;
 	Ogre::Vector3 lastpos;

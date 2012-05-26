@@ -21,13 +21,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "road2.h"
 #include "ResourceBuffer.h"
 
+#include "IHeightFinder.h"
+
 using namespace Ogre;
 
-Road2::Road2(SceneManager *manager, HeightFinder *hf, Collisions *collisions, int id) :
-	  smanager(manager)
-	, coll(collisions)
-	, first(true)
-	, hfinder(hf)
+Road2::Road2(int id) :
+	  first(true)
 	, mid(id)
 	, snode(0)
 	, tricount(0)
@@ -54,7 +53,7 @@ Road2::~Road2()
 		for(std::vector<int>::iterator it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
 		{
 			//coll->enableCollisionTri(*it, false);
-			coll->removeCollisionTri(*it);
+			gEnv->collisions->removeCollisionTri(*it);
 		}
 	}
 }
@@ -80,8 +79,8 @@ void Road2::finish()
 	createMesh();
 	String entity_name = String("RoadSystem_Instance-").append(StringConverter::toString(mid));
 	String mesh_name = String("RoadSystem-").append(StringConverter::toString(mid));
-	Entity *ec = smanager->createEntity(entity_name, mesh_name);
-	snode = smanager->getRootSceneNode()->createChildSceneNode();
+	Entity *ec = gEnv->ogreSceneManager->createEntity(entity_name, mesh_name);
+	snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ec);
 }
 
@@ -93,8 +92,8 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 		//define type
 		Vector3 leftv=pos+rot*Vector3(0,0,bwidth+width/2.0);
 		Vector3 rightv=pos+rot*Vector3(0,0,-bwidth-width/2.0);
-		float dleft=leftv.y-hfinder->getHeightAt(leftv.x, leftv.z);
-		float dright=rightv.y-hfinder->getHeightAt(rightv.x, rightv.z);
+		float dleft=leftv.y-gEnv->heightFinder->getHeightAt(leftv.x, leftv.z);
+		float dright=rightv.y-gEnv->heightFinder->getHeightAt(rightv.x, rightv.z);
 		if (dleft<bheight+0.1 && dright<bheight+0.1) type=ROAD_FLAT;
 		if (dleft<bheight+0.1 && dright>=bheight+0.1 && dright<4.0) type=ROAD_LEFT;
 		if (dleft>=bheight+0.1 && dleft<4.0 && dright<bheight+0.1) type=ROAD_RIGHT;
@@ -161,9 +160,9 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			Vector3 rightv=pos+rot*Vector3(0,0,-bwidth-width/2.0);
 			Vector3 middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * 0.5;
-			float heightleft = hfinder->getHeightAt(leftv.x, leftv.z);
-			float heightright = hfinder->getHeightAt(rightv.x, rightv.z);
-			float heightmiddle = hfinder->getHeightAt(middle.x, middle.z);
+			float heightleft = gEnv->heightFinder->getHeightAt(leftv.x, leftv.z);
+			float heightright = gEnv->heightFinder->getHeightAt(rightv.x, rightv.z);
+			float heightmiddle = gEnv->heightFinder->getHeightAt(middle.x, middle.z);
 
 			bool builtpillars = true;
 
@@ -191,7 +190,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			
 			middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * sidefactor;
-			float len = middle.y - hfinder->getHeightAt(middle.x, middle.z) + 5;
+			float len = middle.y - gEnv->heightFinder->getHeightAt(middle.x, middle.z) + 5;
 			float width2 = len / 30;
 
 			if(pillartype == 2 && len > 20)
@@ -330,7 +329,7 @@ void Road2::computePoints(Vector3 *pts, Vector3 pos, Quaternion rot, int type, f
 
 inline Vector3 Road2::baseOf(Vector3 p)
 {
-	float y = hfinder->getHeightAt(p.x, p.z) - 0.01;
+	float y = gEnv->heightFinder->getHeightAt(p.x, p.z) - 0.01;
 
 	if (y > p.y)
 	{
@@ -375,9 +374,9 @@ void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, 
 	}
 	if (collision)
 	{
-		ground_model_t *gm = coll->getGroundModelByString("concrete");
+		ground_model_t *gm = gEnv->collisions->getGroundModelByString("concrete");
 		if (texfit==TEXFIT_ROAD || texfit==TEXFIT_ROADS1 || texfit==TEXFIT_ROADS2 || texfit==TEXFIT_ROADS3 || texfit==TEXFIT_ROADS4)
-			gm = coll->getGroundModelByString("asphalt");
+			gm = gEnv->collisions->getGroundModelByString("asphalt");
 		addCollisionQuad(p1, p2, p3, p4, gm, flip);
 	}
 	tricount+=2;
@@ -521,23 +520,23 @@ void Road2::addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, gro
 	int triID=0;
 	if (flip)
 	{
-		triID = coll->addCollisionTri(p1, p2, p4, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p2, p4, gm);
 		if(triID>=0) registeredCollTris.push_back(triID);
 
-		triID = coll->addCollisionTri(p4, p2, p3, gm);
+		triID = gEnv->collisions->addCollisionTri(p4, p2, p3, gm);
 		if(triID>=0) registeredCollTris.push_back(triID);
 	}
 	else
 	{
-		triID = coll->addCollisionTri(p1, p2, p3, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p2, p3, gm);
 		if(triID>=0) registeredCollTris.push_back(triID);
 
-		triID = coll->addCollisionTri(p1, p3, p4, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p3, p4, gm);
 		if(triID>=0) registeredCollTris.push_back(triID);
 	}
 
-//		coll->addCollisionTri(p1, p4, p3);
-//		coll->addCollisionTri(p1, p3, p2);
+//		gEnv->collisions->addCollisionTri(p1, p4, p3);
+//		gEnv->collisions->addCollisionTri(p1, p3, p2);
 }
 
 

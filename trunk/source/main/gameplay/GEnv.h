@@ -27,6 +27,7 @@ class IHeightFinder;
 class Water;
 class Network;
 class MapControl;
+class Character;
 
 class GlobalEnvironment
 {
@@ -44,6 +45,7 @@ public:
 		, water(0)
 		, network(0)
 		, surveyMap(0)
+		, player(0)
 	{
 	}
 	Ogre::Root *ogreRoot;
@@ -59,6 +61,7 @@ public:
 	Water *water;
 	Network *network;
 	MapControl *surveyMap;
+	Character *player;
 };
 
 #endif // GEnv_H__
