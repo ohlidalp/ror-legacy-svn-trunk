@@ -166,6 +166,12 @@ void TerrainManager::initSubSystems()
 	if(!BSETTING("Envmapdisable", false))
 		initEnvironmentMap();
 
+	// map must be loaded before the script engine
+	// init the map
+	if (!BSETTING("disableOverViewMap", false))
+		initSurveyMap();
+
+
 	initDashboards();
 }
 
@@ -557,7 +563,12 @@ void TerrainManager::setGravity(float value)
 	BeamFactory::getSingleton().recalcGravityMasses();
 }
 
-static float TerrainManager::getGravity()
+float TerrainManager::getGravity()
 {
 	return gravity;
+}
+
+void TerrainManager::initSurveyMap()
+{
+	surveyMap = new MapControl(mapsizex, mapsizey, mapsizez);
 }

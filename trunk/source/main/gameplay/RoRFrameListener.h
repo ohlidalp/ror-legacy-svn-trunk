@@ -196,7 +196,6 @@ protected:
 
 	unsigned int mNumScreenShots;
 	
-	bool updateAnimatedObjects(float dt);
 	bool updateTruckMirrors(float dt);
 
 	int setupBenchmark();

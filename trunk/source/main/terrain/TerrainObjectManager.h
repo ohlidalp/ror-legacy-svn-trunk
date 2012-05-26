@@ -65,7 +65,7 @@ protected:
 
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
-
+	bool updateAnimatedObjects(float dt);
 };
 #endif // TERRAINOBJECTMANAGER_H__
 
