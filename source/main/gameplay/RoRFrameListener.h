@@ -246,7 +246,7 @@ protected:
 
 	void gridScreenshots(Ogre::RenderWindow* pRenderWindow, Ogre::Camera* pCamera, const int& pGridSize, const Ogre::String& path, const Ogre::String& pFileName, const Ogre::String& pFileExtention, const bool& pStitchGridImages);
 	void initDust();
-	void initHDR();
+
 	void initSoftShadows();
 	void initializeCompontents();
 	void updateGUI(float dt); // update engine panel
@@ -265,10 +265,6 @@ private:
 
 public: // public methods
 
-	static float getGravity() { return gravity; };
-	static void setGravity(float value);
-
-	Collisions *getCollisions() { return collisions; };
 	Network *getNetwork() { return net; };
 
 	Ogre::RenderWindow *getRenderWindow() { return mWindow; };
@@ -277,8 +273,6 @@ public: // public methods
 	Ogre::String saveTerrainMesh();
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
-	Water *getWater() { return w; };
-	Envmap *getEnvmap() { return envmap; };
 
 	bool RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName);
 	bool frameEnded(const Ogre::FrameEvent& evt);
@@ -296,10 +290,11 @@ public: // public methods
 	void hideGUI(bool visible);
 	void hideMap();
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false, Skin *skin=NULL);
+	
 	void loadNewTerrain(Ogre::String terrainfile);
 	void loadClassicTerrain(Ogre::String terrainfile);
 	void loadNetTerrain(char *preselected_map);
-	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
+	
 	void loadTerrain(Ogre::String terrainfile);
 	void netDisconnectTruck(int number);
 	void pauseSim(bool value);
@@ -313,7 +308,6 @@ public: // public methods
 	void showspray(bool s);
 	void shutdown_final();
 	void startTimer();
-	void unloadObject(const char* name);
 	void updateRacingGUI();
 	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
 

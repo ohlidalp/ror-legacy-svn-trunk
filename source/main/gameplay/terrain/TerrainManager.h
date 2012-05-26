@@ -31,6 +31,14 @@ public:
 
 	void loadTerrain(Ogre::String filename);
 
+	void setGravity(float value);
+	float getGravity();
+
+
+	inline Collisions *getCollisions() { return collisions; };
+	inline Water *getWater() { return w; };
+	inline Envmap *getEnvmap() { return envmap; };
+
 protected:
 	// members
 	Ogre::SceneManager *mSceneMgr;
@@ -62,6 +70,7 @@ protected:
 	Ogre::Vector3 startPosition;
 	bool useCaelum;
 	int farclip;
+	float gravity;
 
 
 	Ogre::Light *mainLight;
