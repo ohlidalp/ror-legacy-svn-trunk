@@ -42,11 +42,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexObj.h"
 #include "IHeightFinder.h"
 #include "InputEngine.h"
-#include "IWater.h"
 #include "language.h"
 #include "MeshObject.h"
 #include "MovableText.h"
 #include "network.h"
+#include "Ogre.h"
 #include "PointColDetector.h"
 #include "PositionStorage.h"
 #include "Replay.h"
@@ -57,8 +57,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Skidmark.h"
 #include "SlideNode.h"
 #include "SoundScriptManager.h"
+#include "TerrainManager.h"
 #include "turbojet.h"
 #include "turboprop.h"
+#include "Water.h"
 
 // some gcc fixes
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -80,7 +82,7 @@ Beam* Beam::threadbeam[MAX_TRUCKS];
 int Beam::thread_mode = THREAD_SINGLE;
 int Beam::free_tb = 0;
 
-Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool networked/* =false  */, bool networking/* =false  */, collision_box_t *spawnbox/* =NULL  */, bool ismachine/* =false  */, int flareMode/* =0  */, std::vector<String> *truckconfig/* =0  */, Skin *skin/* =0  */, bool freeposition/* =false */) :
+Beam::Beam(int tnum , Vector3 pos , Quaternion rot , const char* fname , bool networked/* =false  */, bool networking/* =false  */, collision_box_t *spawnbox/* =NULL  */, bool ismachine/* =false  */, int flareMode/* =0  */, std::vector<String> *truckconfig/* =0  */, Skin *skin/* =0  */, bool freeposition/* =false */) :
 	  deleting(false)
 	, abs_state(false)
 	, abs_timer(0.0)
@@ -97,7 +99,7 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	, cameranodeacc(Vector3::ZERO)
 	, cameranodecount(0)
 	, canwork(1)
-	, collisions(icollisions)
+	, collisions(gEnv->collisions)
 	, cparticle_mode(false)
 	, currentScale(1)
 	, currentcamera(-1) // -1 = external
@@ -118,27 +120,24 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	, hydroelevatorstate(0)
 	, hydroruddercommand(0)
 	, hydrorudderstate(0)
-	, ipy(py)
+	, iPosition(pos)
 	, isInside(false)
 	, label(tnum) // convenient, but set overwise elsewhere for a good cause
 	, lastFuzzyGroundModel(0)
 	, last_net_time(0)
-	, lastlastposition(Vector3(px, py, pz))
-	, lastposition(Vector3(px, py, pz))
+	, lastlastposition(pos)
+	, lastposition(pos)
 	, lastwspeed(0.0)
 	, leftMirrorAngle(0.52)
 	, lights(1)
 	, lockSkeletonchange(false)
 	, mTimeUntilNextToggle(0)
-	, mWindow(win)
-	, mapsizex(_mapsizex)
-	, mapsizez(_mapsizez)
 	, meshesVisible(true)
 	, minCameraRadius(0)
 	, mousemoveforce(0.0f)
 	, mousenode(-1)
 	, mousepos(Vector3::ZERO)
-	, net(_net)
+	, net(0)
 	, netBrakeLight(false)
 	, netLabelNode(0)
 	, netMT(0)
@@ -146,10 +145,9 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	, networkAuthlevel(0)
 	, networkUsername("")
 	, oldreplaypos(-1)
-	, parentNode(parent)
 	, parkingbrake(0)
 	, posStorage(0)
-	, position(Vector3(px, py, pz))
+	, position(pos)
 	, previousGear(0)
 	, refpressure(50.0)
 	, replay(0)
@@ -175,7 +173,6 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	, stabsleep(0.0)
 	, tdt(0.1)
 	, totalmass(0)
-	, tsm(manager)
 	, tsteps(100)
 	, ttdt(0.1)
 	, watercontact(0)
@@ -216,7 +213,7 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	enable_wheel2 = true; // since 0.38 enabled wheels2 by default
 	engine = 0;
 
-	flaresMode = _flaresMode;
+	flaresMode = flaresMode;
 
 	freePositioned = freeposition;
 	free_aeroengine = 0;
@@ -249,10 +246,7 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	disableTruckTruckSelfCollisions = BSETTING("DisableSelfCollisions", false);
 
 	heathaze = !disable_smoke && BSETTING("HeatHaze", false);
-	hfinder = mfinder;
 	hideInChooser = false;
-
-	mCamera = pcam;
 
 	mrtime = 0.0;
 
@@ -278,7 +272,6 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	trucknum = tnum;
 
 	usedSkin = skin;
-	water = w;
 
 #ifdef USE_MYGUI
 	dash = new DashBoardManager();
@@ -292,7 +285,7 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 
 	if (net) networking = true; // enable networking if some network class is existing
 
-	for(int i=0; i<MAX_SUBMESHES; i++)
+	for (int i=0; i<MAX_SUBMESHES; i++)
 	{
 		subisback[i] = 0;
 	}	
@@ -305,11 +298,11 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	}
 
 	// copy truck config
-	if (_truckconfig && _truckconfig->size())
+	if (truckconfig && truckconfig->size())
 	{
-		for(std::vector<String>::iterator it = _truckconfig->begin(); it != _truckconfig->end(); it++)
+		for (std::vector<String>::iterator it = truckconfig->begin(); it != truckconfig->end(); it++)
 		{
-			truckconfig.push_back(*it);
+			this->truckconfig.push_back(*it);
 		}
 	}
 
@@ -318,29 +311,29 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
 	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
 
-	submesh_ground_model = icollisions->defaultgm;
+	submesh_ground_model = gEnv->collisions->defaultgm;
 
 	realtruckfilename = String(fname);
 	sprintf(truckname, "t%i", tnum);
 	
 	strcpy(uniquetruckid,"-1");
-	
-	simpleSkeletonNode = parent->createChildSceneNode();
+
+	simpleSkeletonNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(simpleSkeletonNode);
 	
-	beamsRoot=parent->createChildSceneNode();
+	beamsRoot=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(netLabelNode);
 	// skidmark stuff
 	useSkidmarks = BSETTING("Skidmarks", false);
 
 	// always init skidmarks with 0
-	for(int i=0; i<MAX_WHEELS*2; i++)
+	for (int i=0; i<MAX_WHEELS*2; i++)
 	{
 		skidtrails[i] = 0;
 	}	
 
 	// you could disable the collision code here:
-	if(!disableTruckTruckCollisions)
+	if (!disableTruckTruckCollisions)
 		pointCD = new PointColDetector();
 	
 	dustp   = DustManager::getSingleton().getDustPool("dust");
@@ -358,7 +351,7 @@ Beam::Beam(int tnum , Real pos , Quaternion rot , const char* fname , bool netwo
 	cparticle_enabled = BSETTING("Particles", true);
 	if (strnlen(fname, 200) > 0)
 	{
-		if (loadTruck2(String(fname), manager, parent, Vector3(px, py, pz), rot, spawnbox))
+		if (loadTruck2(String(fname), beamsRoot, pos, rot, spawnbox))
 		{
 	   		return;
 		}
@@ -488,39 +481,39 @@ Beam::~Beam()
 
 	// delete all classes we might have constructed
 #ifdef USE_MYGUI
-	if(dash) delete dash; dash=0;
+	if (dash) delete dash; dash=0;
 #endif // USE_MYGUI
 
 	// stop all the Sounds
 #ifdef USE_OPENAL
-	for(int i=SS_TRIG_NONE+1; i<SS_MAX_TRIG; i++)
+	for (int i=SS_TRIG_NONE+1; i<SS_MAX_TRIG; i++)
 	{
 		SoundScriptManager::getSingleton().trigStop(this->trucknum, i);
 	}
 #endif // USE_OPENAL
 
 	// destruct and remove every tiny bit of stuff we created :-|
-	if(nettimer) delete nettimer; nettimer=0;
-	if(engine) delete engine; engine=0;
-	if(buoyance) delete buoyance; buoyance=0;
-	if(autopilot) delete autopilot;
-	if(fuseAirfoil) delete fuseAirfoil;
-	if(cabMesh) delete cabMesh;
-	if(materialFunctionMapper) delete materialFunctionMapper;
-	if(replay) delete replay;
+	if (nettimer) delete nettimer; nettimer=0;
+	if (engine) delete engine; engine=0;
+	if (buoyance) delete buoyance; buoyance=0;
+	if (autopilot) delete autopilot;
+	if (fuseAirfoil) delete fuseAirfoil;
+	if (cabMesh) delete cabMesh;
+	if (materialFunctionMapper) delete materialFunctionMapper;
+	if (replay) delete replay;
 
 	std::vector<SceneNode*> deletion_sceneNodes;
 	std::vector<Entity *> deletion_Entities;
 
 	// remove all scene nodes
-	if(deletion_sceneNodes.size() > 0)
+	if (deletion_sceneNodes.size() > 0)
 	{
 		int size = (int)deletion_sceneNodes.size();
-		for(int i=0;i<size; i++)
+		for (int i=0;i<size; i++)
 		{
-			if(!deletion_sceneNodes[i]) continue;
+			if (!deletion_sceneNodes[i]) continue;
 			deletion_sceneNodes[i]->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(deletion_sceneNodes[i]);
+			gEnv->ogreSceneManager->destroySceneNode(deletion_sceneNodes[i]);
 
 			deletion_sceneNodes[i]=0;
 		}
@@ -528,134 +521,134 @@ Beam::~Beam()
 	// delete skidmarks as well?!
 
 	// delete wings
-	for(int i=0; i<free_wing;i++)
+	for (int i=0; i<free_wing;i++)
 	{
 		// flexAirfoil, airfoil
-		if(wings[i].fa) delete wings[i].fa; wings[i].fa=0;
-		if(wings[i].cnode)
+		if (wings[i].fa) delete wings[i].fa; wings[i].fa=0;
+		if (wings[i].cnode)
 		{
 			wings[i].cnode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(wings[i].cnode);
+			gEnv->ogreSceneManager->destroySceneNode(wings[i].cnode);
 		}
 	}
 
 	// delete aeroengines
-	for(int i=0; i<free_aeroengine;i++)
+	for (int i=0; i<free_aeroengine;i++)
 	{
-		if(aeroengines[i]) delete aeroengines[i];
+		if (aeroengines[i]) delete aeroengines[i];
 	}
 
 	// delete screwprops
-	for(int i=0; i<free_screwprop;i++)
+	for (int i=0; i<free_screwprop;i++)
 	{
-		if(screwprops[i]) delete screwprops[i];
+		if (screwprops[i]) delete screwprops[i];
 	}
 
 	// delete airbrakes
-	for(int i=0; i<free_airbrake;i++)
+	for (int i=0; i<free_airbrake;i++)
 	{
-		if(airbrakes[i]) delete airbrakes[i];
+		if (airbrakes[i]) delete airbrakes[i];
 	}
 
 	// delete flexbodies
-	for(int i=0; i<free_flexbody;i++)
+	for (int i=0; i<free_flexbody;i++)
 	{
-		if(flexbodies[i]) delete flexbodies[i];
+		if (flexbodies[i]) delete flexbodies[i];
 	}
 
 
 	// delete meshwheels
-	for(int i=0; i<free_wheel;i++)
+	for (int i=0; i<free_wheel;i++)
 	{
 
-		//if(vwheels[i].fm) delete vwheels[i].fm; // CRASH!
-		if(vwheels[i].cnode)
+		//if (vwheels[i].fm) delete vwheels[i].fm; // CRASH!
+		if (vwheels[i].cnode)
 		{
 			vwheels[i].cnode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(vwheels[i].cnode);
+			gEnv->ogreSceneManager->destroySceneNode(vwheels[i].cnode);
 		}
 	}
 
 	// delete props
-	for(int i=0; i<free_prop;i++)
+	for (int i=0; i<free_prop;i++)
 	{
-		if(props[i].bbsnode[0])
+		if (props[i].bbsnode[0])
 		{
 			props[i].bbsnode[0]->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].bbsnode[0]);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[0]);
 		}
-		if(props[i].bbsnode[1])
+		if (props[i].bbsnode[1])
 		{
 			props[i].bbsnode[1]->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].bbsnode[1]);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[1]);
 		}
-		if(props[i].bbsnode[2])
+		if (props[i].bbsnode[2])
 		{
 			props[i].bbsnode[2]->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].bbsnode[2]);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[2]);
 		}
-		if(props[i].bbsnode[3])
+		if (props[i].bbsnode[3])
 		{
 			props[i].bbsnode[3]->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].bbsnode[3]);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[3]);
 		}
-		if(props[i].snode)
+		if (props[i].snode)
 		{
 			props[i].snode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].snode);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].snode);
 		}
-		if(props[i].wheel)
+		if (props[i].wheel)
 		{
 			props[i].wheel->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(props[i].wheel);
+			gEnv->ogreSceneManager->destroySceneNode(props[i].wheel);
 		}
-		if(props[i].light[0]) tsm->destroyLight(props[i].light[0]);
-		if(props[i].light[1]) tsm->destroyLight(props[i].light[1]);
-		if(props[i].light[2]) tsm->destroyLight(props[i].light[2]);
-		if(props[i].light[3]) tsm->destroyLight(props[i].light[3]);
+		if (props[i].light[0]) gEnv->ogreSceneManager->destroyLight(props[i].light[0]);
+		if (props[i].light[1]) gEnv->ogreSceneManager->destroyLight(props[i].light[1]);
+		if (props[i].light[2]) gEnv->ogreSceneManager->destroyLight(props[i].light[2]);
+		if (props[i].light[3]) gEnv->ogreSceneManager->destroyLight(props[i].light[3]);
 	}
 
 	// delete flares
 	for (int i=0; i<free_flare; i++)
 	{
-		if(flares[i].snode)
+		if (flares[i].snode)
 		{
 			flares[i].snode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(flares[i].snode);
+			gEnv->ogreSceneManager->destroySceneNode(flares[i].snode);
 		}
-		if(flares[i].light) tsm->destroyLight(flares[i].light);
+		if (flares[i].light) gEnv->ogreSceneManager->destroyLight(flares[i].light);
 
 	}
 
 	// delete exhausts
-	for(std::vector < exhaust_t >::iterator it=exhausts.begin(); it!=exhausts.end(); it++)
+	for (std::vector < exhaust_t >::iterator it=exhausts.begin(); it!=exhausts.end(); it++)
 	{
-		if(it->smokeNode)
+		if (it->smokeNode)
 		{
 			it->smokeNode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(it->smokeNode);
+			gEnv->ogreSceneManager->destroySceneNode(it->smokeNode);
 		}
-		if(it->smoker)
+		if (it->smoker)
 		{
 			it->smoker->removeAllAffectors();
 			it->smoker->removeAllEmitters();
-			tsm->destroyParticleSystem(it->smoker);
+			gEnv->ogreSceneManager->destroyParticleSystem(it->smoker);
 		}
 	}
 
 	// delete cparticles
 	for (int i=0; i<free_cparticle; i++)
 	{
-		if(cparticles[free_cparticle].snode)
+		if (cparticles[free_cparticle].snode)
 		{
 			cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
-			tsm->destroySceneNode(cparticles[free_cparticle].snode);
+			gEnv->ogreSceneManager->destroySceneNode(cparticles[free_cparticle].snode);
 		}
-		if(cparticles[free_cparticle].psys)
+		if (cparticles[free_cparticle].psys)
 		{
 			cparticles[free_cparticle].psys->removeAllAffectors();
 			cparticles[free_cparticle].psys->removeAllEmitters();
-			tsm->destroyParticleSystem(cparticles[free_cparticle].psys);
+			gEnv->ogreSceneManager->destroyParticleSystem(cparticles[free_cparticle].psys);
 		}
 
 	}
@@ -663,23 +656,23 @@ Beam::~Beam()
 	// delete beams
 	for (int i=0; i<free_beam; i++)
 	{
-		if(beams[i].mEntity)    beams[i].mEntity->setVisible(false);
-		if(beams[i].mSceneNode)
+		if (beams[i].mEntity)    beams[i].mEntity->setVisible(false);
+		if (beams[i].mSceneNode)
 		{
 			beams[i].mSceneNode->removeAndDestroyAllChildren();
-			//tsm->destroySceneNode(beams[i].mSceneNode);
+			//gEnv->ogreSceneManager->destroySceneNode(beams[i].mSceneNode);
 		}
 	}
 
 	// delete Rails
-	for(std::vector< RailGroup* >::iterator it = mRailGroups.begin(); it != mRailGroups.end(); it++)
+	for (std::vector< RailGroup* >::iterator it = mRailGroups.begin(); it != mRailGroups.end(); it++)
 	{
 		// signal to the Rail that
 		(*it)->cleanUp();
 		delete (*it);
 	}
 
-	if(netMT)
+	if (netMT)
 	{
 		netMT->setVisible(false);
 		delete netMT;
@@ -693,10 +686,10 @@ void Beam::scaleTruck(float value)
 {
 	BES_GFX_START(BES_GFX_ScaleTruck);
 
-	if(value<0) return;
+	if (value<0) return;
 	currentScale *= value;
 	// scale beams
-	for(int i=0;i<free_beam;i++)
+	for (int i=0;i<free_beam;i++)
 	{
 		//beams[i].k *= value;
 		beams[i].d *= value;
@@ -712,7 +705,7 @@ void Beam::scaleTruck(float value)
 	Vector3 refpos = nodes[0].AbsPosition;
 	Vector3 relpos = nodes[0].RelPosition;
 	Vector3 smopos = nodes[0].smoothpos;
-	for(int i=1;i<free_node;i++)
+	for (int i=1;i<free_node;i++)
 	{
 		nodes[i].iPosition = refpos + (nodes[i].iPosition-refpos) * value;
 		nodes[i].AbsPosition = refpos + (nodes[i].AbsPosition-refpos) * value;
@@ -729,20 +722,20 @@ void Beam::scaleTruck(float value)
 
 	// props and stuff
 	// TOFIX: care about prop positions as well!
-	for(int i=0;i<free_prop;i++)
+	for (int i=0;i<free_prop;i++)
 	{
-		if(props[i].snode) props[i].snode->scale(value, value, value);
-		if(props[i].wheel) props[i].wheel->scale(value, value, value);
-		if(props[i].wheel) props[i].wheelpos = relpos + (props[i].wheelpos-relpos) * value;
-		if(props[i].bbsnode[0]) props[i].bbsnode[0]->scale(value, value, value);
-		if(props[i].bbsnode[1]) props[i].bbsnode[1]->scale(value, value, value);
-		if(props[i].bbsnode[2]) props[i].bbsnode[2]->scale(value, value, value);
-		if(props[i].bbsnode[3]) props[i].bbsnode[3]->scale(value, value, value);
+		if (props[i].snode) props[i].snode->scale(value, value, value);
+		if (props[i].wheel) props[i].wheel->scale(value, value, value);
+		if (props[i].wheel) props[i].wheelpos = relpos + (props[i].wheelpos-relpos) * value;
+		if (props[i].bbsnode[0]) props[i].bbsnode[0]->scale(value, value, value);
+		if (props[i].bbsnode[1]) props[i].bbsnode[1]->scale(value, value, value);
+		if (props[i].bbsnode[2]) props[i].bbsnode[2]->scale(value, value, value);
+		if (props[i].bbsnode[3]) props[i].bbsnode[3]->scale(value, value, value);
 	}
 	// tell the cabmesh that resizing is ok, and they dont need to break ;)
-	if(cabMesh) cabMesh->scale(value);
+	if (cabMesh) cabMesh->scale(value);
 	// update engine values
-	if(engine)
+	if (engine)
 	{
 		//engine->maxRPM *= value;
 		//engine->iddleRPM *= value;
@@ -751,15 +744,15 @@ void Beam::scaleTruck(float value)
 		//engine->brakingTorque *= value;
 	}
 	// todo: scale flexbody
-	for(int i=0;i<free_flexbody;i++)
+	for (int i=0;i<free_flexbody;i++)
 	{
 		flexbodies[i]->getSceneNode()->scale(value, value, value);
 	}
 	// todo: fix meshwheels
-	//for(int i=0;i<free_wheel;i++)
+	//for (int i=0;i<free_wheel;i++)
 	//{
-		//if(vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
-		//if(vwheels[i].fm && vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
+		//if (vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
+		//if (vwheels[i].fm && vwheels[i].cnode) vwheels[i].cnode->scale(value, value, value);
 	//}
 	BES_GFX_STOP(BES_GFX_ScaleTruck);
 
@@ -768,13 +761,13 @@ void Beam::scaleTruck(float value)
 void Beam::initSimpleSkeleton()
 {
 	// create
-	simpleSkeletonManualObject =  tsm->createManualObject();
+	simpleSkeletonManualObject =  gEnv->ogreSceneManager->createManualObject();
 
 	simpleSkeletonManualObject->estimateIndexCount(free_beam*2);
 	simpleSkeletonManualObject->setCastShadows(false);
 	simpleSkeletonManualObject->setDynamic(true);
 	simpleSkeletonManualObject->setRenderingDistance(300);
-	for(int i=0; i < free_beam; i++)
+	for (int i=0; i < free_beam; i++)
 	{
 		simpleSkeletonManualObject->begin("mat-beam-0", RenderOperation::OT_LINE_LIST);
 		simpleSkeletonManualObject->position(beams[i].p1->smoothpos);
@@ -790,17 +783,17 @@ void Beam::updateSimpleSkeleton()
 {
 	BES_GFX_START(BES_GFX_UpdateSkeleton);
 
-	if(!simpleSkeletonInitiated)
+	if (!simpleSkeletonInitiated)
 		initSimpleSkeleton();
 	// just update
-	for(int i=0; i < (int)simpleSkeletonManualObject->getNumSections(); i++)
+	for (int i=0; i < (int)simpleSkeletonManualObject->getNumSections(); i++)
 	{
-		if(i >= free_beam)
+		if (i >= free_beam)
 			break;
 
 		int scale=(int)(beams[i].scale * 100);
-		if(scale>100) scale=100;
-		if(scale<-100) scale=-100;
+		if (scale>100) scale=100;
+		if (scale<-100) scale=-100;
 		char bname[256];
 		sprintf(bname, "mat-beam-%d", scale);
 
@@ -808,7 +801,7 @@ void Beam::updateSimpleSkeleton()
 		simpleSkeletonManualObject->beginUpdate(i);
 		simpleSkeletonManualObject->position(beams[i].p1->smoothpos);
 		// remove broken beams
-		if(beams[i].broken || beams[i].disabled)
+		if (beams[i].broken || beams[i].disabled)
 			simpleSkeletonManualObject->position(beams[i].p1->smoothpos);
 		else
 			simpleSkeletonManualObject->position(beams[i].p2->smoothpos);
@@ -871,7 +864,7 @@ beam_t *Beam::addBeam(int id1, int id2)
 		}
 	}
 
-	int pos=add_beam(&nodes[id1], &nodes[id2], tsm, \
+	int pos=add_beam(&nodes[id1], &nodes[id2], \
 			beamsRoot, type, default_break * default_break_scale, default_spring * default_spring_scale, \
 			default_damp * default_damp_scale, detacher_group_state,-1, -1, -1, 1, \
 			default_beam_diameter);
@@ -883,17 +876,17 @@ beam_t *Beam::addBeam(int id1, int id2)
 void Beam::checkBeamMaterial()
 {
 	BES_GFX_START(BES_GFX_checkBeamMaterial);
-	if(MaterialManager::getSingleton().resourceExists("mat-beam-0"))
+	if (MaterialManager::getSingleton().resourceExists("mat-beam-0"))
 		return;
 	int i = 0;
 	char bname[256];
-	for(i=-100;i<=100;i++)
+	for (i=-100;i<=100;i++)
 	{
 		//register a material for skeleton view
 		sprintf(bname, "mat-beam-%d", i);
 		MaterialPtr mat=(MaterialPtr)(MaterialManager::getSingleton().create(bname, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
 		float f = fabs(((float)i)/100);
-		if(i<=0)
+		if (i<=0)
 			mat->getTechnique(0)->getPass(0)->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, ColourValue(0.2f, 2.0f*(1.0f-f), f*2.0f, 0.8f));
 		else
 			mat->getTechnique(0)->getPass(0)->createTextureUnitState()->setColourOperationEx(LBX_MODULATE, LBS_MANUAL, LBS_CURRENT, ColourValue(f*2.0f, 2.0f*(1.0f-f), 0.2f, 0.8f));
@@ -962,7 +955,7 @@ void Beam::expireNetForce()
 void Beam::pushNetwork(char* data, int size)
 {
 	BES_GFX_START(BES_GFX_pushNetwork);
-	if(!oob3) return;
+	if (!oob3) return;
 
 	// check if the size of the data matches to what we expected
 	if ((unsigned int)size == (netbuffersize + sizeof(oob_t)))
@@ -1129,7 +1122,7 @@ void Beam::calcNetwork()
 	{
 		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_ENGINE, engspeed);
 	}
-	if(free_aeroengine > 0)
+	if (free_aeroengine > 0)
 	{
 		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE1, engspeed);
 		SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_AEROENGINE2, engspeed);
@@ -1195,7 +1188,7 @@ void Beam::calcNetwork()
 	netReverseLight = ((flagmask&NETMASK_REVERSE)!=0);
 
 #ifdef USE_OPENAL
-	if(netReverseLight)
+	if (netReverseLight)
 		SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_REVERSE_GEAR);
 	else
 		SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_REVERSE_GEAR);
@@ -1203,7 +1196,7 @@ void Beam::calcNetwork()
 
 #ifdef USE_MYGUI
 	updateDashBoards(tratio);
-	if(dash)
+	if (dash)
 		dash->update(tratio);
 #endif // USE_MYGUI
 
@@ -1263,7 +1256,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 			if (!(beams[i].p2->iswheel)) len+=newlen/2.0;
 		}
 	}
-	if(!reCalc)
+	if (!reCalc)
 	{
 		for (i=0; i<free_beam; i++)
 		{
@@ -1276,7 +1269,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		}
 	}
 	//fix rope masses
-	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
+	for (std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
 	{
 		it->beam->p2->mass=100.0;
 	}
@@ -1285,8 +1278,8 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		nodes[cinecameranodepos[i]].mass=20;
 
 	//hooks must be heavy
-	//for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-	//	if(!it->hookNode->overrideMass)
+	//for (std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+	//	if (!it->hookNode->overrideMass)
 	//		it->hookNode->mass = 500.0f;
 
 	//update gravimass
@@ -1296,11 +1289,11 @@ void Beam::calc_masses2(Real total, bool reCalc)
 		//for stability
 		if (!nodes[i].iswheel && nodes[i].mass<minimass)
 		{
-			if(debugMass)
+			if (debugMass)
 				LOG("Node " + TOSTRING(i) +" mass ("+TOSTRING(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ TOSTRING(minimass) +"kg).");
 			nodes[i].mass=minimass;
 		}
-		nodes[i].gravimass=Vector3(0, RoRFrameListener::getGravity() * nodes[i].mass, 0);
+		nodes[i].gravimass=Vector3(0, gEnv->terrainManager->getGravity() * nodes[i].mass, 0);
 	}
 
     // update inverted mass cache
@@ -1319,7 +1312,7 @@ void Beam::calc_masses2(Real total, bool reCalc)
 	totalmass=0;
 	for (i=0; i<free_node; i++)
 	{
-		if(debugMass)
+		if (debugMass)
 		{
 			String msg = "Node " + TOSTRING(i) +" : "+ TOSTRING((int)nodes[i].mass) +" kg";
 			if (nodes[i].masstype==NODE_LOADED)
@@ -1530,7 +1523,7 @@ void Beam::setupDefaultSoundSources()
 
 
 	// linked sounds
-	for(int i=0; i<free_commands; i++)
+	for (int i=0; i<free_commands; i++)
 	{
 		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/linked/default_command/extend"), trucknum, NULL, SL_COMMAND, i), 0);
 		addSoundSource(SoundScriptManager::getSingleton().createInstance(String("tracks/linked/default_command/retract"), trucknum, NULL, SL_COMMAND, -i), 0);
@@ -1574,9 +1567,9 @@ void Beam::updateContacterNodes()
 
 int Beam::savePosition(int indexPosition)
 {
-	if(!posStorage) return -1;
+	if (!posStorage) return -1;
 	Vector3* nbuff = posStorage->getStorage(indexPosition);
-	if(!nbuff) return -3;
+	if (!nbuff) return -3;
 	for (int i=0; i<free_node; i++)
 		nbuff[i] = nodes[i].AbsPosition;
 	posStorage->setUsage(indexPosition, true);
@@ -1585,11 +1578,11 @@ int Beam::savePosition(int indexPosition)
 
 int Beam::loadPosition(int indexPosition)
 {
-	if(!posStorage) return -1;
-	if(!posStorage->getUsage(indexPosition)) return -2;
+	if (!posStorage) return -1;
+	if (!posStorage->getUsage(indexPosition)) return -2;
 
 	Vector3* nbuff = posStorage->getStorage(indexPosition);
-	if(!nbuff) return -3;
+	if (!nbuff) return -3;
 	Vector3 pos = Vector3(0,0,0);
 	for (int i=0; i<free_node; i++)
 	{
@@ -1617,7 +1610,7 @@ int Beam::loadPosition(int indexPosition)
 void Beam::updateTruckPosition()
 {
 	// calculate average position (and smooth)
-	if(externalcameramode == 0)
+	if (externalcameramode == 0)
 	{
 		// the classic approach: average over all nodes and beams
 		Vector3 aposition = Vector3::ZERO;
@@ -1627,7 +1620,7 @@ void Beam::updateTruckPosition()
 			aposition += nodes[n].smoothpos;
 		}
 		position = aposition / free_node;
-	} else if(externalcameramode == 1 && freecinecamera > 0)
+	} else if (externalcameramode == 1 && freecinecamera > 0)
 	{
 		// the new (strange) approach: reuse the cinecam node
 		for (int n=0; n < free_node; n++)
@@ -1635,7 +1628,7 @@ void Beam::updateTruckPosition()
 			nodes[n].smoothpos = nodes[n].AbsPosition;
 		}
 		position = nodes[cinecameranodepos[0]].AbsPosition;
-	} else if(externalcameramode == 2 && externalcameranode >= 0)
+	} else if (externalcameramode == 2 && externalcameranode >= 0)
 	{
 		// the new (strange) approach #2: reuse a specified node
 		for (int n=0; n < free_node; n++)
@@ -1685,11 +1678,9 @@ void Beam::resetAngle(float rot)
 
 void Beam::resetPosition(float px, float pz, bool setI, float miny)
 {
-	if(!hfinder)
-		return;
+	if (!gEnv->heightFinder) return;
 	// horizontal displacement
-	Vector3 offset = Vector3(px,0,pz)-nodes[0].AbsPosition;
-	offset.y=-ipy;
+	Vector3 offset = Vector3(px, -iPosition.y, pz) - nodes[0].AbsPosition;
 	for (int i=0; i<free_node; i++)
 	{
 		nodes[i].AbsPosition+=offset;
@@ -1698,10 +1689,10 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	float minoffset=0.0;
 	if (miny<-9000)
 	{
-		minoffset=nodes[0].AbsPosition.y-hfinder->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
+		minoffset=nodes[0].AbsPosition.y-gEnv->heightFinder->getHeightAt(nodes[0].AbsPosition.x, nodes[0].AbsPosition.z);
 		for (int i=1; i<free_node; i++)
 		{
-			Vector3 pos=Vector3(nodes[i].AbsPosition.x,hfinder->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
+			Vector3 pos=Vector3(nodes[i].AbsPosition.x,gEnv->heightFinder->getHeightAt(nodes[i].AbsPosition.x, nodes[i].AbsPosition.z),nodes[i].AbsPosition.z);
 			//if (water && pos.y<water->getHeight()) pos.y=water->getHeight();
 			collisions->collisionCorrect(&pos);
 			float offset=nodes[i].AbsPosition.y-pos.y;
@@ -1734,13 +1725,13 @@ void Beam::resetPosition(float px, float pz, bool setI, float miny)
 	position=apos/free_node;
 
 	// calculate min camera radius for truck
-	if(minCameraRadius<0.01)
+	if (minCameraRadius<0.01)
 	{
 		// recalc
 		for (int i=0; i<free_node; i++)
 		{
 			Real dist = nodes[i].AbsPosition.distance(position);
-			if(dist > minCameraRadius)
+			if (dist > minCameraRadius)
 			{
 				minCameraRadius = dist;
 			}
@@ -1757,7 +1748,7 @@ void Beam::resetPosition(Vector3 translation, bool setInitPosition)
 {
 	int i;
 	// total displacement
-	if(translation != Vector3::ZERO)
+	if (translation != Vector3::ZERO)
 	{
 		Vector3 offset = translation - nodes[0].AbsPosition;
 		for (i=0; i<free_node; i++)
@@ -1777,13 +1768,13 @@ void Beam::resetPosition(Vector3 translation, bool setInitPosition)
 	position = apos / free_node;
 
 	// calculate min camera radius for truck
-	if(minCameraRadius < 0.01f)
+	if (minCameraRadius < 0.01f)
 	{
 		// recalc
 		for (i=0; i<free_node; i++)
 		{
 			Real dist = nodes[i].AbsPosition.distance(position);
-			if(dist > minCameraRadius)
+			if (dist > minCameraRadius)
 			{
 				minCameraRadius = dist;
 			}
@@ -1863,9 +1854,9 @@ void Beam::disconnectAutopilot()
 
 void Beam::toggleAxleLock()
 {
-	for(int i = 0; i < free_axle; ++i)
+	for (int i = 0; i < free_axle; ++i)
 	{
-		if(!axles[i]) continue;
+		if (!axles[i]) continue;
 		axles[i]->toggleDiff();
 	}
 }
@@ -1877,7 +1868,7 @@ int Beam::getAxleLockCount()
 
 String Beam::getAxleLockName()
 {
-	if(!axles[0]) return String();
+	if (!axles[0]) return String();
 	return axles[0]->getDiffTypeName();
 }
 
@@ -1894,11 +1885,11 @@ void Beam::SyncReset()
 	hydrorudderstate=0.0;
 	hydroelevatorstate=0.0;
 	hydrodirwheeldisplay=0.0;
-	if(hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
+	if (hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO;
-	if(pointCD) pointCD->reset();
+	if (pointCD) pointCD->reset();
 
 	float yPos = nodes[lowestnode].AbsPosition.y;
 
@@ -1946,7 +1937,7 @@ void Beam::SyncReset()
 	}
 
 	//this is a hook assistance beam and needs to be disabled after reset
-	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+	for (std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
 		it->beam->mSceneNode->detachAllObjects();
 		it->beam->disabled = true;
@@ -1960,8 +1951,8 @@ void Beam::SyncReset()
 	}
 
 	for (i=0; i<free_contacter; i++) contacters[i].contacted=0;
-	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
-	for(std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
+	for (std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++) it->lockedto=0;
+	for (std::vector <tie_t>::iterator it = ties.begin(); it!=ties.end(); it++)
 	{
 		it->beam->disabled = true;
 		it->beam->p2       = &nodes[0];
@@ -1983,7 +1974,7 @@ void Beam::SyncReset()
 	{
 		resetAngle(cur_rot);
 
-		if(yPos != 0)
+		if (yPos != 0)
 			resetPosition(cur_position.x, cur_position.z, false, yPos + 0.02f);
 		else
 			resetPosition(cur_position.x, cur_position.z, false);
@@ -1991,7 +1982,7 @@ void Beam::SyncReset()
 	}
 
 	// reset commands (self centering && push once/twice forced to terminate moving commands)
-	for(int i=0;i<MAX_COMMANDS;i++)
+	for (int i=0;i<MAX_COMMANDS;i++)
 	{
 		commandkey[i].commandValue=0;
 	}
@@ -2043,11 +2034,11 @@ bool Beam::frameStep(Real dt)
 	if (!loading_finished) return true;
 	if (state >= SLEEPING) return true;
 	if (dt==0) return true;
-	if(mTimeUntilNextToggle>-1)
+	if (mTimeUntilNextToggle>-1)
 		mTimeUntilNextToggle-= dt;
 
 	abs_timer += dt;
-	if(abs_timer > 0.5f)
+	if (abs_timer > 0.5f)
 	{
 		abs_state = !abs_state;
 		abs_timer = 0.0f;
@@ -2071,7 +2062,7 @@ bool Beam::frameStep(Real dt)
 
 #ifdef USE_MYGUI
 	updateDashBoards(dt);
-	if(dash)
+	if (dash)
 		dash->update(dt);
 #endif // USE_MYGUI
 
@@ -2090,13 +2081,13 @@ bool Beam::frameStep(Real dt)
 #ifdef USE_ANGELSCRIPT
 #if 0
 	// XXX: TO BE FIXED
-	if(lockedold != locked)
+	if (lockedold != locked)
 	{
-		if(locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_LOCKED, trucknum);
-		if(locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_UNLOCKED, trucknum);
+		if (locked == LOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_LOCKED, trucknum);
+		if (locked == UNLOCKED) ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_UNLOCKED, trucknum);
 		lockedold=locked;
 	}
-	if(watercontact != watercontactold)
+	if (watercontact != watercontactold)
 	{
 		ScriptEngine::getSingleton().triggerEvent(SE_TRUCK_TOUCHED_WATER, trucknum);
 		watercontactold = watercontact;
@@ -2115,12 +2106,12 @@ bool Beam::frameStep(Real dt)
 	if (replaymode && replay && replay->isValid())
 	{
 		// no replay update needed if position was not changed
-		if(replaypos != oldreplaypos)
+		if (replaypos != oldreplaypos)
 		{
 			unsigned long time=0;
 			//replay update
 			node_simple_t *nbuff = (node_simple_t *)replay->getReadBuffer(replaypos, 0, time);
-			if(nbuff)
+			if (nbuff)
 			{
 				Vector3 pos = Vector3::ZERO;
 				for (i=0; i<free_node; i++)
@@ -2167,7 +2158,7 @@ bool Beam::frameStep(Real dt)
 
 			for (int t=0; t<numtrucks; t++)
 			{
-				if(!trucks[t]) continue;
+				if (!trucks[t]) continue;
 
 				if (trucks[t]->reset_requested)
 				{
@@ -2229,14 +2220,14 @@ bool Beam::frameStep(Real dt)
 		}
 
 #ifdef FEAT_TIMING
-		if(statistics)     statistics->frameStep(dt);
-		if(statistics_gfx) statistics_gfx->frameStep(dt);
+		if (statistics)     statistics->frameStep(dt);
+		if (statistics_gfx) statistics_gfx->frameStep(dt);
 #endif // FEAT_TIMING
 
 		// we must take care of this
 		for (int t=0; t<numtrucks; t++)
 		{
-			if(!trucks[t]) continue;
+			if (!trucks[t]) continue;
 
 			// synchronous sleep
 			if (trucks[t]->state==GOSLEEP) trucks[t]->state = SLEEPING;
@@ -2279,7 +2270,7 @@ void Beam::_waitForSync()
 
 void Beam::sendStreamSetup()
 {
-	if(!net || state == NETWORKED ) return;
+	if (!net || state == NETWORKED ) return;
 	// only init stream if its local.
 	// the stream is local when networking=true and networked=false
 
@@ -2290,10 +2281,10 @@ void Beam::sendStreamSetup()
 	reg.type   = 0; // 0 = truck
 	reg.bufferSize = netbuffersize;
 	strncpy(reg.name, realtruckfilename.c_str(), 128);
-	if(!truckconfig.empty())
+	if (!truckconfig.empty())
 	{
 		// insert section config
-		for(int i = 0; i < std::min<int>((int)truckconfig.size(), 10); i++)
+		for (int i = 0; i < std::min<int>((int)truckconfig.size(), 10); i++)
 			strncpy(reg.truckconfig[i], truckconfig[i].c_str(), 60);
 	}
 
@@ -2312,7 +2303,7 @@ void Beam::sendStreamData()
 
 	//look if the packet is too big first
 	int final_packet_size = sizeof(oob_t) + sizeof(float) * 3 + first_wheel_node * sizeof(float) * 3 + free_wheel * sizeof(float);
-	if(final_packet_size > (int)maxPacketLen)
+	if (final_packet_size > (int)maxPacketLen)
 	{
 		showError(_L("Truck is too big to be send over the net."), _L("Network error!"));
 		exit(126);
@@ -2348,7 +2339,7 @@ void Beam::sendStreamData()
 			else if (engine->getAutoMode() == BeamEngine::MANUAL_RANGES) send_oob->flagmask += NETMASK_ENGINE_MODE_MANUAL_RANGES;
 
 		}
-		if(free_aeroengine>0)
+		if (free_aeroengine>0)
 		{
 			float rpm =aeroengines[0]->getRPM();
 			send_oob->engine_speed = rpm;
@@ -2374,9 +2365,9 @@ void Beam::sendStreamData()
 		if (getBeaconMode())			send_oob->flagmask += NETMASK_BEACONS;
 		if (getCustomParticleMode())    send_oob->flagmask += NETMASK_PARTICLE;
 
-		if(parkingbrake)                send_oob->flagmask += NETMASK_PBRAKE;
-		if(tractioncontrol)             send_oob->flagmask += NETMASK_TC_ACTIVE;
-		if(antilockbrake)               send_oob->flagmask += NETMASK_ALB_ACTIVE;
+		if (parkingbrake)                send_oob->flagmask += NETMASK_PBRAKE;
+		if (tractioncontrol)             send_oob->flagmask += NETMASK_TC_ACTIVE;
+		if (antilockbrake)               send_oob->flagmask += NETMASK_ALB_ACTIVE;
 
 #ifdef USE_OPENAL
 		if (SoundScriptManager::getSingleton().getTrigState(trucknum, SS_TRIG_HORN))
@@ -2430,11 +2421,11 @@ void Beam::sendStreamData()
 void Beam::receiveStreamData(unsigned int &type, int &source, unsigned int &_streamid, char *buffer, unsigned int &len)
 {
 	BES_GFX_START(BES_GFX_receiveStreamData);
-	if(state != NETWORKED) return; // this should not happen
+	if (state != NETWORKED) return; // this should not happen
 	// TODO: FIX
-	//if(this->source != source || this->streamid != streamid) return; // data not for us
+	//if (this->source != source || this->streamid != streamid) return; // data not for us
 
-	if(type == MSG2_STREAM_DATA
+	if (type == MSG2_STREAM_DATA
 	   && source == (int)this->sourceid
 	   && _streamid == this->streamid
 	  )
@@ -2459,7 +2450,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		int spi;
 		float ctmp = 0.0f;
 		for (spi=0; spi<free_screwprop; spi++)
-			if(screwprops[spi]) ctmp += screwprops[spi]->getRudder();
+			if (screwprops[spi]) ctmp += screwprops[spi]->getRudder();
 
 		if (spi > 0) ctmp = ctmp / spi;
 		cstate = ctmp;
@@ -2472,7 +2463,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 		int spi;
 		float ctmp = 0.0f;
 		for (spi=0; spi<free_screwprop; spi++)
-			if(screwprops[spi]) ctmp += screwprops[spi]->getThrottle();
+			if (screwprops[spi]) ctmp += screwprops[spi]->getThrottle();
 
 		if (spi > 0) ctmp = ctmp / spi;
 		cstate = ctmp;
@@ -2482,7 +2473,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 	//differential lock status
 	if (flag_state & ANIM_FLAG_DIFFLOCK)
 	{
-		if(free_axle)
+		if (free_axle)
 		{
 			if (getAxleLockName() == "Open") cstate = 0.0f;
 			if (getAxleLockName() == "Split") cstate = 0.5f;
@@ -2853,7 +2844,7 @@ void Beam::calcAnimators(int flagstate, float &cstate, int &div, Real timer, flo
 
 void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, int update)
 {
-	if(!beams[beam_i].shock) return;
+	if (!beams[beam_i].shock) return;
 
 	int i=beam_i;
 	float beamsLep=beams[i].L*0.8f;
@@ -2898,7 +2889,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 		k=k+(beams[i].shock->sprogin*k*logafactor);
 		d=d+(beams[i].shock->dprogin*d*logafactor);
 	}
-	if(beams[i].shock->flags & SHOCK_FLAG_SOFTBUMP)
+	if (beams[i].shock->flags & SHOCK_FLAG_SOFTBUMP)
 	{
 		// soft bump shocks
 		if (difftoBeamL > longboundprelimit)
@@ -2979,7 +2970,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 		}
 	}
 
-	if(beams[i].shock->flags & SHOCK_FLAG_NORMAL)
+	if (beams[i].shock->flags & SHOCK_FLAG_NORMAL)
 	{
 		if (difftoBeamL > beams[i].longbound*beams[i].L || difftoBeamL < -beams[i].shortbound*beams[i].L)
 		{
@@ -3018,7 +3009,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 					{
 						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{
-							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 9)
+							if (triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 9)
 							{
 								LOG(" Trigger enabled. Inverted Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
 								beams[i].shock->last_debug_state = 9;
@@ -3053,7 +3044,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 								beams[shocks[scount]. beamid].shock->trigger_cmdlong = beams[shocks[scount].beamid].shock->trigger_cmdshort;
 								beams[shocks[scount].beamid].shock->trigger_cmdshort = tmpcmdkey;
 								beams[i].shock->trigger_switch_state = beams[i].shock->trigger_boundary_t ;  //prevent trigger switching again before leaving boundaries or timeout
-								if(triggerdebug && beams[i].shock->last_debug_state != 3)
+								if (triggerdebug && beams[i].shock->last_debug_state != 3)
 								{
 									LOG(" Trigger F-key commands switched. Switch BeamID "  + TOSTRING(i)+ " switched commands of Trigger BeamID " + TOSTRING(beams[shocks[scount].beamid].shock->beamid) + " to cmdShort: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdshort) + ", cmdlong: F" + TOSTRING(beams[shocks[scount].beamid].shock->trigger_cmdlong));
 									beams[i].shock->last_debug_state = 3;
@@ -3067,7 +3058,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 					{
 						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_UNLOCK)
 						{
-							if(update)
+							if (update)
 							{
 								//autolock hooktoggle unlock
 								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_UNLOCK, -1);
@@ -3075,7 +3066,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 						} else
 						if (beams[i].shock->flags & SHOCK_FLAG_TRG_HOOK_LOCK)
 						{
-							if(update)
+							if (update)
 							{
 								//autolock hooktoggle lock
 								hookToggle(beams[i].shock->trigger_cmdlong, HOOK_LOCK, -1);
@@ -3086,7 +3077,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 							if (!commandkey[beams[i].shock->trigger_cmdlong].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 							 {
 								 commandkey[beams[i].shock->trigger_cmdlong].commandValue = 1;
-								 if(triggerdebug && beams[i].shock->last_debug_state != 4)
+								 if (triggerdebug && beams[i].shock->last_debug_state != 4)
 								 {
 									 LOG(" Trigger Longbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdlong));
 									 beams[i].shock->last_debug_state = 4;
@@ -3116,7 +3107,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 							if (!commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state)	// related cmdkey is not blocked
 							{
 								commandkey[beams[i].shock->trigger_cmdshort].commandValue = 1;
-								if(triggerdebug  && beams[i].shock->last_debug_state != 5)
+								if (triggerdebug  && beams[i].shock->last_debug_state != 5)
 								{
 									LOG(" Trigger Shortbound activated. Trigger BeamID " + TOSTRING(i) + " Triggered F" + TOSTRING(beams[i].shock->trigger_cmdshort));
 									beams[i].shock->last_debug_state = 5;
@@ -3133,7 +3124,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 					{
 						if (beams[scount].shock && (beams[scount].shock->flags & SHOCK_FLAG_ISTRIGGER))  // dont mess anything up if the user set the number too big
 						{
-							if(triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 6)
+							if (triggerdebug && beams[scount].shock->trigger_enabled && beams[i].shock->last_debug_state != 6)
 							{
 								LOG(" Trigger enabled. Blocker BeamID " + TOSTRING(i) + " disabled trigger " + TOSTRING(scount));
 								beams[i].shock->last_debug_state = 6;
@@ -3160,7 +3151,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				if ((beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_SWITCH) && beams[i].shock->trigger_switch_state) // this is a switch that was activated and is back inside boundaries again
 				{
 					beams[i].shock->trigger_switch_state = 0.0f;  //trigger_switch resetted
-					if(triggerdebug && beams[i].shock->last_debug_state != 7)
+					if (triggerdebug && beams[i].shock->last_debug_state != 7)
 					{
 						LOG(" Trigger switch resetted. Switch BeamID " + TOSTRING(i));
 						beams[i].shock->last_debug_state = 7;
@@ -3169,7 +3160,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 				if ((beams[i].shock->flags & SHOCK_FLAG_TRG_CMD_BLOCKER) && !commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state) // this cmdkeyblocker is inside boundaries and cmdkeystate is diabled
 				{
 					commandkey[beams[i].shock->trigger_cmdshort].trigger_cmdkeyblock_state = true; // activate trigger blocking
-					if(triggerdebug && beams[i].shock->last_debug_state != 8)
+					if (triggerdebug && beams[i].shock->last_debug_state != 8)
 					{
 						LOG(" F-key trigger blocked. Blocker BeamID " + TOSTRING(i) + " Blocked F" + TOSTRING(beams[i].shock->trigger_cmdshort));
 						beams[i].shock->last_debug_state = 8;
@@ -3185,7 +3176,7 @@ void Beam::calcShocks2(int beam_i, Real difftoBeamL, Real &k, Real &d, Real dt, 
 //truck-truck collisions
 void Beam::truckTruckCollisions(Real dt)
 {
-	if(!pointCD) return;
+	if (!pointCD) return;
 
 	BES_START(BES_CORE_Contacters);
 
@@ -3376,7 +3367,7 @@ void Beam::truckTruckCollisions(Real dt)
 					hitnode->Forces+=forcevec;
 
 					// no network special case for now
-					//if(trucks[t]->state==NETWORKED)
+					//if (trucks[t]->state==NETWORKED)
 
 					no->Forces-=(-point.x-point.y+1.0f)*forcevec;
 					na->Forces-=(point.x)*forcevec;
@@ -3404,20 +3395,22 @@ void Beam::updateSkidmarks()
 {
 	BES_START(BES_CORE_Skidmarks);
 
-	for(int i=0;i<free_wheel;i++)
+	for (int i=0;i<free_wheel;i++)
 	{
 		// ignore wheels without data
-		if(wheels[i].lastContactInner == Vector3::ZERO && wheels[i].lastContactOuter == Vector3::ZERO) continue;
+		if (wheels[i].lastContactInner == Vector3::ZERO && wheels[i].lastContactOuter == Vector3::ZERO) continue;
 		// create skidmark object for wheels with data if not existing
-		if(!skidtrails[i])
-			skidtrails[i] = new Skidmark(tsm, &wheels[i], hfinder, beamsRoot, 300, 200);
+		if (!skidtrails[i])
+		{
+			skidtrails[i] = new Skidmark(&wheels[i], beamsRoot, 300, 200);
+		}
 
 		skidtrails[i]->updatePoint();
 	}
 
 	//LOG("updating skidmark visuals");
-	for(int i=0;i<free_wheel;i++)
-		if(skidtrails[i]) skidtrails[i]->update();
+	for (int i=0;i<free_wheel;i++)
+		if (skidtrails[i]) skidtrails[i]->update();
 
 	BES_STOP(BES_CORE_Skidmarks);
 }
@@ -3473,18 +3466,18 @@ Quaternion Beam::specialGetRotationTo(const Vector3& src, const Vector3& dest) c
 void Beam::prepareInside(bool inside)
 {
 	isInside=inside;
-	if(inside)
+	if (inside)
 	{
 		//going inside
 
 		// activate cabin lights if lights are turned on
-		if(lights && cablightNode && cablight)
+		if (lights && cablightNode && cablight)
 		{
 			cablightNode->setVisible(true);
 			cablight->setVisible(true);
 		}
 
-		if(shadowOptimizations)
+		if (shadowOptimizations)
 		{
 			//disabling shadow
 			if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(false);
@@ -3494,7 +3487,7 @@ void Beam::prepareInside(bool inside)
 				if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(false);
 				if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(false);
 			}
-			for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
+			for (i=0; i<free_wheel; i++) if (vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(false);
 			for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(false);
 
 		}
@@ -3518,18 +3511,18 @@ void Beam::prepareInside(bool inside)
 	{
 		//going outside
 #ifdef USE_MYGUI
-		if(dash)
+		if (dash)
 			dash->setVisible(false);
 #endif // USE_MYGUI
 
 		// disable cabin light before going out
-		if(cablightNode && cablight)
+		if (cablightNode && cablight)
 		{
 			cablightNode->setVisible(false);
 			cablight->setVisible(false);
 		}
 
-		if(shadowOptimizations)
+		if (shadowOptimizations)
 		{
 			//enabling shadow
 			if (cabNode && cabNode->numAttachedObjects() && cabNode->getAttachedObject(0)) ((Entity*)(cabNode->getAttachedObject(0)))->setCastShadows(true);
@@ -3539,7 +3532,7 @@ void Beam::prepareInside(bool inside)
 				if (props[i].snode && props[i].snode->numAttachedObjects()) props[i].snode->getAttachedObject(0)->setCastShadows(true);
 				if (props[i].wheel && props[i].wheel->numAttachedObjects()) props[i].wheel->getAttachedObject(0)->setCastShadows(true);
 			}
-			for (i=0; i<free_wheel; i++) if(vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
+			for (i=0; i<free_wheel; i++) if (vwheels[i].cnode->numAttachedObjects()) vwheels[i].cnode->getAttachedObject(0)->setCastShadows(true);
 			for (i=0; i<free_beam; i++) if (beams[i].mEntity) beams[i].mEntity->setCastShadows(true);
 		}
 
@@ -3565,7 +3558,7 @@ void Beam::prepareInside(bool inside)
 void Beam::lightsToggle()
 {
 	// no lights toggling in skeleton mode because of possible bug with emissive texture
-	if(skeleton)
+	if (skeleton)
 		return;
 
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
@@ -3576,21 +3569,21 @@ void Beam::lightsToggle()
 	{
 		for (int i=0; i<trucksnum; i++)
 		{
-			if(!trucks[i]) continue;
+			if (!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands) trucks[i]->lightsToggle();
 		}
 	}
 	lights = !lights;
-	if(cablight && cablightNode && isInside)
+	if (cablight && cablightNode && isInside)
 		cablightNode->setVisible((lights!=0));
 	if (!lights)
 	{
 		for (int i=0; i<free_flare; i++)
 		{
-			if(flares[i].type == 'f')
+			if (flares[i].type == 'f')
 			{
 				flares[i].snode->setVisible(false);
-				if(flares[i].bbs) flares[i].snode->detachAllObjects();
+				if (flares[i].bbs) flares[i].snode->detachAllObjects();
 				if (flares[i].light) flares[i].light->setVisible(false);
 				flares[i].isVisible=false;
 			}
@@ -3599,7 +3592,7 @@ void Beam::lightsToggle()
 		{
 			char clomatname[256] = {};
 			sprintf(clomatname, "%s-noem", texname);
-			if(cabNode->numAttachedObjects())
+			if (cabNode->numAttachedObjects())
 			{
 				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
 				int numsubent=ent->getNumSubEntities();
@@ -3616,18 +3609,18 @@ void Beam::lightsToggle()
 	{
 		for (int i=0; i<free_flare; i++)
 		{
-			if(flares[i].type == 'f')
+			if (flares[i].type == 'f')
 			{
 				if (flares[i].light) flares[i].light->setVisible(true);
 				flares[i].isVisible=true;
-				if(flares[i].bbs) flares[i].snode->attachObject(flares[i].bbs);
+				if (flares[i].bbs) flares[i].snode->attachObject(flares[i].bbs);
 			}
 		}
 		if (hasEmissivePass)
 		{
 			char clomatname[256] = {};
 			sprintf(clomatname, "%s-noem", texname);
-			if(cabNode->numAttachedObjects())
+			if (cabNode->numAttachedObjects())
 			{
 				Entity* ent=((Entity*)(cabNode->getAttachedObject(0)));
 				int numsubent=ent->getNumSubEntities();
@@ -3647,9 +3640,9 @@ void Beam::lightsToggle()
 void Beam::updateFlares(float dt, bool isCurrent)
 {
 	bool enableAll = true;
-	if(flaresMode==0)
+	if (flaresMode==0)
 		return;
-	if(flaresMode==2 && !isCurrent)
+	if (flaresMode==2 && !isCurrent)
 		enableAll=false;
 	BES_GFX_START(BES_GFX_updateFlares);
 	int i;
@@ -3785,10 +3778,10 @@ void Beam::updateFlares(float dt, bool isCurrent)
 	for (i=0; i<free_flare; i++)
 	{
 		// let the light blink
-		if(flares[i].blinkdelay != 0)
+		if (flares[i].blinkdelay != 0)
 		{
 			flares[i].blinkdelay_curr -= dt;
-			if(flares[i].blinkdelay_curr <= 0)
+			if (flares[i].blinkdelay_curr <= 0)
 			{
 				flares[i].blinkdelay_curr = flares[i].blinkdelay;
 				flares[i].blinkdelay_state = !flares[i].blinkdelay_state;
@@ -3805,15 +3798,15 @@ void Beam::updateFlares(float dt, bool isCurrent)
 			materialFunctionMapper->toggleFunction(i, (lights==1));
 			if (!lights)
 				continue;
-		} else if(flares[i].type == 'b') {
+		} else if (flares[i].type == 'b') {
 			isvisible = getBrakeLightVisible();
-		} else if(flares[i].type == 'R') {
-			if(engine || reverselight)
+		} else if (flares[i].type == 'R') {
+			if (engine || reverselight)
 				isvisible = getReverseLightVisible();
 			else
 				isvisible=false;
-		} else if(flares[i].type == 'u' && flares[i].controlnumber != -1) {
-			if(state==ACTIVATED) // no network!!
+		} else if (flares[i].type == 'u' && flares[i].controlnumber != -1) {
+			if (state==ACTIVATED) // no network!!
 			{
 				// networked customs are set directly, so skip this
 				if (INPUTENGINE.getEventBoolValue(EV_TRUCK_LIGHTTOGGLE1 + (flares[i].controlnumber - 1)) && mTimeUntilNextToggle <= 0)
@@ -3836,21 +3829,21 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		{
 			left_blink_on  = isvisible;
 #ifdef USE_OPENAL
-			if(left_blink_on)
+			if (left_blink_on)
 				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_TICK);
 #endif //USE_OPENAL
-		} else if(flares[i].type == 'r' && blinkingtype == BLINK_RIGHT)
+		} else if (flares[i].type == 'r' && blinkingtype == BLINK_RIGHT)
 		{
 			right_blink_on = isvisible;
 #ifdef USE_OPENAL
-			if(right_blink_on)
+			if (right_blink_on)
 				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_TICK);
 #endif //USE_OPENAL
-		} else if(flares[i].type == 'l' && blinkingtype == BLINK_WARN)
+		} else if (flares[i].type == 'l' && blinkingtype == BLINK_WARN)
 		{
 			warn_blink_on  = isvisible;
 #ifdef USE_OPENAL
-			if(warn_blink_on)
+			if (warn_blink_on)
 				SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_TURN_SIGNAL_WARN_TICK);
 #endif //USE_OPENAL
 		}
@@ -3882,7 +3875,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		flares[i].snode->setPosition(mposition-0.1*amplitude*normal*flares[i].offsetz);
 		flares[i].snode->setDirection(normal);
 		float fsize = flares[i].size;
-		if(fsize < 0)
+		if (fsize < 0)
 		{
 			amplitude=1;
 			fsize*=-1;
@@ -3895,7 +3888,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		}
 		if (flares[i].isVisible)
 		{
-			if(amplitude>0)
+			if (amplitude>0)
 			{
 				flares[i].bbs->setDefaultDimensions(amplitude * fsize, amplitude * fsize);
 				flares[i].snode->setVisible(true);
@@ -3907,7 +3900,7 @@ void Beam::updateFlares(float dt, bool isCurrent)
 		}
 		//flares[i].bbs->_updateBounds();
 	}
-	if(keysleep)
+	if (keysleep)
 		mTimeUntilNextToggle = 0.2;
 	BES_GFX_STOP(BES_GFX_updateFlares);
 
@@ -3939,11 +3932,11 @@ void Beam::autoBlinkReset()
 	// TODO: make this set-able per truck
 	float blink_lock_range = 0.1f;
 
-	if(blink == BLINK_LEFT && hydrodirstate < -blink_lock_range)
+	if (blink == BLINK_LEFT && hydrodirstate < -blink_lock_range)
 		// passed the threshold: the turn signal gets locked
 		blinktreshpassed = true;
 
-	if(blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -blink_lock_range)
+	if (blink == BLINK_LEFT && blinktreshpassed && hydrodirstate > -blink_lock_range)
 	{
 		// steering wheel turned back: turn signal gets automatically unlocked
 		setBlinkType(BLINK_NONE);
@@ -3951,10 +3944,10 @@ void Beam::autoBlinkReset()
 	}
 
 	// same for the right turn signal
-	if(blink == BLINK_RIGHT && hydrodirstate > blink_lock_range)
+	if (blink == BLINK_RIGHT && hydrodirstate > blink_lock_range)
 		blinktreshpassed = true;
 
-	if(blink == BLINK_RIGHT && blinktreshpassed && hydrodirstate < blink_lock_range)
+	if (blink == BLINK_RIGHT && blinktreshpassed && hydrodirstate < blink_lock_range)
 	{
 		setBlinkType(BLINK_NONE);
 		blinktreshpassed = false;
@@ -4035,10 +4028,10 @@ void Beam::updateLabels(float dt)
 		Vector3 vdir=(position)-mCamera->getPosition();
 		float vlen=vdir.length();
 		float h = vlen/30.0;
-		if(h<0.6)
+		if (h<0.6)
 			h=0.6;
 		netMT->setCharacterHeight(h);
-		if(vlen>1000)
+		if (vlen>1000)
 			netMT->setCaption(networkUsername + "  (" + TOSTRING( (float)(ceil(vlen/100)/10.0) )+ " km)");
 		else if (vlen>20 && vlen <= 1000)
 			netMT->setCaption(networkUsername + "  (" + TOSTRING((int)vlen)+ " m)");
@@ -4059,8 +4052,8 @@ void Beam::updateVisual(float dt)
 	//sounds too
 	updateSoundSources();
 
-	if(deleting) return;
-	if(debugVisuals) updateDebugOverlay();
+	if (deleting) return;
+	if (debugVisuals) updateDebugOverlay();
 
 	//dust
 	// UH - design problem, it updates every truck dust D:
@@ -4098,9 +4091,9 @@ void Beam::updateVisual(float dt)
 	if (!disable_smoke && engine && exhausts.size() > 0)
 	{
 		std::vector < exhaust_t >::iterator it;
-		for(it=exhausts.begin(); it!=exhausts.end(); it++)
+		for (it=exhausts.begin(); it!=exhausts.end(); it++)
 		{
-			if(!it->smoker)
+			if (!it->smoker)
 				continue;
 			Vector3 dir=nodes[it->emitterNode].smoothpos-nodes[it->directionNode].smoothpos;
 			//			dir.normalise();
@@ -4165,24 +4158,24 @@ void Beam::updateVisual(float dt)
 	hydroruddercommand=autorudder;
 	hydroelevatorcommand=autoelevator;
 
-	if(cabFadeMode>0 && dt > 0)
+	if (cabFadeMode>0 && dt > 0)
 	{
-		if(cabFadeTimer > 0)
+		if (cabFadeTimer > 0)
 			cabFadeTimer-=dt;
-		if(cabFadeTimer < 0.1 && cabFadeMode == 1)
+		if (cabFadeTimer < 0.1 && cabFadeMode == 1)
 		{
 			cabFadeMode=0;
 			cabFade(0.4);
 		}
-		else if(cabFadeTimer < 0.1 && cabFadeMode == 2)
+		else if (cabFadeTimer < 0.1 && cabFadeMode == 2)
 		{
 			cabFadeMode=0;
 			cabFade(1);
 		}
 
-		if(cabFadeMode == 1)
+		if (cabFadeMode == 1)
 			cabFade(0.4 + 0.6 * cabFadeTimer/cabFadeTime);
-		else if(cabFadeMode == 2)
+		else if (cabFadeMode == 2)
 			cabFade(1 - 0.6 * cabFadeTimer/cabFadeTime);
 	}
 
@@ -4201,13 +4194,13 @@ void Beam::updateVisual(float dt)
 		}
 		for (i=0; i<free_wheel; i++)
 		{
-			if(vwheels[i].cnode) vwheels[i].cnode->setPosition(vwheels[i].fm->flexit());
+			if (vwheels[i].cnode) vwheels[i].cnode->setPosition(vwheels[i].fm->flexit());
 		}
 		if (cabMesh) cabNode->setPosition(cabMesh->flexit());
 	}
 	else
 	{
-		if(skeleton)
+		if (skeleton)
 		{
 			for (i=0; i<free_beam; i++)
 			{
@@ -4235,7 +4228,7 @@ void Beam::updateVisual(float dt)
 	// if we are 100 times the size of the truck away from the truck, we will not calculate flexbodies anymore
 	// maybe a bit hacky solution
 	//bool tooFarAway = (position - mCamera->getPosition()).length() > minCameraRadius * 100;
-	//if(!tooFarAway)
+	//if (!tooFarAway)
 	//{
 	// disabled optimization for now since its buggy :-/
 	for (i=0; i<free_flexbody; i++) flexbodies[i]->flexit();
@@ -4249,34 +4242,33 @@ void Beam::updateVisual(float dt)
 //v=1: no beams
 void Beam::setDetailLevel(int v)
 {
-	if (v!=detailLevel)
+	if (v != detailLevel)
 	{
-		if (detailLevel==0 && v==1)
+		if (detailLevel == 0 && v == 1)
 		{
-			//detach
-			parentNode->removeChild(beamsRoot);
+			// detach
+			gEnv->ogreSceneManager->getRootSceneNode()->removeChild(beamsRoot);
 		}
-		if (detailLevel==1 && v==0)
+		if (detailLevel == 1 && v == 0)
 		{
-			//attach
-			parentNode->addChild(beamsRoot);
+			// attach
+			gEnv->ogreSceneManager->getRootSceneNode()->addChild(beamsRoot);
 		}
-		detailLevel=v;
+		detailLevel = v;
 	}
-
 }
 
 void Beam::preMapLabelRenderUpdate(bool mode, float charheight)
 {
 	static float orgcharheight=0;
-	if(mode && netLabelNode)
+	if (mode && netLabelNode)
 	{
 		netMT->showOnTop(true);
 		orgcharheight = netMT->getCharacterHeight();
 		netMT->setCharacterHeight(charheight);
 		//netMT->setAdditionalHeight(0);
 		netMT->setVisible(false);
-	} else if(!mode && netLabelNode)
+	} else if (!mode && netLabelNode)
 	{
 		netMT->showOnTop(false);
 		netMT->setCharacterHeight(orgcharheight);
@@ -4286,17 +4278,17 @@ void Beam::preMapLabelRenderUpdate(bool mode, float charheight)
 
 void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 {
-	if(lockSkeletonchange)
+	if (lockSkeletonchange)
 		return;
 	lockSkeletonchange=true;
 	int i;
 
 	skeleton=1;
 
-	if(newMode)
+	if (newMode)
 		skeleton=2;
 
-	if(meshes)
+	if (meshes)
 	{
 		cabFadeMode=1;
 		cabFadeTimer=cabFadeTime;
@@ -4308,18 +4300,18 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 	}
 	for (i=0; i<free_wheel; i++)
 	{
-		if(vwheels[i].cnode) vwheels[i].cnode->setVisible(false);
-		if(vwheels[i].fm) vwheels[i].fm->setVisible(false);
+		if (vwheels[i].cnode) vwheels[i].cnode->setVisible(false);
+		if (vwheels[i].fm) vwheels[i].fm->setVisible(false);
 	}
 	for (i=0; i<free_prop; i++)
 	{
-		if(props[i].snode)
+		if (props[i].snode)
 			setMeshWireframe(props[i].snode, true);
-		if(props[i].wheel)
+		if (props[i].wheel)
 			setMeshWireframe(props[i].wheel, true);
 	}
 
-	if(!newMode)
+	if (!newMode)
 	{
 		for (i=0; i<free_beam; i++)
 		{
@@ -4334,7 +4326,7 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 		}
 	}else
 	{
-		if(simpleSkeletonNode)
+		if (simpleSkeletonNode)
 		{
 			updateSimpleSkeleton();
 			simpleSkeletonNode->setVisible(true);
@@ -4344,24 +4336,24 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 	// hide mesh wheels
 	for (i=0; i<free_wheel; i++)
 	{
-		if(vwheels[i].fm && vwheels[i].meshwheel)
+		if (vwheels[i].fm && vwheels[i].meshwheel)
 		{
 			Entity *e = ((FlexMeshWheel*)(vwheels[i].fm))->getRimEntity();
-			if(e)
+			if (e)
 				e->setVisible(false);
 		}
 	}
 
 	// wireframe drawning for flexbody
-	for(i=0; i<free_flexbody; i++)
+	for (i=0; i<free_flexbody; i++)
 	{
 		SceneNode *s = flexbodies[i]->getSceneNode();
-		if(!s)
+		if (!s)
 			continue;
 		setMeshWireframe(s, true);
 	}
 
-	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+	for (std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
 	
@@ -4381,13 +4373,13 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 
 void Beam::hideSkeleton(bool newMode, bool linked)
 {
-	if(lockSkeletonchange)
+	if (lockSkeletonchange)
 		return;
 	lockSkeletonchange=true;
 	int i;
 	skeleton=0;
 
-	if(cabFadeMode>=0)
+	if (cabFadeMode>=0)
 	{
 		cabFadeMode=2;
 		cabFadeTimer=cabFadeTime;
@@ -4401,18 +4393,18 @@ void Beam::hideSkeleton(bool newMode, bool linked)
 
 	for (i=0; i<free_wheel; i++)
 	{
-		if(vwheels[i].cnode) vwheels[i].cnode->setVisible(true);
-		if(vwheels[i].fm) vwheels[i].fm->setVisible(true);
+		if (vwheels[i].cnode) vwheels[i].cnode->setVisible(true);
+		if (vwheels[i].fm) vwheels[i].fm->setVisible(true);
 	}
 	for (i=0; i<free_prop; i++)
 	{
-		if(props[i].snode)
+		if (props[i].snode)
 			setMeshWireframe(props[i].snode, false);
-		if(props[i].wheel)
+		if (props[i].wheel)
 			setMeshWireframe(props[i].wheel, false);
 	}
 
-	if(!newMode)
+	if (!newMode)
 	{
 		for (i=0; i<free_beam; i++)
 		{
@@ -4426,31 +4418,31 @@ void Beam::hideSkeleton(bool newMode, bool linked)
 		}
 	}else
 	{
-		if(simpleSkeletonNode)
+		if (simpleSkeletonNode)
 			simpleSkeletonNode->setVisible(false);
 	}
 
 	// show mesh wheels
 	for (i=0; i<free_wheel; i++)
 	{
-		if(vwheels[i].fm && vwheels[i].meshwheel)
+		if (vwheels[i].fm && vwheels[i].meshwheel)
 		{
 			Entity *e = ((FlexMeshWheel *)(vwheels[i].fm))->getRimEntity();
-			if(e)
+			if (e)
 				e->setVisible(true);
 		}
 	}
 
 	// normal drawning for flexbody
-	for(i=0; i<free_flexbody; i++)
+	for (i=0; i<free_flexbody; i++)
 	{
 		SceneNode *s = flexbodies[i]->getSceneNode();
-		if(!s)
+		if (!s)
 			continue;
 		setMeshWireframe(s, false);
 	}
 
-	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+	for (std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 		if (it->beam->disabled)
 			it->beam->mSceneNode->detachAllObjects();
 
@@ -4468,19 +4460,19 @@ void Beam::hideSkeleton(bool newMode, bool linked)
 
 void Beam::fadeMesh(SceneNode *node, float amount)
 {
-	for(int a=0;a<node->numAttachedObjects();a++)
+	for (int a=0;a<node->numAttachedObjects();a++)
 	{
 		Entity *e = (Entity *)node->getAttachedObject(a);
 		MaterialPtr m = e->getSubEntity(0)->getMaterial();
-		if(m.getPointer() == 0)
+		if (m.getPointer() == 0)
 			continue;
-		for(int x=0;x<m->getNumTechniques();x++)
+		for (int x=0;x<m->getNumTechniques();x++)
 		{
-			for(int y=0;y<m->getTechnique(x)->getNumPasses();y++)
+			for (int y=0;y<m->getTechnique(x)->getNumPasses();y++)
 			{
 				// TODO: fix this
 				//m->getTechnique(x)->getPass(y)->setAlphaRejectValue(0);
-				if(m->getTechnique(x)->getPass(y)->getNumTextureUnitStates() > 0)
+				if (m->getTechnique(x)->getPass(y)->getNumTextureUnitStates() > 0)
 					m->getTechnique(x)->getPass(y)->getTextureUnitState(0)->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, amount);
 			}
 		}
@@ -4489,15 +4481,15 @@ void Beam::fadeMesh(SceneNode *node, float amount)
 
 float Beam::getAlphaRejection(SceneNode *node)
 {
-	for(int a=0;a<node->numAttachedObjects();a++)
+	for (int a=0;a<node->numAttachedObjects();a++)
 	{
 		Entity *e = (Entity *)node->getAttachedObject(a);
 		MaterialPtr m = e->getSubEntity(0)->getMaterial();
-		if(m.getPointer() == 0)
+		if (m.getPointer() == 0)
 			continue;
-		for(int x=0;x<m->getNumTechniques();x++)
+		for (int x=0;x<m->getNumTechniques();x++)
 		{
-			for(int y=0;y<m->getTechnique(x)->getNumPasses();y++)
+			for (int y=0;y<m->getTechnique(x)->getNumPasses();y++)
 			{
 				return m->getTechnique(x)->getPass(y)->getAlphaRejectValue();
 			}
@@ -4508,15 +4500,15 @@ float Beam::getAlphaRejection(SceneNode *node)
 
 void Beam::setAlphaRejection(SceneNode *node, float amount)
 {
-	for(int a=0;a<node->numAttachedObjects();a++)
+	for (int a=0;a<node->numAttachedObjects();a++)
 	{
 		Entity *e = (Entity *)node->getAttachedObject(a);
 		MaterialPtr m = e->getSubEntity(0)->getMaterial();
-		if(m.getPointer() == 0)
+		if (m.getPointer() == 0)
 			continue;
-		for(int x=0;x<m->getNumTechniques();x++)
+		for (int x=0;x<m->getNumTechniques();x++)
 		{
-			for(int y=0;y<m->getTechnique(x)->getNumPasses();y++)
+			for (int y=0;y<m->getTechnique(x)->getNumPasses();y++)
 			{
 				m->getTechnique(x)->getPass(y)->setAlphaRejectValue((unsigned char)amount);
 				return;
@@ -4526,17 +4518,17 @@ void Beam::setAlphaRejection(SceneNode *node, float amount)
 }
 void Beam::setMeshWireframe(SceneNode *node, bool value)
 {
-	for(int a=0;a<node->numAttachedObjects();a++)
+	for (int a=0;a<node->numAttachedObjects();a++)
 	{
 		Entity *e = (Entity *)node->getAttachedObject(a);
-		for(int se=0;se<(int)e->getNumSubEntities();se++)
+		for (int se=0;se<(int)e->getNumSubEntities();se++)
 		{
 			MaterialPtr m = e->getSubEntity(se)->getMaterial();
-			if(m.getPointer() == 0)
+			if (m.getPointer() == 0)
 				continue;
-			for(int x=0;x<m->getNumTechniques();x++)
-				for(int y=0;y<m->getTechnique(x)->getNumPasses();y++)
-					if(value)
+			for (int x=0;x<m->getNumTechniques();x++)
+				for (int y=0;y<m->getTechnique(x)->getNumPasses();y++)
+					if (value)
 						m->getTechnique(x)->getPass(y)->setPolygonMode(PM_WIREFRAME);
 					else
 						m->getTechnique(x)->getPass(y)->setPolygonMode(PM_SOLID);
@@ -4570,12 +4562,12 @@ void Beam::setMeshVisibility(bool visible, bool linked)
 {
 	for (int i=0; i < free_prop; i++)
 	{
-		if(props[i].mo)			props[i].mo->setVisible(visible);
-		if(props[i].wheel)		props[i].wheel->setVisible(visible);
-		if(props[i].bbsnode[0]) props[i].bbsnode[0]->setVisible(visible);
-		if(props[i].bbsnode[1]) props[i].bbsnode[1]->setVisible(visible);
-		if(props[i].bbsnode[2]) props[i].bbsnode[2]->setVisible(visible);
-		if(props[i].bbsnode[3]) props[i].bbsnode[3]->setVisible(visible);
+		if (props[i].mo)			props[i].mo->setVisible(visible);
+		if (props[i].wheel)		props[i].wheel->setVisible(visible);
+		if (props[i].bbsnode[0]) props[i].bbsnode[0]->setVisible(visible);
+		if (props[i].bbsnode[1]) props[i].bbsnode[1]->setVisible(visible);
+		if (props[i].bbsnode[2]) props[i].bbsnode[2]->setVisible(visible);
+		if (props[i].bbsnode[3]) props[i].bbsnode[3]->setVisible(visible);
 	}
 	for (int i=0; i < free_flexbody; i++)
 	{
@@ -4616,16 +4608,16 @@ void Beam::cabFade(float amount)
 	// truck cab
 	if (cabMesh)
 	{
-		if(amount == 0)
+		if (amount == 0)
 		{
 			cabNode->setVisible(false);
 		} else
 		{
 			if (amount == 1)
 				cabNode->setVisible(true);
-			if(savedCabAlphaRejection == 0)
+			if (savedCabAlphaRejection == 0)
 				savedCabAlphaRejection = getAlphaRejection(cabNode);
-			if(amount == 1)
+			if (amount == 1)
 				setAlphaRejection(cabNode, savedCabAlphaRejection);
 			else if (amount < 1)
 				setAlphaRejection(cabNode, 0);
@@ -4636,7 +4628,7 @@ void Beam::cabFade(float amount)
 	// wings
 	for (int i=0; i<free_wing; i++)
 	{
-		if(amount == 0)
+		if (amount == 0)
 		{
 			wings[i].cnode->setVisible(false);
 		} else
@@ -4659,7 +4651,7 @@ void Beam::tieToggle(int group)
 		int i;
 		for (i=0; i<trucksnum; i++)
 		{
-			if(!trucks[i]) continue;
+			if (!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
 				trucks[i]->tieToggle(group);
 		}
@@ -4668,7 +4660,7 @@ void Beam::tieToggle(int group)
 	//untie all ties if one is tied
 	bool istied = false;
 
-	for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+	for (std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 	{
 		// only handle ties with correct group
 		if (group != -1 && (it->group != -1 && it->group != group))
@@ -4680,7 +4672,7 @@ void Beam::tieToggle(int group)
 			// tie is locked and should get unlocked and stop tying
 			it->tied  = false;
 			it->tying = false;
-			if(it->lockedto) it->lockedto->used--;
+			if (it->lockedto) it->lockedto->used--;
 			// disable the ties beam
 			it->beam->p2 = &nodes[0];
 			it->beam->p2truck = 0;
@@ -4693,7 +4685,7 @@ void Beam::tieToggle(int group)
 	// iterate over all ties
 	if (!istied)
 	{
-		for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+		for (std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 		{
 			// only handle ties with correct group
 			if (group != -1 && (it->group != -1 && it->group != group))
@@ -4709,17 +4701,17 @@ void Beam::tieToggle(int group)
 				// iterate over all trucks
 				for (int t=0; t<trucksnum; t++)
 				{
-					if(!trucks[t]) continue;
+					if (!trucks[t]) continue;
 					if (trucks[t]->state==SLEEPING) continue;
 					// and their ropables
-					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+					for (std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 					{
 						// if the ropable is not multilock and used, then discard this ropable
-						if(!itr->multilock && itr->used)
+						if (!itr->multilock && itr->used)
 							continue;
 
 						//skip if tienode is ropable too (no selflock)
-						if(itr->node->id == it->beam->p1->id)
+						if (itr->node->id == it->beam->p1->id)
 							continue;
 
 						// calculate the distance and record the nearest ropable
@@ -4767,7 +4759,7 @@ void Beam::ropeToggle(int group)
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
 
 	// iterate over all ropes
-	for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
+	for (std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
 	{
 		// only handle ropes with correct group
 		if (group != -1 && (it->group != -1 && it->group != group))
@@ -4778,8 +4770,8 @@ void Beam::ropeToggle(int group)
 			// we unlock ropes
 			it->locked = UNLOCKED;
 			// remove node locking
-			if(it->lockedto)         it->lockedto->lockednode=0;
-			if(it->lockedto_ropable) it->lockedto_ropable->used--;
+			if (it->lockedto)         it->lockedto->lockednode=0;
+			if (it->lockedto_ropable) it->lockedto_ropable->used--;
 			it->lockedto = &nodes[0];
 			it->lockedtruck = 0;
 		} else
@@ -4793,13 +4785,13 @@ void Beam::ropeToggle(int group)
 			// iterate over all trucks
 			for (int t=0; t<trucksnum; t++)
 			{
-				if(!trucks[t]) continue;
+				if (!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 				// and their ropables
-				for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+				for (std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 				{
 					// if the ropable is not multilock and used, then discard this ropable
-					if(!itr->multilock && itr->used)
+					if (!itr->multilock && itr->used)
 						continue;
 
 					// calculate the distance and record the nearest ropable
@@ -4833,13 +4825,13 @@ void Beam::hookToggle(int group, int mode, int node_number)
 	int trucksnum = BeamFactory::getSingleton().getTruckCount();
 
 	// iterate over all hooks
-	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+	for (std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
-		if(mode == MOUSE_HOOK_TOGGLE && it->hookNode->id != node_number)
+		if (mode == MOUSE_HOOK_TOGGLE && it->hookNode->id != node_number)
 			//skip all other nodes except the one manually toggled by mouse
 			continue;
 
-		if(mode == HOOK_TOGGLE && group == -1)
+		if (mode == HOOK_TOGGLE && group == -1)
 		{
 			//manually triggerd (EV_COMMON_LOCK). Toggle all hooks groups with group#: -1, 0, 1 ++
 			if (it->group <= -2)
@@ -4852,21 +4844,21 @@ void Beam::hookToggle(int group, int mode, int node_number)
 			if (it->group >= -1 || !it->autolock)
 				continue;
 		}
-		if(mode == HOOK_UNLOCK && group == -2)
+		if (mode == HOOK_UNLOCK && group == -2)
 		{
 			//manual unlock ALL autolock and triggerlock, do not unlock standard hooks (EV_COMMON_AUTOLOCK)
 			if (it->group >= -1 || !it->autolock)
 				continue;
 		}
-		if((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group <= -3)
+		if ((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group <= -3)
 		{
 			//trigger beam lock or unlock. Toggle one hook group with group#: group
 			if (it->group != group)
 				continue;
 		}
-		if((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group >= -1)
+		if ((mode == HOOK_LOCK || mode == HOOK_UNLOCK) && group >= -1)
 			continue;
-		if(mode == HOOK_LOCK && it->timer > 0.0f)
+		if (mode == HOOK_LOCK && it->timer > 0.0f)
 		{
 			//check relock delay timer for autolock nodes and skip if not 0
 			continue;
@@ -4904,28 +4896,28 @@ void Beam::hookToggle(int group, int mode, int node_number)
 			// iterate over all trucks
 			for (int t=0; t<trucksnum; t++)
 			{
-				if(t == this->trucknum && !it->selflock) continue; // dont lock to self
-				if(!trucks[t]) continue;
+				if (t == this->trucknum && !it->selflock) continue; // dont lock to self
+				if (!trucks[t]) continue;
 				if (trucks[t]->state==SLEEPING) continue;
 
 				// do we lock against all nodes or just against ropables?
 				bool found = false;
-				if(it->lockNodes)
+				if (it->lockNodes)
 				{
 					int last_node=0; // nodenumber storage
 					// all nodes, so walk them
 					for (int i=0; i<trucks[t]->free_node; i++)
 					{
 						//skip all nodes with lockgroup 9999 (denylock)
-						if(trucks[t]->nodes[i].lockgroup == 9999)
+						if (trucks[t]->nodes[i].lockgroup == 9999)
 							continue;
 
 						// exclude this truck and its current hooknode from the locking search
-						if(this == trucks[t] && i == it->hookNode->id)
+						if (this == trucks[t] && i == it->hookNode->id)
 							continue;
 
 						// a lockgroup for this hooknode is set -> skip all nodes that do not have the same lockgroup (-1 = default(all nodes))
-						if(it->lockgroup != -1 && it->lockgroup != trucks[t]->nodes[i].lockgroup)
+						if (it->lockgroup != -1 && it->lockgroup != trucks[t]->nodes[i].lockgroup)
 							continue;
 
 						// measure distance
@@ -4954,10 +4946,10 @@ void Beam::hookToggle(int group, int mode, int node_number)
 					// we lock against ropables
 
 					// and their ropables
-					for(std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
+					for (std::vector <ropable_t>::iterator itr = trucks[t]->ropables.begin(); itr!=trucks[t]->ropables.end(); itr++)
 					{
 						// if the ropable is not multilock and used, then discard this ropable
-						if(!itr->multilock && itr->used)
+						if (!itr->multilock && itr->used)
 							continue;
 
 						// calculate the distance and record the nearest ropable
@@ -4981,7 +4973,7 @@ void Beam::hookToggle(int group, int mode, int node_number)
 				}
 
 				//removed since we want to lock to the nearest node in distance
-				//if(found)
+				//if (found)
 					// if we found some lock, we wont check all other trucks
 					//break;
 			}
@@ -5032,9 +5024,9 @@ void Beam::cruisecontrolToggle()
 void Beam::beaconsToggle()
 {
 	bool enableLight = true;
-	if(flaresMode==0)
+	if (flaresMode==0)
 		return;
-	if(flaresMode==1)
+	if (flaresMode==1)
 		enableLight=false;
 	int i;
 	beacon = !beacon;
@@ -5044,17 +5036,17 @@ void Beam::beaconsToggle()
 		{
 			props[i].light[0]->setVisible(beacon && enableLight);
 			props[i].bbsnode[0]->setVisible(beacon);
-			if(props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
+			if (props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
 				props[i].bbsnode[0]->attachObject(props[i].bbs[0]);
-			else if(props[i].bbs[0] && !beacon)
+			else if (props[i].bbs[0] && !beacon)
 				props[i].bbsnode[0]->detachAllObjects();
 		}
 		else if (props[i].beacontype=='R' || props[i].beacontype=='L')
 		{
 			props[i].bbsnode[0]->setVisible(beacon);
-			if(props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
+			if (props[i].bbs[0] && beacon && !props[i].bbsnode[0]->numAttachedObjects())
 				props[i].bbsnode[0]->attachObject(props[i].bbs[0]);
-			else if(props[i].bbs[0] && !beacon)
+			else if (props[i].bbs[0] && !beacon)
 				props[i].bbsnode[0]->detachAllObjects();
 		}
 		else if (props[i].beacontype=='p')
@@ -5063,9 +5055,9 @@ void Beam::beaconsToggle()
 			{
 				props[i].light[k]->setVisible(beacon && enableLight);
 				props[i].bbsnode[k]->setVisible(beacon);
-				if(props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
+				if (props[i].bbs[k] && beacon && !props[i].bbsnode[k]->numAttachedObjects())
 					props[i].bbsnode[k]->attachObject(props[i].bbs[k]);
-				else if(props[i].bbs[k] && !beacon)
+				else if (props[i].bbs[k] && !beacon)
 					props[i].bbsnode[k]->detachAllObjects();
 			}
 		} else
@@ -5116,11 +5108,11 @@ void Beam::setDebugOverlayState(int mode)
 	// enable disable debug visuals
 	debugVisuals = mode;
 
-	if(nodes_debug.empty())
+	if (nodes_debug.empty())
 	{
 		LOG("initializing debugVisuals");
 		// add node labels
-		for(int i=0; i<free_node; i++)
+		for (int i=0; i<free_node; i++)
 		{
 			debugtext_t t;
 			char nodeName[256]="", entName[256]="";
@@ -5136,14 +5128,14 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::White);
 			t.txt->setRenderingDistance(2);
 
-			t.node = parentNode->createChildSceneNode();
+			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 			t.node->setPosition(nodes[i].smoothpos);
 			t.node->setScale(Vector3(0.5,0.5,0.5));
 
 			// collision nodes debug, also mimics as node visual
 			SceneNode *s = t.node->createChildSceneNode();
-			Entity *b = tsm->createEntity(entName, "sphere.mesh");
+			Entity *b = gEnv->ogreSceneManager->createEntity(entName, "sphere.mesh");
 			b->setMaterialName("tracks/transgreen");
 			s->attachObject(b);
 			float f = 0.005f;
@@ -5151,7 +5143,7 @@ void Beam::setDebugOverlayState(int mode)
 
 			/*
 			// collision nodes
-			if(nodes[i].collRadius > 0.00001)
+			if (nodes[i].collRadius > 0.00001)
 			{
 				b->setMaterialName("tracks/transred");
 				f = nodes[i].collRadius;
@@ -5165,7 +5157,7 @@ void Beam::setDebugOverlayState(int mode)
 		}
 
 		// add beam labels
-		for(int i=0; i<free_beam; i++)
+		for (int i=0; i<free_beam; i++)
 		{
 			debugtext_t t;
 			char nodeName[256]="";
@@ -5180,7 +5172,7 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::Black);
 			t.txt->setRenderingDistance(2);
 
-			t.node = parentNode->createChildSceneNode();
+			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 
 			Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
@@ -5196,9 +5188,9 @@ void Beam::setDebugOverlayState(int mode)
 	bool nodesVisible = debugVisuals == 1 || (debugVisuals >= 3 && debugVisuals <= 5);
 	bool beamsVisible = debugVisuals == 2 || debugVisuals == 3 || (debugVisuals >= 6 && debugVisuals <= 11);
 
-	for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+	for (std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 		it->node->setVisible(nodesVisible);
-	for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+	for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		it->node->setVisible(beamsVisible);
 
 	updateDebugOverlay();
@@ -5206,7 +5198,7 @@ void Beam::setDebugOverlayState(int mode)
 
 void Beam::updateDebugOverlay()
 {
-	if(!debugVisuals) return;
+	if (!debugVisuals) return;
 
 	switch(debugVisuals)
 	{
@@ -5214,37 +5206,37 @@ void Beam::updateDebugOverlay()
 		return;
 	case 1: // node-numbers
 		// not written dynamically
-		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 			it->node->setPosition(nodes[it->id].smoothpos);
 		break;
 	case 2: // beam-numbers
 		// not written dynamically
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 		break;
 	case 3: // node-and-beam-numbers
 		// not written dynamically
-		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 			it->node->setPosition(nodes[it->id].smoothpos);
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 		break;
 	case 4: // node-mass
-		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 		{
 			it->node->setPosition(nodes[it->id].smoothpos);
 			it->txt->setCaption(TOSTRING(nodes[it->id].mass));
 		}
 		break;
 	case 5: // node-locked
-		for(std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=nodes_debug.begin(); it!=nodes_debug.end();it++)
 		{
 			it->txt->setCaption((nodes[it->id].locked)?"locked":"unlocked");
 			it->node->setPosition(nodes[it->id].smoothpos);
 		}
 		break;
 	case 6: // beam-compression
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			int scale=(int)(beams[it->id].scale * 100);
@@ -5252,10 +5244,10 @@ void Beam::updateDebugOverlay()
 		}
 		break;
 	case 7: // beam-broken
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
-			if(beams[it->id].broken)
+			if (beams[it->id].broken)
 			{
 				it->node->setVisible(true);
 				it->txt->setCaption("BROKEN");
@@ -5266,23 +5258,23 @@ void Beam::updateDebugOverlay()
 		}
 		break;
 	case 8: // beam-stress
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			it->txt->setCaption(TOSTRING((float) fabs(beams[it->id].stress)));
 		}
 		break;
 	case 9: // beam-strength
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			it->txt->setCaption(TOSTRING(beams[it->id].strength));
 		}
 		break;
 	case 10: // beam-hydros
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
-			if(beams[it->id].type == BEAM_HYDRO || beams[it->id].type == BEAM_INVISIBLE_HYDRO)
+			if (beams[it->id].type == BEAM_HYDRO || beams[it->id].type == BEAM_INVISIBLE_HYDRO)
 			{
 				it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 				int v = (beams[it->id].L / beams[it->id].Lhydro) * 100;
@@ -5295,7 +5287,7 @@ void Beam::updateDebugOverlay()
 		}
 		break;
 	case 11: // beam-commands
-		for(std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
+		for (std::vector<debugtext_t>::iterator it=beams_debug.begin(); it!=beams_debug.end();it++)
 		{
 			it->node->setPosition(beams[it->id].p1->smoothpos - (beams[it->id].p1->smoothpos - beams[it->id].p2->smoothpos)/2);
 			int v = (beams[it->id].L / beams[it->id].commandLong) * 100;
@@ -5309,19 +5301,19 @@ void Beam::updateNetworkInfo()
 {
 	BES_GFX_START(BES_GFX_updateNetworkInfo);
 #ifdef USE_SOCKETW
-	if(!net) return;
+	if (!net) return;
 	bool remote = (state == NETWORKED);
 	if (remote)
 	{
 		client_t *c = net->getClientInfo(sourceid);
-		if(!c) return;
+		if (!c) return;
 		networkUsername = UTFString(c->user.username);
 		networkAuthlevel = c->user.authstatus;
 	} else
 	{
 		user_info_t *info = net->getLocalUserData();
-		if(!info) return;
-		if(UTFString(info->username).empty()) return;
+		if (!info) return;
+		if (UTFString(info->username).empty()) return;
 		networkUsername = UTFString(info->username);
 		networkAuthlevel = info->authstatus;
 	}
@@ -5331,10 +5323,10 @@ void Beam::updateNetworkInfo()
 		// ha, this caused the empty caption bug, but fixed now since we change the caption if its empty:
 		netMT->setCaption(networkUsername);
 		/*
-		if(networkAuthlevel & AUTH_ADMIN)
+		if (networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
-		} else if(networkAuthlevel & AUTH_RANKED)
+		} else if (networkAuthlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else
@@ -5357,10 +5349,10 @@ void Beam::updateNetworkInfo()
 		netMT->setColor(ColourValue::Black);
 
 		/*
-		if(networkAuthlevel & AUTH_ADMIN)
+		if (networkAuthlevel & AUTH_ADMIN)
 		{
 			netMT->setFontName("highcontrast_red");
-		} else if(networkAuthlevel & AUTH_RANKED)
+		} else if (networkAuthlevel & AUTH_RANKED)
 		{
 			netMT->setFontName("highcontrast_green");
 		} else
@@ -5369,7 +5361,7 @@ void Beam::updateNetworkInfo()
 		}
 		*/
 
-		netLabelNode=parentNode->createChildSceneNode();
+		netLabelNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		netLabelNode->attachObject(netMT);
 		netLabelNode->setPosition(position);
 		netLabelNode->setVisible(true);
@@ -5394,7 +5386,7 @@ void Beam::deleteNetTruck()
 void *threadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if (SSETTING("NoCrashRpt").empty())
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
@@ -5443,7 +5435,7 @@ float Beam::getHeadingDirectionAngle()
 {
 	int refnode = cameranodepos[0];
 	int dirnode = cameranodedir[0];
-	if(refnode==-1 || dirnode == -1)
+	if (refnode==-1 || dirnode == -1)
 		return 0;
 	Vector3 idir=nodes[refnode].RelPosition - nodes[dirnode].RelPosition;
 	return atan2(idir.dotProduct(Vector3::UNIT_X), idir.dotProduct(-Vector3::UNIT_Z));
@@ -5451,7 +5443,7 @@ float Beam::getHeadingDirectionAngle()
 
 bool Beam::getReverseLightVisible()
 {
-	if(state==NETWORKED)
+	if (state==NETWORKED)
 		return netReverseLight;
 	if (!engine && !reverselight) return 0;
 	if (engine) return (engine->getGear() < 0);
@@ -5475,14 +5467,14 @@ void Beam::changedCamera()
 	// VideoCamera *v = VideoCamera::setActive(state);
 
 	// look for props
-	for(int i=0; i< free_prop; i++)
+	for (int i=0; i< free_prop; i++)
 	{
 		bool enabled = (props[i].cameramode == -2 || props[i].cameramode == currentcamera);
-		if(props[i].mo) props[i].mo->setMeshEnabled(enabled);
+		if (props[i].mo) props[i].mo->setMeshEnabled(enabled);
 	}
 
 	// look for flexbodies
-	for(int i=0; i < free_flexbody; i++)
+	for (int i=0; i < free_flexbody; i++)
 	{
 		bool enabled = (flexbodies[i]->cameramode == -2 || flexbodies[i]->cameramode == currentcamera);
 		flexbodies[i]->setEnabled(enabled);
@@ -5502,24 +5494,24 @@ int Beam::nodeBeamConnections(int nodeid)
 
 bool Beam::isTied()
 {
-	for(std::vector <tie_t>::iterator it=ties.begin(); it!=ties.end();it++)
-		if(it->tied)
+	for (std::vector <tie_t>::iterator it=ties.begin(); it!=ties.end();it++)
+		if (it->tied)
 			return true;
 	return false;
 }
 
 bool Beam::isLocked()
 {
-	for(std::vector <hook_t>::iterator it=hooks.begin(); it!=hooks.end();it++)
-		if(it->locked==LOCKED)
+	for (std::vector <hook_t>::iterator it=hooks.begin(); it!=hooks.end();it++)
+		if (it->locked==LOCKED)
 			return true;
 	return false;
 }
 
-int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, Vector3 pos, Quaternion rot, collision_box_t *spawnbox)
+int Beam::loadTruck2(String filename, SceneNode *parent, Vector3 pos, Quaternion rot, collision_box_t *spawnbox)
 {
-	int res = loadTruck(filename, manager, parent, pos, rot, spawnbox);
-	if(res) return res;
+	int res = loadTruck(filename, parent, pos, rot, spawnbox);
+	if (res) return res;
 
 	//place correctly
 	if (!hasfixes)
@@ -5532,7 +5524,7 @@ int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, 
 		pos.z-=(maxz+minz)/2.0-pos.z;
 		float miny=-9999.0;
 		if (spawnbox) miny=spawnbox->relo.y+spawnbox->center.y+0.01;
-		if(freePositioned)
+		if (freePositioned)
 			resetPosition(pos, true);
 		else
 			resetPosition(pos.x, pos.z, true, miny);
@@ -5566,10 +5558,10 @@ int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, 
 	updateContacterNodes();
 
 	// fix up submesh collision model
-	if(!subMeshGroundModelName.empty())
+	if (!subMeshGroundModelName.empty())
 	{
 		submesh_ground_model = collisions->getGroundModelByString(subMeshGroundModelName);
-		if(!submesh_ground_model) collisions->defaultgm;
+		if (!submesh_ground_model) collisions->defaultgm;
 	}
 
 
@@ -5612,12 +5604,12 @@ int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, 
 
 #ifdef USE_MYGUI
 	// now load any dashboards
-	if(dash)
+	if (dash)
 	{
-		if(dashBoardLayouts.empty())
+		if (dashBoardLayouts.empty())
 		{
 			// load default for a truck
-			if(driveable == TRUCK)
+			if (driveable == TRUCK)
 			{
 				dash->loadDashBoard("default_dashboard.layout", false);
 				// TODO: load texture dashboard by default as well
@@ -5626,7 +5618,7 @@ int Beam::loadTruck2(String filename, SceneManager *manager, SceneNode *parent, 
 		} else
 		{
 			// load all dashs
-			for(unsigned int i=0; i < dashBoardLayouts.size(); i++)
+			for (unsigned int i=0; i < dashBoardLayouts.size(); i++)
 				dash->loadDashBoard(dashBoardLayouts[i].first, dashBoardLayouts[i].second);
 		}
 		dash->setVisible(false);
@@ -5647,7 +5639,7 @@ void Beam::updateAI(float dt)
 	}
 
 	// start engine if not running
-	if(engine && !engine->running)
+	if (engine && !engine->running)
 		engine->start();
 
 	Vector3 TargetPosition = mCamera->getPosition();
@@ -5661,10 +5653,10 @@ void Beam::updateAI(float dt)
 	/*
 	// this is for debugging purposes
 	static SceneNode *n = 0;
-	if(!n)
+	if (!n)
 	{
-		Entity *e = tsm->createEntity("axes.mesh");
-		n = parent->createChildSceneNode();
+		Entity *e = gEnv->ogreSceneManager->createEntity("axes.mesh");
+		n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(e);
 	}
 	n->setPosition(mAgentPosition);
@@ -5706,11 +5698,11 @@ void Beam::updateAI(float dt)
 	maxvelo = std::max<float>(0.2f, 1-fabs(mYaw)) * 50;
 
 
-	if(engine)
+	if (engine)
 	{
-		if(mVectorToTarget.length() > minCameraRadius * 2.0f)
+		if (mVectorToTarget.length() > minCameraRadius * 2.0f)
 		{
-			if(WheelSpeed < maxvelo)
+			if (WheelSpeed < maxvelo)
 				engine->autoSetAcc(0.8f);
 			else
 				engine->autoSetAcc(0);
@@ -5721,7 +5713,7 @@ void Beam::updateAI(float dt)
 			brake = brakeforce;
 
 			mrtime += dt;
-			if(mrtime>0.5)
+			if (mrtime>0.5)
 			{
 				mrtime = 0;
 				lightsToggle();
@@ -5733,7 +5725,7 @@ void Beam::updateAI(float dt)
 void Beam::updateDashBoards(float &dt)
 {
 #ifdef USE_MYGUI
-	if(!dash) return;
+	if (!dash) return;
 	// some temp vars
 	Vector3 dir;
 
@@ -5748,7 +5740,7 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// engine and gears
-	if(engine)
+	if (engine)
 	{
 		// gears first
 		int gear = engine->getGear();
@@ -5771,7 +5763,7 @@ void Beam::updateDashBoards(float &dt)
 		
 		// R N D 2 1 String
 		int cg = engine->getAutoShift();
-		if(cg != BeamEngine::MANUALMODE)
+		if (cg != BeamEngine::MANUALMODE)
 		{
 			str  = ((cg == BeamEngine::REAR)   ?"#ffffff":"#868686") + String("R\n");
 			str += ((cg == BeamEngine::NEUTRAL)?"#ff0012":"#8a000a") + String("N\n");
@@ -5883,12 +5875,12 @@ void Beam::updateDashBoards(float &dt)
 	dash->setBool(DD_LIGHTS, lightsOn);
 
 	// Traction Control
-	if(tc_present)
+	if (tc_present)
 	{
 		int dash_tc_mode = 1; // 0 = not present, 1 = off, 2 = on, 3 = active
-		if(tc_mode)
+		if (tc_mode)
 		{
-			if(tractioncontrol)
+			if (tractioncontrol)
 				dash_tc_mode = 3;
 			else
 				dash_tc_mode = 2;
@@ -5897,12 +5889,12 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// Anti Lock Brake
-	if(alb_present)
+	if (alb_present)
 	{
 		int dash_alb_mode = 1; // 0 = not present, 1 = off, 2 = on, 3 = active
-		if(alb_mode)
+		if (alb_mode)
 		{
-			if(antilockbrake)
+			if (antilockbrake)
 				dash_alb_mode = 3;
 			else
 				dash_alb_mode = 2;
@@ -5922,10 +5914,10 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// Boat things now: screwprops and alike
-	if(free_screwprop)
+	if (free_screwprop)
 	{
 		// the throttle and rudder
-		for(int i = 0; i < free_screwprop && i < DD_MAX_SCREWPROP; i++)
+		for (int i = 0; i < free_screwprop && i < DD_MAX_SCREWPROP; i++)
 		{
 			float throttle = screwprops[i]->getThrottle();
 			dash->setFloat(DD_SCREW_THROTTLE_0 + i, throttle);
@@ -5937,15 +5929,15 @@ void Beam::updateDashBoards(float &dt)
 		// water depth display, only if we have a screw prop at least
 		if (cameranodepos[0] >= 0 && cameranodepos[0] < MAX_NODES)
 		{
-			//position
+			// position
 			Vector3 dir = nodes[cameranodepos[0]].RelPosition - nodes[cameranodedir[0]].RelPosition;
 			dir.normalise();
 
 			int low_node = getLowestNode();
-			if(low_node != -1)
+			if (low_node != -1)
 			{
 				Vector3 pos = nodes[low_node].AbsPosition;
-				float depth =  pos.y - hfinder->getHeightAt(pos.x, pos.z);
+				float depth =  pos.y - gEnv->heightFinder->getHeightAt(pos.x, pos.z);
 				dash->setFloat(DD_WATER_DEPTH, depth);
 			}
 		}
@@ -5961,9 +5953,9 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// now airplane things, aeroengines, etc.
-	if(free_aeroengine)
+	if (free_aeroengine)
 	{
-		for(int i = 0; i < free_aeroengine && i < DD_MAX_AEROENGINE; i++)
+		for (int i = 0; i < free_aeroengine && i < DD_MAX_AEROENGINE; i++)
 		{
 			float throttle = aeroengines[i]->getThrottle();
 			dash->setFloat(DD_AEROENGINE_THROTTLE_0 + i, throttle);
@@ -5977,9 +5969,9 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// wings stuff, you dont need an aeroengine
-	if(free_wing)
+	if (free_wing)
 	{
-		for(int i = 0; i < free_wing && i < DD_MAX_WING; i++)
+		for (int i = 0; i < free_wing && i < DD_MAX_WING; i++)
 		{
 			// Angle of Attack (AOA)
 			float aoa = wings[i].fa->aoa;
@@ -5988,7 +5980,7 @@ void Beam::updateDashBoards(float &dt)
 	}
 
 	// some things only activate when a wing or an aeroengine is present
-	if(free_wing || free_aeroengine)
+	if (free_wing || free_aeroengine)
 	{
 		//airspeed
 		{
@@ -6022,13 +6014,13 @@ void Beam::updateDashBoards(float &dt)
 
 
 	// set the features of this vehicle once
-	if(!GUIFeaturesChanged)
+	if (!GUIFeaturesChanged)
 	{
 		bool hasEngine = (engine != 0);
 		bool hasturbo = false;
 		bool autogearVisible = false;
 
-		if(hasEngine)
+		if (hasEngine)
 		{
 			hasturbo = engine->hasturbo;
 			autogearVisible = (engine->getAutoShift() != BeamEngine::MANUALMODE);
@@ -6190,9 +6182,9 @@ Vector3 Beam::getGForces()
 
 		float gravity = DEFAULT_GRAVITY;
 
-		if (gEnv->frameListener)
+		if (gEnv->terrainManager)
 		{
-			gravity = gEnv->frameListener->getGravity();
+			gravity = gEnv->terrainManager->getGravity();
 		}
 
 		float vertacc = std::abs(gravity) - acc.dotProduct(-upv);
