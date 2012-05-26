@@ -28,7 +28,7 @@ class MapTextureCreator : public Ogre::RenderTargetListener
 {
 public:
 
-	MapTextureCreator(MapControl *ctrl);
+	MapTextureCreator();
 
 	Ogre::String getMaterialName();
 	Ogre::String getRTName();
@@ -47,9 +47,7 @@ protected:
 	void preRenderTargetUpdate();
     void postRenderTargetUpdate();
 
-	MapControl *mMapControl;
 	Ogre::Camera *mCamera;
-	Ogre::Camera *mMainCam;
 	Ogre::MaterialPtr mMaterial;
 	Ogre::Real mMapZoom;
 	Ogre::RenderTarget *mRttTex;

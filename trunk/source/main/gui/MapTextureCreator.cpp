@@ -20,9 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MapTextureCreator.h"
 
 #include "BeamFactory.h"
-#include "IWater.h"
-#include "MapControl.h"
 #include "ResourceBuffer.h"
+#include "TerrainManager.h"
 
 using namespace Ogre;
 
@@ -101,7 +100,7 @@ void MapTextureCreator::update()
 {
 	if ( !mRttTex ) return;
 
-	Vector3 mapSize = mMapControl->getMapSize();
+	Vector3 mapSize = gEnv->terrainManager->getMax();
 	float orthoWindowWidth  = mapSize.x - (mapSize.x - 20.0f) * mMapZoom;
 	float orthoWindowHeight = mapSize.z - (mapSize.z - 20.0f) * mMapZoom;
 
