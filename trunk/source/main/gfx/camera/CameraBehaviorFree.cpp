@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Console.h"
 #include "DepthOfFieldEffect.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "language.h"
 #include "mygui/BaseLayout.h"

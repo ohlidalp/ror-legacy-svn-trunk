@@ -40,7 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "FlexMesh.h"
 #include "FlexMeshWheel.h"
 #include "FlexObj.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "IWater.h"
 #include "language.h"

@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "CameraManager.h"
 #include "collisions.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "IWater.h"
 #include "MapControl.h"

@@ -20,7 +20,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "autopilot.h"
 
 #include "BeamData.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "IWater.h"
 #include "SoundScriptManager.h"
 #include "IHeightFinder.h"

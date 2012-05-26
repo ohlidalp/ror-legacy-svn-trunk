@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Beam.h"
 #include "InputEngine.h"
-#include "heightfinder.h"
+#include "IHeightFinder.h"
 #include "Ogre.h"
 
 using namespace Ogre;
