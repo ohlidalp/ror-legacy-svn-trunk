@@ -32,6 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicle.h"
 #include "CameraBehaviorVehicleCineCam.h"
 #include "CameraBehaviorVehicleSpline.h"
+#include "CameraBehaviorIsometric.h"
 
 #include "ICameraBehavior.h"
 
@@ -212,6 +213,7 @@ void CameraManager::createGlobalBehaviors()
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
 	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FIXED, new CameraBehaviorFixed()));
+	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_ISOMETRIC, new CameraBehaviorIsometric()));
 }
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)
@@ -230,4 +232,9 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 {
 	if ( !currentBehavior ) return false;
 	return currentBehavior->mouseReleased(ctx, _arg, _id);
+}
+
+bool CameraManager::enableGameControls()
+{
+	return (!hasActiveBehavior() || (getCameraBehavior() != CAMERA_BEHAVIOR_FREE));
 }

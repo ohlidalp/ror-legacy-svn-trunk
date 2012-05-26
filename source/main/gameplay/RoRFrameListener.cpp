@@ -2165,11 +2165,9 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 
-	if (loading_state==ALL_LOADED)
+	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-		if (CameraManager::singletonExists() &&
-			(!CameraManager::getSingleton().hasActiveBehavior() ||
-			CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE))
+		if (CameraManager::getSingleton().enableGameControls())
 		{
 			if (!curr_truck)
 			{
@@ -3241,7 +3239,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				surveyMapMode == SURVEY_MAP_BIG &&
 				CameraManager::singletonExists() &&
 				CameraManager::getSingleton().hasActiveBehavior() &&
-				CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE)
+				CameraManager::getSingleton().enableGameControls())
 			{
 				if (velocity > 7.5f || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{
@@ -3432,7 +3430,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		dirty=true;
 	}
 
-	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS) && loading_state == ALL_LOADED)
+	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_TOGGLE_STATS) && (loading_state == ALL_LOADED || loading_state == TERRAIN_EDITOR))
 	{
 		dirty=true;
 		if (mStatsOn==0)
@@ -3550,44 +3548,6 @@ void RoRFrameListener::initializeCompontents()
 	}
 #endif //USE_MYGUI
 
-	collisions=new Collisions(this, mSceneMgr, debugCollisions);
-
-	// load AS
-#ifdef USE_ANGELSCRIPT
-	ScriptEngine::getSingleton().setCollisions(collisions);
-	if (!netmode)
-	{
-		if (ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(loadedTerrain+".as"))
-		{
-			ScriptEngine::getSingleton().loadScript(loadedTerrain+".as");
-		} else
-		{
-			// load a default script that does the most basic things
-			ScriptEngine::getSingleton().loadScript("default.as");
-		}
-	} else
-	{
-		// load the default stscriptuff so spawners will work in multiplayer
-		ScriptEngine::getSingleton().loadScript("default.as");
-	}
-
-	// finally activate AS logging, so we dont spam the users screen with initialization messages
-	ScriptEngine::getSingleton().activateLogging();
-#endif
-
-	// update icollisions instance in factory
-	BeamFactory::getSingleton().icollisions = collisions;
-
-	if (person) person->setCollisions(collisions);
-#ifdef USE_MYGUI
-	if (GUI_Friction::getSingletonPtr())
-		GUI_Friction::getSingleton().setCollisions(collisions);
-#endif //MYGUI
-
-	// advanced camera collision tools
-	mCollisionTools = new MOC::CollisionTools(mSceneMgr);
-	// set how far we want the camera to be above ground
-	mCollisionTools->setHeightAdjust(0.2f);
 
 }
 
@@ -3630,10 +3590,16 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	initializeCompontents();
 
-	if (terrainfile.find(".terrn") != String::npos)
+	if (terrainfile.find(".terrn2") != String::npos)
+	{
+		LOG("Loading new terrain format: " + terrainfile);
+		loadNewTerrain(terrainfile);
+
+	else if (terrainfile.find(".terrn") != String::npos)
 	{
 		LOG("Loading classic terrain format: " + terrainfile);
 		loadClassicTerrain(terrainfile);
+
 	} else
 	{
 		// exit on unknown terrain handler
@@ -3710,14 +3676,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 	//geometry
 	ds->readLine(geom, 1023);
 
-	// otc = ogre terrain config
-	if (String(geom).find(".otc") != String::npos)
-	{
-		LOG("new terrain mode enabled");
-		SETTINGS.setSetting("new Terrain Mode", "Yes");
-	}
-
-
 	//colour
 	ds->readLine(line, 1023);
 	//water stuff
@@ -3754,8 +3712,8 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #endif
 
 	//shadows
-	new ShadowManager(mSceneMgr, mWindow, mCamera);
-	ShadowManager::getSingleton().loadConfiguration();
+	ShadowManager *sh = new ShadowManager(mSceneMgr, mWindow, mCamera);
+	sh->loadConfiguration();
 
 	ColourValue fadeColour(r,g,b);
 
@@ -3854,8 +3812,6 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 #endif //USE_CAELUM
 
 
-	bool newTerrainMode = (BSETTING("new Terrain Mode", false));
-
 	MaterialPtr terMat = (MaterialPtr)(MaterialManager::getSingleton().getByName("TerrainSceneManager/Terrain"));
 	{
 		// load configuration from STM (sizes)
@@ -3884,14 +3840,10 @@ void RoRFrameListener::loadClassicTerrain(String terrainfile)
 		}
 #endif //MYGUI
 
-		if (!newTerrainMode && !disableTetrrain)
+		if (!disableTetrrain)
 		{
 			// classic mode
 			mSceneMgr->setWorldGeometry(geom);
-		} else if (newTerrainMode && !disableTetrrain)
-		{
-			terrainManager = new TerrainManager(mSceneMgr);
-			terrainManager->loadTerrain(geom);
 		}
 	}
 
@@ -5238,7 +5190,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif // USE_MUMBLE
 	}
 
-	if (CameraManager::singletonExists() && loading_state == ALL_LOADED)
+	if (CameraManager::singletonExists() && (loading_state == ALL_LOADED || loading_state == TERRAIN_EDITOR))
 	{
 		CameraManager::getSingleton().update(dt);
 	}
@@ -5279,10 +5231,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	updateTruckMirrors(dt);
 
 	// update water after the camera!
-	if (loading_state==ALL_LOADED && w) w->framestep(dt);
+	if ((loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR) && w) w->framestep(dt);
 
 	//update visual - antishaking
-	if (loading_state==ALL_LOADED)
+	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
 		BeamFactory::getSingleton().updateVisual(dt);
 
@@ -5316,7 +5268,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		mTimeUntilNextToggle -= dt;
 
 	// one of the input modes is immediate, so update the movement vector
-	if (loading_state==ALL_LOADED)
+	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
 #ifdef USE_PAGED
 		// paged geometry
@@ -5497,13 +5449,13 @@ void RoRFrameListener::pauseSim(bool value)
 {
 	// TODO: implement this (how to do so?)
 	static int savedmode = -1;
-	if (value && loading_state == EDITOR_PAUSE)
+	if (value && loading_state == PAUSE)
 		// already paused
 		return;
 	if (value)
 	{
 		savedmode = loading_state;
-		loading_state = EDITOR_PAUSE;
+		loading_state = PAUSE;
 		LOG("** pausing game");
 	} else if (!value && savedmode != -1)
 	{

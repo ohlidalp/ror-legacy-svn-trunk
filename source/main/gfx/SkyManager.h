@@ -28,13 +28,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "Singleton.h"
 
-class SkyManager : public RoRSingleton< SkyManager >
+class SkyManager
 {
 public:
-	SkyManager();
+	SkyManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
 	~SkyManager();
-
-	void init(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
 
 	void loadScript(Ogre::String script);
 	
@@ -44,7 +42,7 @@ public:
 	/// gets the current time scale
 	double getTimeFactor();
 	
-	/// prints the current time of the simulation inthe format of HH:MM:SS
+	/// prints the current time of the simulation in the format of HH:MM:SS
 	Ogre::String getPrettyTime();
 	
 	void forceUpdate(float dt);

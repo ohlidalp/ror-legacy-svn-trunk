@@ -32,7 +32,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrain.h"
 
-class ShadowManager : public RoRSingletonNoCreation< ShadowManager >
+class ShadowManager
 {
 public:
 	ShadowManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);

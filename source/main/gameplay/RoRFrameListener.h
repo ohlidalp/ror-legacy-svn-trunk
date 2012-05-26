@@ -80,7 +80,7 @@ public:
 
 	int loading_state;
 
-	enum LoadingStatuses { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, EDITOR_PAUSE };
+	enum LoadingStatuses { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, PAUSE, TERRAIN_EDITOR };
 	enum SurveyMapTypes { SURVEY_MAP_NONE, SURVEY_MAP_SMALL, SURVEY_MAP_BIG, SURVEY_MAP_END};
 
 protected:
@@ -151,7 +151,6 @@ protected:
 	Envmap *envmap;
 	FILE *editorfd;
 	ForceFeedback *forcefeedback;
-	HDRListener *hdrListener;
 	HeatHaze *heathaze;
 	MOC::CollisionTools *mCollisionTools;
 	MapControl *surveyMap;
@@ -297,6 +296,7 @@ public: // public methods
 	void hideGUI(bool visible);
 	void hideMap();
 	void initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension = Ogre::String(), std::vector<Ogre::String> *truckconfig=0, bool enterTruck=false, Skin *skin=NULL);
+	void loadNewTerrain(Ogre::String terrainfile);
 	void loadClassicTerrain(Ogre::String terrainfile);
 	void loadNetTerrain(char *preselected_map);
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
