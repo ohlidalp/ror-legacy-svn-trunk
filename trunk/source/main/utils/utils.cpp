@@ -27,6 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <iconv.h>
 #endif //WIN32
 
+#include "sha1.h"
+
 #include "Ogre.h"
 using namespace Ogre;
 
@@ -367,4 +369,31 @@ Real Round(Real value, unsigned short ndigits /* = 0 */)
 	value /= f;
 
 	return value;
+}
+
+Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds)
+{
+	// copy whole file into a buffer
+	uint8_t *buf = 0;
+	ds->seek(0); // from start
+	// alloc buffer
+	uint32_t bufSize = ds->size();
+	buf = (uint8_t *)malloc(bufSize);
+	// read into buffer
+	ds->read(buf, bufSize);
+
+	// and build the hash over it
+	char hash_result[250];
+	memset(hash_result, 0, 249);
+	RoR::CSHA1 sha1;
+	sha1.UpdateHash(buf, bufSize);
+	sha1.Final();
+	sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+
+	// revert DS to start
+	ds->seek(0);
+	// release memory
+	free(buf);
+	
+	return String(hash_result);
 }
