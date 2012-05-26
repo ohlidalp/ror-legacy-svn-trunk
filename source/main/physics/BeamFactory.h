@@ -36,7 +36,7 @@ class BeamFactory : public StreamableFactory < BeamFactory, Beam >
 	friend class Network;
 	friend class RoRFrameListener;
 public:
-	BeamFactory(Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::RenderWindow* win, Network *net, float *mapsizex, float *mapsizez, Collisions *icollisions, HeightFinder *mfinder, Water *w, Ogre::Camera *pcam);
+	BeamFactory();
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);
@@ -80,15 +80,7 @@ public:
 	void windowResized();
 
 protected:
-	Collisions *icollisions;
-	HeightFinder *mfinder;
-	Network *net;
-	Ogre::Camera *pcam;
-	Ogre::RenderWindow* win;
-	Ogre::SceneManager *manager;
 	Ogre::SceneNode *parent;
-	Water *w;
-	float *mapsizex, *mapsizez;
 	
 	Beam *trucks[MAX_TRUCKS];
 	int free_truck;

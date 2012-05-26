@@ -40,7 +40,6 @@ public:
 		Beam *mCurrTruck;
 		Character *mCharacter;
 		DOFManager *mDof;
-		HeightFinder *mHfinder;
 		Ogre::Camera *mCamera;
 		Ogre::Degree mRotScale;
 		Ogre::SceneManager *mSceneMgr;

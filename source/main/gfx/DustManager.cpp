@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), mEnabled(false)
+DustManager::DustManager() : mEnabled(false)
 {
 	setSingleton(this);
 	mEnabled = BSETTING("Particles", true);
@@ -38,12 +38,12 @@ DustManager::DustManager(Ogre::SceneManager *mSceneMgr) : mSceneMgr(mSceneMgr), 
 	
 	if (mEnabled)
 	{
-		dustpools["dust"]   = new DustPool((char *)"tracks/Dust", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["clump"]  = new DustPool((char *)"tracks/Clump", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["sparks"] = new DustPool((char *)"tracks/Sparks", 10, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["drip"]   = new DustPool((char *)"tracks/Drip", 50, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["splash"] = new DustPool((char *)"tracks/Splash", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
-		dustpools["ripple"] = new DustPool((char *)"tracks/Ripple", 20, mSceneMgr->getRootSceneNode(), mSceneMgr, w);
+		dustpools["dust"]   = new DustPool((char *)"tracks/Dust", 20 );
+		dustpools["clump"]  = new DustPool((char *)"tracks/Clump", 20 );
+		dustpools["sparks"] = new DustPool((char *)"tracks/Sparks", 10 );
+		dustpools["drip"]   = new DustPool((char *)"tracks/Drip", 50 );
+		dustpools["splash"] = new DustPool((char *)"tracks/Splash", 20 );
+		dustpools["ripple"] = new DustPool((char *)"tracks/Ripple", 20 );
 	}
 
 }
@@ -111,17 +111,6 @@ void DustManager::update(float wspeed)
 	for(it=dustpools.begin(); it!=dustpools.end();it++)
 	{
 		it->second->update(wspeed);
-	}
-}
-
-void DustManager::setWater(Water *w)
-{
-	if(!mEnabled) return;
-	this->w = w;
-	std::map < Ogre::String , DustPool * >::iterator it;
-	for(it=dustpools.begin(); it!=dustpools.end();it++)
-	{
-		it->second->setWater(w);
 	}
 }
 

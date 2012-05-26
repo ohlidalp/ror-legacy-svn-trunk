@@ -40,7 +40,7 @@ class GUIManager :
 	, public Ogre::WindowEventListener
 {
 public:
-	GUIManager(Ogre::Root *root, Ogre::SceneManager *mgr, Ogre::RenderWindow *win);
+	GUIManager();
 	virtual ~GUIManager();
 
 	void destroy();
@@ -68,10 +68,6 @@ private:
 private:
 	MyGUI::Gui* mGUI;
 	MyGUI::OgrePlatform* mPlatform;
-
-	Ogre::Root *mRoot;
-	Ogre::SceneManager* mSceneManager;
-	Ogre::RenderWindow* mWindow;
 
 	bool mExit;
 

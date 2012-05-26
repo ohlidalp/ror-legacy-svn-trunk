@@ -201,6 +201,7 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	gEnv->ogreRoot     = m_pRoot;
 	gEnv->ogreViewPort = m_pViewport;
 	gEnv->ogreRenderWindow = m_pRenderWnd;
+	gEnv->embeddedMode = embedded;
 
     return true;
 }

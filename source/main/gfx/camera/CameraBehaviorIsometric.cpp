@@ -100,9 +100,9 @@ void CameraBehaviorIsometric::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = ctx.mCamera->getPosition() + ctx.mCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
-	if ( ctx.mHfinder )
+	if ( gEnv->heightFinder )
 	{
-		camPosition.y = ctx.mHfinder->getHeightAt(camPosition.x, camPosition.z) + 20.0f;
+		camPosition.y = gEnv->heightFinder->getHeightAt(camPosition.x, camPosition.z) + 20.0f;
 	}
 
 	ctx.mCamera->setPosition(camPosition);

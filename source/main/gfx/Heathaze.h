@@ -26,28 +26,25 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class HeatHazeListener : public Ogre::RenderTargetListener
 {
 public:
-	HeatHazeListener(Ogre::SceneManager *mSceneMgr);
+	HeatHazeListener();
     void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 
 private:
-	Ogre::SceneManager *mSceneMgr;
 };
 
 class HeatHaze
 {
 public:
-	HeatHaze(Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, Ogre::Camera *cam);
+	HeatHaze();
 	void setEnable(bool en);
 	void prepareShutdown();
 	void update();
 
 private:
 	HeatHazeListener *listener;
-	Ogre::Camera *mHazeCam;
 	Ogre::TextureUnitState *tex;
 	Ogre::RenderTexture* rttTex;
-	Ogre::SceneManager *mSceneMgr;	
 };
 
 #endif // __HeatHaze_H__

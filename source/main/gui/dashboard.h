@@ -43,7 +43,6 @@ private:
 	DashboardListener *mDashboardListener;
 	Ogre::Camera *mDashCam;
 	Ogre::RenderTexture *rttTex;
-	Ogre::SceneManager *mScene;
 };
 
 class DashboardListener : public Ogre::RenderTargetListener
@@ -51,7 +50,7 @@ class DashboardListener : public Ogre::RenderTargetListener
 	friend class Dashboard;
 public:
 
-	DashboardListener(Ogre::SceneManager *mSceneMgr);
+	DashboardListener();
 
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 	void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);

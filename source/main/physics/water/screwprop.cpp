@@ -24,13 +24,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "IWater.h"
 #include "SoundScriptManager.h"
 
-Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float fullpower, Water* water, int trucknum) :
+Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float fullpower, int trucknum) :
 	  nodes(nodes)
 	, noderef(noderef)
 	, nodeback(nodeback)
 	, nodeup(nodeup)
 	, fullpower(fullpower)
-	, water(water)
 	, trucknum(trucknum)
 {
 	splashp = DustManager::getSingleton().getDustPool("splash");

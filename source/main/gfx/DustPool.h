@@ -27,8 +27,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 //#include "OgreDeflectorPlaneAffector.h"
 
-class Water;
-
 using namespace Ogre;
 
 #define MAX_DUSTS 100
@@ -55,10 +53,9 @@ protected:
 	ColourValue colours[MAX_DUSTS];
 	int types[MAX_DUSTS];
 	float rates[MAX_DUSTS];
-	Water* w;
 
 public:
-	DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw);
+	DustPool(char* dname, int dsize, SceneNode *parent);
 
 	void setVisible(bool s);
 	//Dust
@@ -79,7 +76,7 @@ public:
 	void allocRipple(Vector3 pos, Vector3 vel);
 
 	void update(float gspeed);
-	void setWater(Water *_w) { w = _w; };
+
 	~DustPool();
 };
 

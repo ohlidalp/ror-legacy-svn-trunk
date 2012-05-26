@@ -27,7 +27,7 @@ class Water
 {
 public:
 	Water() {};
-	Water(int type, Ogre::Camera *mCamera, Ogre::SceneManager *mSceneMgr, Ogre::RenderWindow *mWindow, float wHeight, float *MapSizeX, float *MapSizeZ, bool useWaves);
+	Water(int type, float wHeight, float *MapSizeX, float *MapSizeZ, bool useWaves);
 	virtual ~Water() {};
 
 	virtual float getHeight() = 0;

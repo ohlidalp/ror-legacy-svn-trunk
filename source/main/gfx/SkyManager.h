@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class SkyManager
 {
 public:
-	SkyManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera);
+	SkyManager();
 	~SkyManager();
 
 	void loadScript(Ogre::String script);
@@ -49,7 +49,6 @@ public:
 
 	void notifyCameraChanged(Ogre::Camera *cam);
 protected:
-	Ogre::Camera *mCamera;
     Caelum::CaelumSystem *mCaelumSystem;
 	Caelum::CaelumSystem *getCaelumSystem() { return mCaelumSystem; };
 };

@@ -48,6 +48,7 @@ public:
 		, surveyMap(0)
 		, player(0)
 		, sky(0)
+		, embeddedMode(false)
 	{
 	}
 	Ogre::Root *ogreRoot;
@@ -65,6 +66,8 @@ public:
 	MapControl *surveyMap;
 	Character *player;
 	SkyManager *sky;
+
+	bool embeddedMode;
 };
 
 #endif // GEnv_H__

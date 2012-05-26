@@ -47,21 +47,9 @@ public:
 
 	//constructor
 	Beam( int tnum
-		, Ogre::SceneManager *manager
-		, Ogre::SceneNode *parent
-		, Ogre::RenderWindow* win
-		, Network *net
-		, float *mapsizex
-		, float *mapsizez
-		, Ogre::Real px
-		, Ogre::Real py
-		, Ogre::Real pz
+		, Ogre::Real pos
 		, Ogre::Quaternion rot
 		, const char* fname
-		, Collisions *icollisions
-		, HeightFinder *mfinder
-		, Water *w
-		, Ogre::Camera *pcam
 		, bool networked=false
 		, bool networking=false
 		, collision_box_t *spawnbox=NULL
@@ -156,7 +144,7 @@ public:
 	float currentScale;
 	void updateDebugOverlay();
 	void setDebugOverlayState(int mode);
-	Ogre::SceneManager *tsm;
+
 	//! @}
 
 	//! @{ startup / shutdown
@@ -442,7 +430,7 @@ protected:
 	bool simpleSkeletonInitiated;
 	void initSimpleSkeleton();
 
-	int loadTruck2(Ogre::String filename, Ogre::SceneManager *manager, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);
+	int loadTruck2(Ogre::String filename, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox);
 
 	/**
 	 * Resets the turn signal when the steering wheel is turned back.

@@ -34,12 +34,11 @@ using namespace Ogre;
 using namespace Caelum;
 
 //---------------------------------------------------------------------
-SkyManager::SkyManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, Ogre::Camera *mCamera) : mCamera(mCamera), mCaelumSystem(0)
+SkyManager::SkyManager() : mCaelumSystem(0)
 {
 	// Initialise CaelumSystem.
-	this->mCamera = mCamera;
-	mCaelumSystem = new Caelum::CaelumSystem (Root::getSingletonPtr(), mScene, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
-	mCaelumSystem->attachViewport(mCamera->getViewport());
+	mCaelumSystem = new Caelum::CaelumSystem (gEnv->ogreRoot, gEnv->ogreSceneManager, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+	mCaelumSystem->attachViewport(gEnv->ogreViewPort);
 
 	/*
 	// TODO: set real time, and let the user select his true location
@@ -50,8 +49,8 @@ SkyManager::SkyManager(Ogre::SceneManager *mScene, Ogre::RenderWindow *mWindow, 
 	*/
 
 	// Register caelum as a listener.
-	mWindow->addListener (mCaelumSystem);
-	Root::getSingletonPtr()->addFrameListener(mCaelumSystem);
+	gEnv->ogreRenderWindow->addListener (mCaelumSystem);
+	gEnv->ogreRoot->addFrameListener(mCaelumSystem);
 }
 
 SkyManager::~SkyManager()

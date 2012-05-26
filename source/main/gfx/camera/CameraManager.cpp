@@ -82,7 +82,6 @@ void CameraManager::update(float dt)
 
 	ctx.mCurrTruck  = BeamFactory::getSingleton().getCurrentTruck();
 	ctx.mDt         = dt;
-	ctx.mHfinder    = RoRFrameListener::hfinder;
 	ctx.mRotScale   = Degree(mRotScale);
 	ctx.mTransScale = mTransScale;
 	ctx.fovInternal = Degree(FSETTING("FOV Internal", 75.0f));

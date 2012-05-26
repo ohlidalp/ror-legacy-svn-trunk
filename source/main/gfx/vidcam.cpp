@@ -30,7 +30,7 @@ using namespace Ogre;
 
 int VideoCamera::counter = 0;
 
-VideoCamera::VideoCamera(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, rig_t *truck) : mSceneMgr(mSceneMgr), mCamera(camera), truck(truck)
+VideoCamera::VideoCamera(rig_t *truck) : truck(truck)
 	, mVidCam()
 	, rttTex(0)
 	, mat()
@@ -45,7 +45,7 @@ void VideoCamera::init()
 {
 	mat = Ogre::MaterialManager::getSingleton().getByName(materialName);
 
-	mVidCam = mSceneMgr->createCamera(materialName + "_camera");
+	mVidCam = gEnv->ogreSceneManager->createCamera(materialName + "_camera");
 
 	bool useExternalMirrorWindow = BSETTING("UseVideocameraWindows", false);
 	bool fullscreenRW = BSETTING("VideoCameraFullscreen", false);
@@ -125,7 +125,7 @@ void VideoCamera::init()
 	{
 		Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
-		vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
+		vp->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
 		vp->setVisibilityMask(~HIDE_MIRROR);
 		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
 		vp->setOverlaysEnabled(false);
@@ -141,7 +141,7 @@ void VideoCamera::init()
 	{
 		Ogre::Viewport *vp = rwMirror->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
-		vp->setBackgroundColour(mCamera->getViewport()->getBackgroundColour());
+		vp->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
 		vp->setVisibilityMask(~HIDE_MIRROR);
 		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
 		vp->setOverlaysEnabled(false);
@@ -150,8 +150,8 @@ void VideoCamera::init()
 	
 	if(debugMode)
 	{
-		Entity *ent = mSceneMgr->createEntity("debug-camera.mesh");
-		debugNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		Entity *ent = gEnv->ogreSceneManager->createEntity("debug-camera.mesh");
+		debugNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		ent->setMaterialName("ror-camera");
 		debugNode->attachObject(ent);
 		debugNode->setScale(0.1,0.1,0.1);
@@ -247,7 +247,7 @@ void VideoCamera::update(float dt)
 	mVidCam->setPosition(pos);
 }
 
-VideoCamera *VideoCamera::parseLine(Ogre::SceneManager *mSceneMgr, Ogre::Camera *camera, SerializedRig *truck, parsecontext_t &c)
+VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 {
 	try
 	{

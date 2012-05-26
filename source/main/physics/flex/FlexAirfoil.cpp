@@ -69,7 +69,7 @@ float refairfoilpos[90]={
 
 using namespace Ogre;
 
-FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able)
+FlexAirfoil::FlexAirfoil(char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Vector2 texlf, Vector2 texrf, Vector2 texlb, Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able)
 {
 //		innan=0;
 	liftcoef=lift_coef;
@@ -77,7 +77,6 @@ FlexAirfoil::FlexAirfoil(SceneManager *manager, char* name, node_t *nds, int pnf
 	broken=false;
 	debug[0]=0;
 	free_wash=0;
-    smanager=manager;
 	aeroengines=tps;
 	nodes=nds;
 	useInducedDrag=false;

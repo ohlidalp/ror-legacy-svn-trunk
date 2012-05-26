@@ -21,9 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "IWater.h"
 #include "RoRPrerequisites.h"
 
-DustPool::DustPool(char* dname, int dsize, SceneNode *parent, SceneManager *smgr, Water *mw)
+DustPool::DustPool(char* dname, int dsize, SceneNode *parent)
 {
-	w=mw;
 	size=dsize;
 	allocated=0;
 	int i;
@@ -290,7 +289,7 @@ void DustPool::update(float gspeed)
 			ParticleEmitter *emit=pss[i]->getEmitter(0);
 			Real vel=velocities[i].length();
 			emit->setEnabled(true);
-			positions[i].y=w->getHeight()-0.02;
+			positions[i].y=gEnv->water->getHeight()-0.02;
 			sns[i]->setPosition(positions[i]);
 			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.04));
 			emit->setTimeToLive(vel*0.04/0.1);

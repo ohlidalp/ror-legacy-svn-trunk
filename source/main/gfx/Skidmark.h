@@ -53,7 +53,7 @@ class Skidmark
 public:
 
 	/// Constructor - see setOperationType() for description of argument.
-	Skidmark(Ogre::SceneManager *scm, wheel_t *wheel, HeightFinder *hfinder, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
+	Skidmark( wheel_t *wheel, Ogre::SceneNode *snode, int lenght=500, int bucketCount=20);
 	virtual ~Skidmark();
 
 	void updatePoint();
@@ -77,9 +77,7 @@ private:
 		int facecounter;
 	} skidmark_t;
 
-	Ogre::SceneManager *scm;
 	Ogre::SceneNode *mNode;
-	HeightFinder *hfinder;
 	
 	bool mDirty;
 	float maxDistance;

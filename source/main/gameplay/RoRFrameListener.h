@@ -54,7 +54,7 @@ class RoRFrameListener: public Ogre::FrameListener, public Ogre::WindowEventList
 {
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
-	RoRFrameListener(AppState *parent, Ogre::RenderWindow* win, Ogre::Camera* cam, Ogre::SceneManager* scm, Ogre::Root* root, bool isEmbedded=false, Ogre::String inputhwnd=0);
+	RoRFrameListener(AppState *parent, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
 
 
@@ -119,15 +119,9 @@ protected:
 	MapTextureCreator *mtc;
 	Network *net;
 
-	Ogre::Camera* mCamera;
-
 	Ogre::Quaternion reload_dir;
 	Ogre::Real distgrabbed;
 	Ogre::Real mTimeUntilNextToggle; // just to stop toggles flipping too fast
-	Ogre::RenderWindow* mWindow;
-	Ogre::RenderWindow* renderwin;
-	Ogre::Root *mRoot;
-	Ogre::SceneManager *mSceneMgr;
 	Ogre::SceneNode *dirArrowNode;
 	Ogre::SceneNode *pointerDestination;
 	Ogre::String grassdensityTextureFilename;
@@ -209,16 +203,10 @@ protected:
 
 private:
 
-	int net_quality;
-	bool net_quality_changed;
 
 public: // public methods
 
 	Network *getNetwork() { return net; };
-
-	Ogre::RenderWindow *getRenderWindow() { return mWindow; };
-	Ogre::SceneManager *getSceneMgr() { return mSceneMgr; };
-	Ogre::Camera *getCamera() { return mCamera; };
 
 	OverlayWrapper *getOverlayWrapper() { return ow; };
 
@@ -258,11 +246,7 @@ public: // public methods
 	void updateRacingGUI();
 	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
 
-	// mutex'ed data
-	void setNetQuality(int q);
-	int getNetQuality(bool ack=false);
-	bool getNetQualityChanged();
-	pthread_mutex_t mutex_data;
+
 };
 
 #endif // __RoRFrameListener_H_

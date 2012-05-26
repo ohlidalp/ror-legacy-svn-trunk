@@ -59,13 +59,10 @@ class ProceduralManager
 {
 protected:
 	std::vector<ProceduralObject> pObjects;
-	Ogre::SceneManager *mSceneMgr;
-	HeightFinder *hfinder;
-	Collisions *collisions;
 	int objectcounter;
 	
 public:
-	ProceduralManager(Ogre::SceneManager *manager, HeightFinder *hf, Collisions *collisions);
+	ProceduralManager();
 	~ProceduralManager();
 	int addObject(ProceduralObject &po);
 

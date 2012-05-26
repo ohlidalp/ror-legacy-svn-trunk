@@ -32,14 +32,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class DecalSpline
 {
 private:
-	Ogre::SceneManager *mSceneMgr;
 	Ogre::ManualObject *mo_spline;
 	Ogre::SceneNode *mo_spline_node, *snparent;
 	Ogre::SimpleSpline *spline;
 
 
 public:
-	DecalSpline(Ogre::SceneManager *manager, Ogre::SceneNode *parent);
+	DecalSpline();
 	~DecalSpline();
 
 	int addPoint(Ogre::Vector3 v);
@@ -49,8 +48,6 @@ public:
 class DecalManager
 {
 private:
-	Ogre::SceneManager *mSceneMgr;
-
 	int addTerrainDecal(Ogre::Vector3 position, Ogre::Vector2 size, Ogre::Vector2 numSeg, Ogre::Real rotation, Ogre::String materialname, Ogre::String normalname);
 	int addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width, Ogre::Vector2 numSeg, Ogre::Vector2 uvSeg, Ogre::String materialname, float ground_offset, Ogre::String export_fn, bool debug);
 	int finishTerrainDecal();
@@ -65,7 +62,7 @@ private:
 	int spline_segments_x, spline_segments_y;
 
 public:
-	DecalManager(Ogre::SceneManager *manager);
+	DecalManager();
 	~DecalManager();
 
 	int parseLine(char *line);

@@ -81,7 +81,6 @@ protected:
 	Ogre::AnimationStateSet *mAnimState;
 	Ogre::Camera *mCamera;
 	Ogre::MovableText *mMoveableText;
-	Ogre::SceneManager *mSceneMgr;
 	Ogre::SceneNode *mCharacterNode;
 	Ogre::String mLastAnimMode;
 	Ogre::String myName;

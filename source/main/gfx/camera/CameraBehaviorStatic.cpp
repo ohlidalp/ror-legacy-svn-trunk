@@ -44,9 +44,9 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	camPosition.z = ((int)(lookAt.z) / 100) * 100 + 50;
 	camPosition.y =        lookAt.y;
 
-	if ( ctx.mHfinder)
+	if ( gEnv->heightFinder )
 	{
-		float h = ctx.mHfinder->getHeightAt(camPosition.x, camPosition.z);
+		float h = gEnv->heightFinder->getHeightAt(camPosition.x, camPosition.z);
 
 		camPosition.y = std::max(h, camPosition.y);
 	}

@@ -123,7 +123,6 @@ private:
 	HeightFinder *hfinder;
 	Landusemap *landuse;
 	Ogre::ManualObject *debugmo;
-	Ogre::SceneManager *smgr;
 	RoRFrameListener *mefl;
 	bool debugMode;
 	int collision_count;

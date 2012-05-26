@@ -90,7 +90,7 @@ private:
 	Ogre::MeshPtr msh;
 
 public:
-	FlexBody(Ogre::SceneManager *manager, node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Ogre::Vector3 offset, Ogre::Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows, MaterialReplacer *mr);
+	FlexBody(node_t *nds, int numnodes, char* meshname, char* uname, int ref, int nx, int ny, Ogre::Vector3 offset, Ogre::Quaternion rot, char* setdef, MaterialFunctionMapper *mfm, Skin *usedSkin, bool forceNoShadows, MaterialReplacer *mr);
 
 	void addinterval(int from, int to);
 	bool isinset(int n);

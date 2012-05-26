@@ -88,7 +88,6 @@ private:
 	unsigned short *cupfaces;
 	unsigned short *cdnfaces;
 	node_t *nodes;
-	Ogre::SceneManager *smanager;
 
 
 	float sref;
@@ -133,7 +132,7 @@ public:
 
 	char debug[256];
 
-	FlexAirfoil(Ogre::SceneManager *manager, char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Ogre::Vector2 texlf, Ogre::Vector2 texrf, Ogre::Vector2 texlb, Ogre::Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able);
+	FlexAirfoil(char* name, node_t *nds, int pnfld, int pnfrd, int pnflu, int pnfru, int pnbld, int pnbrd, int pnblu, int pnbru, char* texband, Ogre::Vector2 texlf, Ogre::Vector2 texrf, Ogre::Vector2 texlb, Ogre::Vector2 texrb, char mtype, float controlratio, float mind, float maxd, char* afname, float lift_coef, AeroEngine** tps, bool break_able);
 	~FlexAirfoil();
 
 	Ogre::Vector3 updateVertices();

@@ -61,7 +61,6 @@ public:
 protected:
 	bool disableCaching;
 	bool mTerrainsImported;
-	Ogre::SceneManager *mSceneMgr;
 	TerrainManager *terrainManager;
 	int mapsizex, mapsizey, mapsizez, pageSize, terrainSize, worldSize;
 	Ogre::String baseName;

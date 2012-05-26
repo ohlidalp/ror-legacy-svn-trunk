@@ -79,14 +79,13 @@ private:
 	unsigned short *faces;
 	node_t *nodes;
 	int nbrays;
-	Ogre::SceneManager *smanager;
 
 	float *sref;
 	int triangleCount;
 
 public:
 
-	FlexObj(Ogre::SceneManager *manager, node_t *nds, int numtexcoords, Ogre::Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname);
+	FlexObj(node_t *nds, int numtexcoords, Ogre::Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname);
 	~FlexObj();
 
 	//find the zeroed id of the node v in the context of the tidx triangle

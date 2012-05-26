@@ -27,16 +27,15 @@ using namespace Ogre;
 
 class DashboardListener;
 
-Dashboard::Dashboard(SceneManager *mSceneMgr) :
-	  mScene(mSceneMgr)
-	, mDashCam(0)
+Dashboard::Dashboard() :
+	  mDashCam(0)
 	, mDashboardListener(0)
 	, rttTex(0)
 {
 	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("dashtexture", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 1024, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 
-	mDashCam = mSceneMgr->createCamera("DashCam");
+	mDashCam = gEnv->ogreSceneManager->createCamera("DashCam");
 	mDashCam->setNearClipDistance(1.0);
 	mDashCam->setFarClipDistance(10.0);
 	mDashCam->setPosition(Vector3(0.0, -10000.0, 0.0));
@@ -76,11 +75,10 @@ void Dashboard::prepareShutdown()
 	}
 }
 
-DashboardListener::DashboardListener(Ogre::SceneManager *mSceneMgr) : 
+DashboardListener::DashboardListener() : 
 	  consolevisible(false)
 	, fpsDisplayed(false)
 	, fpsOverlay(0)
-	, mScene(mSceneMgr)
 	, truckHUD(false)
 	, truckhHUDvisible(false)
 {

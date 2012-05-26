@@ -509,7 +509,7 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/ver#000000  - shows the Rigs of Rods version"), "information.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/pos#000000  - outputs the current position"), "world.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/goto <x> <y> <z>#000000  - jumps to the mentioned position"), "world.png");
-			if(RoRFrameListener::eflsingleton && RoRFrameListener::eflsingleton->hfinder)
+			if(gEnv->heightFinder)
 				putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/terrainheight#000000  - get height of terrain at current position"), "world.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/save#000000 - saves the chat history to a file"), "table_save.png");
 			putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_HELP, _L("#dd0000/log#000000  - toggles log output on the console"), "table_save.png");
@@ -968,9 +968,9 @@ void Console::saveChat(String filename)
 void Console::outputCurrentPosition()
 {
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-	if(!b && RoRFrameListener::eflsingleton->person)
+	if(!b && gEnv->player)
 	{
-		Vector3 pos = RoRFrameListener::eflsingleton->person->getPosition();
+		Vector3 pos = gEnv->player->getPosition();
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 	else if (b)
@@ -982,29 +982,29 @@ void Console::outputCurrentPosition()
 
 void Console::outputCurrentTerrainHeight()
 {
-	if(!RoRFrameListener::eflsingleton->hfinder) return;
+	if(!gEnv->heightFinder) return;
 	Vector3 pos  = Vector3::ZERO;
 
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-	if(!b && RoRFrameListener::eflsingleton->person)
+	if(!b && gEnv->player)
 	{
-		pos = RoRFrameListener::eflsingleton->person->getPosition();
+		pos = gEnv->player->getPosition();
 	}
 	else if (b)
 	{
 		pos = b->getPosition();
 	}
 
-	Real h = RoRFrameListener::eflsingleton->hfinder->getHeightAt(pos.x, pos.z);
+	Real h = gEnv->heightFinder->getHeightAt(pos.x, pos.z);
 	putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Terrain height at position: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #0000dd") + TOSTRING(pos.z) + String("#000000 = #00dd00") + TOSTRING(h), "world.png");
 }
 
 void Console::jumpToPosition( Vector3 pos )
 {
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-	if(!b && RoRFrameListener::eflsingleton->person)
+	if(!b && gEnv->player)
 	{
-		RoRFrameListener::eflsingleton->person->setPosition(pos);
+		gEnv->player->setPosition(pos);
 		putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_REPLY, _L("Character position set to: ") + String("#dd0000") + TOSTRING(pos.x) +  String("#000000, #00dd00") + TOSTRING(pos.y) + String("#000000, #0000dd") + TOSTRING(pos.z), "world.png");
 	}
 	else if (b)

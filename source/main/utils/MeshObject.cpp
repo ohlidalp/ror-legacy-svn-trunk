@@ -29,9 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-MeshObject::MeshObject(Ogre::SceneManager *smgr, Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode, Skin *s, bool backgroundLoading)
+MeshObject::MeshObject(Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode, Skin *s, bool backgroundLoading)
 		: mr(0)
-		, smgr(smgr)
 		, meshName(meshName)
 		, entityName(entityName)
 		, sceneNode(sceneNode)

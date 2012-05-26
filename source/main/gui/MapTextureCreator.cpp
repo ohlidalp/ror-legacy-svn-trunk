@@ -28,11 +28,8 @@ using namespace Ogre;
 
 int MapTextureCreator::mCounter = 0;
 
-MapTextureCreator::MapTextureCreator(SceneManager *scm, Camera *cam, MapControl *ctrl) :
-	  mSceneManager(scm)
-	, mMainCam(cam)
-	, mMapControl(ctrl)
-	, mCamera(NULL)
+MapTextureCreator::MapTextureCreator() :
+	  mCamera(NULL)
 	, mMapCenter(Vector3::ZERO)
 	, mMapZoom(0.0f)
 	, mMaterial(NULL)
@@ -57,7 +54,7 @@ bool MapTextureCreator::init()
 
 	mRttTex->setAutoUpdated(false);
 
-	mCamera = mSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
+	mCamera = gEnv->ogreSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
 
 	mViewport = mRttTex->addViewport(mCamera);
 	mViewport->setBackgroundColour(ColourValue::Black);
