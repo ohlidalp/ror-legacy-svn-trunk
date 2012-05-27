@@ -392,7 +392,7 @@ float BeamEngine::getRPM()
 
 void BeamEngine::toggleAutoMode()
 {
-	automode = (automode + 1) % MANUAL_RANGES;
+	automode = (automode + 1) % (MANUAL_RANGES + 1);
 
 	// this switches off all automatic symbols when in manual mode
 	if (automode != AUTOMATIC)
