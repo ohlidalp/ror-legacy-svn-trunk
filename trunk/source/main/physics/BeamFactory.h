@@ -40,7 +40,7 @@ public:
 	~BeamFactory();
 
 	Beam *createLocal(int slotid);
-	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox=NULL, bool ismachine=false, int flareMode=0, std::vector<Ogre::String> *truckconfig=0, Skin *skin=0, bool freePosition=false);
+	Beam *createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox = NULL, bool ismachine = false, int flareMode = 0, const std::vector<Ogre::String> *truckconfig = 0, Skin *skin = 0, bool freePosition = false);
 	Beam *createRemoteInstance(stream_reg_t *reg);
 
 	Beam *getBeam(int source_id, int stream_id); // used by character

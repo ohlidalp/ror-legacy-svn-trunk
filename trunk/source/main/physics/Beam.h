@@ -50,14 +50,14 @@ public:
 		, Ogre::Vector3 pos
 		, Ogre::Quaternion rot
 		, const char* fname
-		, bool networked=false
-		, bool networking=false
-		, collision_box_t *spawnbox=NULL
+		, bool networked = false
+		, bool networking = false
+		, collision_box_t *spawnbox = NULL
 		, bool ismachine=false
-		, int flareMode=0
-		, std::vector<Ogre::String> *truckconfig=0
-		, Skin *skin=0
-		, bool freeposition=false);
+		, int flareMode = 0
+		, const std::vector<Ogre::String> *truckconfig = 0
+		, Skin *skin = 0
+		, bool freeposition = false);
 
 	//! @{ network related functions
 	void pushNetwork(char* data, int size);

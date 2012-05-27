@@ -82,7 +82,7 @@ Beam* Beam::threadbeam[MAX_TRUCKS];
 int Beam::thread_mode = THREAD_SINGLE;
 int Beam::free_tb = 0;
 
-Beam::Beam(int tnum , Vector3 pos , Quaternion rot , const char* fname , bool networked/* =false  */, bool networking/* =false  */, collision_box_t *spawnbox/* =NULL  */, bool ismachine/* =false  */, int flareMode/* =0  */, std::vector<String> *truckconfig/* =0  */, Skin *skin/* =0  */, bool freeposition/* =false */) :
+Beam::Beam(int tnum , Ogre::Vector3 pos , Ogre::Quaternion rot , const char* fname , bool networked /* = false  */, bool networking /* = false  */, collision_box_t *spawnbox /* = NULL  */, bool ismachine/* =false  */, int flareMode /* = 0  */, const std::vector<Ogre::String> *truckconfig /* = 0  */, Skin *skin /* = 0  */, bool freeposition /* = false */) :
 	  deleting(false)
 	, abs_state(false)
 	, abs_timer(0.0)
@@ -300,7 +300,7 @@ Beam::Beam(int tnum , Vector3 pos , Quaternion rot , const char* fname , bool ne
 	// copy truck config
 	if (truckconfig && truckconfig->size())
 	{
-		for (std::vector<String>::iterator it = truckconfig->begin(); it != truckconfig->end(); it++)
+		for (std::vector<String>::const_iterator it = truckconfig->begin(); it != truckconfig->end(); ++it)
 		{
 			this->truckconfig.push_back(*it);
 		}

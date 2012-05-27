@@ -96,7 +96,7 @@ bool BeamFactory::removeBeam(Beam *b)
 	return false;
 }
 
-Beam *BeamFactory::createLocal(Vector3 pos, Quaternion rot, String fname, collision_box_t *spawnbox, bool ismachine, int flareMode, std::vector<String> *truckconfig, Skin *skin, bool freePosition)
+Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::String fname, collision_box_t *spawnbox /* = NULL */, bool ismachine /* = false */, int flareMode /* = 0 */, const std::vector<Ogre::String> *truckconfig /* = 0 */, Skin *skin /* = 0 */, bool freePosition /* = false */)
 {
 	int truck_num = getFreeTruckSlot();
 	if (truck_num == -1)
