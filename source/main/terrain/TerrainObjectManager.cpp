@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "CameraManager.h"
-#include "language.h"
+#include "Language.h"
 #include "LoadingWindow.h"
 #include "Ogre.h"
 #include "ProceduralManager.h"

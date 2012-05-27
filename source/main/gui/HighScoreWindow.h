@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 #include "mygui/BaseLayout.h"
 #include <Ogre.h>
-#include "skin.h"
+#include "Skin.h"
 
 
 ATTRIBUTE_CLASS_LAYOUT(HighScoreWindow, "HighScoreWindow.layout");

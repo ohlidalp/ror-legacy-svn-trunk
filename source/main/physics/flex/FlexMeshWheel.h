@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "FlexMesh.h"
-#include "materialFunctionMapper.h"
+#include "MaterialFunctionMapper.h"
 #include "Ogre.h"
 
 class FlexMeshWheel: public Flexable

@@ -19,11 +19,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexBody.h"
 
-#include "approxmath.h"
+#include "ApproxMath.h"
 #include "MaterialReplacer.h"
 #include "ResourceBuffer.h"
 #include "Settings.h"
-#include "skin.h"
+#include "Skin.h"
 
 using namespace Ogre;
 

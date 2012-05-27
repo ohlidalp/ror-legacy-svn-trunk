@@ -21,8 +21,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "NetworkStreamManager.h"
 
-#include "network.h"
-#include "language.h"
+#include "Network.h"
+#include "Language.h"
 #include "Streamable.h"
 #include "StreamableFactoryInterface.h"
 

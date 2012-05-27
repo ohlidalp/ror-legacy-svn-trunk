@@ -20,9 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "HighScoreWindow.h"
-#include "gui_manager.h"
-#include "language.h"
-#include "utils.h"
+#include "GUIManager.h"
+#include "Language.h"
+#include "Utils.h"
 
 HighScoreWindow::HighScoreWindow()
 {

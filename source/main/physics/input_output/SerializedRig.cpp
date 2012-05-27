@@ -20,11 +20,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "SerializedRig.h"
 
-#include "airbrake.h"
+#include "AirBrake.h"
 #include "Airfoil.h"
-#include "autopilot.h"
+#include "AutoPilot.h"
 #include "BeamEngine.h"
-#include "buoyance.h"
+#include "Buoyance.h"
 #include "CacheSystem.h"
 #include "CmdKeyInertia.h"
 #include "Console.h"
@@ -41,17 +41,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "RoRVersion.h"
 #include "ScopeLog.h"
-#include "screwprop.h"
+#include "ScrewProp.h"
 #include "Settings.h"
-#include "skin.h"
+#include "Skin.h"
 #include "SlideNode.h"
 #include "SoundScriptManager.h"
 #include "TerrainManager.h"
 #include "TorqueCurve.h"
 #include "turboprop.h"
-#include "turbojet.h"
-#include "utils.h"
-#include "vidcam.h"
+#include "TurboJet.h"
+#include "Utils.h"
+#include "VideoCamera.h"
 
 using namespace Ogre;
 

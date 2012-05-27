@@ -25,18 +25,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "Character.h"
 #include "ChatSystem.h"
-#include "gui_manager.h"
-#include "gui_menu.h"
+#include "GUIManager.h"
+#include "GUIMenu.h"
 #include "IHeightFinder.h"
 #include "HighScoreWindow.h"
-#include "language.h"
-#include "network.h"
+#include "Language.h"
+#include "Network.h"
 #include "OverlayWrapper.h"
 #include "RoRFrameListener.h"
 #include "Scripting.h"
 #include "Settings.h"
 #include "TerrainManager.h"
-#include "utils.h"
+#include "Utils.h"
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_LINUX
 #include <iconv.h>

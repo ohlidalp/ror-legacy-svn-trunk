@@ -21,16 +21,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamFactory.h"
 #include "CameraManager.h"
-#include "collisions.h"
+#include "Collisions.h"
 #include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "MapControl.h"
 #include "MapEntity.h"
-#include "network.h"
+#include "Network.h"
 #include "NetworkStreamManager.h"
 #include "PlayerColours.h"
 #include "TerrainManager.h"
-#include "utils.h"
+#include "Utils.h"
 #include "Water.h"
 
 using namespace Ogre;

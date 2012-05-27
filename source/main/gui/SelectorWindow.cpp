@@ -22,13 +22,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectorWindow.h"
 
 #include "CacheSystem.h"
-#include "gui_manager.h"
+#include "GUIManager.h"
 #include "InputEngine.h"
-#include "language.h"
+#include "Language.h"
 #include "LoadingWindow.h"
 #include "Settings.h"
-#include "skinmanager.h"
-#include "utils.h"
+#include "SkinManager.h"
+#include "Utils.h"
 
 #if 0
 // translation help for category entries, should be commented at all times

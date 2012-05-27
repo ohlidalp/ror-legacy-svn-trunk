@@ -21,13 +21,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Ogre.h>
 
-#include "utils.h"
+#include "Utils.h"
 
 #ifdef USE_MYGUI
-#include "gui_manager.h"
+#include "GUIManager.h"
 #endif // MYGUI
 
-#include "language.h"
+#include "Language.h"
 
 using namespace Ogre;
 

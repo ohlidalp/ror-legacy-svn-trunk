@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MaterialReplacer.h"
 #include "ResourceBuffer.h"
-#include "skin.h"
+#include "Skin.h"
 
 using namespace Ogre;
 

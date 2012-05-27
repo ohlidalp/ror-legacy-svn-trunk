@@ -23,8 +23,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "ColoredTextAreaOverlayElementFactory.h"
 #include "SoundScriptManager.h"
-#include "skinmanager.h"
-#include "language.h"
+#include "SkinManager.h"
+#include "Language.h"
 
 #include "CacheSystem.h"
 
@@ -36,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ExtinguishableFireAffectorFactory.h"
 #endif // USE_ANGELSCRIPT
 
-#include "utils.h"
+#include "Utils.h"
 
 using namespace Ogre;
 using namespace std;

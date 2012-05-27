@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "Singleton.h"
-#include "collisions.h"
+#include "Collisions.h"
 #include "InterThreadStoreVector.h"
 #include "Ogre.h"
 

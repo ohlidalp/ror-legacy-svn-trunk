@@ -22,12 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "IRCWrapper.h"
 
-#include "errorutils.h"
+#include "ErrorUtils.h"
 #include "ImprovedConfigFile.h"
 #include "rornet.h"
 #include "RoRVersion.h"
 #include "Settings.h"
-#include "utils.h"
+#include "Utils.h"
 
 #ifdef USE_CURL
 #define CURL_STATICLIB

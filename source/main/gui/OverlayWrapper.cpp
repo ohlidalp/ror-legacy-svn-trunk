@@ -20,16 +20,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 6th of May 2010
 #include "OverlayWrapper.h"
 
-#include "aeroengine.h"
-#include "autopilot.h"
+#include "AeroEngine.h"
+#include "AutoPilot.h"
 #include "BeamFactory.h"
 #include "DashBoardManager.h"
-#include "errorutils.h"
-#include "language.h"
+#include "ErrorUtils.h"
+#include "Language.h"
 #include "OgreFontManager.h"
 #include "RoRVersion.h"
 #include "TruckHUD.h"
-#include "utils.h"
+#include "Utils.h"
 
 using namespace Ogre;
 

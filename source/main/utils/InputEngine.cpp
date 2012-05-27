@@ -29,14 +29,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreException.h>
 
 #include "AdvancedOgreFramework.h"
-#include "errorutils.h"
+#include "ErrorUtils.h"
 #include "RoRWindowEventUtilities.h"
 #include "Settings.h"
 
 #ifndef NOOGRE
 #include "Console.h"
-#include "gui_manager.h"
-#include "language.h"
+#include "GUIManager.h"
+#include "Language.h"
 #else
 #define _L(x) x
 #endif
@@ -3377,7 +3377,7 @@ void InputEngine::initAllKeys()
 	allkeys["Z"] = KC_Z;
 }
 
-void InputEngine::setupDefault(String inputhwnd)
+void InputEngine::setupDefault(Ogre::String inputhwnd /* = "" */)
 {
 	// setup input
 	int inputGrabMode=GRAB_ALL;
@@ -3403,7 +3403,7 @@ void InputEngine::setupDefault(String inputhwnd)
 	#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr;
-		win->getCustomAttribute("GLXWINDOW", &windowHnd );
+		globalEnvironment->ogreRenderWindow->getCustomAttribute("GLXWINDOW", &windowHnd );
 		windowHndStr << windowHnd;
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);

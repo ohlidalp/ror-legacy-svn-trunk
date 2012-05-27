@@ -39,7 +39,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #endif //USE_CURL
 
 #include "AdvancedOgreFramework.h"
-#include "as_ogre.h"
+#include "OgreAngelscript.h"
 #include "Beam.h"
 #include "Console.h"
 #include "LocalStorage.h"

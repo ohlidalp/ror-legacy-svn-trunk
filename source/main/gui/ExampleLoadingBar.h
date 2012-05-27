@@ -28,8 +28,8 @@ the basic resources required for the progress bar and will be loaded automatical
 
 #include "RoRWindowEventUtilities.h"
 
-#include "gui_manager.h"
-#include "language.h"
+#include "GUIManager.h"
+#include "Language.h"
 
 using namespace Ogre;
 
