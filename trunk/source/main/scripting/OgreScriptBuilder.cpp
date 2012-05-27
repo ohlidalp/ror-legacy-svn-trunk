@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <Ogre.h>
 
-#include "sha1.h"
+#include "SHA1.h"
 
 using namespace std;
 using namespace Ogre;

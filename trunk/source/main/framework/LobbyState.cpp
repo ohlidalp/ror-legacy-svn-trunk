@@ -1,7 +1,7 @@
 #include "LobbyState.h"
 
 #include "SceneMouse.h"
-#include "gui_manager.h"
+#include "GUIManager.h"
 #include "LobbyGUI.h"
 #include "InputEngine.h"
 

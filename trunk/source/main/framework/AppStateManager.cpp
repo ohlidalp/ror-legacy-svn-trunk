@@ -3,12 +3,12 @@
 #include "AppStateManager.h"
 
 #include "RoRWindowEventUtilities.h"
-#include "language.h"
+#include "Language.h"
 
 #include <OgreLogManager.h>
 
 #include "Settings.h"
-#include "utils.h"
+#include "Utils.h"
 
 using namespace Ogre;
 

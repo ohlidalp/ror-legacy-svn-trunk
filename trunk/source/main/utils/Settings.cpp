@@ -27,11 +27,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define _L
 
-#include "errorutils.h"
+#include "ErrorUtils.h"
 #include "Ogre.h"
 #include "RoRVersion.h"
-#include "sha1.h"
-#include "utils.h"
+#include "SHA1.h"
+#include "Utils.h"
 
 using namespace Ogre;
 

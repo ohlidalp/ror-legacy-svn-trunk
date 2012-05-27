@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "ProceduralManager.h"
-#include "road2.h"
+#include "Road2.h"
 
 using namespace std;
 using namespace Ogre;

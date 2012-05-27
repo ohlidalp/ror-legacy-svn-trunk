@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "BeamData.h"
-#include "sha1.h"
+#include "SHA1.h"
 #include "Singleton.h"
 
 #include <Ogre.h>

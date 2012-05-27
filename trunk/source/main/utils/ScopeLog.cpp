@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdio.h> // for remove
 #include <time.h>
 #include "RoRVersion.h"
-#include "utils.h"
+#include "Utils.h"
 
 // created by thomas fischer thomas{AT}thomasfischer{DOT}biz, 18th of Juli 2009
 

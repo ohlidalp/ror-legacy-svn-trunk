@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraManager.h"
 #include "Character.h"
 #include "Console.h"
-#include "language.h"
+#include "Language.h"
 #include "RoRFrameListener.h"
 #include "RoRVersion.h"
 

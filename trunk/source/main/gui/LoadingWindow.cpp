@@ -20,14 +20,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "LoadingWindow.h"
-#include "gui_manager.h"
+#include "GUIManager.h"
 #include "RoRWindowEventUtilities.h"
 
 #include "Settings.h"
 
-#include "utils.h"
+#include "Utils.h"
 
-#include "language.h"
+#include "Language.h"
 
 LoadingWindow::LoadingWindow() :
 	mFrameForced(false)

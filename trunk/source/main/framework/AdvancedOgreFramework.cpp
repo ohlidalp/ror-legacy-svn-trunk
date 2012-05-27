@@ -3,11 +3,11 @@
 #include "AdvancedOgreFramework.h"
 
 #include "Settings.h"
-#include "errorutils.h"
-#include "language.h"
+#include "ErrorUtils.h"
+#include "Language.h"
 #include "RoRVersion.h"
 #include "RoRWindowEventUtilities.h"
-#include "utils.h"
+#include "Utils.h"
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 

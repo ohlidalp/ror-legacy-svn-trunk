@@ -19,7 +19,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "Differentials.h"
 #include <OgreLogManager.h>
-#include "language.h"
+#include "Language.h"
 
 Axle::Axle() :
 	wheel_1(-1),

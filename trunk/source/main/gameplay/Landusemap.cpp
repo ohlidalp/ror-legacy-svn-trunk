@@ -19,13 +19,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #if 0
 #include "Landusemap.h"
-#include "collisions.h"
+#include "Collisions.h"
 #include <Ogre.h>
 #include <OgreConfigFile.h>
 #include <OgreLogManager.h>
 #include <OgreStringConverter.h>
-#include "language.h"
-#include "errorutils.h"
+#include "Language.h"
+#include "ErrorUtils.h"
 #include ""
 
 

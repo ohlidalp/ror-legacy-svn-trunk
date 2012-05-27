@@ -21,7 +21,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Streamable.h"
 
-#include "network.h"
+#include "Network.h"
 #include "NetworkStreamManager.h"
 
 using namespace Ogre;

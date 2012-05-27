@@ -19,12 +19,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "TruckHUD.h"
 
-#include "aeroengine.h"
+#include "AeroEngine.h"
 #include "Beam.h"
 #include "BeamEngine.h"
 #include "InputEngine.h"
-#include "language.h"
-#include "utils.h"
+#include "Language.h"
+#include "Utils.h"
 
 using namespace Ogre;
 

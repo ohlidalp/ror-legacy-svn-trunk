@@ -19,15 +19,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "ChatSystem.h"
 
-#include "collisions.h"
+#include "Collisions.h"
 #include "Console.h"
-#include "language.h"
-#include "network.h"
+#include "Language.h"
+#include "Network.h"
 #include "PlayerColours.h"
-#include "utils.h"
+#include "Utils.h"
 
 #ifdef USE_MYGUI
-#include "gui_mp.h"
+#include "GUIMp.h"
 #endif  // USE_MYGUI
 
 using namespace Ogre;

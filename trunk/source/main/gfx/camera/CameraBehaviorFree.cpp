@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DepthOfFieldEffect.h"
 #include "IHeightFinder.h"
 #include "InputEngine.h"
-#include "language.h"
+#include "Language.h"
 #include "mygui/BaseLayout.h"
 #include "Ogre.h"
 #include "TerrainManager.h"

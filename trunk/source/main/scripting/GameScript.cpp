@@ -43,15 +43,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Character.h"
 #include "Console.h"
 #include "IHeightFinder.h"
-#include "language.h"
-#include "network.h"
+#include "Language.h"
+#include "Network.h"
 #include "RoRFrameListener.h"
 #include "RoRVersion.h"
 #include "SelectorWindow.h"
 #include "Settings.h"
 #include "SkyManager.h"
 #include "TerrainManager.h"
-#include "utils.h"
+#include "Utils.h"
 #include "Water.h"
 
 using namespace Ogre;

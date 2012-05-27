@@ -19,9 +19,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "FlexAirfoil.h"
 
-#include "aeroengine.h"
+#include "AeroEngine.h"
 #include "Airfoil.h"
-#include "approxmath.h"
+#include "ApproxMath.h"
 #include "ResourceBuffer.h"
 
 float refairfoilpos[90]={

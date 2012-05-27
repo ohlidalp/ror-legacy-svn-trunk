@@ -23,14 +23,14 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h" // for authorinfo_t
 #include "BeamEngine.h"
-#include "errorutils.h"
+#include "ErrorUtils.h"
 #include "ImprovedConfigFile.h"
-#include "language.h"
+#include "Language.h"
 #include "SerializedRig.h"
 #include "Settings.h"
-#include "sha1.h"
+#include "SHA1.h"
 #include "SoundScriptManager.h"
-#include "utils.h"
+#include "Utils.h"
 
 #ifdef USE_MYGUI
 #include "LoadingWindow.h"

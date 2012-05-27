@@ -23,15 +23,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 
 #include "BeamEngine.h"
-#include "collisions.h"
-#include "network.h"
+#include "Collisions.h"
+#include "Network.h"
 #include "RoRFrameListener.h"
 #include "Settings.h"
 #include "SoundScriptManager.h"
 
 #ifdef USE_MYGUI
-#include "gui_mp.h"
-#include "gui_menu.h"
+#include "GUIMp.h"
+#include "GUIMenu.h"
 #include "DashBoardManager.h"
 #endif // USE_MYGUI
 
