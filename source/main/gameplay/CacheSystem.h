@@ -44,7 +44,7 @@ typedef struct
 	int number;							// Category number
 } Category_Entry;
 
-class Cache_Entry
+class CacheEntry
 {
 public:
 	Ogre::String minitype;				// type of preview picture, either png or dds
@@ -118,7 +118,7 @@ public:
 	std::set<Ogre::String> materials;
 
 	// default constructor resets the data.
-	Cache_Entry() :
+	CacheEntry() :
 		minitype(""),
 		fname(""),
 		fname_without_uid(""),
@@ -197,16 +197,16 @@ public:
 	
 	void loadAllZipsInResourceGroup(Ogre::String group);
 
-	bool checkResourceLoaded(Cache_Entry t);
+	bool checkResourceLoaded(CacheEntry t);
 	bool checkResourceLoaded(Ogre::String &filename);
 	bool checkResourceLoaded(Ogre::String &filename, Ogre::String &group);
-	Cache_Entry getResourceInfo(Ogre::String &filename);
-	Ogre::String addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e);
+	CacheEntry getResourceInfo(Ogre::String &filename);
+	Ogre::String addMeshMaterials(CacheEntry &entry, Ogre::Entity *e);
 	std::map<int, Category_Entry> *getCategories();
-	std::vector<Cache_Entry> *getEntries();
+	std::vector<CacheEntry> *getEntries();
 
 	int getCategoryUsage(int category);
-	Cache_Entry *getEntry(int modid);
+	CacheEntry *getEntry(int modid);
 
 	int getTimeStamp();
 
@@ -259,8 +259,8 @@ protected:
 	void addFile(Ogre::String filename, Ogre::String archiveType, Ogre::String archiveDirectory, Ogre::String ext);
 
 	// reads all advanced information out of the entry's file
-	void fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
-	void fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
+	void fillTerrainDetailInfo(CacheEntry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
+	void fillTruckDetailInfo(CacheEntry &entry, Ogre::DataStreamPtr ds, Ogre::String fname);
 
 	int isCacheValid();                       // validate cache
 	void unloadUselessResourceGroups();       // unload unused resources after cache generation
@@ -269,26 +269,26 @@ protected:
 	Ogre::String getCacheConfigFilename(bool full); // returns filename of the cache file
 	int incrementalCacheUpdate();             // tries to update parts of the Cache only
 
-	void generateFileCache(Cache_Entry &entry, Ogre::String directory=Ogre::String());	// generates a new cache
+	void generateFileCache(CacheEntry &entry, Ogre::String directory=Ogre::String());	// generates a new cache
 	void deleteFileCache(char *filename); // removed files from cache
 	void writeGeneratedCache();
 	void writeStreamCache();
 	
 	// adds a zip to the cache
 	void loadSingleZip(Ogre::FileInfo f, bool unload=true, bool ownGroup=true);
-	void loadSingleZip(Cache_Entry e, bool unload=true, bool ownGroup=true);
+	void loadSingleZip(CacheEntry e, bool unload=true, bool ownGroup=true);
 
 	Ogre::String detectFilesMiniType(Ogre::String filename);
-	void removeFileFromFileCache(std::vector<Cache_Entry>::iterator it);
+	void removeFileFromFileCache(std::vector<CacheEntry>::iterator it);
 	void generateCache(bool forcefull=false);
-	Ogre::String formatEntry(int counter, Cache_Entry t);
-	Ogre::String formatInnerEntry(int counter, Cache_Entry t);
-	void updateSingleTruckEntryCache(int number, Cache_Entry t);
-	void parseModAttribute(const Ogre::String& line, Cache_Entry& t);
-	void logBadTruckAttrib(const Ogre::String& line, Cache_Entry& t);
+	Ogre::String formatEntry(int counter, CacheEntry t);
+	Ogre::String formatInnerEntry(int counter, CacheEntry t);
+	void updateSingleTruckEntryCache(int number, CacheEntry t);
+	void parseModAttribute(const Ogre::String& line, CacheEntry& t);
+	void logBadTruckAttrib(const Ogre::String& line, CacheEntry& t);
 
 	// this holds all files
-	std::vector<Cache_Entry> entries;
+	std::vector<CacheEntry> entries;
 
 	std::map<Ogre::String, Ogre::String> zipHashes;
 
