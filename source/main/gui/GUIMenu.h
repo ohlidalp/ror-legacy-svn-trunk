@@ -66,5 +66,4 @@ protected:
 };
 
 #endif // _GUI_Menu_H_
-
 #endif // USE_MYGUI

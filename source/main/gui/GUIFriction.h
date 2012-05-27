@@ -19,8 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 7th of September 2009
 #ifdef USE_MYGUI
-#ifndef __GUI_FRICTION_H_
-#define __GUI_FRICTION_H_
+#ifndef __GUI_Friction_H_
+#define __GUI_Friction_H_
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
@@ -43,6 +43,7 @@ public:
 	void setActiveCol(ground_model_t *gm);
 
 private:
+
 	MyGUI::WindowPtr win;
 	MyGUI::WindowPtr msgwin;
 	Collisions *col;
@@ -64,5 +65,5 @@ private:
 	void showHelp(Ogre::UTFString title, Ogre::UTFString msg, int x, int y);
 };
 
-#endif // __GUI_FRICTION_H_
+#endif // __GUI_Friction_H_
 #endif // USE_MYGUI
