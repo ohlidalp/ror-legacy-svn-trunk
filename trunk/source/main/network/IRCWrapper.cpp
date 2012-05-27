@@ -51,10 +51,10 @@ message_t constructMessage(int type, const char *channel, const char *nick, cons
 	t.message = String();
 	t.arg     = String();
 
-	if(channel) t.channel = String(channel);
-	if(nick)    t.nick    = String(nick);
-	if(message) t.message = String(message);
-	if(arg)     t.arg     = String(arg);
+	if (channel) t.channel = String(channel);
+	if (nick)    t.nick    = String(nick);
+	if (message) t.message = String(message);
+	if (arg)     t.arg     = String(arg);
 	return t;
 }
 
@@ -79,7 +79,7 @@ IRCWrapper::IRCWrapper() : irc_session(0)
 
 IRCWrapper::~IRCWrapper()
 {
-	if(irc_session && irc_is_connected(irc_session))
+	if (irc_session && irc_is_connected(irc_session))
 	{
 		irc_disconnect(irc_session);
 	}
@@ -93,10 +93,10 @@ void IRCWrapper::initIRC()
 
 void IRCWrapper::process()
 {
-	if(reConnect && wasConnected)
+	if (reConnect && wasConnected)
 	{
 		// check if we are still connected
-		if(irc_session && !irc_is_connected(irc_session))
+		if (irc_session && !irc_is_connected(irc_session))
 		{
 			push(constructMessage(MT_StatusUpdate, 0, 0, "Disconnected, reconnecting ...", "1"));
 			// disconnected, reconnect now
@@ -107,13 +107,13 @@ void IRCWrapper::process()
 	}
 	std::vector<message_t> messages;
 	int num = pull(messages);
-	if(num == 0)
+	if (num == 0)
 		return;
 
 	// there is something, lets investigate
 
 	std::vector<message_t>::iterator it;
-	for(it = messages.begin(); it != messages.end(); it++)
+	for (it = messages.begin(); it != messages.end(); it++)
 	{
 		processIRCEvent(*it);
 	}
@@ -121,8 +121,8 @@ void IRCWrapper::process()
 
 int IRCWrapper::sendMessage(String msg, String channelOrNick)
 {
-	if(!irc_session) return 1;
-	if(channelOrNick.empty())
+	if (!irc_session) return 1;
+	if (channelOrNick.empty())
 		channelOrNick = channel;
 
 	return irc_cmd_msg(irc_session, channelOrNick.c_str(), msg.c_str());
@@ -130,8 +130,8 @@ int IRCWrapper::sendMessage(String msg, String channelOrNick)
 
 int IRCWrapper::sendMeMessage(String msg, String channelOrNick)
 {
-	if(!irc_session) return 1;
-	if(channelOrNick.empty())
+	if (!irc_session) return 1;
+	if (channelOrNick.empty())
 		channelOrNick = channel;
 
 	return irc_cmd_me(irc_session, channelOrNick.c_str(), msg.c_str());
@@ -139,33 +139,33 @@ int IRCWrapper::sendMeMessage(String msg, String channelOrNick)
 
 int IRCWrapper::changeNick(String newNick)
 {
-	if(!irc_session) return 1;
+	if (!irc_session) return 1;
 	return irc_cmd_nick(irc_session, newNick.c_str());
 }
 
 int IRCWrapper::joinChannel(String channel, String channelKeyStr)
 {
-	if(!irc_session) return 1;
+	if (!irc_session) return 1;
 	const char *channelKey = channelKeyStr.c_str();
-	if(channelKeyStr.empty()) channelKey = 0;
+	if (channelKeyStr.empty()) channelKey = 0;
 	return irc_cmd_join (irc_session, channel.c_str(), channelKey);
 }
 
 int IRCWrapper::leaveChannel(String channel)
 {
-	if(!irc_session) return 1;
+	if (!irc_session) return 1;
 	return irc_cmd_part (irc_session, channel.c_str());
 }
 
 int IRCWrapper::quit(String reason)
 {
-	if(!irc_session) return 1;
+	if (!irc_session) return 1;
 	return irc_cmd_quit (irc_session, reason.c_str());
 }
 
 String IRCWrapper::getLastErrorMessage()
 {
-	if(!irc_session) return "not connected";
+	if (!irc_session) return "not connected";
 	return String(irc_strerror(irc_errno(irc_session)));
 }
 
@@ -225,7 +225,7 @@ int IRCWrapper::authenticate()
 
 	CURLcode res;
 	CURL *curl = curl_easy_init();
-	if(!curl)
+	if (!curl)
 	{
 		push(constructMessage(MT_ErrorAuth, 0, 0, "Error: failed to init CURL"));
 		return 1;
@@ -270,7 +270,7 @@ int IRCWrapper::authenticate()
 
 	curl_formfree(formpost);
 
-	if(chunk.memory)
+	if (chunk.memory)
 	{
 		// convert memory into String now
 		result = String(chunk.memory);
@@ -282,7 +282,7 @@ int IRCWrapper::authenticate()
 	/* we're done with libcurl, so clean it up */
 	curl_global_cleanup();
 
-	if(res != CURLE_OK)
+	if (res != CURLE_OK)
 	{
 		const char *errstr = curl_easy_strerror(res);
 		push(constructMessage(MT_ErrorAuth, 0, 0, errstr));
@@ -304,20 +304,20 @@ int IRCWrapper::processAuthenticationResults(String &results)
 	// TODO: improve the checks if the config is valid or not ...
 
 	// fatal error?
-	if(cfg.hasSetting("fatalError"))
+	if (cfg.hasSetting("fatalError"))
 	{
 		showOgreWebError(cfg.getSetting("fatalErrorTitle"), cfg.getSetting("fatalError"), cfg.getSetting("fatalErrorURL"));
 		return 1;
 	}
 
 	// non-fatal error?
-	if(cfg.hasSetting("error"))
+	if (cfg.hasSetting("error"))
 	{
 		push(constructMessage(MT_ErrorAuth, 0, 0, cfg.getSetting("error").c_str()));
 		return 1;
 	}
 
-	if(!cfg.hasSetting("serverName") || !cfg.hasSetting("serverPort"))
+	if (!cfg.hasSetting("serverName") || !cfg.hasSetting("serverPort"))
 		return 1;
 
 	serverName     = cfg.getSetting("serverName");
@@ -342,12 +342,12 @@ int IRCWrapper::processAuthenticationResults(String &results)
 // detects if we are meant
 bool isSelf(IRCWrapper * ctx, const char *origin)
 {
-	if(!origin) return false;
+	if (!origin) return false;
 
 	// we store the nickname without the host information, so cut off the host to find out if its us
 	String org = String(origin);
 	size_t s = org.find("!");
-	if(s != org.npos)
+	if (s != org.npos)
 	{
 		org = org.substr(0, s);
 	}
@@ -398,7 +398,7 @@ void event_connect (irc_session_t * session, const char * event, const char * or
 	
 	// join our preset channel
 	const char *channelKey = ctx->channelKey.c_str();
-	if(ctx->channelKey.empty()) channelKey = 0;
+	if (ctx->channelKey.empty()) channelKey = 0;
 	irc_cmd_join (session, ctx->channel.c_str(), channelKey);
 	// tell the main that we are connected now
 	ctx->wasConnected = true;
@@ -446,7 +446,7 @@ void event_join (irc_session_t * session, const char * event, const char * origi
 	bool myself = isSelf(ctx, origin);
 	ctx->push(constructMessage(myself ? MT_JoinChannelSelf : MT_JoinChannelOther, params[0], origin, 0));
 
-	if(myself)
+	if (myself)
 	{
 		// clear status
 		ctx->push(constructMessage(MT_StatusUpdate, 0, 0, "", ""));
@@ -497,7 +497,7 @@ void event_topic (irc_session_t * session, const char * event, const char * orig
 		params[0] 	mandatory, contains the channel name.
 		params[1] 	optional, contains the new topic.
 	*/
-	if(count != 2) return;
+	if (count != 2) return;
 	IRCWrapper * ctx = (IRCWrapper *) irc_get_ctx (session);
 	ctx->push(constructMessage(MT_ChangedChannelTopic, params[0], origin, params[1]));
 }
@@ -510,16 +510,16 @@ void event_kick (irc_session_t * session, const char * event, const char * origi
 		params[1] 	optional, contains the nick of kicked person.
 		params[2] 	optional, contains the kick text
 	*/
-	if(count != 3) return;
+	if (count != 3) return;
 	IRCWrapper * ctx = (IRCWrapper *) irc_get_ctx (session);
 	bool myself = isSelf(ctx, params[1]);
 	ctx->push(constructMessage(myself ? MT_WeGotKicked : MT_SomeoneGotKicked, params[0], origin, params[2], params[1]));
 
-	if(myself && ctx->reJoin)
+	if (myself && ctx->reJoin)
 	{
 		// try to rejoin the channel
 		const char *channelKey = ctx->channelKey.c_str();
-		if(ctx->channelKey.empty()) channelKey = 0;
+		if (ctx->channelKey.empty()) channelKey = 0;
 		irc_cmd_join (session, ctx->channel.c_str(), channelKey);	
 	}
 
@@ -582,7 +582,7 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 	char buf[24];
 	sprintf (buf, "%d", eventNum);
 
-	if(eventNum == 433)
+	if (eventNum == 433)
 	{
 		// 433 = uername already used, try to take another one
 		sleepMilliSeconds(500);
@@ -598,25 +598,25 @@ void event_numeric (irc_session_t * session, unsigned int eventNum, const char *
 
 		// and rejoin the channels
 		irc_cmd_join (session, ctx->channel.c_str(), 0);
-	} else if(eventNum == 251)
+	} else if (eventNum == 251)
 	{
 		// 251 = There are <integer> users and <integer> services on <integer> servers
-		if(count != 2) return;
+		if (count != 2) return;
 		ctx->push(constructMessage(MT_VerboseMessage, 0, origin, params[1], params[0]));
-	} else if(eventNum == 372)
+	} else if (eventNum == 372)
 	{
 		// 372 = RPL_MOTD
-		if(count != 2) return;
+		if (count != 2) return;
 		ctx->push(constructMessage(MT_VerboseMessage, 0, origin, params[1], params[0]));
-	} else if(eventNum == 332)
+	} else if (eventNum == 332)
 	{
 		// 332 = RPL_TOPIC / When sending a TOPIC message to determine the channel topic, one of two replies is sent. If the topic is set, RPL_TOPIC is sent back else RPL_NOTOPIC.
-		if(count != 3) return;
+		if (count != 3) return;
 		ctx->push(constructMessage(MT_TopicInfo, params[1], origin, params[2], params[0]));
-	} else if(eventNum == 353)
+	} else if (eventNum == 353)
 	{
 		// 353 = RPL_NAMREPLY
-		if(count != 4) return;
+		if (count != 4) return;
 		ctx->push(constructMessage(MT_NameList, params[2], origin, params[3], params[1	]));
 
 	} else
@@ -634,7 +634,7 @@ void *s_ircthreadstart(void* arg)
 	
 	// authenticate before doing anything else
 	// we are doing it in this thread so the userinteface will not lag
-	if(ctx->authenticate())
+	if (ctx->authenticate())
 	{
 		
 		ctx->push(constructMessage(MT_ErrorAuth, 0, 0, "Could not authenticate, please try again later"));
@@ -715,7 +715,7 @@ void *s_ircthreadstart(void* arg)
 	}
 
 	ctx->retryCounter++;
-	if(ctx->retryCounter > 1)
+	if (ctx->retryCounter > 1)
 	{
 		// sleep longer the more often we try to connect - security measure
 		// gives the old connection the chance to time-out
@@ -730,13 +730,13 @@ void *s_ircthreadstart(void* arg)
 	// some c++ -> c mapping
 	const char *serverName     = ctx->serverName.c_str();
 	const char *serverPassword = ctx->serverPassword.c_str();
-	if(ctx->serverPassword.empty()) serverPassword = 0;
+	if (ctx->serverPassword.empty()) serverPassword = 0;
 	const char *nick           = ctx->nick.c_str();
-	if(ctx->nick.empty()) nick = 0;
+	if (ctx->nick.empty()) nick = 0;
 	const char *userName       = ctx->userName.c_str();
-	if(ctx->userName.empty()) userName = 0;
+	if (ctx->userName.empty()) userName = 0;
 	const char *realName       = ctx->realName.c_str();
-	if(ctx->realName.empty()) realName = 0;
+	if (ctx->realName.empty()) realName = 0;
 
 	if (irc_connect (ctx->irc_session, serverName, ctx->serverPort, serverPassword, nick, userName, realName))
 	{

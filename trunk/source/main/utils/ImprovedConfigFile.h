@@ -74,25 +74,25 @@ public:
 
 	bool saveAs(Ogre::String fn)
 	{
-		if(!fn.length())
+		if (!fn.length())
 		{
 			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Saving of the configuration File is only allowed when the configuration was not loaded using the resource system!", "ImprovedConfigFile::save");
 			return false;
 		}
 		FILE *f = fopen(fn.c_str(), "w");
-		if(!f)
+		if (!f)
 		{
 			OGRE_EXCEPT(Exception::ERR_FILE_NOT_FOUND, "Cannot open File '"+fn+"' for writing.", "ImprovedConfigFile::save");
 			return false;
 		}
 
 		SettingsBySection::iterator secIt;
-		for(secIt = mSettings.begin(); secIt!=mSettings.end(); secIt++)
+		for (secIt = mSettings.begin(); secIt!=mSettings.end(); secIt++)
 		{
-			if(secIt->first.size() > 0)
+			if (secIt->first.size() > 0)
 				fprintf(f, "[%s]\n", secIt->first.c_str());
 			SettingsMultiMap::iterator setIt;
-			for(setIt = secIt->second->begin(); setIt!=secIt->second->end(); setIt++)
+			for (setIt = secIt->second->begin(); setIt!=secIt->second->end(); setIt++)
 			{
 				fprintf(f, "%s%c%s\n", setIt->first.c_str(), separators[0], setIt->second.c_str());
 			}
@@ -105,13 +105,13 @@ public:
 	void setSetting(String key, String value, String section = StringUtil::BLANK)
 	{
 		SettingsMultiMap *set = mSettings[section];
-		if(!set)
+		if (!set)
 		{
 			// new section
 			set = new SettingsMultiMap();
 			mSettings[section] = set;
 		}
-		if(set->count(key))
+		if (set->count(key))
 			// known key, delete old first
 			set->erase(key);
 		// add key

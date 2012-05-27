@@ -88,9 +88,9 @@ void install_crashrpt()
 
 	char tmp[512]="";
 	sprintf(tmp, "http://api.rigsofrods.com/crashreport/?version=%s_%s", __DATE__, __TIME__);
-	for(unsigned int i=0;i<strnlen(tmp, 512);i++)
+	for (unsigned int i=0;i<strnlen(tmp, 512);i++)
 	{
-		if(tmp[i] == ' ')
+		if (tmp[i] == ' ')
 			tmp[i] = '_';
 	}
 
@@ -103,7 +103,7 @@ void install_crashrpt()
 	info.pszPrivacyPolicyURL = "http://wiki.rigsofrods.com/pages/Crash_Report_Privacy_Policy"; // URL for the Privacy Policy link
 
 	int nInstResult = crInstall(&info);
-	if(nInstResult!=0)
+	if (nInstResult!=0)
 	{
 		// Something goes wrong!
 		TCHAR szErrorMsg[512];
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if (SSETTING("NoCrashRpt").empty())
 		install_crashrpt();
 
 	//test_crashrpt();
@@ -332,14 +332,14 @@ int main(int argc, char *argv[])
 	} catch(Ogre::Exception& e)
 	{
 
- 		if(BSETTING("REPO_MODE", false))
+ 		if (BSETTING("REPO_MODE", false))
 		{
 			LOG("FATAL ERROR, EXITING: "+e.getFullDescription());
 			std::exit(1);
 		}
 
 		// try to shutdown input system upon an error
-		//if(InputEngine::singletonExists()) // this prevents the creating of it, if not existing
+		//if (InputEngine::singletonExists()) // this prevents the creating of it, if not existing
 		//	INPUTENGINE.prepareShutdown();
 
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_" + TOSTRING(e.getNumber())+"#"+e.getSource();
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 	}
 
 #ifdef USE_CRASHRPT
-	if(SSETTING("NoCrashRpt").empty())
+	if (SSETTING("NoCrashRpt").empty())
 		uninstall_crashrpt();
 #endif //USE_CRASHRPT
 

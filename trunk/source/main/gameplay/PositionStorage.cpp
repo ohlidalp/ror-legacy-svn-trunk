@@ -31,13 +31,13 @@ PositionStorage::PositionStorage(int _numNodes, int _numStorage) : numNodes(_num
 
 PositionStorage::~PositionStorage()
 {
-	if(nodes) free(nodes);
-	if(usage) free(usage);
+	if (nodes) free(nodes);
+	if (usage) free(usage);
 }
 
 Vector3 *PositionStorage::getStorage(int indexNum)
 {
-	if(indexNum < 0 || indexNum > numStorage) return 0;
+	if (indexNum < 0 || indexNum > numStorage) return 0;
 	return nodes + (indexNum * numNodes);
 }
 

@@ -29,14 +29,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CmdKeyInertia.h"
 #include "collisions.h"
 #include "Differentials.h"
+#include "DustPool.h"
 #include "FlexAirfoil.h"
 #include "InputEngine.h"
-#include "IWater.h"
 #include "Replay.h"
 #include "screwprop.h"
 #include "SoundScriptManager.h"
+#include "Water.h"
 
 extern float mrtime;
+
+using namespace Ogre;
 
 void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 {
@@ -59,7 +62,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	{
 		BES_START(BES_CORE_TruckEngine);
 
-		if(engine)
+		if (engine)
 			engine->update(dt, doUpdate);
 
 		BES_STOP(BES_CORE_TruckEngine);
@@ -173,7 +176,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							{
 								beams[i].broken=1;
 								beams[i].disabled=true;
-								if(beambreakdebug)
+								if (beambreakdebug)
 								{
 									LOG(" XXX Support-Beam " + TOSTRING(i) + " limit extended and broke. Length: " + TOSTRING(difftoBeamL) + " / max. Length: " + TOSTRING(beams[i].L*break_limit) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 								}
@@ -230,7 +233,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
-						if(beamdeformdebug)
+						if (beamdeformdebug)
 						{
 							LOG(" YYY Beam " + TOSTRING(i) + " just deformed with compression force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
@@ -261,7 +264,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 						beams[i].minmaxposnegstress=std::min(beams[i].maxposstress, -beams[i].maxnegstress);
 						beams[i].minmaxposnegstress=std::min(beams[i].minmaxposnegstress, beams[i].strength);
-						if(beamdeformdebug)
+						if (beamdeformdebug)
 						{
 							LOG(" YYY Beam " + TOSTRING(i) + " just deformed with extension force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
@@ -290,7 +293,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						beams[i].p1->isSkin = true;
 						beams[i].p2->isSkin = true;
 
-						if(beambreakdebug)
+						if (beambreakdebug)
 						{
 							LOG(" XXX Beam " + TOSTRING(i) + " just broke with force " + TOSTRING(flen) + " / " + TOSTRING(beams[i].strength) + ". It was between nodes " + TOSTRING(beams[i].p1->id) + " and " + TOSTRING(beams[i].p2->id) + ".");
 						}
@@ -309,7 +312,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 									beams[j].disabled   = true;
 									beams[j].p1->isSkin = true;
 									beams[j].p2->isSkin = true;
-									if(beambreakdebug)
+									if (beambreakdebug)
 									{
 										LOG("Deleting Detacher BeamID: " + TOSTRING(j) + ", Detacher Group: " + TOSTRING(beams[i].detacher_group)+  ", trucknum: " + TOSTRING(trucknum));
 									}
@@ -343,7 +346,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_AnimatedProps);
 
 	//autlocks ( scan just once per frame, need to use a timer(truck-based) to get
-	for(std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
+	for (std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
 		//we need to do this here to avoid countdown speedup by triggers
 		it->timer -= dt;
@@ -352,7 +355,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			it->timer = 0.0f;
 		}
 	}
-	if(doUpdate)
+	if (doUpdate)
 	{
 		//just call this once per frame to avoid performance impact
 		hookToggle(-2, HOOK_LOCK, -1);
@@ -360,7 +363,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	//animate props
 	// TODO: only calculate animated props every frame and not in the core routine
-	//if(doUpdate)
+	//if (doUpdate)
 	{
 		for (int propi=0; propi<free_prop; propi++)
 		{
@@ -666,13 +669,13 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				if (doUpdate && skeleton == 1 && !beams[i].broken && beams[i].mEntity && beams[i].mSceneNode)
 				{
 					int scale=(int)beams[i].scale * 100;
-					if(scale>100) scale=100;
-					if(scale<-100) scale=-100;
+					if (scale>100) scale=100;
+					if (scale<-100) scale=-100;
 					char bname[256];
 					sprintf(bname, "mat-beam-%d", scale);
 					beams[i].mEntity->setMaterialName(bname);
 				}
-				else if(doUpdate && skeleton && beams[i].mSceneNode && (beams[i].broken || beams[i].disabled) && beams[i].mSceneNode)
+				else if (doUpdate && skeleton && beams[i].mSceneNode && (beams[i].broken || beams[i].disabled) && beams[i].mSceneNode)
 				{
 					beams[i].mSceneNode->detachAllObjects();
 				}
@@ -742,7 +745,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	}
 
 	//locks - this is not active in network mode
-	for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+	for (std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 	{
 		if (it->lockNode && it->locked == PRELOCK)
 		{
@@ -806,7 +809,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	if (ropes.size())
 	{
-		for(std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
+		for (std::vector <rope_t>::iterator it = ropes.begin(); it!=ropes.end(); it++)
 		{
 			if (it->lockedto)
 			{
@@ -884,14 +887,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					{
 						if (gm->fx_type==Collisions::FX_DUSTY && !nodes[i].disable_particles)
 						{
-							if(dustp) dustp->malloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
+							if (dustp) dustp->malloc(nodes[i].AbsPosition, nodes[i].Velocity/2.0, gm->fx_colour);
 						}else if (gm->fx_type==Collisions::FX_HARD && !nodes[i].disable_particles)
 						{
 							float thresold=10.0;
 							//smokey
 							if (nodes[i].iswheel && ns>thresold)
 							{
-								if(dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
+								if (dustp) dustp->allocSmoke(nodes[i].AbsPosition, nodes[i].Velocity);
 #ifdef USE_OPENAL
 								SoundScriptManager::getSingleton().modulate(trucknum, SS_MOD_SCREETCH, (ns-thresold)/thresold);
 								SoundScriptManager::getSingleton().trigOnce(trucknum, SS_TRIG_SCREETCH);
@@ -902,7 +905,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 							if (!nodes[i].iswheel && ns>1.0 && !nodes[i].disable_sparks)
 							{
 								// friction < 10 will remove the 'f' nodes from the spark generation nodes
-								if(sparksp) sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
+								if (sparksp) sparksp->allocSparks(nodes[i].AbsPosition, nodes[i].Velocity);
 							}
 						} else if (gm->fx_type==Collisions::FX_CLUMPY && !nodes[i].disable_particles)
 						{
@@ -1063,21 +1066,21 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	//turboprop forces
 	for (int i=0; i<free_aeroengine; i++)
-		if(aeroengines[i]) aeroengines[i]->updateForces(dt, doUpdate);
+		if (aeroengines[i]) aeroengines[i]->updateForces(dt, doUpdate);
 
 	BES_STOP(BES_CORE_Turboprop);
 	BES_START(BES_CORE_Screwprop);
 
 	//screwprop forces
 	for (int i=0; i<free_screwprop; i++)
-		if(screwprops[i]) screwprops[i]->updateForces(doUpdate);
+		if (screwprops[i]) screwprops[i]->updateForces(doUpdate);
 
 	BES_STOP(BES_CORE_Screwprop);
 	BES_START(BES_CORE_Wing);
 
 	//wing forces
 	for (int i=0; i<free_wing; i++)
-		if(wings[i].fa) wings[i].fa->updateForces();
+		if (wings[i].fa) wings[i].fa->updateForces();
 
 	BES_STOP(BES_CORE_Wing);
 	BES_START(BES_CORE_FuseDrag);
@@ -1170,7 +1173,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	float intertorque[MAX_WHEELS] = {0.0f}; //bad initialization
 	//old-style viscous code
-	if( free_axle == 0)
+	if ( free_axle == 0)
 	{
 		//first, evaluate torque from inter-differential locking
 		for (int i=0; i<proped_wheels/2-1; i++)
@@ -1190,7 +1193,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	// the axles aligned with each other as if they connected by a shaft
 	for (int i=1; i<free_axle; i++)
 	{
-		if(!axles[i]) continue;
+		if (!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
 		differential_data_t diff_data =
 		{
@@ -1224,7 +1227,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	// loop through all the wheels (new style again)
 	for (int i=0; i<free_axle; i++)
 	{
-		if(!axles[i]) continue;
+		if (!axles[i]) continue;
 		Ogre::Real axle_torques[2] = {0.0f, 0.0f};
 		wheel_t *axle_wheels[2] = { &wheels[axles[i]->wheel_1], &wheels[axles[i]->wheel_2] };
 
@@ -1271,14 +1274,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 	//get current speed
 	float curspeed = 0;
-	if(cameranodepos[0] > 0)
+	if (cameranodepos[0] > 0)
 		curspeed = nodes[cameranodepos[0]].Velocity.length();
 
 	bool tc_active=false;
 	bool alb_active=false;
 	// fix for airplanes crashing when getAcc() is used
 	float currentAcc = 0.0f;
-	if(driveable == TRUCK && engine)
+	if (driveable == TRUCK && engine)
 		currentAcc = engine->getAcc();
 
 	for (int i=0; i<free_wheel; i++)
@@ -1305,14 +1308,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 			if ((brake != 0.0 || dbrake != 0.0 || hbrake != 0.0) && braked_wheels != 0)
 			{
-				if(fabs(curspeed) > 1.5f)
+				if (fabs(curspeed) > 1.5f)
 				{
 					float antilock_coef = 1.0f;
 					wheels[i].firstLock = false;
 					if (alb_mode && alb_pulse_state)
 					{
 						// avoid divide by zero
-						if(curspeed == 0) curspeed = 0.0001f;
+						if (curspeed == 0) curspeed = 0.0001f;
 						antilock_coef = fabs(wheels[i].speed) / curspeed;
 						antilock_coef = pow(antilock_coef,alb_ratio);
 						// avoid backwards acceleration but keep braking
@@ -1329,7 +1332,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				} else
 				{		
 					
-					if( fabs(wheels[i].speed) > 0.0f)
+					if ( fabs(wheels[i].speed) > 0.0f)
 						total_torque -= (wheels[i].speed/fabs(wheels[i].speed))*(brake + dbrake + hbrake);
 					//new halt position brake
 					if (slopeBrake)
@@ -1393,7 +1396,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		//traction control, igonre tc code if wheel is not propulsed or accelerator is pressed
 		if (wheels[i].propulsed > 0 && tc_mode && tc_pulse_state && currentAcc > 0.1f)
 		{
-			if(curspeed < 0.5) curspeed = 0.5f;
+			if (curspeed < 0.5) curspeed = 0.5f;
 			//set the base wheelslipcoef
 			float wheelslip = tc_wheelslip + 1.0f;
 			// wheelslip allowed doubles up to tc_fade, a tribute to RoRs wheelspeed calculation and frriction
@@ -1463,7 +1466,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		Real rlen=radius.length(); //length of the projected arm
 		float offset=(rradius-radius).length(); //length of the error arm
 		axis=total_torque*axis;
-		if(rlen>0.01)
+		if (rlen>0.01)
 		{
 			radius=radius/(2.0f*rlen*rlen);
 			Vector3 cforce=axis.crossProduct(radius);
@@ -1514,7 +1517,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	lastwspeed=wspeed;
 	WheelSpeed=wspeed;
 
-	if(patchEngineTorque)
+	if (patchEngineTorque)
 	{
 		if (engine && free_wheel)
 		{
@@ -1538,7 +1541,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_Shocks);
 
 	//update position
-//		if(free_node != 0)
+//		if (free_node != 0)
 //			aposition/=(Real)(free_node);
 	//variable shocks for stabilization
 	if (free_active_shock && stabcommand)
@@ -1584,12 +1587,12 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	if (hydrodirstate!=0 || hydrodircommand!=0)
 	{
 		float rate=1;
-		if(hydroSpeedCoupling)
+		if (hydroSpeedCoupling)
 		{
 			//new rate value (30 instead of 40) to deal with the changed cmdKeyInertia settings
 			rate=30.0/(10.0+fabs(wspeed/2.0));
 			// minimum rate: 20% --> enables to steer high velocity trucks
-			if(rate<1.2) rate = 1.2;
+			if (rate<1.2) rate = 1.2;
 		}
 		//need a maximum rate for analog devices, otherwise hydro beams break
 		if (!hydroSpeedCoupling)
@@ -1606,7 +1609,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			else
 				hydrodirstate += dt * rate;
 		}
-		if(hydroSpeedCoupling)
+		if (hydroSpeedCoupling)
 		{
 			float dirdelta=dt;
 			if      (hydrodirstate >  dirdelta) hydrodirstate -= dirdelta;
@@ -1685,7 +1688,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if (cstate<-1.0) cstate=-1.0;
 		// Animators following, if no animator, skip all the tests...
 		int flagstate = beams[hydro[i]].animFlags;
-		if(flagstate)
+		if (flagstate)
 		{
 			float animoption = beams[hydro[i]].animOption;
 			calcAnimators(flagstate, cstate, div, dt, 0.0f, 0.0f, animoption);
@@ -1694,7 +1697,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if (div)
 		{
 			cstate=cstate/(float)div;
-			if(hydroInertia)
+			if (hydroInertia)
 				cstate=hydroInertia->calcCmdKeyDelay(cstate,i,dt);
 
 			if (!(beams[hydro[i]].hydroFlags & HYDRO_FLAG_SPEED))
@@ -1703,7 +1706,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			float factor = 1.0-cstate*beams[hydro[i]].hydroRatio;
 
 			// check and apply animators limits if set
-			if(flagstate)
+			if (flagstate)
 			{
 				if (factor < 1.0f - beams[hydro[i]].shortbound)
 					factor = 1.0f - beams[hydro[i]].shortbound;
@@ -1724,7 +1727,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	{
 		for (int i=0; i<numtrucks; i++)
 		{
-			if(!trucks[i]) continue;
+			if (!trucks[i]) continue;
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
 			{
 				// forward commands
@@ -1732,9 +1735,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					trucks[i]->commandkey[j].commandValue = commandkey[j].commandValue;
 
 				// just send brake and lights to the connected truck, and no one else :)
-				for(std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
+				for (std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
 				{
-					if(!it->lockTruck) continue;
+					if (!it->lockTruck) continue;
 					// forward brake
 					it->lockTruck->brake = brake;
 					it->lockTruck->parkingbrake = parkingbrake;
@@ -1742,7 +1745,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					// forward lights
 					it->lockTruck->lights = lights;
 					it->lockTruck->blinkingtype = blinkingtype;
-					//for(int k=0;k<4;k++)
+					//for (int k=0;k<4;k++)
 					//	lockTruck->setCustomLight(k, getCustomLight(k));
 					//forward reverse light e.g. for trailers
 					it->lockTruck->reverselight=getReverseLightVisible();
@@ -1765,7 +1768,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		if (engine) crankfactor=engine->getCrankFactor();
 
 		// speed up machines
-		if(driveable==MACHINE)
+		if (driveable==MACHINE)
 			crankfactor = 2;
 
 		for (int i=0; i<=MAX_COMMANDS; i++)
@@ -1773,7 +1776,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 			{
 				int k = abs(commandkey[i].beams[j]);
-				if(k>=0 && k < free_beam)
+				if (k>=0 && k < free_beam)
 					beams[k].autoMoveLock=false;
 			}
 		}
@@ -1782,27 +1785,27 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 		{
 			for (int j=0; j < (int)commandkey[i].beams.size(); j++)
 			{
-				if(commandkey[i].commandValue >= 0.5)
+				if (commandkey[i].commandValue >= 0.5)
 				{
 					int k = abs(commandkey[i].beams[j]);
-					if(k>=0 && k < free_beam)
+					if (k>=0 && k < free_beam)
 						beams[k].autoMoveLock=true;
 				}
 			}
 		}
 
 		// only process ties if there is enough force available
-		if(canwork)
+		if (canwork)
 		{
 			bool requestpower = false;
 			// go through all ties and process them
-			for(std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
+			for (std::vector<tie_t>::iterator it=ties.begin(); it!=ties.end(); it++)
 			{
 				// only process tying ties
-				if(!it->tying) continue;
+				if (!it->tying) continue;
 
 				// division through zero guard
-				if(it->beam->refL == 0 || it->beam->L == 0) continue;
+				if (it->beam->refL == 0 || it->beam->L == 0) continue;
 
 				float clen = it->beam->L / it->beam->refL;
 				if (clen > it->beam->commandShort)
@@ -1823,7 +1826,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				if (fabs(it->beam->stress) > it->beam->maxtiestress)
 					it->tying = false;
 			}
-			if(requestpower)
+			if (requestpower)
 				requested++;
 		}
 
@@ -1835,10 +1838,10 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			{
 				int bbeam=commandkey[i].beams[j];
 				int bbeam_abs=abs(bbeam);
-				if(bbeam_abs<0 || bbeam_abs > free_beam) continue;
+				if (bbeam_abs<0 || bbeam_abs > free_beam) continue;
 
 				// restrict forces
-				if(beams[bbeam_abs].isforcerestricted && crankfactor > 1)
+				if (beams[bbeam_abs].isforcerestricted && crankfactor > 1)
 					crankfactor=1;
 
 				float v  = commandkey[i].commandValue;
@@ -1846,20 +1849,20 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 
 
 				/*
-				if(i==1)
+				if (i==1)
 				LOG(TOSTRING(v) + "/" + TOSTRING(beams[bbeam].autoMovingMode));
 				*/
 
 				// self centering
-				if(beams[bbeam_abs].iscentering && !beams[bbeam_abs].autoMoveLock)
+				if (beams[bbeam_abs].iscentering && !beams[bbeam_abs].autoMoveLock)
 				{
 					// check for some error
-					if(beams[bbeam_abs].refL == 0 || beams[bbeam_abs].L == 0)
+					if (beams[bbeam_abs].refL == 0 || beams[bbeam_abs].L == 0)
 						continue;
 
 					float current = (beams[bbeam_abs].L/beams[bbeam_abs].refL);
 					/*
-					if(i==1)
+					if (i==1)
 					LOG("centering: "+ \
 					TOSTRING(current)+" / "+ \
 					TOSTRING(beams[bbeam_abs].centerLength)+ " / " + \
@@ -1867,25 +1870,25 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 					*/
 
 					// hold condition
-					if(fabs(current-beams[bbeam_abs].centerLength) < 0.0001)
+					if (fabs(current-beams[bbeam_abs].centerLength) < 0.0001)
 					{
 						beams[bbeam_abs].autoMovingMode = 0;
 						/*
-						if(i==1)
+						if (i==1)
 						LOG("centering complete");
 						*/
 					}
 					else
 					{
 						// determine direction
-						if(current > beams[bbeam_abs].centerLength)
+						if (current > beams[bbeam_abs].centerLength)
 							beams[bbeam_abs].autoMovingMode = -1;
 						else
 							beams[bbeam_abs].autoMovingMode = 1;
 					}
 				}
 
-				if(beams[bbeam_abs].refL != 0 && beams[bbeam_abs].L != 0)
+				if (beams[bbeam_abs].refL != 0 && beams[bbeam_abs].L != 0)
 				{
 					if (bbeam>0)
 					{
@@ -1894,66 +1897,66 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						{
 							float dl=beams[bbeam].L;
 
-							if(beams[bbeam].isOnePressMode==2)
+							if (beams[bbeam].isOnePressMode==2)
 							{
 								// one press + centering
 								//String sMode = (beams[bbeam].pressedCenterMode?"YES":"NO");
 								//LOG(sMode+"|"+TOSTRING(clen)+" / "+TOSTRING(beams[bbeam].centerLength));
-								if(beams[bbeam].autoMovingMode > 0 && clen > beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
+								if (beams[bbeam].autoMovingMode > 0 && clen > beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
 								{
 									beams[bbeam].pressedCenterMode = true;
 									beams[bbeam].autoMovingMode=0;
 								}
-								else if(beams[bbeam].autoMovingMode < 0 && clen > beams[bbeam].centerLength && beams[bbeam].pressedCenterMode)
+								else if (beams[bbeam].autoMovingMode < 0 && clen > beams[bbeam].centerLength && beams[bbeam].pressedCenterMode)
 									beams[bbeam].pressedCenterMode = false;
 							}
-							if(beams[bbeam].isOnePressMode>0)
+							if (beams[bbeam].isOnePressMode>0)
 							{
 								bool key = (v > 0.5);
-								if(beams[bbeam].autoMovingMode <= 0 && key)
+								if (beams[bbeam].autoMovingMode <= 0 && key)
 								{
 									//LOG("LONG auto-moving-start!");
 									beams[bbeam].autoMovingMode=1;
 								}
-								else if(beams[bbeam].autoMovingMode==1 && !key)
+								else if (beams[bbeam].autoMovingMode==1 && !key)
 								{
 									//LOG("LONG auto-moving step2!");
 									beams[bbeam].autoMovingMode=2;
 								}
-								else if(beams[bbeam].autoMovingMode==2 && key)
+								else if (beams[bbeam].autoMovingMode==2 && key)
 								{
 									//LOG("LONG auto-moving-end step1!");
 									beams[bbeam].autoMovingMode=3;
 								}
-								else if(beams[bbeam].autoMovingMode==3 && !key)
+								else if (beams[bbeam].autoMovingMode==3 && !key)
 								{
 									//LOG("LONG auto-moving-end step2!");
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
 
-							if(cmdInertia)
+							if (cmdInertia)
 								v=cmdInertia->calcCmdKeyDelay(v,i,dt);
 
-							if(beams[bbeam].autoMovingMode > 0)
+							if (beams[bbeam].autoMovingMode > 0)
 								v = 1;
 
-							if(v>0.5)
+							if (v>0.5)
 								requestpower=true;
 
-							if(!canwork)
+							if (!canwork)
 								continue;
 
 #ifdef USE_OPENAL
 							// command sounds
-							if(vst == 1)
+							if (vst == 1)
 							{
 								// just started
 								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
 								SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
 								vst = 0;
 
-							} else if(vst == -1)
+							} else if (vst == -1)
 							{
 								// just stopped
 								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
@@ -1966,7 +1969,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 #endif //USE_OPENAL
 							beams[bbeam].L *= (1.0 + beams[bbeam].commandRatioLong * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
-							if(v>0.5)
+							if (v>0.5)
 							{
 								active++;
 								work+=fabs(beams[bbeam].stress)*dl*beams[bbeam].commandEngineCoupling;
@@ -1974,7 +1977,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						} else
 						{
 							// beyond lenght
-							if(beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode > 0)
+							if (beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode > 0)
 							{
 								//LOG("LONG auto-moving-end!");
 								beams[bbeam].autoMovingMode=0;
@@ -1988,65 +1991,65 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						{
 							float dl=beams[bbeam].L;
 
-							if(beams[bbeam].isOnePressMode==2)
+							if (beams[bbeam].isOnePressMode==2)
 							{
 								// one press + centering
 								//String sMode = (beams[bbeam].pressedCenterMode?"YES":"NO");
 								//LOG(sMode+"|"+TOSTRING(clen)+" / "+TOSTRING(beams[bbeam].centerLength));
-								if(beams[bbeam].autoMovingMode < 0 && clen < beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
+								if (beams[bbeam].autoMovingMode < 0 && clen < beams[bbeam].centerLength && !beams[bbeam].pressedCenterMode)
 								{
 									beams[bbeam].pressedCenterMode = true;
 									beams[bbeam].autoMovingMode=0;
 								}
-								else if(beams[bbeam].autoMovingMode > 0 && clen < beams[bbeam].centerLength && beams[bbeam].pressedCenterMode)
+								else if (beams[bbeam].autoMovingMode > 0 && clen < beams[bbeam].centerLength && beams[bbeam].pressedCenterMode)
 									beams[bbeam].pressedCenterMode = false;
 							}
-							if(beams[bbeam].isOnePressMode>0)
+							if (beams[bbeam].isOnePressMode>0)
 							{
 								bool key = (v > 0.5);
-								if(beams[bbeam].autoMovingMode >=0 && key)
+								if (beams[bbeam].autoMovingMode >=0 && key)
 								{
 									//LOG("SHORT auto-moving-start!");
 									beams[bbeam].autoMovingMode=-1;
 								}
-								else if(beams[bbeam].autoMovingMode==-1 && !key)
+								else if (beams[bbeam].autoMovingMode==-1 && !key)
 								{
 									//LOG("SHORT auto-moving step2!");
 									beams[bbeam].autoMovingMode=-2;
 								}
-								else if(beams[bbeam].autoMovingMode==-2 && key)
+								else if (beams[bbeam].autoMovingMode==-2 && key)
 								{
 									//LOG("SHORT auto-moving-end step1!");
 									beams[bbeam].autoMovingMode=-3;
 								}
-								else if(beams[bbeam].autoMovingMode==-3 && !key)
+								else if (beams[bbeam].autoMovingMode==-3 && !key)
 								{
 									//LOG("SHORT auto-moving-end step2!");
 									beams[bbeam].autoMovingMode=0;
 								}
 							}
 
-							if(cmdInertia)
+							if (cmdInertia)
 								v=cmdInertia->calcCmdKeyDelay(v,i,dt);
 
-							if(beams[bbeam].autoMovingMode < 0)
+							if (beams[bbeam].autoMovingMode < 0)
 								v = 1;
 
-							if(v>0.5)
+							if (v>0.5)
 								requestpower=true;
 
-							if(!canwork)
+							if (!canwork)
 								continue;
 #ifdef USE_OPENAL
 							// command sounds
-							if(vst == 1)
+							if (vst == 1)
 							{
 								// just started
 								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, i);
 								SoundScriptManager::getSingleton().trigStart(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
 								vst = 0;
 
-							} else if(vst == -1)
+							} else if (vst == -1)
 							{
 								// just stopped
 								SoundScriptManager::getSingleton().trigStop(trucknum, SS_TRIG_LINKED_COMMAND, SL_COMMAND, -i);
@@ -2059,7 +2062,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 #endif //USE_OPENAL
 							beams[bbeam].L *= (1.0 - beams[bbeam].commandRatioShort * v * crankfactor * dt / beams[bbeam].L);
 							dl=fabs(dl-beams[bbeam].L);
-							if(v>0.5)
+							if (v>0.5)
 							{
 								active++;
 								work+=fabs(beams[bbeam].stress)*dl*beams[bbeam].commandEngineCoupling;
@@ -2067,7 +2070,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 						} else
 						{
 							// beyond lenght
-							if(beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode < 0)
+							if (beams[bbeam].isOnePressMode>0 && beams[bbeam].autoMovingMode < 0)
 							{
 								//LOG("SHORT auto-moving-end!");
 								beams[bbeam].autoMovingMode=0;
@@ -2083,11 +2086,11 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				{
 					int rota = commandkey[i].rotators[j] - 1;
 					float value=0;
-					if(rotaInertia)
+					if (rotaInertia)
 					{
 						value=rotaInertia->calcCmdKeyDelay(commandkey[i].commandValue,i,dt);
 					}
-					if(value>0.5f)
+					if (value>0.5f)
 						requestpower=true;
 					rotators[rota].angle += rotators[rota].rate * value * crankfactor * dt;
 				}
@@ -2095,16 +2098,16 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 				{
 					int rota =- (commandkey[i].rotators[j]) - 1;
 					float value=0;
-					if(rotaInertia)
+					if (rotaInertia)
 					{
 						value=rotaInertia->calcCmdKeyDelay(commandkey[i].commandValue,i,dt);
 					}
-					if(value>0.5f)
+					if (value>0.5f)
 						requestpower=true;
 					rotators[rota].angle -= rotators[rota].rate * value * crankfactor * dt;
 				}
 			}
-			if(requestpower)
+			if (requestpower)
 				requested++;
 		}
 
@@ -2175,14 +2178,14 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 	BES_START(BES_CORE_Replay);
 
 	// we also store a new replay frame
-	if(replay && replay->isValid())
+	if (replay && replay->isValid())
 	{
 		replayTimer += dt;
-		if(replayTimer > replayPrecision)
+		if (replayTimer > replayPrecision)
 		{
 			// store nodes
 			node_simple_t *nbuff = (node_simple_t *)replay->getWriteBuffer(0);
-			if(nbuff)
+			if (nbuff)
 			{
 				for (int i=0; i<free_node; i++)
 					nbuff[i].pos = nodes[i].AbsPosition;

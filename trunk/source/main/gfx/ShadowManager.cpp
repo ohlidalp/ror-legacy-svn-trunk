@@ -55,7 +55,7 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 	globalEnvironment->ogreSceneManager->setShadowFarDistance(shadowFarDistance);
 	globalEnvironment->ogreSceneManager->setShowDebugShadows(false);
 
-	if(tech == Ogre::SHADOWTYPE_STENCIL_MODULATIVE)
+	if (tech == Ogre::SHADOWTYPE_STENCIL_MODULATIVE)
 	{
 		//		globalEnvironment->ogreSceneManager->setShadowIndexBufferSize(2000000);
 		globalEnvironment->ogreSceneManager->setShadowDirectionalLightExtrusionDistance(100);
@@ -66,10 +66,10 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		//		globalEnvironment->ogreSceneManager->setUseCullCamera(false);
 		//		globalEnvironment->ogreSceneManager->setShowBoxes(true);
 		//		globalEnvironment->ogreSceneManager->showBoundingBoxes(true);
-	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
+	} else if (tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
 		globalEnvironment->ogreSceneManager->setShadowTextureSettings(2048,2);
-	} else if(tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED)
+	} else if (tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
 
@@ -123,7 +123,7 @@ void ShadowManager::updatePSSM(Ogre::Terrain* terrain)
 	if (!mPSSMSetup.get())  return;
 
 	Ogre::TerrainMaterialGeneratorA::SM2Profile *matProfile  = 0;
-	if(Ogre::TerrainGlobalOptions::getSingletonPtr())
+	if (Ogre::TerrainGlobalOptions::getSingletonPtr())
 	{
 		matProfile = static_cast<Ogre::TerrainMaterialGeneratorA::SM2Profile*>(Ogre::TerrainGlobalOptions::getSingleton().getDefaultMaterialGenerator()->getActiveProfile());
 		matProfile->setReceiveDynamicShadowsEnabled(true);

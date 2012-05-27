@@ -38,7 +38,7 @@ void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 	{
 		Ogre::CompositionTechnique::TextureDefinition* def =
 			defIter.getNext();
-		if(def->name == "rt_bloom0")
+		if (def->name == "rt_bloom0")
 		{
 			mBloomSize = (int)def->width; // should be square
 			// Calculate Gaussian texture offsets & weights
@@ -55,7 +55,7 @@ void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 			mBloomTexWeights[0][3] = 1.0f;
 
 			// 'pre' samples
-			for(int i = 1; i < 8; ++i)
+			for (int i = 1; i < 8; ++i)
 			{
 				mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
 					mBloomTexWeights[i][2] = 1.25f * Ogre::Math::gaussianDistribution(i, 0, deviation);
@@ -66,7 +66,7 @@ void HDRListener::notifyCompositor(Ogre::CompositorInstance* instance)
 				mBloomTexOffsetsVert[i][1] = i * texelSize;
 			}
 			// 'post' samples
-			for(int i = 8; i < 15; ++i)
+			for (int i = 8; i < 15; ++i)
 			{
 				mBloomTexWeights[i][0] = mBloomTexWeights[i][1] =
 					mBloomTexWeights[i][2] = mBloomTexWeights[i - 7][0];

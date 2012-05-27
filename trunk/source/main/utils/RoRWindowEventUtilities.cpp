@@ -28,6 +28,6 @@ void RoRWindowEventUtilities::triggerResize(Ogre::RenderWindow *win)
 			start = _msListeners.lower_bound(win),
 			end = _msListeners.upper_bound(win);
 	win->windowMovedOrResized();
-	for(index = start; index != end; ++index)
+	for (index = start; index != end; ++index)
 		(index->second)->windowResized(win);
 }

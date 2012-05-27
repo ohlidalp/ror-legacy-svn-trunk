@@ -63,7 +63,7 @@ public:
 		maximumScale=0.13;
 		
 		// if there are no tress in the page to be loaded, add some randomly
-		if(treeList.size() == 0)
+		if (treeList.size() == 0)
 		{
 			// only add trees if there are none in this page...
 			for (int n=0; n < pageSize/10; n++)

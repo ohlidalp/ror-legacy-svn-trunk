@@ -46,7 +46,7 @@ MeshObject::MeshObject(Ogre::String meshName, Ogre::String entityName, Ogre::Sce
 		, visible(true)
 {
 	// create a new sceneNode if not existing
-	if(!sceneNode)
+	if (!sceneNode)
 		sceneNode = smgr->getRootSceneNode()->createChildSceneNode();
 
 	loadMesh();
@@ -54,7 +54,7 @@ MeshObject::MeshObject(Ogre::String meshName, Ogre::String entityName, Ogre::Sce
 
 MeshObject::~MeshObject()
 {
-	if(backgroundLoading && !mesh.isNull())
+	if (backgroundLoading && !mesh.isNull())
 		mesh->unload();
 }
 
@@ -62,7 +62,7 @@ void MeshObject::setSimpleMaterialColour(Ogre::ColourValue c)
 {
 	simpleMatColour = c;
 	enableSimpleMaterial = true;
-	if(loaded && ent)
+	if (loaded && ent)
 	{
 		// already loaded, so do it afterwards manually
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);
@@ -71,10 +71,10 @@ void MeshObject::setSimpleMaterialColour(Ogre::ColourValue c)
 
 void MeshObject::setMaterialFunctionMapper(MaterialFunctionMapper *m, MaterialReplacer *mr)
 {
-	if(!m) return;
+	if (!m) return;
 	mfm = m;
 	this->mr = mr;
-	if(loaded && ent)
+	if (loaded && ent)
 	{
 		// already loaded, so do it afterwards manually
 		mfm->replaceMeshMaterials(ent);
@@ -84,9 +84,9 @@ void MeshObject::setMaterialFunctionMapper(MaterialFunctionMapper *m, MaterialRe
 
 void MeshObject::setMaterialName(Ogre::String m)
 {
-	if(m.empty()) return;
+	if (m.empty()) return;
 	materialName = m;
-	if(loaded && ent)
+	if (loaded && ent)
 	{
 		ent->setMaterialName(materialName);
 	}
@@ -95,7 +95,7 @@ void MeshObject::setMaterialName(Ogre::String m)
 void MeshObject::setCastShadows(bool b)
 {
 	castshadows=b;
-	if(loaded && sceneNode && ent && sceneNode->numAttachedObjects())
+	if (loaded && sceneNode && ent && sceneNode->numAttachedObjects())
 	{
 		sceneNode->getAttachedObject(0)->setCastShadows(b);
 	}
@@ -109,20 +109,20 @@ void MeshObject::setMeshEnabled(bool e)
 
 void MeshObject::setVisible(bool b)
 {
-	if(!enabled) return;
+	if (!enabled) return;
 	visible = b;
-	if(loaded && sceneNode)
+	if (loaded && sceneNode)
 		sceneNode->setVisible(b);
 }
 
 void MeshObject::postProcess()
 {
 	loaded=true;
-	if(!sceneNode) return;
+	if (!sceneNode) return;
 
 	// important: you need to add the LODs before creating the entity
 	// now find possible LODs, needs to be done before calling createEntity()
-	if(!mesh.isNull())
+	if (!mesh.isNull())
 	{
 		String basename, ext;
 		StringUtil::splitBaseFilename(meshName, basename, ext);
@@ -137,27 +137,27 @@ void MeshObject::postProcess()
 			int i = -1;
 			int r = sscanf(iterFiles->filename.c_str(), format.c_str(), &i);
 
-			if(r <= 0 || i < 0) continue;
+			if (r <= 0 || i < 0) continue;
 
 			float distance = 3;
 
 			// we need to tune this according to our sightrange
 			float sightrange = FSETTING("SightRange", 2000);
 
-			if(sightrange > 4999)
+			if (sightrange > 4999)
 			{
 				// unlimited
 				if     (i == 1) distance =  200;
-				else if(i == 2) distance =  600;
-				else if(i == 3) distance = 2000;
-				else if(i == 4) distance = 5000;
+				else if (i == 2) distance =  600;
+				else if (i == 3) distance = 2000;
+				else if (i == 4) distance = 5000;
 			} else
 			{
 				// limited
 				if     (i == 1) distance = std::max(20.0f, sightrange * 0.1f);
-				else if(i == 2) distance = std::max(20.0f, sightrange * 0.2f);
-				else if(i == 3) distance = std::max(20.0f, sightrange * 0.3f);
-				else if(i == 4) distance = std::max(20.0f, sightrange * 0.4f);
+				else if (i == 2) distance = std::max(20.0f, sightrange * 0.2f);
+				else if (i == 3) distance = std::max(20.0f, sightrange * 0.3f);
+				else if (i == 4) distance = std::max(20.0f, sightrange * 0.4f);
 			}
 
 			Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
@@ -172,7 +172,7 @@ void MeshObject::postProcess()
 			String format = basename + "_clod_%d.mesh";
 			int i = -1;
 			int r = sscanf(iterFiles->filename.c_str(), format.c_str(), &i);
-			if(r <= 0 || i < 0) continue;
+			if (r <= 0 || i < 0) continue;
 
 			Ogre::MeshManager::getSingleton().load(iterFiles->filename, mesh->getGroup());
 			mesh->createManualLodLevel(i, iterFiles->filename);
@@ -182,11 +182,11 @@ void MeshObject::postProcess()
 	// now create an entity around the mesh and attach it to the scene graph
 	try
 	{
-		if(entityName.empty())
+		if (entityName.empty())
 			ent = smgr->createEntity(meshName);
 		else
 			ent = smgr->createEntity(entityName, meshName);
-		if(ent)
+		if (ent)
 			sceneNode->attachObject(ent);
 	} catch(Ogre::Exception& e)
 	{
@@ -195,20 +195,20 @@ void MeshObject::postProcess()
 	}
 
 	// then modify some things
-	if(enableSimpleMaterial)
+	if (enableSimpleMaterial)
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, simpleMatColour);
 
-	if(skin)
+	if (skin)
 		skin->replaceMeshMaterials(ent);
 
-	if(mfm)
+	if (mfm)
 		mfm->replaceMeshMaterials(ent);
 
-	if(ent && !materialName.empty())
+	if (ent && !materialName.empty())
 		ent->setMaterialName(materialName);
 
 	// only set it if different from default (true)
-	if(!castshadows && sceneNode && sceneNode->numAttachedObjects() > 0)
+	if (!castshadows && sceneNode && sceneNode->numAttachedObjects() > 0)
 		sceneNode->getAttachedObject(0)->setCastShadows(castshadows);
 
 	sceneNode->setVisible(visible);
@@ -220,7 +220,7 @@ void MeshObject::loadMesh()
 	{
 		Ogre::String resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 		mesh = static_cast<Ogre::MeshPtr>(Ogre::MeshManager::getSingleton().create(meshName, resourceGroup));
-		if(backgroundLoading)
+		if (backgroundLoading)
 		{
 			mesh->setBackgroundLoaded(true);
 			mesh->addListener(this);
@@ -234,19 +234,19 @@ void MeshObject::loadMesh()
 				0);
 
 			// try to load its textures in the background
-			for(int i=0; i<mesh->getNumSubMeshes(); i++)
+			for (int i=0; i<mesh->getNumSubMeshes(); i++)
 			{
 				SubMesh *sm = mesh->getSubMesh(i);
 				String materialName = sm->getMaterialName();
 				Ogre::MaterialPtr mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(materialName)); //, resourceGroup));
-				if(mat.isNull()) continue;
-				for(int tn=0; tn<mat->getNumTechniques(); tn++)
+				if (mat.isNull()) continue;
+				for (int tn=0; tn<mat->getNumTechniques(); tn++)
 				{
 					Technique *t = mat->getTechnique(tn);
-					for(int pn=0; pn<t->getNumPasses(); pn++)
+					for (int pn=0; pn<t->getNumPasses(); pn++)
 					{
 						Pass *p = t->getPass(pn);
-						for(int tun=0; tun<p->getNumTextureUnitStates(); tun++)
+						for (int tun=0; tun<p->getNumTextureUnitStates(); tun++)
 						{
 							TextureUnitState *tu = p->getTextureUnitState(tun);
 							String textureName = tu->getTextureName();
@@ -270,7 +270,7 @@ void MeshObject::loadMesh()
 			}
 		}
 		
-		if(!backgroundLoading)
+		if (!backgroundLoading)
 			postProcess();
 	}
 	catch (Ogre::Exception* e)
@@ -284,7 +284,7 @@ void MeshObject::operationCompleted(BackgroundProcessTicket ticket, const Backgr
 {
 	// NOT USED ATM
 	LOG("operationCompleted: " + meshName);
-	if(ticket == this->ticket)
+	if (ticket == this->ticket)
 		postProcess();
 }
 

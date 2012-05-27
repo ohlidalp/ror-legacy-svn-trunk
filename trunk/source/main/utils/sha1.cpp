@@ -140,17 +140,17 @@ void CSHA1::UpdateHash(uint8_t *data, uint32_t len)
 
 	j = (m_count[0] >> 3) & 63;
 
-	if((m_count[0] += len << 3) < (len << 3)) m_count[1]++;
+	if ((m_count[0] += len << 3) < (len << 3)) m_count[1]++;
 
 	m_count[1] += (len >> 29);
 
-	if((j + len) > 63)
+	if ((j + len) > 63)
 	{
 		i = 64 - j;
 		memcpy(&m_buffer[j], data, i);
 		Transform(m_state, m_buffer);
 
-		for( ; i + 63 < len; i += 64) Transform(m_state, &data[i]);
+		for ( ; i + 63 < len; i += 64) Transform(m_state, &data[i]);
 
 		j = 0;
 	}
@@ -168,16 +168,16 @@ bool CSHA1::HashFile(char *szFileName)
 	uint8_t uData[SHA1_MAX_FILE_BUFFER];
 	FILE *fIn;
 
-	if(szFileName == NULL) return false;
+	if (szFileName == NULL) return false;
 
 	fIn = fopen(szFileName, "rb");
-	if(fIn == NULL) return false;
+	if (fIn == NULL) return false;
 
 	fseek(fIn, 0, SEEK_END);
 	ulFileSize = (unsigned long)ftell(fIn);
 	fseek(fIn, 0, SEEK_SET);
 
-	if(ulFileSize != 0)
+	if (ulFileSize != 0)
 	{
 		ulBlocks = ulFileSize / SHA1_MAX_FILE_BUFFER;
 		ulRest = ulFileSize % SHA1_MAX_FILE_BUFFER;
@@ -188,13 +188,13 @@ bool CSHA1::HashFile(char *szFileName)
 		ulRest = 0;
 	}
 
-	for(i = 0; i < ulBlocks; i++)
+	for (i = 0; i < ulBlocks; i++)
 	{
 		size_t res = fread(uData, 1, SHA1_MAX_FILE_BUFFER, fIn);
 		UpdateHash((uint8_t *)uData, SHA1_MAX_FILE_BUFFER);
 	}
 
-	if(ulRest != 0)
+	if (ulRest != 0)
 	{
 		size_t res = fread(uData, 1, ulRest, fIn);
 		UpdateHash((uint8_t *)uData, ulRest);
@@ -210,7 +210,7 @@ void CSHA1::Final()
 	uint32_t i;
 	uint8_t finalcount[8];
 
-	for(i = 0; i < 8; i++)
+	for (i = 0; i < 8; i++)
 		finalcount[i] = (uint8_t)((m_count[((i >= 4) ? 0 : 1)]
 			>> ((3 - (i & 3)) * 8) ) & 255); // Endian independent
 
@@ -221,7 +221,7 @@ void CSHA1::Final()
 
 	UpdateHash(finalcount, 8); // Cause a SHA1Transform()
 
-	for(i = 0; i < 20; i++)
+	for (i = 0; i < 20; i++)
 	{
 		m_digest[i] = (uint8_t)((m_state[i >> 2] >> ((3 - (i & 3)) * 8) ) & 255);
 	}
@@ -244,26 +244,26 @@ void CSHA1::ReportHash(char *szReport, unsigned char uReportType)
 	unsigned char i;
 	char szTemp[16];
 
-	if(szReport == NULL) return;
+	if (szReport == NULL) return;
 
-	if(uReportType == REPORT_HEX || uReportType == REPORT_HEX_SHORT)
+	if (uReportType == REPORT_HEX || uReportType == REPORT_HEX_SHORT)
 	{
 		bool shortreport = (uReportType == REPORT_HEX_SHORT);
 		sprintf(szTemp, "%02X", m_digest[0]);
 		strcat(szReport, szTemp);
 
-		for(i = 1; i < 20; i++)
+		for (i = 1; i < 20; i++)
 		{
 			sprintf(szTemp, shortreport?"%02X":" %02X", m_digest[i]);
 			strcat(szReport, szTemp);
 		}
 	}
-	else if(uReportType == REPORT_DIGIT)
+	else if (uReportType == REPORT_DIGIT)
 	{
 		sprintf(szTemp, "%u", m_digest[0]);
 		strcat(szReport, szTemp);
 
-		for(i = 1; i < 20; i++)
+		for (i = 1; i < 20; i++)
 		{
 			sprintf(szTemp, " %u", m_digest[i]);
 			strcat(szReport, szTemp);

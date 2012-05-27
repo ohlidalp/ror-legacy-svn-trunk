@@ -77,7 +77,7 @@ bool ChatSystemFactory::syncRemoteStreams()
 
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
-	if(changes)
+	if (changes)
 		GUI_Multiplayer::getSingleton().update();
 #endif // USE_SOCKETW
 #endif // USE_MYGUI	
@@ -88,7 +88,7 @@ ChatSystem *ChatSystemFactory::getFirstChatSystem()
 {
 	lockStreams();
 	std::map < int, std::map < unsigned int, ChatSystem *> > &streamables = getStreams();
-	if(streamables.empty() || streamables.begin()->second.empty()) return 0;
+	if (streamables.empty() || streamables.begin()->second.empty()) return 0;
 	ChatSystem *r = streamables.begin()->second.begin()->second;
 	unlockStreams();
 	return r;
@@ -115,10 +115,10 @@ ChatSystem::ChatSystem(int source, unsigned int streamid, int colourNumber, bool
 {
 	sendStreamSetup();
 #ifdef USE_SOCKETW
-	if(remote)
+	if (remote)
 	{
 		client_t *c = globalEnvironment->network->getClientInfo(source);
-		if(c)
+		if (c)
 		{
 			username = getColouredName(*c);
 		}
@@ -134,7 +134,7 @@ ChatSystem::ChatSystem(int source, unsigned int streamid, int colourNumber, bool
 ChatSystem::~ChatSystem()
 {
 #ifdef USE_MYGUI
-	if(remote)
+	if (remote)
 	{
 		String msg = username + commandColour + _L(" left the game");
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LEAVE_GAME, msg, "user_delete.png");
@@ -144,7 +144,7 @@ ChatSystem::~ChatSystem()
 
 void ChatSystem::sendStreamSetup()
 {
-	if(remote) return;
+	if (remote) return;
 
 	stream_register_t reg;
 	reg.status = 1;
@@ -161,34 +161,34 @@ void ChatSystem::sendStreamData()
 void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len)
 {
 #ifdef USE_MYGUI
-	if(type == MSG2_UTF_CHAT)
+	if (type == MSG2_UTF_CHAT)
 	{
 		// some chat code
-		if(source == -1)
+		if (source == -1)
 		{
 			// server said something
 			UTFString msg = tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_gray.png");
-		} else if(source == (int)this->source && (int)streamid == this->streamid)
+		} else if (source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + normalColour + ": " + tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
-		} else if(source == (int)globalEnvironment->network->getUID())
+		} else if (source == (int)globalEnvironment->network->getUID())
 		{
 			// our message bounced back :D
 			UTFString msg = globalEnvironment->network->getNickname(true) + normalColour + ": " + tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
 		}
 	}
-	else if(type == MSG2_UTF_PRIVCHAT)
+	else if (type == MSG2_UTF_PRIVCHAT)
 	{
 		// some private chat message
-		if(source == -1)
+		if (source == -1)
 		{
 			// server said something
 			String msg = whisperColour + _L(" [whispered] ") + normalColour +  tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
-		} else if(source == (int)this->source && (int)streamid == this->streamid)
+		} else if (source == (int)this->source && (int)streamid == this->streamid)
 		{
 			UTFString msg = username + _L(" [whispered] ") + normalColour + ": " + tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "script_key.png");
@@ -207,9 +207,9 @@ int ChatSystem::getChatUserNames(std::vector<UTFString> &names)
 {
 #ifdef USE_SOCKETW
 	client_t c[MAX_PEERS];
-	if(globalEnvironment->network->getClientInfos(c)) return 0;
+	if (globalEnvironment->network->getClientInfos(c)) return 0;
 
-	for(int i = 0; i < MAX_PEERS; i++)
+	for (int i = 0; i < MAX_PEERS; i++)
 	{
 		names.push_back(c[i].user.username);
 	}
@@ -224,12 +224,12 @@ void ChatSystem::sendPrivateChat(UTFString targetUsername, UTFString chatline)
 #ifdef USE_SOCKETW
 	// first: find id to username:
 	client_t c[MAX_PEERS];
-	if(globalEnvironment->network->getClientInfos(c))
+	if (globalEnvironment->network->getClientInfos(c))
 		return;
 	int target_uid = -1, target_index = -1;
-	for(int i = 0; i < MAX_PEERS; i++)
+	for (int i = 0; i < MAX_PEERS; i++)
 	{
-		if(UTFString(c[i].user.username) == targetUsername)
+		if (UTFString(c[i].user.username) == targetUsername)
 		{
 			// found it :)
 			target_uid = c[i].user.uniqueid;
@@ -238,7 +238,7 @@ void ChatSystem::sendPrivateChat(UTFString targetUsername, UTFString chatline)
 		}
 	}
 
-	if(target_uid < 0)
+	if (target_uid < 0)
 	{
 #ifdef USE_MYGUI
 		Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, ChatSystem::commandColour + _L("user not found: ") + targetUsername, "error.png");
@@ -268,10 +268,10 @@ void ChatSystem::sendPrivateChat(int target_uid, UTFString chatline, UTFString u
 
 	this->addPacket(MSG2_UTF_PRIVCHAT, (unsigned int)len, buffer);
 
-	if(username.empty())
+	if (username.empty())
 	{
 		client_t *c = globalEnvironment->network->getClientInfo(target_uid);
-		if(c) username = getColouredName(*c);
+		if (c) username = getColouredName(*c);
 	}
 
 	// add local visual
@@ -299,19 +299,19 @@ UTFString ChatSystem::getColouredName(UTFString nick, int auth, int colourNumber
 	sprintf(tmp, "#%02X%02X%02X", (unsigned int)(col_val.r * 255.0f), (unsigned int)(col_val.g * 255.0f), (unsigned int)(col_val.b * 255.0f));
 
 	// replace # with X in nickname so the user cannot fake the colour
-	for(unsigned int i=0; i<nick.size(); i++)
-		if(nick[i] == '#') nick[i] = 'X';
+	for (unsigned int i=0; i<nick.size(); i++)
+		if (nick[i] == '#') nick[i] = 'X';
 
 	return tryConvertUTF(tmp) + nick;
 
 #if 0
 	// old code: colour not depending on auth status anymore ...
 
-	if(auth == AUTH_NONE)  col = "#c9c9c9"; // grey
-	if(auth & AUTH_BOT )   col = "#0000c9"; // blue
-	if(auth & AUTH_RANKED) col = "#00c900"; // green
-	if(auth & AUTH_MOD)    col = "#c90000"; // red
-	if(auth & AUTH_ADMIN)  col = "#c97100"; // orange
+	if (auth == AUTH_NONE)  col = "#c9c9c9"; // grey
+	if (auth & AUTH_BOT )   col = "#0000c9"; // blue
+	if (auth & AUTH_RANKED) col = "#00c900"; // green
+	if (auth & AUTH_MOD)    col = "#c90000"; // red
+	if (auth & AUTH_ADMIN)  col = "#c97100"; // orange
 
 	return col + nick;
 #endif //0

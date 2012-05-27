@@ -90,7 +90,7 @@ void WriteToTexture(const String &str, TexturePtr destTexture, Image::Box destRe
 	size_t charheight = 0;
 	size_t charwidth = 0;
 
-	for(unsigned int i = 0; i < str.size(); i++)
+	for (unsigned int i = 0; i < str.size(); i++)
 	{
 		if ((str[i] != '\t') && (str[i] != '\n') && (str[i] != ' '))
 		{

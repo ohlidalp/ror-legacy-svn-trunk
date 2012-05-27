@@ -65,9 +65,9 @@ AppState* AppStateManager::findByName(Ogre::String stateName)
 {
 	std::vector<state_info>::iterator itr;
 
-	for(itr=m_States.begin();itr!=m_States.end();itr++)
+	for (itr=m_States.begin();itr!=m_States.end();itr++)
 	{
-		if(itr->name==stateName)
+		if (itr->name==stateName)
 			return itr->state;
 	}
 
@@ -82,7 +82,7 @@ void AppStateManager::update(double dt)
 	RoRWindowEventUtilities::messagePump();
 #endif
 	Ogre::RenderWindow *rw = OgreFramework::getSingletonPtr()->m_pRenderWnd;
-	if(rw->isClosed())
+	if (rw->isClosed())
 	{
 		// unlock before shutdown
 		MUTEX_UNLOCK(&lock);
@@ -94,7 +94,7 @@ void AppStateManager::update(double dt)
 	m_ActiveStateStack.back()->update(dt);
 	OgreFramework::getSingletonPtr()->m_pRoot->renderOneFrame();
 
-	if(!rw->isActive() && rw->isVisible())
+	if (!rw->isActive() && rw->isVisible())
 		rw->update(); // update even when in background !
 
 	MUTEX_UNLOCK(&lock);
@@ -124,7 +124,7 @@ void AppStateManager::start(AppState* state)
 		startTime = OgreFramework::getSingletonPtr()->m_pTimer->getMilliseconds();
 
 		// no more actual rendering?
-		if(m_bNoRendering)
+		if (m_bNoRendering)
 		{
 			sleepMilliSeconds(100);
 			continue;
@@ -148,7 +148,7 @@ void AppStateManager::start(AppState* state)
 
 void AppStateManager::changeAppState(AppState* state)
 {
-	if(!m_ActiveStateStack.empty())
+	if (!m_ActiveStateStack.empty())
 	{
 		m_ActiveStateStack.back()->exit();
 		m_ActiveStateStack.pop_back();
@@ -163,9 +163,9 @@ void AppStateManager::changeAppState(AppState* state)
 
 bool AppStateManager::pushAppState(AppState* state)
 {
-	if(!m_ActiveStateStack.empty())
+	if (!m_ActiveStateStack.empty())
 	{
-		if(!m_ActiveStateStack.back()->pause())
+		if (!m_ActiveStateStack.back()->pause())
 			return false;
 	}
 
@@ -180,13 +180,13 @@ bool AppStateManager::pushAppState(AppState* state)
 
 void AppStateManager::popAppState()
 {
-	if(!m_ActiveStateStack.empty())
+	if (!m_ActiveStateStack.empty())
 	{
 		m_ActiveStateStack.back()->exit();
 		m_ActiveStateStack.pop_back();
 	}
 
-	if(!m_ActiveStateStack.empty())
+	if (!m_ActiveStateStack.empty())
 	{
 		init(m_ActiveStateStack.back());
 		m_ActiveStateStack.back()->resume();
@@ -212,12 +212,12 @@ void AppStateManager::popAllAndPushAppState(AppState* state)
 
 void AppStateManager::pauseAppState()
 {
-	if(!m_ActiveStateStack.empty())
+	if (!m_ActiveStateStack.empty())
 	{
 		m_ActiveStateStack.back()->pause();
 	}
 
-	if(m_ActiveStateStack.size() > 2)
+	if (m_ActiveStateStack.size() > 2)
 	{
 		init(m_ActiveStateStack.at(m_ActiveStateStack.size() - 2));
 		m_ActiveStateStack.at(m_ActiveStateStack.size() - 2)->resume();

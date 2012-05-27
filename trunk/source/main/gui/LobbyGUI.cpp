@@ -54,7 +54,7 @@ bool LobbyGUI::getVisible()
 void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 {
 	MyGUI::UString message = _sender->getCaption();
-	if(!sendMessage(message))
+	if (!sendMessage(message))
 	{
 		String fmt = "<" + nick + "> " + message;
 		addTextToChatWindow(fmt);
@@ -127,10 +127,10 @@ void LobbyGUI::addTab(String name)
 void LobbyGUI::processIRCEvent(message_t &msg)
 {
 	// cutoff the nickname after the !
-	if(!msg.nick.empty())
+	if (!msg.nick.empty())
 	{
 		size_t s = msg.nick.find("!");
-		if(s != msg.nick.npos)
+		if (s != msg.nick.npos)
 		{
 			msg.nick = msg.nick.substr(0, s);
 		}
@@ -202,7 +202,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	case MT_VerboseMessage:
 		{
 			String fmt;
-			if(msg.nick.empty())
+			if (msg.nick.empty())
 				fmt = "(NOTICE) " + msg.message;
 			else
 				fmt = "(NOTICE) <" + msg.nick + "> " + msg.message;
@@ -232,7 +232,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 		{
 			/*
 			StringVector v = StringUtil::split(msg.message, " ");
-			for(int i=0; i<v.size(); i++)
+			for (int i=0; i<v.size(); i++)
 			{
 
 			}
@@ -244,7 +244,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 	case MT_StatusUpdate:
 		{
 			statusText->setCaption(msg.message);
-			if(msg.arg.empty())
+			if (msg.arg.empty())
 			{
 				waitingAnimation = false;
 				waitDisplay->setVisible(false);
@@ -264,7 +264,7 @@ void LobbyGUI::processIRCEvent(message_t &msg)
 void LobbyGUI::addTextToChatWindow(String txt, String channel)
 {
 	//catch special case that channel is empty -> Status Channel
-	if(channel.empty())
+	if (channel.empty())
 		channel = "Status";
 	String realchannel = channel;
 
@@ -273,7 +273,7 @@ void LobbyGUI::addTextToChatWindow(String txt, String channel)
 	txt = StringUtil::replaceAll(txt, "#", "##");
 
 
-	if(tabs.find(channel) == tabs.end())
+	if (tabs.find(channel) == tabs.end())
 	{
 		// add a new tab
 		addTab(realchannel);
@@ -290,7 +290,7 @@ void LobbyGUI::addTextToChatWindow(String txt, String channel)
 
 void LobbyGUI::update(float dt)
 {
-	if(!rotatingWait)
+	if (!rotatingWait)
 	{
 		MyGUI::ISubWidget* waitDisplaySub = waitDisplay->getSubWidgetMain();
 		rotatingWait = waitDisplaySub->castType<MyGUI::RotatingSkin>();
@@ -304,12 +304,12 @@ void LobbyGUI::update(float dt)
 		rotatingWait->setCenter(MyGUI::IntPoint(8,8));
 	}
 
-	if(waitingAnimation)
+	if (waitingAnimation)
 	{
 		// rotate the hour glass
 		float angle = rotatingWait->getAngle();
 		angle += dt * 0.001f;
-		if(angle > 2 * Math::PI) angle -= 2 * Math::PI; // prevent overflowing
+		if (angle > 2 * Math::PI) angle -= 2 * Math::PI; // prevent overflowing
 		rotatingWait->setAngle(angle);
 	}
 
@@ -318,8 +318,8 @@ void LobbyGUI::update(float dt)
 
 void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
-	if(!current_tab) return;
-	if(_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))
+	if (!current_tab) return;
+	if (_key == MyGUI::KeyCode::Escape || _key == MyGUI::KeyCode::Enum(INPUTENGINE.getKeboardKeyForCommand(EV_COMMON_CONSOLEDISPLAY)))
 	{
 		setVisible(false);
 		// delete last character (to avoid printing `)
@@ -332,7 +332,7 @@ void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, M
 	switch(_key.toValue())
 	{
 	case MyGUI::KeyCode::ArrowUp:
-		if(current_tab->mHistoryPosition > 0)
+		if (current_tab->mHistoryPosition > 0)
 		{
 			// first we save what we was writing
 			if (current_tab->mHistoryPosition == (int)current_tab->mHistory.size() - 1)
@@ -345,7 +345,7 @@ void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, M
 		break;
 
 	case MyGUI::KeyCode::ArrowDown:
-		if(current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
+		if (current_tab->mHistoryPosition < (int)current_tab->mHistory.size() - 1)
 		{
 			current_tab->mHistoryPosition++;
 			commandBox->setCaption(current_tab->mHistory[current_tab->mHistoryPosition]);
@@ -367,12 +367,12 @@ void LobbyGUI::eventButtonPressed(MyGUI::Widget* _sender, MyGUI::KeyCode _key, M
 
 void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 {
-	if(!current_tab) return;
+	if (!current_tab) return;
 	String command = _sender->getCaption();
 
 	StringUtil::trim(command);
 
-	if(command.empty())
+	if (command.empty())
 	{
 		commandBox->setCaption("");
 		return;
@@ -381,32 +381,32 @@ void LobbyGUI::eventCommandAccept(MyGUI::Edit* _sender)
 	// unescape #
 	command = StringUtil::replaceAll(command, "##", "#");
 
-	if(current_tab->name.substr(0, 1) == "#")
+	if (current_tab->name.substr(0, 1) == "#")
 	{
 		// its a channel, send message there
 
 		// check if its a command
-		if(command.substr(0, 1) == "/")
+		if (command.substr(0, 1) == "/")
 		{
 			// command there!
 			StringVector v = StringUtil::split(command, " ");
 
-			if(v.size() >= 2 && v[0] == "/me")
+			if (v.size() >= 2 && v[0] == "/me")
 				sendMeMessage(v[1], v.size()>2?v[2]:current_tab->name);
 
-			else if(v.size() >= 2 && v[0] == "/PRIVMSG")
+			else if (v.size() >= 2 && v[0] == "/PRIVMSG")
 				sendMessage(v[1], v.size()>2?v[2]:current_tab->name);
 
-			else if(v.size() >= 2 && (v[0] == "/join" || v[0] == "/j"))
+			else if (v.size() >= 2 && (v[0] == "/join" || v[0] == "/j"))
 				joinChannel(v[1], v.size()>2?v[2]:"");
 
-			else if(v.size() >= 2 && (v[0] == "/nick" || v[0] == "/n"))
+			else if (v.size() >= 2 && (v[0] == "/nick" || v[0] == "/n"))
 				changeNick(v[1]);
 
-			else if(v.size() >= 2 && (v[0] == "/leave" || v[0] == "/l"))
+			else if (v.size() >= 2 && (v[0] == "/leave" || v[0] == "/l"))
 				leaveChannel(v[1]);
 
-			else if(v.size() >= 2 && (v[0] == "/quit" || v[0] == "/q"))
+			else if (v.size() >= 2 && (v[0] == "/quit" || v[0] == "/q"))
 				quit(v.size()>1?v[1]:"");
 
 		} else
@@ -430,12 +430,12 @@ void LobbyGUI::eventChangeTab(MyGUI::TabControl* _sender, size_t _index)
 {
 	MyGUI::TabItemPtr tab = _sender->getItemAt(_index);
 	String n = _sender->getItemNameAt(_index);
-	if(!tab) return;
-	if(tabs.find(n) == tabs.end())
+	if (!tab) return;
+	if (tabs.find(n) == tabs.end())
 		return;
 
 	bool enabled = true;
-	if(n == "Status")  enabled = false;
+	if (n == "Status")  enabled = false;
 	commandBox->setEnabled(enabled);
 
 	current_tab = &tabs[n];

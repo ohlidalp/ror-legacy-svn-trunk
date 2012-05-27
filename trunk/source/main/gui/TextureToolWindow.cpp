@@ -69,12 +69,12 @@ void TextureToolWindow::fillCombo()
 	{
 		TexturePtr txt = (TexturePtr)it.getNext();
 		
-		if(dynamicOnly && ((txt->getUsage() & TU_STATIC) != 0)) continue;
+		if (dynamicOnly && ((txt->getUsage() & TU_STATIC) != 0)) continue;
 		
 		mCBo->addItem(txt->getName());
 	}
 
-	if(mCBo->getItemCount() > 0)
+	if (mCBo->getItemCount() > 0)
 	{
 		mCBo->setIndexSelected(0);
 		mCBo->beginToItemSelected();
@@ -93,14 +93,14 @@ void TextureToolWindow::saveTexture( String texName, bool usePNG )
 	try
 	{
 		TexturePtr tex = TextureManager::getSingleton().getByName(texName);
-		if(tex.isNull()) return;
+		if (tex.isNull()) return;
 
 		Image img;
 		tex->convertToImage(img);
 
 		// Save to disk!
 		String outname = SSETTING("User Path", "") + texName;
-		if(usePNG) outname += ".png";
+		if (usePNG) outname += ".png";
 
 		img.save(outname);
 
@@ -119,7 +119,7 @@ void TextureToolWindow::updateControls( String texName )
 	try
 	{
 		bool exists = TextureManager::getSingleton().resourceExists(texName);
-		if(!exists)
+		if (!exists)
 		{
 			mTxt->setCaption(convertToMyGUIString("Texture not found:\n"+texName));
 			mBtnSavePNG->setEnabled(false);
@@ -127,7 +127,7 @@ void TextureToolWindow::updateControls( String texName )
 		}
 
 		TexturePtr tex = TextureManager::getSingleton().getByName(texName);
-		if(tex.isNull())
+		if (tex.isNull())
 		{
 			mTxt->setCaption(convertToMyGUIString("Error loading texture:\n"+texName));
 			mBtnSavePNG->setEnabled(false);
@@ -138,11 +138,11 @@ void TextureToolWindow::updateControls( String texName )
 		str += "#00aa00res: #000000" + TOSTRING(tex->getWidth()) + " x " + TOSTRING(tex->getHeight()) + " pixels\n";
 		str += "#00aa00size: #000000" + formatBytes(tex->getSize()) + "\n";
 		str += "#00aa00format: #000000" + PixelUtil::getFormatName(tex->getFormat()) + "\n";
-		if(tex->getNumFaces() > 1)
+		if (tex->getNumFaces() > 1)
 			str += "#00aa00faces: #000000" + TOSTRING(tex->getNumFaces()) + "\n";
-		if(tex->getFSAA() > 0)
+		if (tex->getFSAA() > 0)
 			str += "#00aa00FSAA: #000000" + TOSTRING(tex->getFSAA()) + "\n";
-		if(tex->getNumMipmaps() > 0)
+		if (tex->getNumMipmaps() > 0)
 			str += "#00aa00mipmaps: #000000" + TOSTRING(tex->getNumMipmaps()) + "\n";
 
 		String typeStr="";
@@ -156,27 +156,27 @@ void TextureToolWindow::updateControls( String texName )
 		str += "#00aa00type: #000000" + typeStr + "\n";
 
 		String usageStr="";
-		if(tex->getUsage() & TU_STATIC)
+		if (tex->getUsage() & TU_STATIC)
 			usageStr += "static,\n";
-		if(tex->getUsage() & TU_DYNAMIC)
+		if (tex->getUsage() & TU_DYNAMIC)
 			usageStr += "dynamic,\n";
-		if(tex->getUsage() & TU_WRITE_ONLY)
+		if (tex->getUsage() & TU_WRITE_ONLY)
 			usageStr += "write only,\n";
-		if(tex->getUsage() & TU_STATIC_WRITE_ONLY)
+		if (tex->getUsage() & TU_STATIC_WRITE_ONLY)
 			usageStr += "static write only,\n";
-		if(tex->getUsage() & TU_DYNAMIC_WRITE_ONLY)
+		if (tex->getUsage() & TU_DYNAMIC_WRITE_ONLY)
 			usageStr += "dynamic write only,\n";
-		if(tex->getUsage() & TU_DYNAMIC_WRITE_ONLY_DISCARDABLE)
+		if (tex->getUsage() & TU_DYNAMIC_WRITE_ONLY_DISCARDABLE)
 			usageStr += "dynamic write only discardable,\n";
-		if(tex->getUsage() & TU_AUTOMIPMAP)
+		if (tex->getUsage() & TU_AUTOMIPMAP)
 			usageStr += "automipmap,\n";
-		if(tex->getUsage() & TU_RENDERTARGET)
+		if (tex->getUsage() & TU_RENDERTARGET)
 			usageStr += "rendertarget,\n";
-		if(tex->getUsage() & TU_DEFAULT)
+		if (tex->getUsage() & TU_DEFAULT)
 			usageStr += "default\n";
 
 		str += "#00aa00usage: #000000" + usageStr + "\n";
-		if(tex->getDepth() > 1)
+		if (tex->getDepth() > 1)
 			str += "#00aa00depth: #000000" + TOSTRING(tex->getDepth()) + "\n";
 
 

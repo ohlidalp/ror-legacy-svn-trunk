@@ -77,7 +77,7 @@ Replay::Replay(Beam *b, int _numFrames)
 
 Replay::~Replay()
 {
-	if(nodes)
+	if (nodes)
 	{
 		free(nodes); nodes=0;
 		free(beams); beams=0;
@@ -88,25 +88,25 @@ Replay::~Replay()
 
 void *Replay::getWriteBuffer(int type)
 {
-	if(outOfMemory) return 0;
-	if(!nodes)
+	if (outOfMemory) return 0;
+	if (!nodes)
 	{
 		// get memory
 		nodes = (node_simple_t*)calloc(numNodes * numFrames, sizeof(node_simple_t));
-		if(!nodes)
+		if (!nodes)
 		{
 			outOfMemory=true;
 			return 0;
 		}
 		beams = (beam_simple_t*)calloc(numBeams * numFrames, sizeof(beam_simple_t));	
-		if(!beams)
+		if (!beams)
 		{
 			free(nodes); nodes=0;
 			outOfMemory=true;
 			return 0;
 		}
 		times = (unsigned long*)calloc(numFrames, sizeof(unsigned long));
-		if(!times)
+		if (!times)
 		{
 			free(nodes); nodes=0;
 			free(beams); beams=0;
@@ -116,11 +116,11 @@ void *Replay::getWriteBuffer(int type)
 	}
 	void *ptr = 0;
 	times[writeIndex] = replayTimer->getMicroseconds();
-	if(type == 0)
+	if (type == 0)
 	{
 		// nodes
 		ptr = (void *)(nodes + (writeIndex * numNodes));
-	}else if(type == 1)
+	}else if (type == 1)
 	{
 		// beams
 		ptr = (void *)(beams + (writeIndex * numBeams));
@@ -130,9 +130,9 @@ void *Replay::getWriteBuffer(int type)
 
 void Replay::writeDone()
 {
-	if(outOfMemory) return;
+	if (outOfMemory) return;
 	writeIndex++;
-	if(writeIndex == numFrames)
+	if (writeIndex == numFrames)
 	{
 		firstRun = 0;
 		writeIndex = 0;
@@ -160,12 +160,12 @@ void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 	curOffset = offset;
 	updateGUI();
 	
-	if(outOfMemory) return 0;
+	if (outOfMemory) return 0;
 
 	// return buffer pointer
-	if(type == 0)
+	if (type == 0)
 		return (void *)(nodes + delta * numNodes);
-	else if(type == 1)
+	else if (type == 1)
 		return (void *)(beams + delta * numBeams);
 	return 0;
 }
@@ -173,7 +173,7 @@ void *Replay::getReadBuffer(int offset, int type, unsigned long &time)
 void Replay::updateGUI()
 {
 #ifdef USE_MYGUI
-	if(outOfMemory)
+	if (outOfMemory)
 	{
 		txt->setCaption(_L("Out of Memory"));
 		pr->setProgressPosition(0);

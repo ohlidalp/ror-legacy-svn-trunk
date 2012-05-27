@@ -35,7 +35,7 @@ LocalStorage::LocalStorage(AngelScript::asIScriptEngine *engine_in, std::string 
 	// inversed logic, better use a whiteliste instead of a blacklist, so you are on the safe side ;) - tdev
 	std::string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
 	for (std::string::iterator it = fileName_in.begin() ; it < fileName_in.end() ; ++it){
-		if( allowedChars.find(*it) == std::string::npos )
+		if ( allowedChars.find(*it) == std::string::npos )
 			*it = '_';
 	}
 
@@ -73,7 +73,7 @@ void LocalStorage::Release() const
 {
 	// We need to clear the GC flag
 	refCount --;
-	if( refCount == 0 )
+	if ( refCount == 0 )
 		delete this;
 }
 
@@ -101,10 +101,10 @@ LocalStorage &LocalStorage::operator =(LocalStorage &other)
 	sectionName = other.getSection();
 	SettingsBySection::iterator secIt;
 	SettingsBySection osettings = other.getSettings();
-	for(secIt = osettings.begin(); secIt!=osettings.end(); secIt++)
+	for (secIt = osettings.begin(); secIt!=osettings.end(); secIt++)
 	{
 		SettingsMultiMap::iterator setIt;
-		for(setIt = secIt->second->begin(); setIt!=secIt->second->end(); setIt++)
+		for (setIt = secIt->second->begin(); setIt!=secIt->second->end(); setIt++)
 		{
 			setSetting(setIt->first, setIt->second, secIt->first);
 		}
@@ -240,14 +240,14 @@ void LocalStorage::set(std::string &key, const Ogre::Degree &value)
 
 void LocalStorage::saveDict()
 {
-	if(!saved && save())
+	if (!saved && save())
 		saved = true;
 }
 
 bool LocalStorage::loadDict()
 {
 	std::ifstream ifile(filename.c_str());
-	if( !ifile )
+	if ( !ifile )
 		return false;
 
 	load(filename);
@@ -259,8 +259,8 @@ void LocalStorage::eraseKey(std::string &key)
 {
 	std::string sec;
 	parseKey(key, sec);
-	if(mSettings.find(sec) != mSettings.end() && mSettings[sec]->find(key) != mSettings[sec]->end())
-		if(mSettings[sec]->erase(key) > 0)
+	if (mSettings.find(sec) != mSettings.end() && mSettings[sec]->find(key) != mSettings[sec]->end())
+		if (mSettings[sec]->erase(key) > 0)
 			saved = false;
 }
 
@@ -272,11 +272,11 @@ void LocalStorage::deleteAll()
 void LocalStorage::parseKey(std::string &key, std::string &section)
 {
 	size_t dot = key.find(".", 0);
-	if( dot != std::string::npos )
+	if ( dot != std::string::npos )
 	{
 		section = key.substr(0, dot);
 
-		if( !section.length() )
+		if ( !section.length() )
 			section = sectionName;
 
 		key.erase(0, dot+1);

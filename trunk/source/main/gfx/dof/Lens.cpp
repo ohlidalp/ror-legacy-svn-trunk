@@ -132,7 +132,7 @@ void Lens::recalculateDepthOfField(Real& _nearDepth, Real& _focalDepth, Real& _f
   // Adjust the nearDepth relative to the aperture. This is an approximation.
   _nearDepth = min(nearClear - nearClear * mFStop, (Real)0);
 
-  if(mFocalDistance < mHyperfocalLength)
+  if (mFocalDistance < mHyperfocalLength)
   {
     // Calculate the far clear plane
     Real farClear = numerator / (mHyperfocalLength - mFocalDistance);

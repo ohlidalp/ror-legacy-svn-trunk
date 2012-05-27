@@ -41,15 +41,15 @@ bool OgreFramework::configure(void)
 	// You can skip this and use root.restoreConfig() to load configuration
 	// settings if you were sure there are valid ones saved in ogre.cfg
 	bool useogreconfig = BSETTING("USE_OGRE_CONFIG", false);
-	if(hwnd.empty())
+	if (hwnd.empty())
 	{
 		//default mode
 		bool ok = false;
-		if(useogreconfig)
+		if (useogreconfig)
 			ok = m_pRoot->showConfigDialog();
 		else
 			ok = m_pRoot->restoreConfig();
-		if(ok)
+		if (ok)
 		{
 			// If returned true, user clicked OK so initialise
 			// Here we choose to let the system create a default rendering window by passing 'true'
@@ -68,7 +68,7 @@ bool OgreFramework::configure(void)
 	} else
 	{
 		// embedded mode
-		if(!m_pRoot->restoreConfig())
+		if (!m_pRoot->restoreConfig())
 		{
 			showError(_L("Configuration error"), _L("Run the RoRconfig program first."));
 			exit(1);
@@ -127,7 +127,7 @@ bool OgreFramework::loadOgrePlugins(Ogre::String pluginsfile)
 #endif
 	}
 
-	for( Ogre::StringVector::iterator it = pluginList.begin(); it != pluginList.end(); ++it )
+	for ( Ogre::StringVector::iterator it = pluginList.begin(); it != pluginList.end(); ++it )
 	{
 		Ogre::String pluginFilename = pluginDir + (*it);
 		try
@@ -148,7 +148,7 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	this->mainhwnd = mainhwnd;
 	this->embedded = embedded;
 
-	if(!SETTINGS.setupPaths())
+	if (!SETTINGS.setupPaths())
 		return false;
 
 	// load RoR.cfg directly after setting up paths
@@ -213,7 +213,7 @@ void OgreFramework::resized(Ogre::Vector2 size)
 	RoRWindowEventUtilities::triggerResize(m_pRenderWnd);
 
 	// Set the aspect ratio for the new size
-	if(m_pViewport->getCamera())
+	if (m_pViewport->getCamera())
 		m_pViewport->getCamera()->setAspectRatio(Ogre::Real(size.x) / Ogre::Real(size.y));
 }
 //|||||||||||||||||||||||||||||||||||||||||||||||

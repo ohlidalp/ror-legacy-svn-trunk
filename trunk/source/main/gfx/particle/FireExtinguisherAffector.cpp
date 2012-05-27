@@ -61,13 +61,13 @@ namespace Ogre {
 		while(pafi.hasMoreElements())
 		{
 			paf = pafi.getNext();
-			if( paf->getName() == "ExtinguishableFire" )
+			if ( paf->getName() == "ExtinguishableFire" )
 			{
 				mEfaf = (ExtinguishableFireAffectorFactory *)paf;
 				break;
 			}	
 		}
-		if(!mEfaf) LOG("ERROR: Couldn't find an ExtinguishableFireAffectorFactory instance. Was it registered in the content manager?");
+		if (!mEfaf) LOG("ERROR: Couldn't find an ExtinguishableFireAffectorFactory instance. Was it registered in the content manager?");
 	}
 	//-----------------------------------------------------------------------
 	void FireExtinguisherAffector::_affectParticles(ParticleSystem* pSystem, Real timeElapsed)
@@ -79,7 +79,7 @@ namespace Ogre {
 		{
 			fire = (ExtinguishableFireAffector*)affIt.getNext();
 
-			if(fire->isTemplate())
+			if (fire->isTemplate())
 				continue;
 
 			Real squaredRadius = Math::Pow(fire->getRadius(), 2);
@@ -92,17 +92,17 @@ namespace Ogre {
 			{
 				p = pi.getNext();
 
-				if( middlePoint.squaredDistance(p->position) < squaredRadius )
+				if ( middlePoint.squaredDistance(p->position) < squaredRadius )
 				{
 					// This particle is inside the fire, dispose of it in the next update
 					p->timeToLive = 0;
 					++fireHits;
 				}
 			}
-			if(fireHits>0)
+			if (fireHits>0)
 			{
 				Real intensity = fire->reduceIntensity(fireHits*mEffectiveness);
-				if(intensity<0) delete fire->getParticleSystem();
+				if (intensity<0) delete fire->getParticleSystem();
 			}
 		}
 	}

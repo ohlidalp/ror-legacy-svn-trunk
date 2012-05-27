@@ -133,23 +133,23 @@ namespace Ogre {
 	void ShaderParticleRenderer::_updateRenderQueue(RenderQueue* queue, Ogre::list<Particle*>::type& currentParticles, bool cullIndividually)
 	{
 		// be sure that we have enough space in buffers
-		if(!allocateBuffers(currentParticles.size())) {
+		if (!allocateBuffers(currentParticles.size())) {
 			assert(0 && "Cannot allocate buffers");
 			return;
 		}
 
 		// update vertex data
 		mRadius = 0.0f;
-		if(!currentParticles.empty()) {
+		if (!currentParticles.empty()) {
 			HardwareVertexBufferSharedPtr pVB = mVertexData->vertexBufferBinding->getBuffer(0);
 			uchar* pDataVB  = reinterpret_cast<uchar*>(pVB->lock(HardwareBuffer::HBL_DISCARD));
-			for(Ogre::list<Particle*>::type::iterator it=currentParticles.begin(); it!=currentParticles.end(); ++it) {
+			for (Ogre::list<Particle*>::type::iterator it=currentParticles.begin(); it!=currentParticles.end(); ++it) {
 				Particle* pParticle = *it;
 				addParticle(pDataVB, *pParticle);
 				pDataVB += 4 * mVertexSize;
 
 				float fDist = (mParentNode != NULL) ? mParentNode->getPosition().distance(pParticle->position) : pParticle->position.length();
-				if(fDist > mRadius)
+				if (fDist > mRadius)
 					mRadius = fDist;
 			}
 			pVB->unlock();
@@ -263,7 +263,7 @@ namespace Ogre {
 	////////////////////////////////////////////////////////////////////////////
 	//unsigned short ShaderParticleRenderer::getNumWorldTransforms(void) const
 	//{
-	//	if(mKeepInLocalSpace && mParentNode != NULL)
+	//	if (mKeepInLocalSpace && mParentNode != NULL)
 	//	{
 	//		return mParentNode->getNumWorldTransforms();
 	//	} else
@@ -275,7 +275,7 @@ namespace Ogre {
 	//////////////////////////////////////////////////////////////////////////
 	void ShaderParticleRenderer::getWorldTransforms(Matrix4* xform) const
 	{
-		if(mKeepInLocalSpace && mParentNode != NULL)
+		if (mKeepInLocalSpace && mParentNode != NULL)
 		{
 			*xform = mParentNode->_getFullTransform();
 			//mParentNode->getWorldTransforms(xform);
@@ -288,7 +288,7 @@ namespace Ogre {
 	//////////////////////////////////////////////////////////////////////////
 	Real ShaderParticleRenderer::getSquaredViewDepth(const Camera* cam) const
 	{
-		if(mParentNode != NULL) {
+		if (mParentNode != NULL) {
 			return cam->getRealPosition().squaredDistance(mParentNode->getPosition());
 		} else {
 			return 0.0f;
@@ -298,7 +298,7 @@ namespace Ogre {
 	//////////////////////////////////////////////////////////////////////////
 	const LightList& ShaderParticleRenderer::getLights(void) const
 	{
-		if(mParentNode != NULL) {
+		if (mParentNode != NULL) {
 			// Query from parent entity if exists
 			if (mParentIsTagPoint)
 			{
@@ -335,37 +335,37 @@ namespace Ogre {
 	bool ShaderParticleRenderer::allocateBuffers(size_t iNumParticles)
 	{
 		// prepare vertex declaration
-		if(mVertexData->vertexDeclaration->getElementCount() == 0) {
+		if (mVertexData->vertexDeclaration->getElementCount() == 0) {
 			VertexDeclaration* pDecl = mVertexData->vertexDeclaration;
 			size_t ofs = 0;
 			ofs += pDecl->addElement(0, ofs, VET_FLOAT4, VES_POSITION).getSize();				// position
-			if(mVertexFormatColour)
+			if (mVertexFormatColour)
 				ofs += pDecl->addElement(0, ofs, VET_FLOAT4, VES_DIFFUSE).getSize();			// diffuse colour
 
 			// other data are stored in vertex as texture coordinates
 			ushort ix = 0;
-			if(mVertexFormatTexture)
+			if (mVertexFormatTexture)
 				ofs += pDecl->addElement(0, ofs, VET_FLOAT2, VES_TEXTURE_COORDINATES, ix++).getSize();	// general texture coord
 
-			if(mVertexFormatSize)
+			if (mVertexFormatSize)
 				ofs += pDecl->addElement(0, ofs, VET_FLOAT2, VES_TEXTURE_COORDINATES, ix++).getSize();	// particle size
 
-			if(mVertexFormatRotation || mVertexFormatRotationSpeed) {
-				if(mVertexFormatRotation && mVertexFormatRotationSpeed)
+			if (mVertexFormatRotation || mVertexFormatRotationSpeed) {
+				if (mVertexFormatRotation && mVertexFormatRotationSpeed)
 					ofs += pDecl->addElement(0, ofs, VET_FLOAT2, VES_TEXTURE_COORDINATES, ix++).getSize();	// current rotation and rotation speed
 				else
 					ofs += pDecl->addElement(0, ofs, VET_FLOAT1, VES_TEXTURE_COORDINATES, ix++).getSize();	// current rotation or rotation speed
 			}
 
-			if(mVertexFormatDirection)
+			if (mVertexFormatDirection)
 				ofs += pDecl->addElement(0, ofs, VET_FLOAT3, VES_TEXTURE_COORDINATES, ix++).getSize();	// particle direction (as speed)
 
 			// add packed times
 			size_t iNumTimes = 0;
-			if(mVertexFormatTTL) iNumTimes++;
-			if(mVertexFormatTotalTTL) iNumTimes++;
-			if(mVertexFormatTimeFragment) iNumTimes++;
-			if(mVertexFormatTimeFragmentInv) iNumTimes++;
+			if (mVertexFormatTTL) iNumTimes++;
+			if (mVertexFormatTotalTTL) iNumTimes++;
+			if (mVertexFormatTimeFragment) iNumTimes++;
+			if (mVertexFormatTimeFragmentInv) iNumTimes++;
 			switch(iNumTimes) {
 				case 1:
 					ofs += pDecl->addElement(0, ofs, VET_FLOAT1, VES_TEXTURE_COORDINATES, ix++).getSize();
@@ -390,14 +390,14 @@ namespace Ogre {
 		}
 
 		Ogre::HardwareVertexBufferSharedPtr pVB;
-		if(mVertexData->vertexBufferBinding->isBufferBound(0))
+		if (mVertexData->vertexBufferBinding->isBufferBound(0))
 			pVB = mVertexData->vertexBufferBinding->getBuffer(0);
 
 		// prepare vertex buffer
-		if(pVB.isNull() || pVB->getNumVertices() < iNumParticles * 4) {
+		if (pVB.isNull() || pVB->getNumVertices() < iNumParticles * 4) {
 			assert(iNumParticles * 4 < 65536); // we are using 16bit index buffer
 			pVB = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(mVertexSize, 4 * iNumParticles, Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-			if(pVB.isNull())
+			if (pVB.isNull())
 				return false;
 
 			mVertexData->vertexBufferBinding->setBinding(0, pVB);
@@ -405,16 +405,16 @@ namespace Ogre {
 
 		// prepare index buffer
 		Ogre::HardwareIndexBufferSharedPtr pIB = mIndexData->indexBuffer;
-		if(pIB.isNull() || pIB->getNumIndexes() < iNumParticles * 6) {
+		if (pIB.isNull() || pIB->getNumIndexes() < iNumParticles * 6) {
 			pIB = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, iNumParticles * 6, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-			if(pIB.isNull())
+			if (pIB.isNull())
 				return false;
 
 			mIndexData->indexBuffer = pIB;
 
 			// fill
 			Ogre::uint16* pDataIB = reinterpret_cast<Ogre::uint16*>(pIB->lock(Ogre::HardwareBuffer::HBL_NORMAL));
-			for(Ogre::uint16 k=0; k<static_cast<Ogre::uint16>(iNumParticles); ++k) {
+			for (Ogre::uint16 k=0; k<static_cast<Ogre::uint16>(iNumParticles); ++k) {
 				pDataIB[0] = k*4 + 0;
 				pDataIB[1] = k*4 + 1;
 				pDataIB[2] = k*4 + 2;
@@ -435,7 +435,7 @@ namespace Ogre {
 	{
 		// position
 		size_t ofs = 0;
-		for(int k=0; k<4; ++k) {
+		for (int k=0; k<4; ++k) {
 			float* pPosition = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 			pPosition[0] = particle.position.x;
 			pPosition[1] = particle.position.y;
@@ -445,8 +445,8 @@ namespace Ogre {
 		ofs += sizeof(float) * 4;
 
 		// diffuse colour
-		if(mVertexFormatColour) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatColour) {
+			for (int k=0; k<4; ++k) {
 				float* pColour = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				pColour[0] = particle.colour.r;
 				pColour[1] = particle.colour.g;
@@ -457,8 +457,8 @@ namespace Ogre {
 		}
 
 		// general texture coordinates
-		if(mVertexFormatTexture) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatTexture) {
+			for (int k=0; k<4; ++k) {
 				float* pTexCoord = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				pTexCoord[0] = mTexCoordTable[k].x;
 				pTexCoord[1] = mTexCoordTable[k].y;
@@ -467,15 +467,15 @@ namespace Ogre {
 		}
 
 		// particle size
-		if(mVertexFormatSize) {
+		if (mVertexFormatSize) {
 			float w = mDefaultParticleSize.x;
 			float h = mDefaultParticleSize.y;
-			if(particle.hasOwnDimensions()) {
+			if (particle.hasOwnDimensions()) {
 				w = particle.getOwnWidth();
 				h = particle.getOwnHeight();
 			}
 
-			for(int k=0; k<4; ++k) {
+			for (int k=0; k<4; ++k) {
 				float* pSize = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				pSize[0] = w;
 				pSize[1] = h;
@@ -484,8 +484,8 @@ namespace Ogre {
 		}
 
 		// particle rotation
-		if(mVertexFormatRotation) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatRotation) {
+			for (int k=0; k<4; ++k) {
 				float* pRotation = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pRotation = particle.rotation.valueRadians();
 			}
@@ -493,8 +493,8 @@ namespace Ogre {
 		}
 
 		// particle rotation speed
-		if(mVertexFormatRotationSpeed) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatRotationSpeed) {
+			for (int k=0; k<4; ++k) {
 				float* pRotation = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pRotation = particle.rotationSpeed.valueRadians();
 			}
@@ -502,8 +502,8 @@ namespace Ogre {
 		}
 
 		// direction
-		if(mVertexFormatDirection) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatDirection) {
+			for (int k=0; k<4; ++k) {
 				float* pDirection = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				pDirection[0] = particle.direction.x;
 				pDirection[1] = particle.direction.y;
@@ -513,8 +513,8 @@ namespace Ogre {
 		}
 		
 		// time to live
-		if(mVertexFormatTTL) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatTTL) {
+			for (int k=0; k<4; ++k) {
 				float* pTime = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pTime = particle.timeToLive;
 			}
@@ -522,8 +522,8 @@ namespace Ogre {
 		}
 		
 		// total time to live
-		if(mVertexFormatTTL) {
-			for(int k=0; k<4; ++k) {
+		if (mVertexFormatTTL) {
+			for (int k=0; k<4; ++k) {
 				float* pTime = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pTime = particle.totalTimeToLive;
 			}
@@ -531,9 +531,9 @@ namespace Ogre {
 		}
 		
 		// time fragment
-		if(mVertexFormatTimeFragment) {
+		if (mVertexFormatTimeFragment) {
 			float fFrag = particle.timeToLive / particle.totalTimeToLive;
-			for(int k=0; k<4; ++k) {
+			for (int k=0; k<4; ++k) {
 				float* pTime = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pTime = fFrag;
 			}
@@ -541,9 +541,9 @@ namespace Ogre {
 		}
 		
 		// inverse time fragment
-		if(mVertexFormatTimeFragmentInv) {
+		if (mVertexFormatTimeFragmentInv) {
 			float fFrag = 1.0f - particle.timeToLive / particle.totalTimeToLive;
-			for(int k=0; k<4; ++k) {
+			for (int k=0; k<4; ++k) {
 				float* pTime = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 				*pTime = fFrag;
 			}
@@ -553,7 +553,7 @@ namespace Ogre {
 		// custom parameter
 		ParticleCustomParam* pCustom = static_cast<ParticleCustomParam*>(particle.getVisualData());
 		const Vector4& customData = pCustom != NULL ? pCustom->paramValue : Vector4::ZERO;
-		for(int k=0; k<4; ++k) {
+		for (int k=0; k<4; ++k) {
 			float* pParams = reinterpret_cast<float*>(pDataVB + k*mVertexSize + ofs);
 			pParams[0] = customData.x;
 			pParams[1] = customData.y;

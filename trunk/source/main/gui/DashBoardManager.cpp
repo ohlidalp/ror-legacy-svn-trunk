@@ -117,9 +117,9 @@ DashBoardManager::DashBoardManager(void) : visible(true), free_dashboard(0)
 DashBoardManager::~DashBoardManager(void)
 {
 	// free all objects
-	for(int i = 0; i < free_dashboard; i++)
+	for (int i = 0; i < free_dashboard; i++)
 	{
-		if(!dashboards[i]) continue;
+		if (!dashboards[i]) continue;
 
 		delete(dashboards[i]);
 		dashboards[i] = 0;
@@ -129,9 +129,9 @@ DashBoardManager::~DashBoardManager(void)
 int DashBoardManager::getLinkIDForName(Ogre::String &str)
 {
 	const char *s = str.c_str();
-	for(int i = 0; i < DD_MAX; i++)
+	for (int i = 0; i < DD_MAX; i++)
 	{
-		if(!strcmp(data[i].name, s))
+		if (!strcmp(data[i].name, s))
 			return i;
 	}
 	return -1;
@@ -139,7 +139,7 @@ int DashBoardManager::getLinkIDForName(Ogre::String &str)
 
 int DashBoardManager::loadDashBoard( Ogre::String filename, bool textureLayer )
 {
-	if(free_dashboard >= MAX_DASH)
+	if (free_dashboard >= MAX_DASH)
 	{
 		LOG("maximum amount of dashboards per truck reached, discarding the rest: " + TOSTRING(MAX_DASH));
 		return 1;
@@ -157,7 +157,7 @@ int DashBoardManager::loadDashBoard( Ogre::String filename, bool textureLayer )
 void DashBoardManager::update(float &dt)
 {
 	// TODO: improve logic: only update visible dashboards
-	for(int i=0; i < free_dashboard; i++)
+	for (int i=0; i < free_dashboard; i++)
 	{
 		dashboards[i]->update(dt);
 	}
@@ -165,7 +165,7 @@ void DashBoardManager::update(float &dt)
 
 void DashBoardManager::updateFeatures()
 {
-	for(int i=0; i < free_dashboard; i++)
+	for (int i=0; i < free_dashboard; i++)
 	{
 		dashboards[i]->updateFeatures();
 	}
@@ -188,25 +188,25 @@ float DashBoardManager::getNumeric( size_t key )
 void DashBoardManager::setVisible( bool visibility )
 {
 	visible = visibility;
-	for(int i=0; i < free_dashboard; i++)
+	for (int i=0; i < free_dashboard; i++)
 	{
-		if(!dashboards[i]->getIsTextureLayer())
+		if (!dashboards[i]->getIsTextureLayer())
 			dashboards[i]->setVisible(visibility);
 	}
 }
 
 void DashBoardManager::setVisible3d( bool visibility )
 {
-	for(int i=0; i < free_dashboard; i++)
+	for (int i=0; i < free_dashboard; i++)
 	{
-		if(dashboards[i]->getIsTextureLayer())
+		if (dashboards[i]->getIsTextureLayer())
 			dashboards[i]->setVisible(visibility, false);
 	}
 }
 
 void DashBoardManager::windowResized()
 {
-	for(int i=0; i < free_dashboard; i++)
+	for (int i=0; i < free_dashboard; i++)
 	{
 		dashboards[i]->windowResized();
 	}
@@ -221,7 +221,7 @@ DashBoard::DashBoard(DashBoardManager *manager, Ogre::String filename, bool _tex
 	memset(&controls, 0, sizeof(controls));
 	loadLayout(filename);
 	// hide first
-	if(mainWidget) mainWidget->setVisible(false);
+	if (mainWidget) mainWidget->setVisible(false);
 }
 
 DashBoard::~DashBoard()
@@ -232,7 +232,7 @@ DashBoard::~DashBoard()
 void DashBoard::updateFeatures()
 {
 	// this hides / shows parts of the gui depending on the vehicle features
-	for(int i = 0; i < free_controls; i++)
+	for (int i = 0; i < free_controls; i++)
 	{
 		bool enabled = manager->getEnabled(controls[i].linkID);
 
@@ -243,35 +243,35 @@ void DashBoard::updateFeatures()
 void DashBoard::update( float &dt )
 {
 	// walk all controls and animate them
-	for(int i = 0; i < free_controls; i++)
+	for (int i = 0; i < free_controls; i++)
 	{
 		// get its value from its linkage
-		if(controls[i].animationType == ANIM_ROTATE)
+		if (controls[i].animationType == ANIM_ROTATE)
 		{
 			// get the value
 			float val = manager->getNumeric(controls[i].linkID);
 			// calculate the angle
 			float angle = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
 
-			if(fabs(val - controls[i].last) < 0.2f) continue;
+			if (fabs(val - controls[i].last) < 0.2f) continue;
 			controls[i].last = val;
 
 			// enforce limits
 			if     (angle < controls[i].wmin) angle = controls[i].wmin;
-			else if(angle > controls[i].wmax) angle = controls[i].wmax;
+			else if (angle > controls[i].wmax) angle = controls[i].wmax;
 			// rotate finally
 			controls[i].rotImg->setAngle(Ogre::Degree(angle).valueRadians());
 		}
-		else if(controls[i].animationType == ANIM_LAMP)
+		else if (controls[i].animationType == ANIM_LAMP)
 		{
 			// or a lamp?
 			bool state = false;
 			// conditional
-			if(controls[i].condition == CONDITION_GREATER)
+			if (controls[i].condition == CONDITION_GREATER)
 			{
 				float val = manager->getNumeric(controls[i].linkID);
 				state = (val > controls[i].conditionArgument);
-			} else if(controls[i].condition == CONDITION_LESSER)
+			} else if (controls[i].condition == CONDITION_LESSER)
 			{
 				float val = manager->getNumeric(controls[i].linkID);
 				state = (val < controls[i].conditionArgument);
@@ -280,80 +280,80 @@ void DashBoard::update( float &dt )
 				state = (manager->getNumeric(controls[i].linkID) > 0);
 			}
 
-			if(state == controls[i].lastState) continue;
+			if (state == controls[i].lastState) continue;
 			controls[i].lastState = state;
 
 			// switch states
-			if(state)
+			if (state)
 			{
 				controls[i].img->setImageTexture(String(controls[i].texture) + "-on.png");
 			} else
 			{
 				controls[i].img->setImageTexture(String(controls[i].texture) + "-off.png");
 			}
-		} else if(controls[i].animationType == ANIM_SERIES)
+		} else if (controls[i].animationType == ANIM_SERIES)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
 
 			String fn = String(controls[i].texture) + String("-") + TOSTRING((int)val) + String(".png");
 
-			if(fabs(val - controls[i].last) < 0.2f) continue;
+			if (fabs(val - controls[i].last) < 0.2f) continue;
 			controls[i].last = val;
 
 			controls[i].img->setImageTexture(fn);
 		}
-		else if(controls[i].animationType == ANIM_SCALE)
+		else if (controls[i].animationType == ANIM_SCALE)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
 
-			if(fabs(val - controls[i].last) < 0.2f) continue;
+			if (fabs(val - controls[i].last) < 0.2f) continue;
 			controls[i].last = val;
 
 			float scale = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
-			if(controls[i].direction == DIRECTION_UP)
+			if (controls[i].direction == DIRECTION_UP)
 			{
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top - scale);
 				controls[i].widget->setSize(controls[i].initialSize.width, controls[i].initialSize.height + scale);
-			} else if(controls[i].direction == DIRECTION_DOWN)
+			} else if (controls[i].direction == DIRECTION_DOWN)
 			{
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top);
 				controls[i].widget->setSize(controls[i].initialSize.width, controls[i].initialSize.height + scale);
-			} else if(controls[i].direction == DIRECTION_LEFT)
+			} else if (controls[i].direction == DIRECTION_LEFT)
 			{
 				controls[i].widget->setPosition(controls[i].initialPosition.left - scale, controls[i].initialPosition.top);
 				controls[i].widget->setSize(controls[i].initialSize.width + scale, controls[i].initialSize.height);
-			} else if(controls[i].direction == DIRECTION_RIGHT)
+			} else if (controls[i].direction == DIRECTION_RIGHT)
 			{
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top);
 				controls[i].widget->setSize(controls[i].initialSize.width + scale, controls[i].initialSize.height);
 			}
 
-		} else if(controls[i].animationType == ANIM_TRANSLATE)
+		} else if (controls[i].animationType == ANIM_TRANSLATE)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
 
-			if(fabs(val - controls[i].last) < 0.2f) continue;
+			if (fabs(val - controls[i].last) < 0.2f) continue;
 			controls[i].last = val;
 
 			float translation = (val - controls[i].vmin) * (controls[i].wmax - controls[i].wmin) / (controls[i].vmax - controls[i].vmin) + controls[i].wmin;
-			if(controls[i].direction == DIRECTION_UP)
+			if (controls[i].direction == DIRECTION_UP)
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top - translation);
-			else if(controls[i].direction == DIRECTION_DOWN)
+			else if (controls[i].direction == DIRECTION_DOWN)
 				controls[i].widget->setPosition(controls[i].initialPosition.left, controls[i].initialPosition.top + translation);
-			else if(controls[i].direction == DIRECTION_LEFT)
+			else if (controls[i].direction == DIRECTION_LEFT)
 				controls[i].widget->setPosition(controls[i].initialPosition.left - translation, controls[i].initialPosition.top);
-			else if(controls[i].direction == DIRECTION_RIGHT)
+			else if (controls[i].direction == DIRECTION_RIGHT)
 				controls[i].widget->setPosition(controls[i].initialPosition.left + translation, controls[i].initialPosition.top);
 		}
-		else if(controls[i].animationType == ANIM_TEXTFORMAT)
+		else if (controls[i].animationType == ANIM_TEXTFORMAT)
 		{
 			float val = manager->getNumeric(controls[i].linkID);
 
-			if(fabs(val - controls[i].last) < 0.2f) continue;
+			if (fabs(val - controls[i].last) < 0.2f) continue;
 			controls[i].last = val;
 
 			MyGUI::UString s;
-			if(strlen(controls[i].format) == 0)
+			if (strlen(controls[i].format) == 0)
 			{
 				s = Ogre::StringConverter::toString(val);
 			} else
@@ -365,7 +365,7 @@ void DashBoard::update( float &dt )
 
 			controls[i].txt->setCaption(s);
 		}
-		else if(controls[i].animationType == ANIM_TEXTSTRING)
+		else if (controls[i].animationType == ANIM_TEXTSTRING)
 		{
 			char *val = manager->getChar(controls[i].linkID);
 			controls[i].txt->setCaption(MyGUI::UString(val));
@@ -375,13 +375,13 @@ void DashBoard::update( float &dt )
 
 void DashBoard::windowResized()
 {
-	if(!mainWidget) return;
+	if (!mainWidget) return;
 	mainWidget->setPosition(0, 0);
-	if(textureLayer)
+	if (textureLayer)
 	{
 		// texture layers are independent from the screen size, but rather from the layer texture size
 		TexturePtr tex = TextureManager::getSingleton().getByName("RTTTexture1");
-		if(!tex.isNull())
+		if (!tex.isNull())
 			mainWidget->setSize(tex->getWidth(), tex->getHeight());
 	} else
 	{
@@ -400,17 +400,17 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 	// make it unclickable
 	w->setUserString("interactive", "0");
 
-	if(!debug.empty())
+	if (!debug.empty())
 	{
 		w->setVisible(false);
 		return;
 	}
 
 	// find the root widget and ignore debug widgets
-	if(name.size() > prefix.size())
+	if (name.size() > prefix.size())
 	{
 		std::string prefixLessName = name.substr(prefix.size());
-		if(prefixLessName == "_Main")
+		if (prefixLessName == "_Main")
 		{
 			mainWidget = (MyGUI::WindowPtr)w;
 			// resize it
@@ -418,7 +418,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 		}
 
 		// ignore debug widgets
-		if(prefixLessName == "DEBUG")
+		if (prefixLessName == "DEBUG")
 		{
 			w->setVisible(false);
 			return;
@@ -427,13 +427,13 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 
 	
 	// animations for this control?
-	if(!linkArgs.empty())
+	if (!linkArgs.empty())
 	{
 
 		layoutLink_t ctrl;
 		memset(&ctrl, 0, sizeof(ctrl));
 
-		if(!name.empty()) strncpy(ctrl.name, name.c_str(), 255);
+		if (!name.empty()) strncpy(ctrl.name, name.c_str(), 255);
 		ctrl.widget          = w;
 		ctrl.initialSize     = w->getSize();
 		ctrl.initialPosition = w->getPosition();
@@ -446,17 +446,17 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 			replaceString(linkArgs, "&gt;", ">");
 			replaceString(linkArgs, "&lt;", "<");
 			String linkName = "";
-			if(linkArgs.empty())
+			if (linkArgs.empty())
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): empty Link");
 				return;
 			}
 			// conditional checks
 			// TODO: improve the logic, this is crap ...
-			if(linkArgs.find(">") != linkArgs.npos)
+			if (linkArgs.find(">") != linkArgs.npos)
 			{
 				Ogre::StringVector args = Ogre::StringUtil::split(linkArgs, ">");
-				if(args.size() == 2)
+				if (args.size() == 2)
 				{
 					linkName = args[0];
 					ctrl.conditionArgument = StringConverter::parseReal(args[1]);
@@ -466,10 +466,10 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 					LOG("Dashboard ("+filename+"/"+name+"): error in conditional Link: " + linkArgs);
 					return;
 				}
-			} else if(linkArgs.find("<") != linkArgs.npos )
+			} else if (linkArgs.find("<") != linkArgs.npos )
 			{
 				Ogre::StringVector args = Ogre::StringUtil::split(linkArgs, "<");
-				if(args.size() == 2)
+				if (args.size() == 2)
 				{
 					linkName = args[0];
 					ctrl.conditionArgument = StringConverter::parseReal(args[1]);
@@ -488,7 +488,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 
 			// now try to get the enum id for it
 			int linkID = manager->getLinkIDForName(linkName);
-			if(linkID < 0)
+			if (linkID < 0)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): unknown Link: " + linkName);
 				return;
@@ -503,31 +503,31 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 		ctrl.vmax = StringConverter::parseReal(w->getUserString("vmax"));
 
 		String texture = w->getUserString("texture");
-		if(!texture.empty()) strncpy(ctrl.texture, texture.c_str(), 255);
+		if (!texture.empty()) strncpy(ctrl.texture, texture.c_str(), 255);
 
 		String format = w->getUserString("format");
-		if(!format.empty()) strncpy(ctrl.format, format.c_str(), 255);
+		if (!format.empty()) strncpy(ctrl.format, format.c_str(), 255);
 
 		String direction = w->getUserString("direction");
-		if(direction == "right")     ctrl.direction = DIRECTION_RIGHT;
-		else if(direction == "left") ctrl.direction = DIRECTION_LEFT;
-		else if(direction == "down") ctrl.direction = DIRECTION_DOWN;
-		else if(direction == "up")   ctrl.direction = DIRECTION_UP;
-		else if(!direction.empty())
+		if (direction == "right")     ctrl.direction = DIRECTION_RIGHT;
+		else if (direction == "left") ctrl.direction = DIRECTION_LEFT;
+		else if (direction == "down") ctrl.direction = DIRECTION_DOWN;
+		else if (direction == "up")   ctrl.direction = DIRECTION_UP;
+		else if (!direction.empty())
 		{
 			LOG("Dashboard ("+filename+"/"+name+"): unknown direction: " + direction);
 			return;
 
 		}
 		// then specializations
-		if(anim == "rotate")
+		if (anim == "rotate")
 		{
 			ctrl.animationType = ANIM_ROTATE;
 			// check if its the correct control
 			// try to cast, will throw
 			// and if the link is a float
 			/*
-			if(manager->getDataType(ctrl.linkID) != DC_FLOAT)
+			if (manager->getDataType(ctrl.linkID) != DC_FLOAT)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): Rotating controls can only link to floats");
 				continue;
@@ -543,7 +543,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 				LOG("Dashboard ("+filename+"/"+name+"): Rotating controls must use the RotatingSkin");
 				return;
 			}
-			if(!ctrl.rotImg)
+			if (!ctrl.rotImg)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading rotation control");
 				return;
@@ -553,35 +553,35 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 			ctrl.rotImg->setCenter(MyGUI::IntPoint(w->getHeight() * 0.5f, w->getWidth() * 0.5f));
 
 		}
-		else if(anim == "scale")
+		else if (anim == "scale")
 		{
 			ctrl.animationType = ANIM_SCALE;
-			if(ctrl.direction == DIRECTION_NONE)
+			if (ctrl.direction == DIRECTION_NONE)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): direction empty: scale needs a direction");
 				return;
 			}
 		}		
-		else if(anim == "translate")
+		else if (anim == "translate")
 		{
 			ctrl.animationType = ANIM_TRANSLATE;
-			if(ctrl.direction == DIRECTION_NONE)
+			if (ctrl.direction == DIRECTION_NONE)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): direction empty: translate needs a direction");
 				return;
 			}
 		}
-		else if(anim == "series")
+		else if (anim == "series")
 		{
 			ctrl.animationType = ANIM_SERIES;
 			ctrl.img = (MyGUI::ImageBox *)w; //w->getSubWidgetMain()->castType<MyGUI::ImageBox>();
-			if(!ctrl.img)
+			if (!ctrl.img)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading series control");
 				return;
 			}
 		}
-		else if(anim == "textcolor" || anim == "textcolour")
+		else if (anim == "textcolor" || anim == "textcolour")
 		{
 			ctrl.animationType = ANIM_TEXTCOLOR;
 
@@ -596,7 +596,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 				return;
 			}
 		}
-		else if(anim == "textformat")
+		else if (anim == "textformat")
 		{
 			// try to cast, will throw
 			try
@@ -610,7 +610,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 			}
 			ctrl.animationType = ANIM_TEXTFORMAT;
 		}
-		else if(anim == "textstring")
+		else if (anim == "textstring")
 		{
 			// try to cast, will throw
 			try
@@ -624,7 +624,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 			}
 			ctrl.animationType = ANIM_TEXTSTRING;
 		}
-		else if(anim == "lamp")
+		else if (anim == "lamp")
 		{
 			// try to cast, will throw
 			/*
@@ -642,7 +642,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 			*/
 			ctrl.animationType = ANIM_LAMP;
 			ctrl.img = (MyGUI::ImageBox *)w; //w->getSubWidgetMain()->castType<MyGUI::ImageBox>();
-			if(!ctrl.img)
+			if (!ctrl.img)
 			{
 				LOG("Dashboard ("+filename+"/"+name+"): error loading Lamp control");
 				return;
@@ -652,7 +652,7 @@ void DashBoard::loadLayoutRecursive(MyGUI::WidgetPtr w)
 
 		controls[free_controls] = ctrl;
 		free_controls++;
-		if(free_controls >= MAX_CONTROLS)
+		if (free_controls >= MAX_CONTROLS)
 		{
 			LOG("maximum amount of controls reached, discarding the rest: " + TOSTRING(MAX_CONTROLS));
 			return;
@@ -677,18 +677,18 @@ void DashBoard::loadLayout( Ogre::String filename )
 	}
 
 	// if this thing should be rendered to texture, relocate the main window to the RTT layer
-	if(textureLayer && mainWidget)
+	if (textureLayer && mainWidget)
 		mainWidget->detachFromWidget("RTTLayer1");
 }
 
 void DashBoard::setVisible(bool v, bool smooth)
 {
-	if(!mainWidget) return;
+	if (!mainWidget) return;
 	visible = v;
 
 	/*
 	// buggy for some reason
-	if(smooth)
+	if (smooth)
 		mainWidget->setVisibleSmooth(v);
 	*/
 	mainWidget->setVisible(v);

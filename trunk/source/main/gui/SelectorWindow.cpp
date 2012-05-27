@@ -119,14 +119,14 @@ void SelectorWindow::notifyWindowChangeCoord(MyGUI::Window* _sender)
 
 void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI::KeyCode _key, MyGUI::Char _char)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	int cid = (int)mTypeComboBox->getIndexSelected();
 	int iid = (int)mModelList->getIndexSelected();
 
 	bool searching = (mTypeComboBox->getCaption() == _L("Search Results"));
 
 	// search
-	if(_key == MyGUI::KeyCode::Slash)
+	if (_key == MyGUI::KeyCode::Slash)
 	{
 		MyGUI::InputManager::getInstance().setKeyFocusWidget(mSearchLineEdit);
 		mSearchLineEdit->setCaption("");
@@ -134,10 +134,10 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	}
 
 	// category
-	if(_key == MyGUI::KeyCode::ArrowLeft && !searching)
+	if (_key == MyGUI::KeyCode::ArrowLeft && !searching)
 	{
 		int newitem = cid - 1;
-		if(cid == 0)
+		if (cid == 0)
 			newitem = (int)mTypeComboBox->getItemCount() - 1;
 		try
 		{
@@ -149,10 +149,10 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 		}
 		eventComboChangePositionTypeComboBox(mTypeComboBox, newitem);
 
-	} else if(_key == MyGUI::KeyCode::ArrowRight && !searching)
+	} else if (_key == MyGUI::KeyCode::ArrowRight && !searching)
 	{
 		int newitem = cid + 1;
-		if(cid == (int)mTypeComboBox->getItemCount() - 1)
+		if (cid == (int)mTypeComboBox->getItemCount() - 1)
 			newitem = 0;
 		try
 		{
@@ -166,10 +166,10 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 	}
 
 	// items
-	else if(_key == MyGUI::KeyCode::ArrowUp)
+	else if (_key == MyGUI::KeyCode::ArrowUp)
 	{
 		int newitem = iid - 1;
-		if(iid == 0)
+		if (iid == 0)
 			newitem = (int)mModelList->getItemCount() - 1;
 		try
 		{
@@ -181,11 +181,11 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 		}
 		eventListChangePositionModelList(mModelList, newitem);
 		// fix cursor position
-		if(searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
-	} else if(_key == MyGUI::KeyCode::ArrowDown)
+		if (searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
+	} else if (_key == MyGUI::KeyCode::ArrowDown)
 	{
 		int newitem = iid + 1;
-		if(iid == (int)mModelList->getItemCount() - 1)
+		if (iid == (int)mModelList->getItemCount() - 1)
 			newitem = 0;
 		try
 		{
@@ -197,15 +197,15 @@ void SelectorWindow::eventKeyButtonPressed_Main(MyGUI::WidgetPtr _sender, MyGUI:
 		}
 		eventListChangePositionModelList(mModelList, newitem);
 		// fix cursor position
-		if(searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
+		if (searching) mSearchLineEdit->setTextCursor(mSearchLineEdit->getTextLength());
 	}
 
 	// select key
-	else if(mLoaderType != LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedTruck)
+	else if (mLoaderType != LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedTruck)
 	{
 		selectionDone();
 
-	} else if(mLoaderType == LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedSkin)
+	} else if (mLoaderType == LT_SKIN && _key == MyGUI::KeyCode::Return && mSelectedSkin)
 	{
 		selectionDone();
 	}
@@ -226,7 +226,7 @@ void SelectorWindow::eventMouseButtonClickCancelButton(MyGUI::WidgetPtr _sender)
 
 void SelectorWindow::eventComboChangePositionTypeComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	try
 	{
 		int categoryID = *mTypeComboBox->getItemDataAt<int>(_index);
@@ -245,9 +245,9 @@ void SelectorWindow::eventListChangePositionModelListAccept(MyGUI::ListPtr _send
 
 void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, size_t _index)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	
-	if(_index < 0 || _index >= mModelList->getItemCount()) return;
+	if (_index < 0 || _index >= mModelList->getItemCount()) return;
 	
 	try
 	{
@@ -260,7 +260,7 @@ void SelectorWindow::eventListChangePositionModelList(MyGUI::ListPtr _sender, si
 
 void SelectorWindow::eventComboAcceptConfigComboBox(MyGUI::ComboBoxPtr _sender, size_t _index)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	try
 	{
 		mTruckConfigs.clear();
@@ -278,7 +278,7 @@ void SelectorWindow::getData()
 	mModelList->removeAllItems();
 	mEntries.clear();
 
-	if(mLoaderType == LT_SKIN)
+	if (mLoaderType == LT_SKIN)
 	{
 		// skin specific stuff
 		mTypeComboBox->setEnabled(false);
@@ -289,7 +289,7 @@ void SelectorWindow::getData()
 		mModelList->addItem(_L("Default Skin"), 0);
 		{
 			int i = 1;
-			for(std::vector<Skin *>::iterator it = mCurrentSkins.begin(); it != mCurrentSkins.end(); it++, i++)
+			for (std::vector<Skin *>::iterator it = mCurrentSkins.begin(); it != mCurrentSkins.end(); it++, i++)
 			{
 				mModelList->addItem((*it)->getName(), i);
 			}
@@ -305,40 +305,40 @@ void SelectorWindow::getData()
 
 	int ts = getTimeStamp();
 	std::vector<Cache_Entry> *entries = CACHE.getEntries();
-	for(std::vector<Cache_Entry>::iterator it = entries->begin(); it!=entries->end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = entries->begin(); it!=entries->end(); it++)
 	{
 		// category hidden
-		if(it->categoryid == CacheSystem::CID_Unsorted)
+		if (it->categoryid == CacheSystem::CID_Unsorted)
 			continue;
 
 		//printf("category: %d\n", it->categoryid);
 		bool add = false;
-		if(it->fext=="terrn")
+		if (it->fext=="terrn")
 			add = (mLoaderType == LT_Terrain);
-		else if(it->fext=="truck")
+		else if (it->fext=="truck")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Truck	|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
-		else if(it->fext=="car")
+		else if (it->fext=="car")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Car		|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
-		else if(it->fext=="boat")
+		else if (it->fext=="boat")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Boat																	|| mLoaderType == LT_NetworkWithBoat);
-		else if(it->fext=="airplane")
+		else if (it->fext=="airplane")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Airplane								|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
-		else if(it->fext=="trailer")
+		else if (it->fext=="trailer")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Trailer	|| mLoaderType == LT_Extension);
-		else if(it->fext=="train")
+		else if (it->fext=="train")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Train);
-		else if(it->fext=="load")
+		else if (it->fext=="load")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Load		|| mLoaderType == LT_Extension);
 
-		if(!add)
+		if (!add)
 			continue;
 
 		// remove invalid category ID's
-		if(it->categoryid >= CacheSystem::CID_Max)
+		if (it->categoryid >= CacheSystem::CID_Max)
 			it->categoryid = -1;
 
 		// category unsorted
-		if(it->categoryid == -1)
+		if (it->categoryid == -1)
 			it->categoryid = CacheSystem::CID_Unsorted;
 
 		mCategoryUsage[it->categoryid]++;
@@ -347,25 +347,25 @@ void SelectorWindow::getData()
 		mCategoryUsage[CacheSystem::CID_All]++;
 
 		// category fresh
-		if(ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
+		if (ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
 			mCategoryUsage[CacheSystem::CID_Fresh]++;
 
 		mEntries.push_back(*it);
 	}
 	int tally_categories = 0, current_category = 0;
 	std::map<int, Category_Entry> *cats = CACHE.getCategories();
-	for(std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
+	for (std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
 	{
-		if(mCategoryUsage[itc->second.number] > 0)
+		if (mCategoryUsage[itc->second.number] > 0)
 			tally_categories++;
 	}
-	for(std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
+	for (std::map<int, Category_Entry>::iterator itc = cats->begin(); itc!=cats->end(); itc++)
 	{
 		int num_elements = mCategoryUsage[itc->second.number];
-		if(num_elements > 0)
+		if (num_elements > 0)
 		{
 			UTFString title = _L("unknown");
-			if(!itc->second.title.empty())
+			if (!itc->second.title.empty())
 			{
 				title = _L(itc->second.title.c_str());
 			}
@@ -373,7 +373,7 @@ void SelectorWindow::getData()
 			mTypeComboBox->addItem(convertToMyGUIString(txt), itc->second.number);
 		}
 	}
-	if(tally_categories > 0)
+	if (tally_categories > 0)
 	{
 		try
 		{
@@ -389,44 +389,44 @@ void SelectorWindow::getData()
 
 bool SelectorWindow::searchCompare(String searchString, Cache_Entry *ce)
 {
-	if(searchString.find(":") == String::npos)
+	if (searchString.find(":") == String::npos)
 	{
 		// normal search
 
 		// the name
 		String dname_lower = ce->dname;
 		StringUtil::toLowerCase(dname_lower);
-		if(dname_lower.find(searchString) != String::npos)
+		if (dname_lower.find(searchString) != String::npos)
 			return true;
 		
 		// the filename
 		String fname_lower = ce->fname;
 		StringUtil::toLowerCase(fname_lower);
-		if(fname_lower.find(searchString) != String::npos)
+		if (fname_lower.find(searchString) != String::npos)
 			return true;
 
 		// the description
 		String desc = ce->description;
 		StringUtil::toLowerCase(desc);
-		if(desc.find(searchString) != String::npos)
+		if (desc.find(searchString) != String::npos)
 			return true;
 
 		// the authors
-		if(!ce->authors.empty())
+		if (!ce->authors.empty())
 		{
 			std::vector<authorinfo_t>::const_iterator it;
-			for(it = ce->authors.begin(); it != ce->authors.end(); it++)
+			for (it = ce->authors.begin(); it != ce->authors.end(); it++)
 			{
 				// author name
 				String aname = it->name;
 				StringUtil::toLowerCase(aname);
-				if(aname.find(searchString) != String::npos)
+				if (aname.find(searchString) != String::npos)
 					return true;
 
 				// author email
 				String aemail = it->email;
 				StringUtil::toLowerCase(aemail);
-				if(aemail.find(searchString) != String::npos)
+				if (aemail.find(searchString) != String::npos)
 					return true;
 			}
 		}
@@ -434,45 +434,45 @@ bool SelectorWindow::searchCompare(String searchString, Cache_Entry *ce)
 	} else
 	{
 		StringVector v = StringUtil::split(searchString, ":");
-		if(v.size() < 2) return false; //invalid syntax
+		if (v.size() < 2) return false; //invalid syntax
 
-		if(v[0] == "hash")
+		if (v[0] == "hash")
 		{
 			String hash = ce->hash;
 			StringUtil::toLowerCase(hash);
 			return (hash.find(v[1]) != String::npos);
-		} else if(v[0] == "guid")
+		} else if (v[0] == "guid")
 		{
 			String guid = ce->guid;
 			StringUtil::toLowerCase(guid);
 			return (guid.find(v[1]) != String::npos);
-		} else if(v[0] == "author")
+		} else if (v[0] == "author")
 		{
 			// the authors
-			if(!ce->authors.empty())
+			if (!ce->authors.empty())
 			{
 				std::vector<authorinfo_t>::const_iterator it;
-				for(it = ce->authors.begin(); it != ce->authors.end(); it++)
+				for (it = ce->authors.begin(); it != ce->authors.end(); it++)
 				{
 					// author name
 					String aname = it->name;
 					StringUtil::toLowerCase(aname);
-					if(aname.find(v[1]) != String::npos)
+					if (aname.find(v[1]) != String::npos)
 						return true;
 
 					// author email
 					String aemail = it->email;
 					StringUtil::toLowerCase(aemail);
-					if(aemail.find(v[1]) != String::npos)
+					if (aemail.find(v[1]) != String::npos)
 						return true;
 				}
 			}
 			return false;
-		} else if(v[0] == "wheels")
+		} else if (v[0] == "wheels")
 		{
 			String wheelsStr = TOUTFSTRING(ce->wheelcount) + "x" + TOUTFSTRING(ce->propwheelcount);
 			return (wheelsStr == v[1]);
-		} else if(v[0] == "file")
+		} else if (v[0] == "file")
 		{
 			String fn = ce->fname;
 			StringUtil::toLowerCase(fn);
@@ -486,7 +486,7 @@ bool SelectorWindow::searchCompare(String searchString, Cache_Entry *ce)
 
 void SelectorWindow::onCategorySelected(int categoryID)
 {
-	if(mLoaderType == LT_SKIN) return;
+	if (mLoaderType == LT_SKIN) return;
 
 	String search_cmd = mSearchLineEdit->getCaption();
 	StringUtil::toLowerCase(search_cmd);
@@ -496,9 +496,9 @@ void SelectorWindow::onCategorySelected(int categoryID)
 
 	mModelList->removeAllItems();
 	
-	for(std::vector<Cache_Entry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
 	{
-		if(it->categoryid == categoryID || categoryID == CacheSystem::CID_All
+		if (it->categoryid == categoryID || categoryID == CacheSystem::CID_All
 										|| categoryID == CacheSystem::CID_Fresh && (ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
 										|| categoryID == CacheSystem::CID_SearchResults && searchCompare(search_cmd, &(*it)))
 		{
@@ -514,7 +514,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 		}
 	}
 
-	if(counter > 0)
+	if (counter > 0)
 	{
 		try
 		{
@@ -530,10 +530,10 @@ void SelectorWindow::onCategorySelected(int categoryID)
 
 void SelectorWindow::onEntrySelected(int entryID)
 {
-	if(mLoaderType == LT_SKIN)
+	if (mLoaderType == LT_SKIN)
 	{
 		// special skin handling
-		if(entryID == 0)
+		if (entryID == 0)
 		{
 			// default, default infos
 			updateControls(mSelectedTruck);
@@ -564,20 +564,20 @@ void SelectorWindow::onEntrySelected(int entryID)
 		return;
 	}
 	Cache_Entry *entry = CACHE.getEntry(entryID);
-	if(!entry) return;
+	if (!entry) return;
 	mSelectedTruck = entry;
 	updateControls(mSelectedTruck);
 }
 
 void SelectorWindow::selectionDone()
 {
-	if(!mSelectedTruck || mSelectionDone)
+	if (!mSelectedTruck || mSelectionDone)
 		return;
 	
 	mSelectedTruck->usagecounter++;
 	// TODO: Save the modified value of the usagecounter
 
-	if(mLoaderType != LT_SKIN)
+	if (mLoaderType != LT_SKIN)
 	{
 		// we show the normal loader
 		// check if the resource is loaded
@@ -585,7 +585,7 @@ void SelectorWindow::selectionDone()
 
 		this->mCurrentSkins.clear();
 		int res = SkinManager::getSingleton().getUsableSkins(mSelectedTruck->guid, this->mCurrentSkins);
-		if(!res && this->mCurrentSkins.size()>0)
+		if (!res && this->mCurrentSkins.size()>0)
 		{
 			// show skin selection dialog!
 			this->show(LT_SKIN);
@@ -617,11 +617,11 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 
 	setPreviewImage(outBasename);
 
-	if(entry->sectionconfigs.size())
+	if (entry->sectionconfigs.size())
 	{
 		mConfigComboBox->setVisible(true);
 		mConfigComboBox->removeAllItems();
-		for(std::vector<String>::iterator its=entry->sectionconfigs.begin();its!=entry->sectionconfigs.end(); its++)
+		for (std::vector<String>::iterator its=entry->sectionconfigs.begin();its!=entry->sectionconfigs.end(); its++)
 		{
 			try
 			{
@@ -642,21 +642,21 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	}
 	UTFString authors = "";
 	std::set<String> author_names;
-	for(std::vector<authorinfo_t>::iterator it = entry->authors.begin(); it != entry->authors.end(); it++)
+	for (std::vector<authorinfo_t>::iterator it = entry->authors.begin(); it != entry->authors.end(); it++)
 	{
-		if(!it->type.empty() && !it->name.empty())
+		if (!it->type.empty() && !it->name.empty())
 		{
 			String name = it->name;
 			StringUtil::trim(name);
 			author_names.insert(name);
 		}
 	}
-	for(std::set<String>::iterator it = author_names.begin(); it != author_names.end(); it++)
+	for (std::set<String>::iterator it = author_names.begin(); it != author_names.end(); it++)
 	{
 		UTFString name = ANSI_TO_UTF(*it);
 		authors.append(U(" ") + name);
 	}
-	if(authors.length() == 0)
+	if (authors.length() == 0)
 	{
 		authors = _L("no author information available");
 	}
@@ -677,31 +677,31 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	descriptiontxt = descriptiontxt +_L("Author(s): ") + c + authors + nc +newline;
 
 	
-	if(entry->version > 0)           descriptiontxt = descriptiontxt + _L("Version: ")      + c + TOUTFSTRING(entry->version) + nc + newline;
-	if(entry->wheelcount > 0)        descriptiontxt = descriptiontxt + _L("Wheels: ")       + c + TOUTFSTRING(entry->wheelcount) + U("x") + TOUTFSTRING(entry->propwheelcount) + nc + newline;
-	if(entry->truckmass > 0)         descriptiontxt = descriptiontxt + _L("Mass: ")         + c + TOUTFSTRING((int)(entry->truckmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
-	if(entry->loadmass > 0)          descriptiontxt = descriptiontxt + _L("Load Mass: ")    + c + TOUTFSTRING((int)(entry->loadmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
-	if(entry->nodecount > 0)         descriptiontxt = descriptiontxt + _L("Nodes: ")        + c + TOUTFSTRING(entry->nodecount) + nc + newline;
-	if(entry->beamcount > 0)         descriptiontxt = descriptiontxt + _L("Beams: ")        + c + TOUTFSTRING(entry->beamcount) + nc + newline;
-	if(entry->shockcount > 0)        descriptiontxt = descriptiontxt + _L("Shocks: ")       + c + TOUTFSTRING(entry->shockcount) + nc + newline;
-	if(entry->hydroscount > 0)       descriptiontxt = descriptiontxt + _L("Hydros: ")       + c + TOUTFSTRING(entry->hydroscount) + nc + newline;
-	if(entry->soundsourcescount > 0) descriptiontxt = descriptiontxt + _L("SoundSources: ") + c + TOUTFSTRING(entry->soundsourcescount) + nc + newline;
-	if(entry->commandscount > 0)     descriptiontxt = descriptiontxt + _L("Commands: ")     + c + TOUTFSTRING(entry->commandscount) + nc + newline;
-	if(entry->rotatorscount > 0)     descriptiontxt = descriptiontxt + _L("Rotators: ")     + c + TOUTFSTRING(entry->rotatorscount) + nc + newline;
-	if(entry->exhaustscount > 0)     descriptiontxt = descriptiontxt + _L("Exhausts: ")     + c + TOUTFSTRING(entry->exhaustscount) + nc + newline;
-	if(entry->flarescount > 0)       descriptiontxt = descriptiontxt + _L("Flares: ")       + c + TOUTFSTRING(entry->flarescount) + nc + newline;
-	if(entry->torque > 0)            descriptiontxt = descriptiontxt + _L("Torque: ")       + c + TOUTFSTRING(entry->torque) + nc + newline;
-	if(entry->flexbodiescount > 0)   descriptiontxt = descriptiontxt + _L("Flexbodies: ")   + c + TOUTFSTRING(entry->flexbodiescount) + nc + newline;
-	if(entry->propscount > 0)        descriptiontxt = descriptiontxt + _L("Props: ")        + c + TOUTFSTRING(entry->propscount) + nc + newline;
-	if(entry->wingscount > 0)        descriptiontxt = descriptiontxt + _L("Wings: ")        + c + TOUTFSTRING(entry->wingscount) + nc + newline;
-	if(entry->hasSubmeshs)           descriptiontxt = descriptiontxt + _L("Using Submeshs: ")          + c + TOUTFSTRING(entry->hasSubmeshs) + nc + newline;
-	if(entry->numgears > 0)          descriptiontxt = descriptiontxt + _L("Transmission Gear Count: ") + c + TOUTFSTRING(entry->numgears) + nc + newline;
-	if(entry->minrpm > 0)            descriptiontxt = descriptiontxt + _L("Engine RPM: ")   + c + TOUTFSTRING(entry->minrpm) + U(" - ") + TOUTFSTRING(entry->maxrpm) + nc + newline;
-	if(!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt = descriptiontxt + _L("Unique ID: ") + c + entry->uniqueid + nc + newline;
-	if(!entry->guid.empty() && entry->guid != "no-guid")		descriptiontxt = descriptiontxt + _L("GUID: ") + c + entry->guid + nc + newline;
-	if(entry->usagecounter > 0)      descriptiontxt = descriptiontxt + _L("Times used: ")   + c + TOUTFSTRING(entry->usagecounter) + nc + newline;
+	if (entry->version > 0)           descriptiontxt = descriptiontxt + _L("Version: ")      + c + TOUTFSTRING(entry->version) + nc + newline;
+	if (entry->wheelcount > 0)        descriptiontxt = descriptiontxt + _L("Wheels: ")       + c + TOUTFSTRING(entry->wheelcount) + U("x") + TOUTFSTRING(entry->propwheelcount) + nc + newline;
+	if (entry->truckmass > 0)         descriptiontxt = descriptiontxt + _L("Mass: ")         + c + TOUTFSTRING((int)(entry->truckmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if (entry->loadmass > 0)          descriptiontxt = descriptiontxt + _L("Load Mass: ")    + c + TOUTFSTRING((int)(entry->loadmass/1000.0f)) + U(" ") + _L("tons") + nc + newline;
+	if (entry->nodecount > 0)         descriptiontxt = descriptiontxt + _L("Nodes: ")        + c + TOUTFSTRING(entry->nodecount) + nc + newline;
+	if (entry->beamcount > 0)         descriptiontxt = descriptiontxt + _L("Beams: ")        + c + TOUTFSTRING(entry->beamcount) + nc + newline;
+	if (entry->shockcount > 0)        descriptiontxt = descriptiontxt + _L("Shocks: ")       + c + TOUTFSTRING(entry->shockcount) + nc + newline;
+	if (entry->hydroscount > 0)       descriptiontxt = descriptiontxt + _L("Hydros: ")       + c + TOUTFSTRING(entry->hydroscount) + nc + newline;
+	if (entry->soundsourcescount > 0) descriptiontxt = descriptiontxt + _L("SoundSources: ") + c + TOUTFSTRING(entry->soundsourcescount) + nc + newline;
+	if (entry->commandscount > 0)     descriptiontxt = descriptiontxt + _L("Commands: ")     + c + TOUTFSTRING(entry->commandscount) + nc + newline;
+	if (entry->rotatorscount > 0)     descriptiontxt = descriptiontxt + _L("Rotators: ")     + c + TOUTFSTRING(entry->rotatorscount) + nc + newline;
+	if (entry->exhaustscount > 0)     descriptiontxt = descriptiontxt + _L("Exhausts: ")     + c + TOUTFSTRING(entry->exhaustscount) + nc + newline;
+	if (entry->flarescount > 0)       descriptiontxt = descriptiontxt + _L("Flares: ")       + c + TOUTFSTRING(entry->flarescount) + nc + newline;
+	if (entry->torque > 0)            descriptiontxt = descriptiontxt + _L("Torque: ")       + c + TOUTFSTRING(entry->torque) + nc + newline;
+	if (entry->flexbodiescount > 0)   descriptiontxt = descriptiontxt + _L("Flexbodies: ")   + c + TOUTFSTRING(entry->flexbodiescount) + nc + newline;
+	if (entry->propscount > 0)        descriptiontxt = descriptiontxt + _L("Props: ")        + c + TOUTFSTRING(entry->propscount) + nc + newline;
+	if (entry->wingscount > 0)        descriptiontxt = descriptiontxt + _L("Wings: ")        + c + TOUTFSTRING(entry->wingscount) + nc + newline;
+	if (entry->hasSubmeshs)           descriptiontxt = descriptiontxt + _L("Using Submeshs: ")          + c + TOUTFSTRING(entry->hasSubmeshs) + nc + newline;
+	if (entry->numgears > 0)          descriptiontxt = descriptiontxt + _L("Transmission Gear Count: ") + c + TOUTFSTRING(entry->numgears) + nc + newline;
+	if (entry->minrpm > 0)            descriptiontxt = descriptiontxt + _L("Engine RPM: ")   + c + TOUTFSTRING(entry->minrpm) + U(" - ") + TOUTFSTRING(entry->maxrpm) + nc + newline;
+	if (!entry->uniqueid.empty() && entry->uniqueid != "no-uid") descriptiontxt = descriptiontxt + _L("Unique ID: ") + c + entry->uniqueid + nc + newline;
+	if (!entry->guid.empty() && entry->guid != "no-guid")		descriptiontxt = descriptiontxt + _L("GUID: ") + c + entry->guid + nc + newline;
+	if (entry->usagecounter > 0)      descriptiontxt = descriptiontxt + _L("Times used: ")   + c + TOUTFSTRING(entry->usagecounter) + nc + newline;
 
-	if(entry->addtimestamp > 0)
+	if (entry->addtimestamp > 0)
 	{
 		char tmp[255] = "";
 		time_t epch = entry->addtimestamp;
@@ -710,30 +710,30 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 	}
 
 	UTFString driveableStr[5] = {_L("Non-Driveable"), _L("Truck"), _L("Airplane"), _L("Boat"), _L("Machine")};
-	if(entry->nodecount > 0) descriptiontxt = descriptiontxt +_L("Vehicle Type: ") + c + driveableStr[entry->driveable] + nc + newline;
+	if (entry->nodecount > 0) descriptiontxt = descriptiontxt +_L("Vehicle Type: ") + c + driveableStr[entry->driveable] + nc + newline;
 
 	descriptiontxt = descriptiontxt +"#448b9a\n"; // different colour for the props
 
-	if(entry->forwardcommands) descriptiontxt = descriptiontxt +_L("[forwards commands]") + newline;
-	if(entry->importcommands) descriptiontxt = descriptiontxt +_L("[imports commands]") + newline;
-	if(entry->rollon) descriptiontxt = descriptiontxt +_L("[is rollon]") + newline;
-	if(entry->rescuer) descriptiontxt = descriptiontxt +_L("[is rescuer]") + newline;
-	if(entry->custom_particles) descriptiontxt = descriptiontxt +_L("[uses custom particles]") + newline;
-	if(entry->fixescount > 0) descriptiontxt = descriptiontxt +_L("[has fixes]") + newline;
+	if (entry->forwardcommands) descriptiontxt = descriptiontxt +_L("[forwards commands]") + newline;
+	if (entry->importcommands) descriptiontxt = descriptiontxt +_L("[imports commands]") + newline;
+	if (entry->rollon) descriptiontxt = descriptiontxt +_L("[is rollon]") + newline;
+	if (entry->rescuer) descriptiontxt = descriptiontxt +_L("[is rescuer]") + newline;
+	if (entry->custom_particles) descriptiontxt = descriptiontxt +_L("[uses custom particles]") + newline;
+	if (entry->fixescount > 0) descriptiontxt = descriptiontxt +_L("[has fixes]") + newline;
 	// t is the default, do not display it
-	//if(entry->enginetype == 't') descriptiontxt = descriptiontxt +_L("[TRUCK ENGINE]") + newline;
-	if(entry->enginetype == 'c') descriptiontxt = descriptiontxt +_L("[car engine]") + newline;
-	if(entry->type == "Zip") descriptiontxt = descriptiontxt +_L("[zip archive]") + newline;
-	if(entry->type == "FileSystem") descriptiontxt = descriptiontxt +_L("[unpacked in directory]") + newline;
+	//if (entry->enginetype == 't') descriptiontxt = descriptiontxt +_L("[TRUCK ENGINE]") + newline;
+	if (entry->enginetype == 'c') descriptiontxt = descriptiontxt +_L("[car engine]") + newline;
+	if (entry->type == "Zip") descriptiontxt = descriptiontxt +_L("[zip archive]") + newline;
+	if (entry->type == "FileSystem") descriptiontxt = descriptiontxt +_L("[unpacked in directory]") + newline;
 
 	descriptiontxt = descriptiontxt +"#666666\n"; // now grey-ish colour
 
-	if(!entry->dirname.empty()) descriptiontxt = descriptiontxt +_L("Source: ") + entry->dirname + newline;
-	if(!entry->fname.empty()) descriptiontxt = descriptiontxt +_L("Filename: ") + entry->fname + newline;
-	if(!entry->hash.empty() && entry->hash != "none") descriptiontxt = descriptiontxt +_L("Hash: ") + entry->hash + newline;
-	if(!entry->hash.empty()) descriptiontxt = descriptiontxt +_L("Mod Number: ") + TOUTFSTRING(entry->number) + newline;
+	if (!entry->dirname.empty()) descriptiontxt = descriptiontxt +_L("Source: ") + entry->dirname + newline;
+	if (!entry->fname.empty()) descriptiontxt = descriptiontxt +_L("Filename: ") + entry->fname + newline;
+	if (!entry->hash.empty() && entry->hash != "none") descriptiontxt = descriptiontxt +_L("Hash: ") + entry->hash + newline;
+	if (!entry->hash.empty()) descriptiontxt = descriptiontxt +_L("Mod Number: ") + TOUTFSTRING(entry->number) + newline;
 	
-	if(!entry->sectionconfigs.empty())
+	if (!entry->sectionconfigs.empty())
 	{
 		descriptiontxt = descriptiontxt + U("\n\n#e10000") + _L("Please select a configuration below!") + nc + U("\n\n");
 	}
@@ -745,7 +745,7 @@ void SelectorWindow::updateControls(Cache_Entry *entry)
 
 void SelectorWindow::setPreviewImage(String texture)
 {
-	if(texture == "" || texture == "none")
+	if (texture == "" || texture == "none")
 	{
 		mPreviewStaticImage->setVisible(false);
 		return;
@@ -758,7 +758,7 @@ void SelectorWindow::setPreviewImage(String texture)
 	}catch(...)
 	{
 	}
-	if(group == "")
+	if (group == "")
 	{
 		// texture not found, hide widget
 		mPreviewStaticImage->setVisible(false);
@@ -777,13 +777,13 @@ void SelectorWindow::resizePreviewImage()
 	// now get the texture size
 	MyGUI::IntSize imgSize(0,0);
 	TexturePtr t = TextureManager::getSingleton().load(lastImageTextureName,ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
-	if(!t.isNull())
+	if (!t.isNull())
 	{
 		imgSize.width  = (int)t->getWidth() * 10;
 		imgSize.height = (int)t->getHeight() * 10;
 	}
 
-	if(imgSize.width != 0)
+	if (imgSize.width != 0)
 	{
 		MyGUI::IntSize maxSize = mPreviewStaticImagePanel->getSize();
 
@@ -832,7 +832,7 @@ void SelectorWindow::show(LoaderType type)
 	MyGUI::InputManager::getInstance().setKeyFocusWidget(mMainWidget);
 	mMainWidget->setEnabledSilent(true);
 	// first time fast
-	if(!visibleCounter)
+	if (!visibleCounter)
 		mMainWidget->castType<MyGUI::Window>()->setVisible(true);
 	else
 		mMainWidget->castType<MyGUI::Window>()->setVisibleSmooth(true);
@@ -858,16 +858,16 @@ void SelectorWindow::setEnableCancel(bool enabled)
 
 void SelectorWindow::eventSearchTextChange(MyGUI::EditBox *_sender)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	onCategorySelected(CacheSystem::CID_SearchResults);
 	mTypeComboBox->setCaption(_L("Search Results"));
 }
 
 void SelectorWindow::eventSearchTextGotFocus(MyGUI::WidgetPtr _sender, MyGUI::WidgetPtr oldWidget)
 {
-	if(!mMainWidget->getVisible()) return;
+	if (!mMainWidget->getVisible()) return;
 	
-	if(mSearchLineEdit->getCaption() == _L("Search ..."))
+	if (mSearchLineEdit->getCaption() == _L("Search ..."))
 		mSearchLineEdit->setCaption("");
 }
 

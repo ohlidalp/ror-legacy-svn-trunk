@@ -86,10 +86,10 @@ RailBuilder::RailBuilder(Rail* start) :
 
 RailBuilder::~RailBuilder()
 {
-	if( !mRetreived && mStart )
+	if ( !mRetreived && mStart )
 	{
 		Rail* cur = mStart;
-		if( cur->prev ) cur->prev = cur->prev->next = NULL;
+		if ( cur->prev ) cur->prev = cur->prev->next = NULL;
 		while( cur->next )
 		{
 			cur = cur->next;
@@ -108,7 +108,7 @@ RailBuilder::~RailBuilder()
 	
 void RailBuilder::pushBack(beam_t* next)
 {
-	if( !mStart )
+	if ( !mStart )
 	{
 		mStart = new Rail( next );
 		mBack = mStart;
@@ -127,7 +127,7 @@ void RailBuilder::pushBack(beam_t* next)
 }
 void RailBuilder::pushFront(beam_t* prev)
 {
-	if( !mStart )
+	if ( !mStart )
 	{
 		mStart = new Rail( prev );
 		mBack = mStart;
@@ -160,7 +160,7 @@ void RailBuilder::unLoopRail()
 
 Rail* RailBuilder::getCompletedRail()
 {
-	if( mLoop )
+	if ( mLoop )
 	{
 		mFront->prev = mBack;
 		mBack->next =  mFront;
@@ -205,21 +205,21 @@ SlideNode::~SlideNode()
 void SlideNode::UpdateForces(float dt)
 {
 	// only do calcs if we have a beam to slide on
-	if( !mSlidingBeam || mSlidingBeam->broken || getFlag( MASK_SLIDE_BROKEN ) )
+	if ( !mSlidingBeam || mSlidingBeam->broken || getFlag( MASK_SLIDE_BROKEN ) )
 	{
 		return;
 	}
 	
 	// the threshold changes when attaching a node to a beam, if it's more than
 	// the initial amount then then we're still attaching.
-	if( mCurThreshold > mInitThreshold )
+	if ( mCurThreshold > mInitThreshold )
 	{
 		mCurThreshold -= (mAttachRate * dt);
 	}
 	
 	Ogre::Vector3 perpForces = getCorrectiveForces();
 	// perpendicular Forces are distributed according to the position along the Beam
-	if( perpForces.length() > mBreakForce ) setFlag( MASK_SLIDE_BROKEN );
+	if ( perpForces.length() > mBreakForce ) setFlag( MASK_SLIDE_BROKEN );
 	mSlidingNode->Forces += -perpForces;
 	mSlidingBeam->p1->Forces += perpForces * (1 - mRatio);
 	mSlidingBeam->p2->Forces += perpForces * mRatio;
@@ -228,7 +228,7 @@ void SlideNode::UpdateForces(float dt)
 
 Rail* SlideNode::getClosestRailAll(RailGroup* railGroup, const Ogre::Vector3& point )
 {
-	if( !railGroup ) return NULL;
+	if ( !railGroup ) return NULL;
 
 	Rail* closestRail = (Rail*) railGroup->getStartRail();
 	Rail* curRail = (Rail*) railGroup->getStartRail()->next;
@@ -245,7 +245,7 @@ Rail* SlideNode::getClosestRailAll(RailGroup* railGroup, const Ogre::Vector3& po
 	{
 		lenToCurrent = getLenTo(curRail, point);
 		
-		if( lenToCurrent < lenToClosest)
+		if ( lenToCurrent < lenToClosest)
 		{
 			closestRail = curRail;
 			lenToClosest = getLenTo(closestRail, point);
@@ -266,9 +266,9 @@ Rail* SlideNode::getClosestRail(const Rail* rail, const Ogre::Vector3& point )
 	Ogre::Real lenToNext = getLenTo(curRail->next, point);
 	
 	
-	if( lenToCurrent > lenToPrev || lenToCurrent > lenToNext )
+	if ( lenToCurrent > lenToPrev || lenToCurrent > lenToNext )
 	{
-		if( lenToPrev < lenToNext) curRail = curRail->prev;
+		if ( lenToPrev < lenToNext) curRail = curRail->prev;
 		else curRail = curRail->next;
 	}
 	

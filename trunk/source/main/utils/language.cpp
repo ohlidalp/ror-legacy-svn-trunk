@@ -61,7 +61,7 @@ Ogre::String LanguageEngine::getMyGUIFontConfigFilename()
 	}catch(...)
 	{
 	}
-	if(group == "")
+	if (group == "")
 		return String("MyGUI_FontsEnglish.xml");
 
 	return myguiConfigFilename;
@@ -101,16 +101,16 @@ void LanguageEngine::setup()
 	textdomain("ror");
 
 	char *curr_locale = setlocale(LC_ALL,NULL);
-	if(curr_locale)
+	if (curr_locale)
 		LOG("system locale is: " + String(curr_locale));
 	else
 		LOG("unable to read system locale!");
 
-	if(!SSETTING("Language Short", "en").empty())
+	if (!SSETTING("Language Short", "en").empty())
 	{
 		LOG("setting new locale to " + SSETTING("Language Short", "en"));
 		char *newlocale = setlocale(LC_ALL, SSETTING("Language Short", "en").c_str());
-		if(newlocale)
+		if (newlocale)
 			LOG("new locale is: " + String(newlocale));
 		else
 			LOG("error setting new locale");
@@ -128,12 +128,12 @@ void LanguageEngine::postSetup()
 	// set some overlay used fonts to the new font config
 	String newfont = "CyberbitEnglish";
 	const char *overlays[] = {"Core/CurrFps", "Core/AverageFps", "Core/WorstFps", "Core/BestFps", "Core/NumTris", "Core/DebugText", "Core/CurrMemory", "Core/MemoryText", "Core/LoadPanel/Description", "Core/LoadPanel/Comment", 0};
-	for(int i=0;overlays[i]!=0;i++)
+	for (int i=0;overlays[i]!=0;i++)
 	{
 		try
 		{
 			Ogre::TextAreaOverlayElement *ot = (Ogre::TextAreaOverlayElement *)OverlayManager::getSingleton().getOverlayElement(overlays[i]);
-			if(ot) ot->setFontName(newfont);
+			if (ot) ot->setFontName(newfont);
 		}
 		catch (...)
 		{
@@ -144,7 +144,7 @@ void LanguageEngine::postSetup()
 Ogre::UTFString LanguageEngine::lookUp(Ogre::String name)
 {
 #ifdef USE_MOFILEREADER
-	if(working)
+	if (working)
 		return reader->Lookup(name.c_str());
 	return name;
 #else
@@ -162,7 +162,7 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	try
 	{
 		ds = ResourceGroupManager::getSingleton().openResource(codeRangesFilename, codeRangesGroupname);
-		if(ds.isNull())
+		if (ds.isNull())
 		{
 			LOG("unable to load language code points file: " + codeRangesFilename);
 			return;
@@ -180,10 +180,10 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	{
 		size_t ll = ds->readLine(line, 9045);
 		// only process valid lines
-		if(strncmp(line, "code_points ", 12) && strlen(line) > 13)
+		if (strncmp(line, "code_points ", 12) && strlen(line) > 13)
 			continue;
 		Ogre::StringVector args = StringUtil::split(line + 12, " ");
-		for(Ogre::StringVector::iterator it=args.begin(); it!=args.end(); it++)
+		for (Ogre::StringVector::iterator it=args.begin(); it!=args.end(); it++)
 		{
 			Font::CodePointRange range;
 			StringVector itemVec = StringUtil::split(*it, "-");
@@ -199,9 +199,9 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 #ifdef USE_MYGUI
 			// well, we load a reconfigured mygui font config xml file, easier for now
 			//MyGUI::IFont *fp = MyGUI::FontManager::getInstance().getByName("Default");
-			//if(fp) fp-> addCodePointRange(range.first, range.second);
+			//if (fp) fp-> addCodePointRange(range.first, range.second);
 			//fp = MyGUI::FontManager::getInstance().getByName("DefaultBig");
-			//if(fp) fp->addCodePointRange(range.first, range.second);
+			//if (fp) fp->addCodePointRange(range.first, range.second);
 #endif //USE_MYGUI
 		}
 	}
@@ -212,7 +212,7 @@ void LanguageEngine::setupCodeRanges(String codeRangesFilename, String codeRange
 	{
 		FontPtr font = itf.getNext();
 		// if the font is a ttf font and loaded, then reload it in order to regenenerate the glyphs with corrected code_points
-		if(font->getType() == Ogre::FT_TRUETYPE && font->isLoaded())
+		if (font->getType() == Ogre::FT_TRUETYPE && font->isLoaded())
 			font->reload();
 	}
 	*/

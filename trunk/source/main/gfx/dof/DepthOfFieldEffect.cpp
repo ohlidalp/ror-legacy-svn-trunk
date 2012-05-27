@@ -169,7 +169,7 @@ void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& materia
 			Ogre::Vector3 ps = Ogre::Vector3(1.0f / (mWidth / BLUR_DIVISOR),1.0f / (mHeight / BLUR_DIVISOR), 1.0f);
 			float pixelSize[3] = { ps.x, ps.y, ps.z };
 			GpuProgramParametersSharedPtr fragParams = material->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-			if((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSize")))
+			if ((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSize")))
 				fragParams->setNamedConstant("pixelSize", pixelSize, 1, 3);
 
 			break;
@@ -190,9 +190,9 @@ void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& materia
 			// Adjust fragment program parameters
 			GpuProgramParametersSharedPtr fragParams =
 				material->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-			if((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSizeScene")))
+			if ((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSizeScene")))
 				fragParams->setNamedConstant("pixelSizeScene", pixelSizeScene,1,3);
-			if((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSizeBlur")))
+			if ((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("pixelSizeBlur")))
 				fragParams->setNamedConstant("pixelSizeBlur", pixelSizeBlur,1,3);
 
 			break;
@@ -208,7 +208,7 @@ void DepthOfFieldEffect::preViewportUpdate(const Ogre::RenderTargetViewportEvent
 	// Adjust fragment program parameters for depth pass
 	GpuProgramParametersSharedPtr fragParams =
 		mDepthTechnique->getPass(0)->getFragmentProgramParameters();
-	if((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("dofParams")))
+	if ((!fragParams.isNull())&&(fragParams->_findNamedConstantDefinition("dofParams")))
 		fragParams->setNamedConstant("dofParams", dofParams,1,4);		
 
 	evt.source->setVisibilityMask(~DEPTHMAP_DISABLED);
@@ -293,12 +293,12 @@ void DOFManager::setEnabled(bool enabled)
 	mDepthOfFieldEffect->setEnabled(enabled);
 	/*
 	// crashes for some reason
-	if(enabled && !mDepthOfFieldEffect->getEnabled())
+	if (enabled && !mDepthOfFieldEffect->getEnabled())
 	{
 		// turn on
 		mDepthOfFieldEffect->setEnabled(true);
 		globalEnvironment->ogreRoot->addFrameListener(this);
-	} else if(!enabled && mDepthOfFieldEffect->getEnabled())
+	} else if (!enabled && mDepthOfFieldEffect->getEnabled())
 	{
 		// turn off
 		mDepthOfFieldEffect->setEnabled(false);
@@ -376,7 +376,7 @@ bool DOFManager::frameStarted(const FrameEvent& evt)
 
 			// TODO: Continous AF / triggered
 			mAutoTime -= evt.timeSinceLastFrame;
-			if(mAutoTime <= 0.0f)
+			if (mAutoTime <= 0.0f)
 			{
 				mAutoTime = 0.5f;
 
@@ -393,16 +393,16 @@ bool DOFManager::frameStarted(const FrameEvent& evt)
 				Ogre::RaySceneQueryResult &qryResult = mRaySceneQuery->execute();
 				for (Ogre::RaySceneQueryResult::iterator it = qryResult.begin();it != qryResult.end(); it++)
 				{
-					if(it->worldFragment)
+					if (it->worldFragment)
 					{
-						if(debugNode) debugNode->setPosition(it->worldFragment->singleIntersection + Vector3(0.5,0,0));
+						if (debugNode) debugNode->setPosition(it->worldFragment->singleIntersection + Vector3(0.5,0,0));
 						targetFocalDistance = (globalEnvironment->ogreCamera->getPosition() - it->worldFragment->singleIntersection).length();
 						break;
 					} else
 					{
 						/*
 						// this wont work since we would need to go down to the polygon level :(
-						if(debugNode) debugNode->setPosition(focusRay.getPoint(it->distance));
+						if (debugNode) debugNode->setPosition(focusRay.getPoint(it->distance));
 						targetFocalDistance = it->distance;
 						break;
 						*/

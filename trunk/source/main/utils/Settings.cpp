@@ -46,7 +46,7 @@ Settings::~Settings()
 String Settings::getSetting(String key, String defaultValue)
 {
 	settings_map_t::iterator it = settings.find(key);
-	if(it == settings.end())
+	if (it == settings.end())
 	{
 		setSetting(key, defaultValue);
 		return defaultValue;
@@ -62,7 +62,7 @@ UTFString Settings::getUTFSetting(UTFString key, UTFString defaultValue)
 int Settings::getIntegerSetting(String key, int defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
-	if(it == settings.end())
+	if (it == settings.end())
 	{
 		setSetting(key, TOSTRING(defaultValue));
 		return defaultValue;
@@ -73,7 +73,7 @@ int Settings::getIntegerSetting(String key, int defaultValue )
 float Settings::getFloatSetting(String key, float defaultValue )
 {
 	settings_map_t::iterator it = settings.find(key);
-	if(it == settings.end())
+	if (it == settings.end())
 	{
 		setSetting(key, TOSTRING(defaultValue));
 		return defaultValue;
@@ -84,7 +84,7 @@ float Settings::getFloatSetting(String key, float defaultValue )
 bool Settings::getBooleanSetting(String key, bool defaultValue)
 {
 	settings_map_t::iterator it = settings.find(key);
-	if(it == settings.end())
+	if (it == settings.end())
 	{
 		setSetting(key, defaultValue ?"Yes":"No");
 		return defaultValue;
@@ -97,7 +97,7 @@ bool Settings::getBooleanSetting(String key, bool defaultValue)
 String Settings::getSettingScriptSafe(const String &key)
 {
 	// hide certain settings for scripts
-	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
+	if (key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
 		return "permission denied";
 
 	return settings[key];
@@ -106,7 +106,7 @@ String Settings::getSettingScriptSafe(const String &key)
 void Settings::setSettingScriptSafe(const String &key, const String &value)
 {
 	// hide certain settings for scripts
-	if(key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
+	if (key == "User Token" || key == "User Token Hash" || key == "Config Root" || key == "Cache Path" || key == "Log Path" || key == "Resources Path" || key == "Program Path")
 		return;
 
 	settings[key] = value;
@@ -124,7 +124,7 @@ void Settings::setUTFSetting(UTFString key, UTFString value)
 
 void Settings::checkGUID()
 {
-	if(getSetting("GUID", "").empty())
+	if (getSetting("GUID", "").empty())
 		createGUID();
 }
 
@@ -157,13 +157,13 @@ void Settings::saveSettings(String configFile)
 	// use C++ for easier wstring usage ... :-/
 
 	std::ofstream f(configFile.c_str());
-	if(!f.is_open()) return;
+	if (!f.is_open()) return;
 
 	// now save the settings to RoR.cfg
 	settings_map_t::iterator it;
-	for(it = settings.begin(); it != settings.end(); it++)
+	for (it = settings.begin(); it != settings.end(); it++)
 	{
-		if(it->first == "BinaryHash") continue;
+		if (it->first == "BinaryHash") continue;
 		f << it->first << " = " << it->second << std::endl;
 	}
 	f.close();
@@ -182,7 +182,7 @@ void Settings::loadSettings(String configFile, bool overwrite)
 	{
 		sname = i.peekNextKey();
 		svalue = i.getNext();
-		if(!overwrite && settings[sname] != "") continue;
+		if (!overwrite && settings[sname] != "") continue;
 		settings[sname] = svalue;
 		//logfile->AddLine(conv("### ") + conv(sname) + conv(" : ") + conv(svalue));logfile->Write();
 	}
@@ -195,7 +195,7 @@ void Settings::loadSettings(String configFile, bool overwrite)
 	String usertoken = SSETTING("User Token", "");
 	char usertokensha1result[250];
 	memset(usertokensha1result, 0, 250);
-	if(usertoken.size()>0)
+	if (usertoken.size()>0)
 	{
 		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)usertoken.c_str(), (uint32_t)usertoken.size());
@@ -356,11 +356,11 @@ bool Settings::setupPaths()
 	const char *dsStr="/";
 #endif
 
-	if(!get_system_paths(program_path, user_path))
+	if (!get_system_paths(program_path, user_path))
 		return false;
 
 	String local_config = String(program_path) + String(dsStr) + String("config");
-	if(folderExists(local_config.c_str()))
+	if (folderExists(local_config.c_str()))
 	{
 		sprintf(user_path, "%s%sconfig%s",program_path, dsStr, dsStr);
 	}
@@ -368,13 +368,13 @@ bool Settings::setupPaths()
 	// check for resource folder: first the normal version (in the executables directory)
 	strcpy(resources_path, program_path);
 	path_add(resources_path, "resources");
-	if(!folderExists(resources_path))
+	if (!folderExists(resources_path))
 	{
 		// if not existing: check one dir up (dev version)
 		strcpy(resources_path, program_path);
 		path_descend(resources_path);
 		path_add(resources_path, "resources");
-		if(!folderExists(resources_path))
+		if (!folderExists(resources_path))
 		{
 			showError(_L("Startup error"), _L("Resources folder not found. Check if correctly installed."));
 			exit(1);
@@ -434,7 +434,7 @@ bool Settings::setupPaths()
 	StringUtil::toLowerCase(settings["Program Path"]);
 #endif
 	// now enable the user to override that:
-	if(fileExists("config.cfg"))
+	if (fileExists("config.cfg"))
 	{
 		loadSettings("config.cfg", true);
 
@@ -446,7 +446,7 @@ bool Settings::setupPaths()
 		settings["ogre.log"]    = settings["User Path"]+String(dsStr)+"logs"+String(dsStr)+"RoR.log";
 	}
 
-	if(!settings["Enforce Log Path"].empty())
+	if (!settings["Enforce Log Path"].empty())
 	{
 		settings["Log Path"] = settings["Enforce Log Path"];
 		settings["ogre.log"] = settings["Log Path"]+String(dsStr)+"RoR.log";

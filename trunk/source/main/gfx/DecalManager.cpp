@@ -174,7 +174,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 		Vector3 pos_cur  = spline->interpolate(steps_len * (float)l);
 		Vector3 pos_next = spline->interpolate(steps_len * (float)(l + 1));
         Ogre::Vector3 direction = (pos_next - pos_cur);
-		if(l == numSeg.x)
+		if (l == numSeg.x)
 		{
 			// last segment uses previous position
 			pos_next = spline->interpolate(steps_len * (float)(l - 1));
@@ -261,7 +261,7 @@ int DecalManager::addTerrainSplineDecal(Ogre::SimpleSpline *spline, float width,
 	mo_node->setPosition(Vector3::ZERO); //(position.x, 0, position.z));
 
 
-	if(!export_fn.empty())
+	if (!export_fn.empty())
 	{
 		MeshSerializer *ms = new MeshSerializer();
 		ms->exportMesh(mesh.get(), export_fn);
@@ -283,7 +283,7 @@ int DecalManager::finishTerrainDecal()
 {
 #if 0
 	// if if no decals
-	if(!terrain_decals_snode->numChildren()) return 0;
+	if (!terrain_decals_snode->numChildren()) return 0;
 	terrain_decal_count++;
 	terrain_decals_sg = globalEnvironment->ogreSceneManager->createStaticGeometry("terrain_decals_"+TOSTRING(terrain_decal_count));
 	terrain_decals_sg->setCastShadows(false);
@@ -331,15 +331,15 @@ int DecalSpline::addPoint(Ogre::Vector3 v)
 
 int DecalSpline::showDebugLine(bool enabled)
 {
-	if(enabled)
+	if (enabled)
 	{
 		mo_spline = globalEnvironment->ogreSceneManager->createManualObject();
-		if(snparent)
+		if (snparent)
 			mo_spline_node = snparent->createChildSceneNode();
 		else
 			mo_spline_node = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		mo_spline->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
-		for(float j=0;j<1;j+=0.001)
+		for (float j=0;j<1;j+=0.001)
 		{
 			mo_spline->position(spline->interpolate(j));
 		}
@@ -347,13 +347,13 @@ int DecalSpline::showDebugLine(bool enabled)
 		mo_spline_node->attachObject(mo_spline);
 	} else
 	{
-		if(mo_spline)
+		if (mo_spline)
 		{
 			globalEnvironment->ogreSceneManager->destroyManualObject(mo_spline);
 			delete(mo_spline);
 			mo_spline=0;
 		}
-		if(mo_spline_node)
+		if (mo_spline_node)
 		{
 			globalEnvironment->ogreSceneManager->destroySceneNode(mo_spline_node);
 			delete(mo_spline_node);

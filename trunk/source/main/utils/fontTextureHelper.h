@@ -38,12 +38,12 @@ Ogre::UTFString cache_name = "_cache";
 int generateFontTexture(Ogre::String fontName, bool load=false)
 {
 	Ogre::FontPtr font = Ogre::FontManager::getSingleton().getByName(fontName);
-	if(font.isNull()) return 1;
+	if (font.isNull()) return 1;
 
-	if(font->getType() != Ogre::FT_TRUETYPE)
+	if (font->getType() != Ogre::FT_TRUETYPE)
 		return 1;
 
-	if(!font->isLoaded())
+	if (!font->isLoaded())
 		font->load();
 
 	Ogre::String texname = font->getMaterial()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
@@ -52,7 +52,7 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 	Ogre::TexturePtr fontTexture = Ogre::TextureManager::getSingleton().getByName(texname);
 	Ogre::HardwarePixelBufferSharedPtr fontBuffer = fontTexture->getBuffer();
 
-	if(fontBuffer.isNull())
+	if (fontBuffer.isNull())
 		return 1;
 
 	// create a remporary buffer that holds the font
@@ -82,10 +82,10 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 	Ogre::UTFString out_text = font->getName()+cache_name+"\n{\n\ttype\timage\n\tsource\t"+outImageName+"\n";
 
 	Ogre::vector<Ogre::Font::CodePointRange>::type ranges = font->getCodePointRangeList();
-	for(Ogre::vector<Ogre::Font::CodePointRange>::type::iterator it = ranges.begin(); it != ranges.end(); it++)
+	for (Ogre::vector<Ogre::Font::CodePointRange>::type::iterator it = ranges.begin(); it != ranges.end(); it++)
 	{
 		// iterate over all known glyphs
-		for(Ogre::uint32 i=it->first;i<it->second;i++)
+		for (Ogre::uint32 i=it->first;i<it->second;i++)
 		{
 			Ogre::Font::GlyphInfo gi(0, Ogre::Font::UVRect(), 0);
 			try
@@ -123,13 +123,13 @@ int generateFontTexture(Ogre::String fontName, bool load=false)
 	f.close();
 	LOG("generated font cache for font "+fontName+" ("+outImageName+", "+defFileName+")");
 
-	if(load)
+	if (load)
 	{
 		// reload to find the .fontdef file
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 		// load now
 		Ogre::FontPtr cached_font = Ogre::FontManager::getSingleton().getByName(fontName+cache_name);
-		if(cached_font.isNull()) return 1;
+		if (cached_font.isNull()) return 1;
 		cached_font->load();
 		return 0;
 	}
@@ -145,15 +145,15 @@ int fontCacheInit(Ogre::String fontName)
 	Ogre::FontPtr font_cache = Ogre::FontManager::getSingleton().getByName(fontName + cache_name);
 
 	// base font not even existing?
-	if(font_org.isNull()) return 1;
+	if (font_org.isNull()) return 1;
 	// using texture fonts is a bit stupid ...
-	if(font_org->getType() != Ogre::FT_TRUETYPE) return 1;
+	if (font_org->getType() != Ogre::FT_TRUETYPE) return 1;
 
 	int res = 0;
-	if(font_cache.isNull())
+	if (font_cache.isNull())
 		res = generateFontTexture(fontName);
 
-	if(font_org->isLoaded()) font_org->unload();
+	if (font_org->isLoaded()) font_org->unload();
 	return res;
 }
 

@@ -91,7 +91,7 @@ void Road::addRoadType(const char* name)
 
 	te->setCastShadows(false);
 
-	if(free_rtype < MAX_RTYPES)
+	if (free_rtype < MAX_RTYPES)
 	{
 		rtypes[free_rtype].node = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		rtypes[free_rtype].node->attachObject(te);

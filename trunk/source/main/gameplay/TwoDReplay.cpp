@@ -37,14 +37,14 @@ TwoDReplay::TwoDReplay() : file(0), time(0)
 
 TwoDReplay::~TwoDReplay()
 {
-	if(file) fclose(file);
+	if (file) fclose(file);
 }
 
 void TwoDReplay::update(float &dt)
 {
 	// frame update rate: every 0.25 milliseconds
 	time += dt;
-	if(time > 0.25f)
+	if (time > 0.25f)
 	{
 		recordFrame();
 		time -= 0.25f;
@@ -54,11 +54,11 @@ void TwoDReplay::update(float &dt)
 
 void TwoDReplay::recordFrame()
 {
-	if(!file)
+	if (!file)
 		start();
 
 	Beam *v = BeamFactory::getSingleton().getCurrentTruck();
-	if(!v) return;
+	if (!v) return;
 
 	// write entry first
 	r2d_file_entry_t entry;
@@ -77,7 +77,7 @@ void TwoDReplay::recordFrame()
 	frame.brake    = v->brake;
 	frame.steering = v->hydrodircommand;
 	frame.pbrake   = (v->parkingbrake > 0);
-	if(v->engine)
+	if (v->engine)
 	{
 		frame.accel  = v->engine->getAcc();
 		frame.clutch = v->engine->getClutch();
@@ -88,7 +88,7 @@ void TwoDReplay::recordFrame()
 
 	// then the wheels
 	r2d_file_wheel_frame_t wf;
-	for(int w=0; w < v->free_wheel; w++)
+	for (int w=0; w < v->free_wheel; w++)
 	{
 		memset(&wf, 0, sizeof(wf));
 		Vector3 idir = v->wheels[w].refnode0->AbsPosition - v->wheels[w].refnode1->AbsPosition;
@@ -109,7 +109,7 @@ void TwoDReplay::recordFrame()
 
 void TwoDReplay::start()
 {
-	if(file) return;
+	if (file) return;
 	file = fopen("data.tdr", "w");
 
 	// first: write header
@@ -120,13 +120,13 @@ void TwoDReplay::start()
 	fwrite(&header, 1, sizeof(header), file);
 
 	// second: write entry for every truck
-	for(int t = 0; t < header.num_rigs; t++)
+	for (int t = 0; t < header.num_rigs; t++)
 	{
 		Beam *v = BeamFactory::getSingleton().getTruck(t);
 		r2d_file_rig_t rig;
 		memset(&rig, 0, sizeof(rig));
 		rig.num = t;
-		if(v)
+		if (v)
 		{
 			strncpy(rig.name, v->getTruckName().c_str(), std::min<int>(v->getTruckName().size(), 255));
 			strncpy(rig.filename, v->getTruckFileName().c_str(), std::min<int>(v->getTruckFileName().size(), 255));
@@ -136,10 +136,10 @@ void TwoDReplay::start()
 		fwrite(&rig, 1, sizeof(rig), file);
 
 		// write wheel setup
-		if(v && rig.num_wheels > 0)
+		if (v && rig.num_wheels > 0)
 		{
 			r2d_file_wheel_setup_t ws;
-			for(int w=0; w < rig.num_wheels; w++)
+			for (int w=0; w < rig.num_wheels; w++)
 			{
 				memset(&ws, 0, sizeof(ws));
 				ws.width  = v->wheels[w].width;

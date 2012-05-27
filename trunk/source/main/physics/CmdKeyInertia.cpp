@@ -47,7 +47,7 @@ CmdKeyInertia::~CmdKeyInertia()
 
 Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 {
-	if(cmdKey >= maxCmdKeys) return cmdInput;
+	if (cmdKey >= maxCmdKeys) return cmdInput;
 
 	if (cmdKeyInertia[cmdKey].startSpline==0 || cmdKeyInertia[cmdKey].stopSpline==0)
 		return cmdInput;
@@ -59,7 +59,7 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 	// difference to calculate if were are on the negative side
 	Real absDiff=cmdInput-lastOutput;
 	//if the value is close to our input, reset the timer
-	if(fabs(absDiff)<0.002)
+	if (fabs(absDiff)<0.002)
 		cmdKeyInertia[cmdKey].time=0;
 	//+dt after the timer had been set to zero prevents the motion to stop at 0.002
 	cmdKeyInertia[cmdKey].time+=dt;
@@ -94,7 +94,7 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 
 int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, String startFunction, String stopFunction)
 {
-	if(cmdKey >= maxCmdKeys) return 0;
+	if (cmdKey >= maxCmdKeys) return 0;
 
 	//Delay values should always be greater than 0
 	if (startDelay>0)
@@ -125,7 +125,7 @@ Real CmdKeyInertia::calculateCmdOutput(Real time,SimpleSpline *spline)
 {
 	if (time>1.0)
 		time=1.0;
-	if(!spline)
+	if (!spline)
 		return 0;
 	Vector3 output=spline->interpolate(time);
 	return output.y*0.001;
@@ -170,7 +170,7 @@ int CmdKeyInertia::loadDefaultInertiaModels()
 		}
 
 		// process the line if we got a model
-		if(!currentModel.empty())
+		if (!currentModel.empty())
 			processLine(args, currentModel);
 	}
 	return 0;
@@ -187,7 +187,7 @@ int CmdKeyInertia::processLine(Ogre::StringVector args,  String model)
 	Vector3 point = Vector3(pointx,pointy,0);
 
 	// find the spline to attach the points
-	if(splines.find(model) == splines.end())
+	if (splines.find(model) == splines.end())
 		splines[model] = SimpleSpline();
 
 	// attach the points to the spline

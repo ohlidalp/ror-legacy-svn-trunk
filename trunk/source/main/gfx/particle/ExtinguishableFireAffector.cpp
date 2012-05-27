@@ -90,27 +90,27 @@ namespace Ogre {
 	//-----------------------------------------------------------------------
 	void ExtinguishableFireAffector::_affectParticles(ParticleSystem* pSystem, Real timeElapsed)
 	{
-		if(firstFrame)
+		if (firstFrame)
 		{
 			originalDimensions = Vector2(pSystem->getDefaultWidth(), pSystem->getDefaultHeight());
 			originalIntensity = mIntensity;
 			firstFrame = false;
 		}
 
-		if(mIntensity < 0)
+		if (mIntensity < 0)
 		{
 			// The fire is extinguished (normally, this particleSystem should get deleted by the fire extinguisher, before this can happen)
 			mPsys->removeAllEmitters();
 		}
 		else
 		{
-			if(!updateIntensityRequired && mIntensity<mMaxIntensity) {
+			if (!updateIntensityRequired && mIntensity<mMaxIntensity) {
 				// No water is hitting the fire at the moment, so let's increase the fire intensity a little bit
 				mIntensity += mIntensityGrowth*timeElapsed;
 				updateIntensityRequired = true;
 			}
 
-			if(updateIntensityRequired)
+			if (updateIntensityRequired)
 			{
 				// update the fire
 				mPsys->setDefaultDimensions(originalDimensions.x*mIntensity/originalIntensity, originalDimensions.y*mIntensity/originalIntensity);
@@ -154,7 +154,7 @@ namespace Ogre {
 	Vector3 ExtinguishableFireAffector::getAbsoluteMiddlePoint(void) const
 	{
 		Node* node = mPsys->getParentNode();
-		if(!node) return mMiddlePoint;
+		if (!node) return mMiddlePoint;
 		return node->convertLocalToWorldPosition(mMiddlePoint);;
 	}
 	//-----------------------------------------------------------------------

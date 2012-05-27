@@ -65,9 +65,9 @@ void OverlayWrapper::placeNeedle(SceneNode *node, float x, float y, float len)
 Overlay *OverlayWrapper::loadOverlay(String name, bool autoResizeRation)
 {
 	Overlay *o = OverlayManager::getSingleton().getByName(name);
-	if(!o) return NULL;
+	if (!o) return NULL;
 
-	if(autoResizeRation)
+	if (autoResizeRation)
 	{
 		struct loadedOverlay_t lo;
 		lo.o = o;
@@ -88,7 +88,7 @@ void OverlayWrapper::resizeOverlay(struct loadedOverlay_t lo)
 	float s = (4.0f/3.0f) / (w/h);
 
 	// window is higher than wide
-	if(s > 1)
+	if (s > 1)
 		s = (3.0f/4.0f) / (h/w);
 
 	// originals
@@ -102,7 +102,7 @@ void OverlayWrapper::resizeOverlay(struct loadedOverlay_t lo)
 
 void OverlayWrapper::windowResized()
 {
-	for(std::vector<struct loadedOverlay_t>::iterator it = overlays.begin(); it != overlays.end(); it++)
+	for (std::vector<struct loadedOverlay_t>::iterator it = overlays.begin(); it != overlays.end(); it++)
 	{
 		resizeOverlay(*it);
 	}
@@ -140,7 +140,7 @@ int OverlayWrapper::init()
 	mTimingDebugOverlay->hide();
 
 	OverlayElement *vere = loadOverlayElement("Core/RoRVersionString");
-	if(vere) vere->setCaption("Rigs of Rods version " + String(ROR_VERSION_STRING));
+	if (vere) vere->setCaption("Rigs of Rods version " + String(ROR_VERSION_STRING));
 	
 
 
@@ -158,7 +158,7 @@ int OverlayWrapper::init()
 	resizePanel(loadOverlayElement("tracks/pressureo"));
 	resizePanel(loadOverlayElement("tracks/pressureneedle"));
 	MaterialPtr m = MaterialManager::getSingleton().getByName("tracks/pressureneedle_mat");
-	if(!m.isNull())
+	if (!m.isNull())
 		pressuretexture=m->getTechnique(0)->getPass(0)->getTextureUnitState(0);
 
 	resizePanel(loadOverlayElement("tracks/speedo"));
@@ -431,7 +431,7 @@ int OverlayWrapper::init()
 
 void OverlayWrapper::update(float dt)
 {
-	if(mTimeUntilNextToggle > 0)
+	if (mTimeUntilNextToggle > 0)
 		mTimeUntilNextToggle-=dt;
 }
 
@@ -441,7 +441,7 @@ void OverlayWrapper::showDebugOverlay(int mode)
 	if (mode > 0)
 	{
 		mDebugOverlay->show();
-		if(mode > 1)
+		if (mode > 1)
 			mTimingDebugOverlay->show();
 		else
 			mTimingDebugOverlay->hide();
@@ -490,11 +490,11 @@ void OverlayWrapper::showDashboardOverlays(bool show, Beam *truck)
 {
 	if (!needlesOverlay || !dashboardOverlay) return;
 	int mode = -1;
-	if(truck)
+	if (truck)
 		mode = truck->driveable;
 
 	// check if we use the new style dashboards
-	if(truck && truck->dash && truck->dash->wasLoaded())
+	if (truck && truck->dash && truck->dash->wasLoaded())
 	{
 		truck->dash->setVisible(show);
 		return;
@@ -569,9 +569,9 @@ void OverlayWrapper::updateStats(bool detailed)
 
 		OverlayElement* guiTris = OverlayManager::getSingleton().getOverlayElement("Core/NumTris");
 		UTFString triss = tris + TOUTFSTRING(stats.triangleCount);
-		if(stats.triangleCount > 1000000)
+		if (stats.triangleCount > 1000000)
 			triss = tris + TOUTFSTRING(stats.triangleCount/1000000.0f) + U(" M");
-		else if(stats.triangleCount > 1000)
+		else if (stats.triangleCount > 1000)
 			triss = tris + TOUTFSTRING(stats.triangleCount/1000.0f) + U(" k");
 		guiTris->setCaption(triss);
 
@@ -579,10 +579,10 @@ void OverlayWrapper::updateStats(bool detailed)
 		/*
 		OverlayElement* guiDbg = OverlayManager::getSingleton().getOverlayElement("Core/DebugText");
 		UTFString debugText = "";
-		for(int t=0;t<free_truck;t++)
+		for (int t=0;t<free_truck;t++)
 		{
-			if(!trucks[t]) continue;
-			if(!trucks[t]->debugText.empty())
+			if (!trucks[t]) continue;
+			if (!trucks[t]->debugText.empty())
 				debugText += TOSTRING(t) + ": " + trucks[t]->debugText + "\n";
 		}
 		guiDbg->setCaption(debugText);
@@ -590,23 +590,23 @@ void OverlayWrapper::updateStats(bool detailed)
 
 		// create some memory texts
 		UTFString memoryText;
-		if(TextureManager::getSingleton().getMemoryUsage() > 1)
+		if (TextureManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Textures: ") + formatBytes(TextureManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(TextureManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(CompositorManager::getSingleton().getMemoryUsage() > 1)
+		if (CompositorManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Compositors: ") + formatBytes(CompositorManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(CompositorManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(FontManager::getSingleton().getMemoryUsage() > 1)
+		if (FontManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Fonts: ") + formatBytes(FontManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(FontManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(GpuProgramManager::getSingleton().getMemoryUsage() > 1)
+		if (GpuProgramManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("GPU Program: ") + formatBytes(GpuProgramManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(GpuProgramManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() >1)
+		if (HighLevelGpuProgramManager ::getSingleton().getMemoryUsage() >1)
 			memoryText = memoryText + _L("HL GPU Program: ") + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(HighLevelGpuProgramManager ::getSingleton().getMemoryBudget()) + U("\n");
-		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
+		if (MaterialManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Materials: ") + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(MeshManager::getSingleton().getMemoryUsage() > 1)
+		if (MeshManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Meshes: ") + formatBytes(MeshManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(MeshManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(SkeletonManager::getSingleton().getMemoryUsage() > 1)
+		if (SkeletonManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Skeletons: ") + formatBytes(SkeletonManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(SkeletonManager::getSingleton().getMemoryBudget()) + U("\n");
-		if(MaterialManager::getSingleton().getMemoryUsage() > 1)
+		if (MaterialManager::getSingleton().getMemoryUsage() > 1)
 			memoryText = memoryText + _L("Materials: ") + formatBytes(MaterialManager::getSingleton().getMemoryUsage()) + U(" / ") + formatBytes(MaterialManager::getSingleton().getMemoryBudget()) + U("\n");
 		memoryText = memoryText + U("\n");
 
@@ -630,14 +630,14 @@ void OverlayWrapper::updateStats(bool detailed)
 
 int OverlayWrapper::getDashBoardHeight()
 {
-	if(!dashboardOverlay) return 0;
+	if (!dashboardOverlay) return 0;
 	float top = 1 + OverlayManager::getSingleton().getOverlayElement("tracks/dashbar")->getTop() * dashboardOverlay->getScaleY(); // tracks/dashbar top = -0.15 by default
 	return (int)(top * (float)win->getHeight());
 }
 
 bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 {
-	if(!airneedlesOverlay->isVisible()) return false;
+	if (!airneedlesOverlay->isVisible()) return false;
 	bool res = false;
 	const OIS::MouseState ms = _arg.state;
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
@@ -679,7 +679,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_hdg_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleHeading(Autopilot::HEADING_FIXED)==Autopilot::HEADING_FIXED)
+				if (curr_truck->autopilot->toggleHeading(Autopilot::HEADING_FIXED)==Autopilot::HEADING_FIXED)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_hdg_but")->setMaterialName("tracks/hdg-off");
@@ -689,7 +689,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_wlv_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleHeading(Autopilot::HEADING_WLV)==Autopilot::HEADING_WLV)
+				if (curr_truck->autopilot->toggleHeading(Autopilot::HEADING_WLV)==Autopilot::HEADING_WLV)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_wlv_but")->setMaterialName("tracks/wlv-off");
@@ -699,7 +699,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_nav_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleHeading(Autopilot::HEADING_NAV)==Autopilot::HEADING_NAV)
+				if (curr_truck->autopilot->toggleHeading(Autopilot::HEADING_NAV)==Autopilot::HEADING_NAV)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_nav_but")->setMaterialName("tracks/nav-off");
@@ -710,7 +710,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_alt_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleAlt(Autopilot::ALT_FIXED)==Autopilot::ALT_FIXED)
+				if (curr_truck->autopilot->toggleAlt(Autopilot::ALT_FIXED)==Autopilot::ALT_FIXED)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_alt_but")->setMaterialName("tracks/hold-off");
@@ -719,7 +719,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_vs_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleAlt(Autopilot::ALT_VS)==Autopilot::ALT_VS)
+				if (curr_truck->autopilot->toggleAlt(Autopilot::ALT_VS)==Autopilot::ALT_VS)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_vs_but")->setMaterialName("tracks/vs-off");
@@ -729,7 +729,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_ias_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleIAS())
+				if (curr_truck->autopilot->toggleIAS())
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_but")->setMaterialName("tracks/athr-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_ias_but")->setMaterialName("tracks/athr-off");
@@ -738,7 +738,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_gpws_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				mTimeUntilNextToggle = 0.2;
-				if(curr_truck->autopilot->toggleGPWS())
+				if (curr_truck->autopilot->toggleGPWS())
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_gpws_but")->setMaterialName("tracks/gpws-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_gpws_but")->setMaterialName("tracks/gpws-off");
@@ -747,7 +747,7 @@ bool OverlayWrapper::mouseMoved(const OIS::MouseEvent& _arg)
 			if (!strcmp(name, "tracks/ap_brks_but") && curr_truck->autopilot && mTimeUntilNextToggle <= 0)
 			{
 				curr_truck->parkingbrakeToggle();
-				if(curr_truck->parkingbrake)
+				if (curr_truck->parkingbrake)
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-on");
 				else
 					OverlayManager::getSingleton().getOverlayElement("tracks/ap_brks_but")->setMaterialName("tracks/brks-off");

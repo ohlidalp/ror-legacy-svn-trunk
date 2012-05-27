@@ -71,9 +71,9 @@ Turbojet::Turbojet(char* propname, int tnumber, int trucknum, node_t *nd, int tn
 	sprintf(paname, "%s-nozzle", propname);
 	Entity *te = globalEnvironment->ogreSceneManager->createEntity(paname, "nozzle.mesh");
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 0.5, 0.5));
-	if(mfm) mfm->replaceMeshMaterials(te);
-	if(mr) mr->replaceMeshMaterials(te);
-	if(usedSkin) usedSkin->replaceMeshMaterials(te);
+	if (mfm) mfm->replaceMeshMaterials(te);
+	if (mr) mr->replaceMeshMaterials(te);
+	if (usedSkin) usedSkin->replaceMeshMaterials(te);
 	nzsnode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	nzsnode->attachObject(te);
 	nzsnode->setScale(nozlength, nozdiam, nozdiam);
@@ -82,9 +82,9 @@ Turbojet::Turbojet(char* propname, int tnumber, int trucknum, node_t *nd, int tn
 		sprintf(paname, "%s-abflame", propname);
 		te = globalEnvironment->ogreSceneManager->createEntity(paname, "abflame.mesh");
 		MaterialFunctionMapper::replaceSimpleMeshMaterials(te, ColourValue(1, 1, 0));
-		if(mfm) mfm->replaceMeshMaterials(te);
-		if(mr) mr->replaceMeshMaterials(te);
-		if(usedSkin) usedSkin->replaceMeshMaterials(te);
+		if (mfm) mfm->replaceMeshMaterials(te);
+		if (mr) mr->replaceMeshMaterials(te);
+		if (usedSkin) usedSkin->replaceMeshMaterials(te);
 		absnode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		absnode->attachObject(te);
 		absnode->setScale(1.0, nozdiam, nozdiam);
@@ -109,7 +109,7 @@ Turbojet::Turbojet(char* propname, int tnumber, int trucknum, node_t *nd, int tn
 		}
 
 		heathazePS=0;
-		if(heathaze)
+		if (heathaze)
 		{
 			sprintf(paname,"%s-smoke-heat", propname);
 			heathazePS=globalEnvironment->ogreSceneManager->createParticleSystem(paname, "tracks/JetHeatHaze");
@@ -149,11 +149,11 @@ void Turbojet::updateVisuals()
 		smokeNode->setPosition(nodes[nodeback].smoothpos);
 		ParticleEmitter *emit=smokePS->getEmitter(0);
 		ParticleEmitter *hemit=0;
-		if(heathazePS)
+		if (heathazePS)
 			hemit=heathazePS->getEmitter(0);
 		emit->setDirection(-axis);
 		emit->setParticleVelocity(exhaust_velocity);
-		if(hemit)
+		if (hemit)
 		{
 			hemit->setDirection(-axis);
 			hemit->setParticleVelocity(exhaust_velocity);
@@ -165,7 +165,7 @@ void Turbojet::updateVisuals()
 				emit->setEnabled(true);
 				emit->setColour(ColourValue(0.0,0.0,0.0,0.02+throtle*0.03));
 				emit->setTimeToLive((0.02+throtle*0.03)/0.1);
-				if(hemit)
+				if (hemit)
 				{
 					hemit->setEnabled(true);
 					hemit->setTimeToLive((0.02+throtle*0.03)/0.1);
@@ -174,7 +174,7 @@ void Turbojet::updateVisuals()
 			else
 			{
 				emit->setEnabled(false);
-				if(hemit)
+				if (hemit)
 					hemit->setEnabled(false);
 			}
 		}
@@ -186,7 +186,7 @@ void Turbojet::updateVisuals()
 			emit->setColour(ColourValue(0.0,0.0,0.0,0.1));
 			emit->setTimeToLive(0.1/0.1);
 			
-			if(hemit)
+			if (hemit)
 			{
 				hemit->setDirection(Vector3(0,1,0));
 				hemit->setParticleVelocity(7.0);

@@ -66,7 +66,7 @@ void CharacterFactory::localUserAttributesChanged(int newid)
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
-	if(streamables.find(-1) == streamables.end())
+	if (streamables.find(-1) == streamables.end())
 	{
 		unlockStreams();
 		return;
@@ -86,12 +86,12 @@ void CharacterFactory::netUserAttributesChanged(int source, int streamid)
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	for (it1=streamables.begin(); it1!=streamables.end();it1++)
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		for (it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
-			if(c) c->updateNetLabel();
+			if (c) c->updateNetLabel();
 		}
 	}
 	unlockStreams();
@@ -104,12 +104,12 @@ void CharacterFactory::updateCharacters(float dt)
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	for (it1=streamables.begin(); it1!=streamables.end();it1++)
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		for (it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
-			if(c) c->update(dt);
+			if (c) c->update(dt);
 		}
 	}
 	unlockStreams();
@@ -122,12 +122,12 @@ void CharacterFactory::updateLabels()
 	std::map < int, std::map < unsigned int, Character *> >::iterator it1;
 	std::map < unsigned int, Character *>::iterator it2;
 
-	for(it1=streamables.begin(); it1!=streamables.end();it1++)
+	for (it1=streamables.begin(); it1!=streamables.end();it1++)
 	{
-		for(it2=it1->second.begin(); it2!=it1->second.end();it2++)
+		for (it2=it1->second.begin(); it2!=it1->second.end();it2++)
 		{
 			Character *c = dynamic_cast<Character*>(it2->second);
-			if(c) c->updateNetLabelSize();
+			if (c) c->updateNetLabelSize();
 		}
 	}
 	unlockStreams();

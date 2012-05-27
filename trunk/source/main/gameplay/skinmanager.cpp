@@ -64,7 +64,7 @@ Resource* SkinManager::createImpl(const String& name, ResourceHandle handle,
 	try
 	{
 		bool existing = (mResources.find(name) != mResources.end());
-		if(existing)
+		if (existing)
 			return mResources[name].getPointer();
 		else
 			return new Skin(this, name, handle, group, isManual, loader);
@@ -86,7 +86,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 		{
 			line = stream->getLine();
 			// Ignore blanks & comments
-			if( !line.length() || line.substr( 0, 2 ) == "//" )
+			if ( !line.length() || line.substr( 0, 2 ) == "//" )
 			{
 				continue;
 			}
@@ -132,7 +132,7 @@ void SkinManager::parseScript(DataStreamPtr& stream, const String& groupName)
 void SkinManager::parseAttribute(const String& line, Skin *pSkin)
 {
 	Ogre::StringVector params = StringUtil::split(line, "\t=,;\n");
-	for(unsigned int i=0; i < params.size(); i++)
+	for (unsigned int i=0; i < params.size(); i++)
 	{
 		// trim all parameters
 		StringUtil::trim(params[i]);

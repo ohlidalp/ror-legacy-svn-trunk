@@ -97,7 +97,7 @@ BeamEngineStats::~BeamEngineStats()
 
 BeamEngineStats &BeamEngineStats::getInstance()
 {
-	if(myInstance == 0) {
+	if (myInstance == 0) {
 		myInstance = new BeamEngineStats();
 	}
 	return *myInstance;
@@ -105,21 +105,21 @@ BeamEngineStats &BeamEngineStats::getInstance()
 
 BeamThreadStats *BeamEngineStats::getClient(int number, int type)
 {
-	if(!enabled)
+	if (!enabled)
 		return 0;
 	BeamThreadStats *bts = new BeamThreadStats(type);
 
 	// TODO: check for duplicates
-	//if(statClients[number]!=0)
+	//if (statClients[number]!=0)
 	//	delete statClients[number];
 
 	stats_entry_t e;
 	e.trucknum = number;
 	e.stat = bts;
 
-	if(type == BES_CORE)
+	if (type == BES_CORE)
 		statClients.push_back(e);
-	else if(type == BES_GFX)
+	else if (type == BES_GFX)
 		statClientsGFX.push_back(e);
 
 	return bts;
@@ -136,15 +136,15 @@ bool BeamEngineStats::updateGUI(float dt)
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	
 	updateTimeGUI += dt;
-	if(updateTimeGUI < 5.0f)
+	if (updateTimeGUI < 5.0f)
 		return true;
 
 	updateTimeGUI = 0;
 
-	if(statClients.size() == 0)
+	if (statClients.size() == 0)
 		return true;
 
-	if(!stats->isVisible())
+	if (!stats->isVisible())
 		return true;
 
 	String msg = "";
@@ -153,11 +153,11 @@ bool BeamEngineStats::updateGUI(float dt)
 	char tmp_gfx[1024]="";
 	char line[1024]="";
 
-	for(unsigned int c = 0; c < statClients.size(); c++)
+	for (unsigned int c = 0; c < statClients.size(); c++)
 	{
-		//if(it->first != current_truck || trucks[it->first]->state == SLEEPING)
-		if(!trucks[statClients[c].trucknum]) continue;
-		if(trucks[statClients[c].trucknum]->state == SLEEPING)
+		//if (it->first != current_truck || trucks[it->first]->state == SLEEPING)
+		if (!trucks[statClients[c].trucknum]) continue;
+		if (trucks[statClients[c].trucknum]->state == SLEEPING)
 			continue;
 
 		BeamThreadStats *core = statClients[c].stat;
@@ -174,7 +174,7 @@ bool BeamEngineStats::updateGUI(float dt)
 
 		sum = core->getTiming(BES_CORE_WholeTruckCalc);
 		sum_gfx = core->getTiming(BES_CORE_WholeTruckCalc);
-		if(sum==0)
+		if (sum==0)
 			continue;
 
 		sprintf(tmp, " %20s: % 10.4f%% : %1.6fs", "Whole truck", 100.0f, sum);
@@ -183,13 +183,13 @@ bool BeamEngineStats::updateGUI(float dt)
 		msg += String(line);
 
 		float sum_real = 0, sum_real_gfx = 0;
-		for(int i=1;i<MAX_TIMINGS;i++)
+		for (int i=1;i<MAX_TIMINGS;i++)
 		{
 			sprintf(tmp, "");
 			sprintf(tmp_gfx, "");
 
 			bool addLine=false;
-			if(!typeDescriptions[i].empty())
+			if (!typeDescriptions[i].empty())
 			{
 				t = core->getTiming(i);
 				sum_real += t;
@@ -197,7 +197,7 @@ bool BeamEngineStats::updateGUI(float dt)
 				sprintf(tmp, " %20s: % 10.4f%% : %1.6fs", typeDescriptions[i].c_str(), perc, t);
 				addLine=true;
 			}
-			if(!typeDescriptions_gfx[i].empty())
+			if (!typeDescriptions_gfx[i].empty())
 			{
 				t = gfx->getTiming(i);
 				sum_real_gfx += t;
@@ -205,7 +205,7 @@ bool BeamEngineStats::updateGUI(float dt)
 				sprintf(tmp_gfx, " %20s: % 10.4f%% : %1.6fs", typeDescriptions_gfx[i].c_str(), perc, t);
 				addLine=true;
 			}
-			if(!addLine) break;
+			if (!addLine) break;
 			sprintf(line, "%-46s  |  %-46s\n", tmp, tmp_gfx);
 			msg += String(line);
 		}
@@ -248,7 +248,7 @@ BeamThreadStats::~BeamThreadStats()
 void BeamThreadStats::frameStep(float ds)
 {
 	updateTime += ds;
-	if(updateTime > 5.0f)
+	if (updateTime > 5.0f)
 	{
 		for (int i=0; i<MAX_TIMINGS; i++)
 			timings[i]=0;
@@ -264,17 +264,17 @@ void BeamThreadStats::queryStart(int type)
 
 void BeamThreadStats::queryStop(int type)
 {
-	if(!timings_start[type]) return;
+	if (!timings_start[type]) return;
 
 	timings[type] += (timings_start[type]->elapsed());
 
-	if(stype == BES_CORE && type == BES_CORE_WholeTruckCalc)
+	if (stype == BES_CORE && type == BES_CORE_WholeTruckCalc)
 	{
 		// secure timings
 		physcounter++;
 		memcpy(savedTimings, timings, sizeof(double) * MAX_TIMINGS);
 	}
-	else if(stype == BES_GFX)
+	else if (stype == BES_GFX)
 	{
 		// secure timings
 		memcpy(savedTimings, timings, sizeof(double) * MAX_TIMINGS);

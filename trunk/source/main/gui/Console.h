@@ -27,8 +27,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-#define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c,d,e,f); }
-#define CONSOLE_PUTMESSAGE_SHORT(a,b,c) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if(console) console->putMessage(a,b,c); }
+#define CONSOLE_PUTMESSAGE(a,b,c,d,e,f) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if (console) console->putMessage(a,b,c,d,e,f); }
+#define CONSOLE_PUTMESSAGE_SHORT(a,b,c) while(0) { Console *console = Console::getSingletonPtrNoCreation(); if (console) console->putMessage(a,b,c); }
 
 #include "RoRPrerequisites.h"
 

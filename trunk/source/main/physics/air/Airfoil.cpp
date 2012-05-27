@@ -45,7 +45,7 @@ Airfoil::Airfoil(char* fname)
 	}catch(...)
 	{
 	}
-	if(group == "")
+	if (group == "")
 	{
 		LOG(String("Airfoil error: could not load airfoil ")+fname);
 		return;

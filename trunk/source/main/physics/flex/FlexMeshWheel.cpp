@@ -41,9 +41,9 @@ FlexMeshWheel::FlexMeshWheel(char* name, node_t *nds, int n1, int n2, int nstart
 	sprintf(rimname, "rim-%s", name);
 	rimEnt = globalEnvironment->ogreSceneManager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
-	if(mfm) mfm->replaceMeshMaterials(rimEnt);
-	if(mr) mr->replaceMeshMaterials(rimEnt);
-	if(usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
+	if (mfm) mfm->replaceMeshMaterials(rimEnt);
+	if (mr) mr->replaceMeshMaterials(rimEnt);
+	if (usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
 	rnode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	rnode->attachObject(rimEnt);
 
@@ -296,7 +296,7 @@ Vector3 FlexMeshWheel::updateShadowVertices()
 
 void FlexMeshWheel::setVisible(bool visible)
 {
-	if(rnode) rnode->setVisible(visible);
+	if (rnode) rnode->setVisible(visible);
 }
 
 Vector3 FlexMeshWheel::flexit()

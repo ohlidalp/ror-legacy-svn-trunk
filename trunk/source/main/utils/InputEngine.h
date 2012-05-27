@@ -484,7 +484,7 @@ public:
 #ifdef USE_OIS_G27
 	OIS::Win32LogitechLEDs* getLogitechLEDsDevice()
 	{
-		if(free_joysticks > 0 && mJoy[0])
+		if (free_joysticks > 0 && mJoy[0])
 			return (OIS::Win32LogitechLEDs*)mJoy[0]->queryInterface(OIS::Interface::LogitechLEDs);
 		return 0;
 	}

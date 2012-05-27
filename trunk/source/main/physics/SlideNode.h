@@ -179,7 +179,7 @@ public:
 	void cleanUp()
 	{
 		Rail* cur = mStart;
-		if( cur->prev ) cur->prev = cur->prev->next = NULL;
+		if ( cur->prev ) cur->prev = cur->prev->next = NULL;
 		while( cur->next )
 		{
 			cur = cur->next;
@@ -414,7 +414,7 @@ public:
 	 */
     static Ogre::Real getLenTo( const RailGroup* group, const Ogre::Vector3& point )
     {
-    	if( !group ) return std::numeric_limits<Ogre::Real>::infinity();
+    	if ( !group ) return std::numeric_limits<Ogre::Real>::infinity();
     	
     	return getLenTo( group->getStartRail(), point);	
     }
@@ -426,7 +426,7 @@ public:
      */
     static Ogre::Real getLenTo( const Rail* rail, const Ogre::Vector3& point )
     {
-    	if( !rail ) return std::numeric_limits<Ogre::Real>::infinity();
+    	if ( !rail ) return std::numeric_limits<Ogre::Real>::infinity();
     	
     	return getLenTo( rail->curBeam, point);	
     }
@@ -438,7 +438,7 @@ public:
      */
     static Ogre::Real getLenTo( const beam_t* beam, const Ogre::Vector3& point )
     {
-    	if( !beam ) return std::numeric_limits<Ogre::Real>::infinity();
+    	if ( !beam ) return std::numeric_limits<Ogre::Real>::infinity();
     	
     	return ( nearestPointOnLine(beam->p1->AbsPosition, beam->p2->AbsPosition, point)- point ).length();	
     }

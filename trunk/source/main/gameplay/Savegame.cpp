@@ -36,10 +36,10 @@ using namespace Ogre;
 const char *Savegame::current_version = "ROR_SAVEGAME_v2";
 
 #define WRITEVAR(x)    fwrite(&x, sizeof(x), 1, f)
-#define WRITEARR(x, y) for(int n = 0; n < y; n++) { WRITEVAR(x); }
+#define WRITEARR(x, y) for (int n = 0; n < y; n++) { WRITEVAR(x); }
 
 #define READVAR(x)     fread(&x, sizeof(x), 1, f)
-#define READARR(x,y)   for(int n = 0; n < y; n++) { READVAR(x); }
+#define READARR(x,y)   for (int n = 0; n < y; n++) { READVAR(x); }
 
 int Savegame::save(Ogre::String &filename)
 {
@@ -49,7 +49,7 @@ int Savegame::save(Ogre::String &filename)
 	// wait for engine sync?
 
 	// TODO: show error
-	if(!f)
+	if (!f)
 	{
 		LOG("error opening savegame");
 #ifdef USE_MYGUI
@@ -73,13 +73,13 @@ int Savegame::save(Ogre::String &filename)
 
 		{
 			// and generic things like character and camera
-			if(globalEnvironment->player)
+			if (globalEnvironment->player)
 			{
 				Vector3 pos = globalEnvironment->player->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if(globalEnvironment->ogreCamera)
+			if (globalEnvironment->ogreCamera)
 			{
 				Vector3 pos = globalEnvironment->ogreCamera->getPosition();
 				// WARNING: breaks if Real == double!
@@ -110,10 +110,10 @@ int Savegame::save(Ogre::String &filename)
 	}
 
 	// iterate the trucks
-	for(int i = 0; i < free_truck; i++)
+	for (int i = 0; i < free_truck; i++)
 	{
 		Beam *t = trucks[i];
-		if(!t) continue;
+		if (!t) continue;
 
 		// construct entry header
 		{
@@ -129,7 +129,7 @@ int Savegame::save(Ogre::String &filename)
 			strcpy(dh.filename, t->realtruckfilename.c_str());
 			memcpy(&dh.origin, t->origin.ptr(), sizeof(float) * 3);
 
-			if(t->engine) dh.engine = 1;
+			if (t->engine) dh.engine = 1;
 
 			// write entry header to file
 			fwrite(&dh, sizeof(dh), 1, f);
@@ -216,7 +216,7 @@ int Savegame::load(Ogre::String &filename)
 	// wait for engine sync
 	//BEAMLOCK();
 
-	if(!f)
+	if (!f)
 	{
 		LOG("error opening savegame");
 #ifdef USE_MYGUI
@@ -233,7 +233,7 @@ int Savegame::load(Ogre::String &filename)
 	struct savegame_header h;
 	{
 		fread(&h, sizeof(h), 1, f);
-		if(strcmp(h.savegame_version, current_version))
+		if (strcmp(h.savegame_version, current_version))
 		{
 			String errstr = _L("unknown savegame version: ") + String(h.savegame_version) + _L(" supported version: ") + String(current_version);
 			LOG(errstr);
@@ -248,14 +248,14 @@ int Savegame::load(Ogre::String &filename)
 	// restore generic things: characer and camera
 	{
 		// and generic things like character and camera
-		if(globalEnvironment->player)
+		if (globalEnvironment->player)
 		{
 			globalEnvironment->player->setPosition(Vector3(h.player_pos));
 		}
 
 		// TODO: FIX savegame camera integration
 		/*
-		if(globalEnvironment->frameListener->getCamera())
+		if (globalEnvironment->frameListener->getCamera())
 		{
 			globalEnvironment->frameListener->getCamera()->setPosition(Vector3(h.cam_pos));
 		}
@@ -279,13 +279,13 @@ int Savegame::load(Ogre::String &filename)
 	}
 
 	// iterate the trucks
-	for(unsigned int i = 0; i < h.entries; i++)
+	for (unsigned int i = 0; i < h.entries; i++)
 	{
 		struct savegame_entry_header dh;
 		fread(&dh, sizeof(dh), 1, f);
 
 		// check magic first, to prevent reading corrupt data
-		if(dh.magic != entry_magic)
+		if (dh.magic != entry_magic)
 		{
 			LOG(_L("savegame corrupted: ") + filename);
 #ifdef USE_MYGUI
@@ -300,10 +300,10 @@ int Savegame::load(Ogre::String &filename)
 
 		// now iterate all existing trucks and look if we can reuse one
 		Beam *t = NULL;
-		for(int tn = 0; tn < free_truck; tn++)
+		for (int tn = 0; tn < free_truck; tn++)
 		{
-			if(!trucks[tn]) continue;
-			if(trucks[tn]->realtruckfilename == String(dh.filename))
+			if (!trucks[tn]) continue;
+			if (trucks[tn]->realtruckfilename == String(dh.filename))
 			{
 				// found, set it!
 				t = trucks[tn];
@@ -312,14 +312,14 @@ int Savegame::load(Ogre::String &filename)
 		}
 
 		// no spawned truck found, create a new one
-		if(!t)
+		if (!t)
 		{
 			t = BeamFactory::getSingleton().createLocal(origin, Quaternion::ZERO, dh.filename);
 		}
 
 		// still a problem?
 		// ignore this vehicle then
-		if(!t)
+		if (!t)
 		{
 			LOG("error loading vehicle from savegame: " + String(dh.filename));
 			continue;
@@ -328,12 +328,12 @@ int Savegame::load(Ogre::String &filename)
 		// now load the data from the file into the vehicle
 
 		// and the nodes and beams
-		if(t->free_node != dh.free_nodes)
+		if (t->free_node != dh.free_nodes)
 		{
 			LOG("wrong node number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_nodes) + " nodes, but vehicle has " + TOSTRING(t->free_node) + " nodes. Will not load that vehicle.");
 			continue;
 		}
-		for(int n = 0; n < t->free_node; n++)
+		for (int n = 0; n < t->free_node; n++)
 		{
 			// save some pointers
 			SceneNode *tmp = t->nodes[n].mSceneNode;
@@ -345,12 +345,12 @@ int Savegame::load(Ogre::String &filename)
 			t->nodes[n].mSceneNode = tmp;
 		}
 
-		if(t->free_beam != dh.free_beams)
+		if (t->free_beam != dh.free_beams)
 		{
 			LOG("wrong beam number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_nodes) + " beams, but vehicle has " + TOSTRING(t->free_node) + " beams. Will not load that vehicle.");
 			continue;
 		}
-		for(int n = 0; n < t->free_beam; n++)
+		for (int n = 0; n < t->free_beam; n++)
 		{
 			// save some pointers
 			beam_t tmp;
@@ -373,19 +373,19 @@ int Savegame::load(Ogre::String &filename)
 			t->beams[n].mEntity    = tmp.mEntity;
 		}
 
-		if(t->free_shock != dh.free_shock)
+		if (t->free_shock != dh.free_shock)
 		{
 			LOG("wrong shock number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_shock) + " shocks, but vehicle has " + TOSTRING(t->free_shock) + " shocks. Will not load that vehicle.");
 			continue;
 		}
 		READARR(t->shocks[n], t->free_shock);
 
-		if(t->free_wheel != dh.free_wheel)
+		if (t->free_wheel != dh.free_wheel)
 		{
 			LOG("wrong wheel number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_wheel) + " wheels, but vehicle has " + TOSTRING(t->free_wheel) + " wheels. Will not load that vehicle.");
 			continue;
 		}
-		for(int n = 0; n < t->free_wheel; n++)
+		for (int n = 0; n < t->free_wheel; n++)
 		{
 			wheel_t tmp;
 			fread(&tmp, sizeof(tmp), 1, f);
@@ -396,12 +396,12 @@ int Savegame::load(Ogre::String &filename)
 		
 
 		/*
-		if(t->hooks.size() != dh.free_hooks)
+		if (t->hooks.size() != dh.free_hooks)
 		{
 			LOG("wrong hook number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_hooks) + " hooks, but vehicle has " + TOSTRING(t->hooks.size()) + " hooks. Will not load that vehicle.");
 			continue;
 		}
-		for(int n = 0; n < t->hooks.size(); n++)
+		for (int n = 0; n < t->hooks.size(); n++)
 		{
 			hook_t tmp;
 			fread(&tmp, sizeof(tmp), 1, f);
@@ -409,12 +409,12 @@ int Savegame::load(Ogre::String &filename)
 		}
 		*/
 
-		if(t->free_rotator != dh.free_rotator)
+		if (t->free_rotator != dh.free_rotator)
 		{
 			LOG("wrong rotator number for truck " + String(dh.filename) + " expected " + TOSTRING(dh.free_rotator) + " rotators, but vehicle has " + TOSTRING(t->free_rotator) + " rotators. Will not load that vehicle.");
 			continue;
 		}
-		for(int n = 0; n < t->free_rotator; n++)
+		for (int n = 0; n < t->free_rotator; n++)
 		{
 			rotator_t tmp;
 			fread(&tmp, sizeof(tmp), 1, f);
@@ -465,7 +465,7 @@ int Savegame::load(Ogre::String &filename)
 
 		// important: active all vehicles upon loading!
 		// they will go sleeping automatically
-		if(t->state > DESACTIVATED)
+		if (t->state > DESACTIVATED)
 			t->state = DESACTIVATED; // desactivated = active but not leading
 	}
 

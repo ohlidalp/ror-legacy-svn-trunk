@@ -34,7 +34,7 @@ using namespace Ogre;
 PreviewRenderer::PreviewRenderer()
 {
 	fn = SSETTING("OPT_IMGPATH", "");
-	if(fn.empty()) return;
+	if (fn.empty()) return;
 	LOG("previewRenderer initialized");
 }
 
@@ -80,7 +80,7 @@ void PreviewRenderer::render()
 	
 	
 	// DO NOT accelerate
-	//if(truck->engine)
+	//if (truck->engine)
 	//	truck->engine->autoSetAcc(0.2f);
 
 	// steer a bit
@@ -109,7 +109,7 @@ void PreviewRenderer::render()
 	for (int i=0; i < truck->free_node; i++)
 	{
 		Real dist = truck->nodes[i].AbsPosition.distance(truck->position);
-		if(dist > minCameraRadius)
+		if (dist > minCameraRadius)
 			minCameraRadius = dist;
 	}
 	minCameraRadius *= 2.1f;
@@ -166,7 +166,7 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 {
 	float ominCameraRadius = minCameraRadius;
 
-	for(int o=0;o<2;o++)
+	for (int o=0;o<2;o++)
 	{
 		String oext = "ortho.";
 		if     (o == 0)
@@ -174,20 +174,20 @@ void PreviewRenderer::render2dviews(Beam *truck, Camera *cam, float minCameraRad
 			cam->setProjectionType(PT_ORTHOGRAPHIC);
 			minCameraRadius = ominCameraRadius * 2.1f;
 		}
-		else if(o == 1)
+		else if (o == 1)
 		{
 			oext = "3d.";
 			cam->setProjectionType(PT_PERSPECTIVE);
 			minCameraRadius = ominCameraRadius * 2.4f;
 		}
 
-		for(int i=0;i<2;i++)
+		for (int i=0;i<2;i++)
 		{
 			String ext = "normal.";
-			if(i == 0)
+			if (i == 0)
 			{
 				truck->hideSkeleton(true);
-			} else if(i == 1)
+			} else if (i == 1)
 			{
 				ext = "skeleton.";
 				// now show the skeleton
@@ -253,7 +253,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	//renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
 
 #ifdef USE_CAELUM
-	if(globalEnvironment->sky)
+	if (globalEnvironment->sky)
 	{
 		globalEnvironment->sky->notifyCameraChanged(renderCamera);
 //		globalEnvironment->terrainManager->getSkyManager()->forceUpdate(0.01f);
@@ -266,11 +266,11 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	const float yDivFactor = 1.0f / yaw_angles;
 	for (int s=0;s<2; s++)
 	{
-		if(s == 0)
+		if (s == 0)
 		{
 			truck->hideSkeleton(true);
 			skelmode = "normal";
-		} else if(s == 1)
+		} else if (s == 1)
 		{
 			skelmode = "skeleton";
 			// now show the skeleton
@@ -297,7 +297,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				sprintf(tmp, "%03d_%03d.jpg", i, o); // use .png for transparancy
 				String ifn = fn + skelmode + SSETTING("dirsep", "\\") + String(tmp);
     			
-				if(fileExists(ifn.c_str()))
+				if (fileExists(ifn.c_str()))
 				{
 					LOG("rending skipped - already existing [" + TOSTRING(yaw) + String(" / ") + TOSTRING(pitch) + String(" / ") + TOSTRING(radius) + String("] ") + ifn);
 					continue;
@@ -311,7 +311,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				Root::getSingleton().renderOneFrame();
 				renderTarget->update();
 #ifdef USE_CAELUM
-				if(globalEnvironment->sky)
+				if (globalEnvironment->sky)
 				{
 					globalEnvironment->sky->forceUpdate(0.01f);
 				}
