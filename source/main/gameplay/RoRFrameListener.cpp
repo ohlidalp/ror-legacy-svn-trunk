@@ -142,7 +142,7 @@ using namespace Ogre;
 bool shutdownall=false;
 
 //workaround for pagedgeometry
-inline float getTerrainHeight(Ogre::Real x, Ogre::Real z, void *unused=0)
+inline float getTerrainHeight(Real x, Real z, void *unused=0)
 {
 	if (!globalEnvironment->terrainManager->getHeightFinder())
 		return 1;
@@ -687,7 +687,7 @@ void RoRFrameListener::updateGUI(float dt)
 }
 
 // Constructor takes a RenderWindow because it uses that to determine input context
-RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd) :
+RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	clutch(0),
 	dashboard(0),
 	debugCollisions(false),
@@ -911,13 +911,13 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	Vector3 spawnLocation = Vector3::ZERO;
 	if (!cmd.empty())
 	{
-		Ogre::StringVector str = StringUtil::split(cmd, "/");
+		StringVector str = StringUtil::split(cmd, "/");
 		// process args now
-		for (Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
+		for (StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		{
 
 			String argstr = *it;
-			Ogre::StringVector args = StringUtil::split(argstr, ":");
+			StringVector args = StringUtil::split(argstr, ":");
 			if (args.size()<2) continue;
 			if (args[0] == "action" && args.size() == 2) cmdAction = args[1];
 			if (args[0] == "serverpass" && args.size() == 2) SETTINGS.setSetting("Server password", args[1]);
@@ -2374,8 +2374,8 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_CAELUM
 		if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
 		{
-			Ogre::Real time_factor = 1000.0f;
-			Ogre::Real multiplier = 10;
+			Real time_factor = 1000.0f;
+			Real multiplier = 10;
 			bool update_time = false;
 
 			if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && globalEnvironment->terrainManager->getSkyManager())
@@ -2420,13 +2420,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			switch (mSceneDetailIndex)
 			{
 			case 0:
-				globalEnvironment->ogreCamera->setPolygonMode(Ogre::PM_SOLID);
+				globalEnvironment->ogreCamera->setPolygonMode(PM_SOLID);
 				break;
 			case 1:
-				globalEnvironment->ogreCamera->setPolygonMode(Ogre::PM_WIREFRAME);
+				globalEnvironment->ogreCamera->setPolygonMode(PM_WIREFRAME);
 				break;
 			case 2:
-				globalEnvironment->ogreCamera->setPolygonMode(Ogre::PM_POINTS);
+				globalEnvironment->ogreCamera->setPolygonMode(PM_POINTS);
 				break;
 			}
 		}
@@ -2599,8 +2599,8 @@ bool RoRFrameListener::updateEvents(float dt)
 			{
 				CacheEntry *selection = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
-				std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
-				std::vector<Ogre::String> *configptr = &config;
+				std::vector<String> config = SelectorWindow::getSingleton().getTruckConfig();
+				std::vector<String> *configptr = &config;
 				if (config.size() == 0) configptr = 0;
 				if (selection)
 					initTrucks(true, selection->fname, selection->fext, configptr, false, skin);
@@ -2616,8 +2616,8 @@ bool RoRFrameListener::updateEvents(float dt)
 				{
 					//we load an extra truck
 					String selected = selection->fname;
-					std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
-					std::vector<Ogre::String> *configptr = &config;
+					std::vector<String> config = SelectorWindow::getSingleton().getTruckConfig();
+					std::vector<String> *configptr = &config;
 					if (config.size() == 0) configptr = 0;
 
 					localTruck = BeamFactory::getSingleton().createLocal(reload_pos, reload_dir, selected, reload_box, false, flaresMode, configptr, skin, freeTruckPosition);
@@ -2819,7 +2819,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 #endif //USE_MYGUI
 }
 
-void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension, std::vector<Ogre::String> *truckconfig, bool enterTruck, Skin *skin)
+void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::String selectedExtension /* = "" */, const std::vector<Ogre::String> *truckconfig /* = 0 */, bool enterTruck /* = false */, Skin *skin /* = NULL */)
 {
 	//we load truck
 	char *selectedchr = const_cast< char *> (selected.c_str());
@@ -2838,7 +2838,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 				if (!nsp.empty())
 				{
 					// override-able by cmd line
-					spawnpos = Ogre::StringConverter::parseVector3(nsp);
+					spawnpos = StringConverter::parseVector3(nsp);
 					spawnrot = Quaternion::ZERO;
 				} else
 				{
@@ -3566,13 +3566,13 @@ void RoRFrameListener::checkRemoteStreamResultsChanged()
 
 
 
-bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialName, Ogre::String normalTextureName)
+bool RoRFrameListener::RTSSgenerateShadersForMaterial(String curMaterialName, String normalTextureName)
 {
 	if (!BSETTING("Use RTShader System", false)) return false;
 	bool success;
 
 	// Create the shader based technique of this material.
-	success = Ogre::RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(curMaterialName,
+	success = RTShader::ShaderGenerator::getSingleton().createShaderBasedTechnique(curMaterialName,
 			 			MaterialManager::DEFAULT_SCHEME_NAME,
 			 			RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME);
 	if (!success)
@@ -3584,7 +3584,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 
 	// Grab the first pass render state.
 	// NOTE: For more complicated samples iterate over the passes and build each one of them as desired.
-	RTShader::RenderState* renderState = Ogre::RTShader::ShaderGenerator::getSingleton().getRenderState(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName, 0);
+	RTShader::RenderState* renderState = RTShader::ShaderGenerator::getSingleton().getRenderState(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName, 0);
 
 	// Remove all sub render states.
 	renderState->reset();
@@ -3594,7 +3594,7 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	// simple vertex lightning
 	/*
 	{
-		RTShader::SubRenderState* perPerVertexLightModel = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::FFPLighting::Type);
+		RTShader::SubRenderState* perPerVertexLightModel = RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::FFPLighting::Type);
 		renderState->addTemplateSubRenderState(perPerVertexLightModel);
 	}
 	*/
@@ -3603,13 +3603,13 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 	if (normalTextureName.empty())
 	{
 		// SSLM_PerPixelLighting
-		RTShader::SubRenderState* perPixelLightModel = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::PerPixelLighting::Type);
+		RTShader::SubRenderState* perPixelLightModel = RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::PerPixelLighting::Type);
 
 		renderState->addTemplateSubRenderState(perPixelLightModel);
 	} else
 	{
 		// SSLM_NormalMapLightingTangentSpace
-		RTShader::SubRenderState* subRenderState = Ogre::RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::NormalMapLighting::Type);
+		RTShader::SubRenderState* subRenderState = RTShader::ShaderGenerator::getSingleton().createSubRenderState(RTShader::NormalMapLighting::Type);
 		RTShader::NormalMapLighting* normalMapSubRS = static_cast<RTShader::NormalMapLighting*>(subRenderState);
 
 		normalMapSubRS->setNormalMapSpace(RTShader::NormalMapLighting::NMS_TANGENT);
@@ -3643,11 +3643,11 @@ bool RoRFrameListener::RTSSgenerateShadersForMaterial(Ogre::String curMaterialNa
 #endif
 
 	// Invalidate this material in order to re-generate its shaders.
-	Ogre::RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName);
+	RTShader::ShaderGenerator::getSingleton().invalidateMaterial(RTShader::ShaderGenerator::DEFAULT_SCHEME_NAME, curMaterialName);
 	return true;
 }
 
-void RoRFrameListener::RTSSgenerateShaders(Entity* entity, Ogre::String normalTextureName)
+void RoRFrameListener::RTSSgenerateShaders(Entity* entity, String normalTextureName)
 {
 	if (!BSETTING("Use RTShader System", false)) return;
 	for (unsigned int i=0; i < entity->getNumSubEntities(); ++i)
