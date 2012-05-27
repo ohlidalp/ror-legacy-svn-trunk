@@ -279,7 +279,7 @@ Vector3 FlexObj::updateVertices()
 			covertices[faces[i*3+2]].vertex=covertices[faces[i*3]].vertex+Vector3(0,0,0.1);
 		}
 		//v1.normalise();
-		if(s == 0)
+		if (s == 0)
 			continue;
 		v1=v1/s;
 		covertices[faces[i*3]].normal+=v1;
@@ -326,7 +326,7 @@ Vector3 FlexObj::updateShadowVertices()
 			coshadowposvertices[faces[i*3+2]+nVertices].vertex=coshadowposvertices[faces[i*3+2]].vertex;
 		}
 		//v1.normalise();
-		if(s == 0)
+		if (s == 0)
 			continue;
 		v1=v1/s;
 
@@ -379,5 +379,5 @@ Vector3 FlexObj::flexit()
 
 FlexObj::~FlexObj()
 {
-	if(!msh.isNull()) msh->unload();
+	if (!msh.isNull()) msh->unload();
 }

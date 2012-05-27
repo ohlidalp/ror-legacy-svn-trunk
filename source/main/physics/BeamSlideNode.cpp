@@ -54,30 +54,30 @@ void Beam::toggleSlideNodeLock()
 	int curTruck = BeamFactory::getSingleton().getCurrentTruckNumber();
 
 	// for every slide node on this truck
-	for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
+	for (std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 	{
 		std::pair<RailGroup*, Ogre::Real> closest((RailGroup*)NULL, std::numeric_limits<Ogre::Real>::infinity());
 		std::pair<RailGroup*, Ogre::Real> current((RailGroup*)NULL, std::numeric_limits<Ogre::Real>::infinity());
 		
 		// if neither foreign, nor self attach is set then we cannot change the
 		// Rail attachments
-		if( !itNode->getAttachRule( ATTACH_ALL ) ) continue;
-		if( SlideNodesLocked )
+		if ( !itNode->getAttachRule( ATTACH_ALL ) ) continue;
+		if ( SlideNodesLocked )
 		{
 			itNode->attachToRail( NULL );
 			continue;
 		}
 		
 		// check all the slide rail on all the other trucks :(
-		for( unsigned int i = 0; i < (unsigned int) trucksnum; ++i)
+		for ( unsigned int i = 0; i < (unsigned int) trucksnum; ++i)
 		{
 			// make sure this truck is allowed
-			if( !( ( curTruck != i && itNode->getAttachRule(ATTACH_FOREIGN) ) ||
+			if ( !( ( curTruck != i && itNode->getAttachRule(ATTACH_FOREIGN) ) ||
 				  ( curTruck == i && itNode->getAttachRule(ATTACH_SELF) ) ) )
 				continue;
 			
 			current = getClosestRailOnTruck( BeamFactory::getSingleton().getTruck(i), (*itNode) );
-			if( current.second < closest.second ) closest = current;
+			if ( current.second < closest.second ) closest = current;
 			
 		} // this many
 		
@@ -94,7 +94,7 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 	Rail* curRail = NULL;
 	Ogre::Real lenToCurRail = std::numeric_limits<Ogre::Real>::infinity();
 
-	for(std::vector< RailGroup* >::iterator itGroup = truck->mRailGroups.begin();
+	for (std::vector< RailGroup* >::iterator itGroup = truck->mRailGroups.begin();
 			itGroup != truck->mRailGroups.end();
 			itGroup++)
 	{
@@ -108,15 +108,15 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 		// Only for use with a single slide node attaching to multiple rails,
 		// which currently is not implemented
 		// oh well git'r done... :P
-		for(std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
+		for (std::vector< SlideNode >::iterator itNode = mSlideNodes.begin(); itNode != mSlideNodes.end(); itNode++)
 		{
 			// check if node is already hooked up to
-			if( node.getNodeID() == itNode->getNodeID() &&
+			if ( node.getNodeID() == itNode->getNodeID() &&
 				node.getRailID() == (*itGroup)->getID() )
 				continue;
 		}
 #endif
-		if( lenToCurRail < node.getAttachmentDistance() && lenToCurRail < closest.second )
+		if ( lenToCurRail < node.getAttachmentDistance() && lenToCurRail < closest.second )
 		{
 			closest.first = (*itGroup);
 			closest.second = lenToCurRail;
@@ -130,7 +130,7 @@ std::pair<RailGroup*, Ogre::Real> Beam::getClosestRailOnTruck( Beam* truck, cons
 
 void Beam::updateSlideNodeForces(const Ogre::Real dt)
 {
-	for(std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
+	for (std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
 	{
 		it->UpdatePosition();
 		it->UpdateForces(dt);
@@ -139,8 +139,8 @@ void Beam::updateSlideNodeForces(const Ogre::Real dt)
 
 void Beam::resetSlideNodePositions()
 {
-	if(mSlideNodes.empty()) return;
-	for(std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
+	if (mSlideNodes.empty()) return;
+	for (std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
 	{
 		it->ResetPositions();
 	}	
@@ -148,7 +148,7 @@ void Beam::resetSlideNodePositions()
 
 void Beam::resetSlideNodes()
 {
-	for(std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
+	for (std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
 	{
 		it->reset();
 	}
@@ -156,7 +156,7 @@ void Beam::resetSlideNodes()
 }
 void Beam::updateSlideNodePositions()
 {
-	for(std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
+	for (std::vector<SlideNode>::iterator it = mSlideNodes.begin(); it != mSlideNodes.end(); ++it)
 	{
 		it->UpdatePosition();
 	}

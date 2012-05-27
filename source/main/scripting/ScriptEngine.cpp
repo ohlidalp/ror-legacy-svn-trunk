@@ -95,8 +95,8 @@ ScriptEngine::ScriptEngine(RoRFrameListener *efl, Collisions *coll) :
 ScriptEngine::~ScriptEngine()
 {
 	// Clean up
-	if(engine)  engine->Release();
-	if(context) context->Release();
+	if (engine)  engine->Release();
+	if (context) context->Release();
 }
 
 
@@ -109,7 +109,7 @@ void ScriptEngine::messageLogged( const String& message, LogMessageLevel lml, bo
 {
 #ifdef USE_MYGUI
 	Console *c = Console::getSingletonPtrNoCreation();
-	if(c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_LOGMESSAGE_SCRIPT, message, "page_white_code.png");
+	if (c) c->putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_LOGMESSAGE_SCRIPT, message, "page_white_code.png");
 #endif // USE_MYGUI
 }
 
@@ -132,7 +132,7 @@ void ScriptEngine::ExceptionCallback(AngelScript::asIScriptContext *ctx, void *p
 	// Show the call stack with the variables
 	SLOG("--- call stack ---");
 	char tmp[2048]="";
-    for( AngelScript::asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
+    for ( AngelScript::asUINT n = 1; n < ctx->GetCallstackSize(); n++ )
     {
     	function = ctx->GetFunction(n);
 		sprintf(tmp, "%s (%d): %s\n", function->GetScriptSectionName(), ctx->GetLineNumber(n), function->GetDeclaration());
@@ -158,7 +158,7 @@ void ScriptEngine::exploreScripts()
 void ScriptEngine::LineCallback(AngelScript::asIScriptContext *ctx, unsigned long *timeOut)
 {
 	// If the time out is reached we abort the script
-	if(OgreFramework::getSingleton().getTimeSinceStartup() > *timeOut)
+	if (OgreFramework::getSingleton().getTimeSinceStartup() > *timeOut)
 		ctx->Abort();
 
 	// It would also be possible to only suspend the script,
@@ -175,26 +175,26 @@ void ScriptEngine::PrintVariables(asIScriptContext *ctx, int stackLevel)
 
 	int typeId = ctx->GetThisTypeId(stackLevel);
 	void *varPointer = ctx->GetThisPointer(stackLevel);
-	if( typeId )
+	if ( typeId )
 	{
 		sprintf(tmp," this = %p", varPointer);
 		SLOG(tmp);
 	}
 
 	int numVars = ctx->GetVarCount(stackLevel);
-	for( int n = 0; n < numVars; n++ )
+	for ( int n = 0; n < numVars; n++ )
 	{
 		int typeId = ctx->GetVarTypeId(n, stackLevel);
 		void *varPointer = ctx->GetAddressOfVar(n, stackLevel);
-		if( typeId == engine->GetTypeIdByDecl("int") )
+		if ( typeId == engine->GetTypeIdByDecl("int") )
 		{
 			sprintf(tmp, " %s = %d", ctx->GetVarDeclaration(n, stackLevel), *(int*)varPointer);
 			SLOG(tmp);
 		}
-		else if( typeId == engine->GetTypeIdByDecl("string") )
+		else if ( typeId == engine->GetTypeIdByDecl("string") )
 		{
 			std::string *str = (std::string*)varPointer;
-			if( str )
+			if ( str )
 			{
 				sprintf(tmp, " %s = '%s'", ctx->GetVarDeclaration(n, stackLevel), str->c_str());
 				SLOG(tmp);
@@ -223,13 +223,13 @@ void ScriptEngine::init()
 	// some registration fails the engine may send valuable information to the message
 	// stream.
 	result = engine->SetMessageCallback(AngelScript::asMETHOD(ScriptEngine,msgCallback), this, AngelScript::asCALL_THISCALL);
-	if(result < 0)
+	if (result < 0)
 	{
-		if(result == AngelScript::asINVALID_ARG)
+		if (result == AngelScript::asINVALID_ARG)
 		{
 			SLOG("One of the arguments is incorrect, e.g. obj is null for a class method.");
 			return;
-		} else if(result == AngelScript::asNOT_SUPPORTED)
+		} else if (result == AngelScript::asNOT_SUPPORTED)
 		{
 			SLOG("	The arguments are not supported, e.g. asCALL_GENERIC.");
 			return;
@@ -498,7 +498,7 @@ void ScriptEngine::init()
 	result = engine->RegisterEnumValue("truckStates", "TS_DELETED", DELETED); MYASSERT(result>=0);
 
 	// now the global instances
-	GameScript *gamescript = new GameScript(this, mefl);
+	GameScript *gamescript = new GameScript(this);
 	result = engine->RegisterGlobalProperty("GameScriptClass game", gamescript); MYASSERT(result>=0);
 	//result = engine->RegisterGlobalProperty("CacheSystemClass cache", &CacheSystem::getSingleton()); MYASSERT(result>=0);
 	result = engine->RegisterGlobalProperty("SettingsClass settings", &SETTINGS); MYASSERT(result>=0);
@@ -509,9 +509,9 @@ void ScriptEngine::init()
 void ScriptEngine::msgCallback(const AngelScript::asSMessageInfo *msg)
 {
 	const char *type = "Error";
-	if( msg->type == AngelScript::asMSGTYPE_INFORMATION )
+	if ( msg->type == AngelScript::asMSGTYPE_INFORMATION )
 		type = "Info";
-	else if( msg->type == AngelScript::asMSGTYPE_WARNING )
+	else if ( msg->type == AngelScript::asMSGTYPE_WARNING )
 		type = "Warning";
 
 	char tmp[1024]="";
@@ -526,22 +526,22 @@ int ScriptEngine::framestep(Real dt)
 	Beam **trucks = BeamFactory::getSingleton().getTrucks();
 	int free_truck = BeamFactory::getSingleton().getTruckCount();
 	// check for all truck wheels
-	if(coll && wheelEventFunctionPtr > 0)
+	if (coll && wheelEventFunctionPtr > 0)
 	{
-		for(int t = 0; t < free_truck; t++)
+		for (int t = 0; t < free_truck; t++)
 		{
 			Beam *b = trucks[t];
 			if (!b || b->state >= SLEEPING) continue;
 
 			bool allwheels=true;
 			int handlerid=-1;
-			for(int w = 0; w < b->free_wheel; w++)
+			for (int w = 0; w < b->free_wheel; w++)
 			{
-				if(handlerid == -1 && b->wheels[w].lastEventHandler != -1)
+				if (handlerid == -1 && b->wheels[w].lastEventHandler != -1)
 				{
 					handlerid = b->wheels[w].lastEventHandler;
 					continue;
-				}else if(b->wheels[w].lastEventHandler != handlerid)
+				}else if (b->wheels[w].lastEventHandler != handlerid)
 				{
 					allwheels=false;
 					break;
@@ -549,11 +549,11 @@ int ScriptEngine::framestep(Real dt)
 			}
 
 			// if the truck is in there, call the functions
-			if(allwheels && handlerid >= 0 && handlerid < MAX_EVENTSOURCE)
+			if (allwheels && handlerid >= 0 && handlerid < MAX_EVENTSOURCE)
 			{
 				eventsource_t *source = coll->getEvent(handlerid);
-				if(!engine) return 0;
-				if(!context) context = engine->CreateContext();
+				if (!engine) return 0;
+				if (!context) context = engine->CreateContext();
 				context->Prepare(wheelEventFunctionPtr);
 
 				// Set the function arguments
@@ -564,7 +564,7 @@ int ScriptEngine::framestep(Real dt)
 
 				//SLOG("Executing framestep()");
 				int r = context->Execute();
-				if( r == AngelScript::asEXECUTION_FINISHED )
+				if ( r == AngelScript::asEXECUTION_FINISHED )
 				{
 				  // The return value is only valid if the execution finished successfully
 					AngelScript::asDWORD ret = context->GetReturnDWord();
@@ -575,10 +575,10 @@ int ScriptEngine::framestep(Real dt)
 
 	// check if current truck is in an event box
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	if(truck)
+	if (truck)
 	{
 		eventsource_t *source = coll->isTruckInEventBox(truck);
-		if(source) envokeCallback(source->scripthandler, source, 0, 1);
+		if (source) envokeCallback(source->scripthandler, source, 0, 1);
 	}
 
 #endif // 0
@@ -587,15 +587,15 @@ int ScriptEngine::framestep(Real dt)
 	std::vector<String> tmpQueue;
 	stringExecutionQueue.pull(tmpQueue);
 	std::vector<String>::iterator it;
-	for(it=tmpQueue.begin(); it!=tmpQueue.end();it++)
+	for (it=tmpQueue.begin(); it!=tmpQueue.end();it++)
 	{
 		executeString(*it);
 	}
 
 	// framestep stuff below
-	if(frameStepFunctionPtr<=0) return 1;
-	if(!engine) return 0;
-	if(!context) context = engine->CreateContext();
+	if (frameStepFunctionPtr<=0) return 1;
+	if (!engine) return 0;
+	if (!context) context = engine->CreateContext();
 	context->Prepare(frameStepFunctionPtr);
 
 	// Set the function arguments
@@ -603,7 +603,7 @@ int ScriptEngine::framestep(Real dt)
 
 	//SLOG("Executing framestep()");
 	int r = context->Execute();
-	if( r == AngelScript::asEXECUTION_FINISHED )
+	if ( r == AngelScript::asEXECUTION_FINISHED )
 	{
 	  // The return value is only valid if the execution finished successfully
 		AngelScript::asDWORD ret = context->GetReturnDWord();
@@ -613,11 +613,11 @@ int ScriptEngine::framestep(Real dt)
 
 int ScriptEngine::fireEvent(std::string instanceName, float intensity)
 {
-	if(!engine) return 0;
+	if (!engine) return 0;
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 	int functionPtr = mod->GetFunctionIdByDecl("void fireEvent(string, float)"); // TODO: this shouldn't be hard coded --neorej16
-	if(functionPtr<0) return 0;
-	if(!context) context = engine->CreateContext();
+	if (functionPtr<0) return 0;
+	if (!context) context = engine->CreateContext();
 	context->Prepare(functionPtr);
 
 	// Set the function arguments
@@ -626,7 +626,7 @@ int ScriptEngine::fireEvent(std::string instanceName, float intensity)
 	context->SetArgFloat (1, intensity);
 
 	int r = context->Execute();
-	if( r == AngelScript::asEXECUTION_FINISHED )
+	if ( r == AngelScript::asEXECUTION_FINISHED )
 	{
 	  // The return value is only valid if the execution finished successfully
 		AngelScript::asDWORD ret = context->GetReturnDWord();
@@ -638,8 +638,8 @@ int ScriptEngine::fireEvent(std::string instanceName, float intensity)
 
 int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t *node, int type)
 {
-	if(!engine) return 0;
-	if(functionPtr <= 0 && defaultEventCallbackFunctionPtr > 0)
+	if (!engine) return 0;
+	if (functionPtr <= 0 && defaultEventCallbackFunctionPtr > 0)
 	{
 		// use the default event handler instead then
 		functionPtr = defaultEventCallbackFunctionPtr;
@@ -648,7 +648,7 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 		// no default callback available, discard the event
 		return 0;
 	}
-	if(!context) context = engine->CreateContext();
+	if (!context) context = engine->CreateContext();
 	context->Prepare(functionPtr);
 
 	// Set the function arguments
@@ -657,13 +657,13 @@ int ScriptEngine::envokeCallback(int functionPtr, eventsource_t *source, node_t 
 	context->SetArgDWord (0, type);
 	context->SetArgObject(1, instance_name);
 	context->SetArgObject(2, boxname);
-	if(node)
+	if (node)
 		context->SetArgDWord (3, node->id);
 	else
 		context->SetArgDWord (3, -1);
 
 	int r = context->Execute();
-	if( r == AngelScript::asEXECUTION_FINISHED )
+	if ( r == AngelScript::asEXECUTION_FINISHED )
 	{
 	  // The return value is only valid if the execution finished successfully
 		AngelScript::asDWORD ret = context->GetReturnDWord();
@@ -681,11 +681,11 @@ void ScriptEngine::queueStringForExecution(const String command)
 
 int ScriptEngine::executeString(String command)
 {
-	if(!engine) return 1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return 1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 	int result = ExecuteString(engine, command.c_str(), mod, context);
-	if(result < 0)
+	if (result < 0)
 	{
 		SLOG("error " + TOSTRING(result) + " while executing string: " + command + ".");
 	}
@@ -694,14 +694,14 @@ int ScriptEngine::executeString(String command)
 
 int ScriptEngine::addFunction(const String &arg)
 {
-	if(!engine) return 1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return 1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 
 	AngelScript::asIScriptFunction *func = 0;
 	int r = mod->CompileFunction("addfunc", arg.c_str(), 0, AngelScript::asCOMP_ADD_TO_MODULE, &func);
 	
-	if( r < 0 )
+	if ( r < 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to add a function ('%s') to script module '%s'.", arg.c_str(), moduleName);
@@ -716,34 +716,34 @@ int ScriptEngine::addFunction(const String &arg)
 		int funcId = func->GetId();
 		
 		// compare the id of the newly added function with the special functions
-		if( funcId == mod->GetFunctionIdByDecl("void frameStep(float)") )
+		if ( funcId == mod->GetFunctionIdByDecl("void frameStep(float)") )
 		{	
-			if(frameStepFunctionPtr < 0) frameStepFunctionPtr = funcId;
+			if (frameStepFunctionPtr < 0) frameStepFunctionPtr = funcId;
 			callbacks["frameStep"].push_back(funcId);
 		}
-		else if( funcId == mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)") )
+		else if ( funcId == mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)") )
 		{	
-			if(wheelEventFunctionPtr < 0) wheelEventFunctionPtr = funcId;
+			if (wheelEventFunctionPtr < 0) wheelEventFunctionPtr = funcId;
 			callbacks["wheelEvents"].push_back(funcId);
 		}
-		else if( funcId == mod->GetFunctionIdByDecl("void eventCallback(int, int)") )
+		else if ( funcId == mod->GetFunctionIdByDecl("void eventCallback(int, int)") )
 		{
-			if(eventCallbackFunctionPtr < 0) eventCallbackFunctionPtr = funcId;
+			if (eventCallbackFunctionPtr < 0) eventCallbackFunctionPtr = funcId;
 			callbacks["eventCallback"].push_back(funcId);
 		}
-		else if( funcId == mod->GetFunctionIdByDecl("void defaultEventCallback(int, string, string, int)") )
+		else if ( funcId == mod->GetFunctionIdByDecl("void defaultEventCallback(int, string, string, int)") )
 		{	
-			if(defaultEventCallbackFunctionPtr < 0) defaultEventCallbackFunctionPtr = funcId;
+			if (defaultEventCallbackFunctionPtr < 0) defaultEventCallbackFunctionPtr = funcId;
 			callbacks["defaultEventCallback"].push_back(funcId);
 		}
-		else if( funcId == mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)") )
+		else if ( funcId == mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)") )
 		{	
 			callbacks["on_terrain_loading"].push_back(funcId);
 		}
 	}
 
 	// We must release the function object
-	if( func )
+	if ( func )
 		func->Release();
 
 	return r;
@@ -751,21 +751,21 @@ int ScriptEngine::addFunction(const String &arg)
 
 int ScriptEngine::functionExists(const String &arg)
 {
-	if(!engine) return -1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return -1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-	if(mod == 0) return AngelScript::asNO_FUNCTION;
+	if (mod == 0) return AngelScript::asNO_FUNCTION;
 	else return mod->GetFunctionIdByDecl(arg.c_str());
 }
 
 int ScriptEngine::deleteFunction(const String &arg)
 {
-	if(!engine) return 1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return 1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-	if( mod == 0 || mod->GetFunctionCount() == 0 )
+	if ( mod == 0 || mod->GetFunctionCount() == 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to remove a function ('%s') from script module '%s': No functions have been added (and consequently: the function does not exist).", arg.c_str(), moduleName);
@@ -774,7 +774,7 @@ int ScriptEngine::deleteFunction(const String &arg)
 	}
 
 	int id = mod->GetFunctionIdByDecl(arg.c_str());
-	if( id > 0 )
+	if ( id > 0 )
 	{
 		// Warning: The function is not destroyed immediately, only when no more references point to it.
 		mod->RemoveFunction(id);
@@ -784,19 +784,19 @@ int ScriptEngine::deleteFunction(const String &arg)
 		engine->GarbageCollect();
 		
 		// Check if we removed a "special" function
-		for(std::map< std::string , std::vector<int> >::iterator it=callbacks.begin(); it!=callbacks.end(); it++)
+		for (std::map< std::string , std::vector<int> >::iterator it=callbacks.begin(); it!=callbacks.end(); it++)
 		{
 			std::vector<int>::iterator key = std::find(it->second.begin(), it->second.end(), id);
-			if( *key == id )
+			if ( *key == id )
 				it->second.erase(key);
 		}
-		if( frameStepFunctionPtr == id )
+		if ( frameStepFunctionPtr == id )
 			frameStepFunctionPtr = -1;
-		if( wheelEventFunctionPtr == id )
+		if ( wheelEventFunctionPtr == id )
 			wheelEventFunctionPtr = -1;
-		if( eventCallbackFunctionPtr == id )
+		if ( eventCallbackFunctionPtr == id )
 			eventCallbackFunctionPtr = -1;
-		if( defaultEventCallbackFunctionPtr == id )
+		if ( defaultEventCallbackFunctionPtr == id )
 			defaultEventCallbackFunctionPtr = -1;
 	}
 	else
@@ -811,12 +811,12 @@ int ScriptEngine::deleteFunction(const String &arg)
 
 int ScriptEngine::addVariable(const String &arg)
 {
-	if(!engine) return 1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return 1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 
 	int r = mod->CompileGlobalVar("addvar", arg.c_str(), 0);
-	if( r < 0 )
+	if ( r < 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to add a variable ('%s') to script module '%s'.", arg.c_str(), moduleName);
@@ -828,11 +828,11 @@ int ScriptEngine::addVariable(const String &arg)
 
 int ScriptEngine::deleteVariable(const String &arg)
 {
-	if(!engine) return 1;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return 1;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
-	if( mod == 0 || mod->GetGlobalVarCount() == 0 )
+	if ( mod == 0 || mod->GetGlobalVarCount() == 0 )
 	{
 		char tmp[512] = "";
 		sprintf(tmp, "An error occurred while trying to remove a variable ('%s') from script module '%s': No variables have been added (and consequently: the variable does not exist).", arg.c_str(), moduleName);
@@ -841,7 +841,7 @@ int ScriptEngine::deleteVariable(const String &arg)
 	}
 
 	int index = mod->GetGlobalVarIndexByName(arg.c_str());
-	if( index >= 0 )
+	if ( index >= 0 )
 	{
 		index = mod->RemoveGlobalVar(index);
 	}
@@ -857,12 +857,12 @@ int ScriptEngine::deleteVariable(const String &arg)
 
 void ScriptEngine::triggerEvent(int eventnum, int value)
 {
-	if(!engine) return;
-	if(eventCallbackFunctionPtr<=0) return;
-	if(eventMask & eventnum)
+	if (!engine) return;
+	if (eventCallbackFunctionPtr<=0) return;
+	if (eventMask & eventnum)
 	{
 		// script registered for that event, so sent it
-		if(!context) context = engine->CreateContext();
+		if (!context) context = engine->CreateContext();
 		context->Prepare(eventCallbackFunctionPtr);
 
 		// Set the function arguments
@@ -870,7 +870,7 @@ void ScriptEngine::triggerEvent(int eventnum, int value)
 		context->SetArgDWord(1, value);
 
 		int r = context->Execute();
-		if( r == AngelScript::asEXECUTION_FINISHED )
+		if ( r == AngelScript::asEXECUTION_FINISHED )
 		{
 		  // The return value is only valid if the execution finished successfully
 			AngelScript::asDWORD ret = context->GetReturnDWord();
@@ -900,7 +900,7 @@ int ScriptEngine::loadScript(String _scriptName)
 		/*
 		String fn = SSETTING("Cache Path") + "script" + hash + "_" + scriptName + "c";
 		CBytecodeStream bstream(fn);
-		if(bstream.Existing())
+		if (bstream.Existing())
 		{
 			// CRASHES here :(
 			int res = mod->LoadByteCode(&bstream);
@@ -908,11 +908,11 @@ int ScriptEngine::loadScript(String _scriptName)
 		}
 		*/
 	}
-	if(!cached)
+	if (!cached)
 	{
 		// not cached so dynamically load and compile it
 		result = builder.StartNewModule(engine, moduleName);
-		if( result < 0 )
+		if ( result < 0 )
 		{
 			SLOG("Failed to start new module");
 			return result;
@@ -921,14 +921,14 @@ int ScriptEngine::loadScript(String _scriptName)
 		mod = engine->GetModule(moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
 
 		result = builder.AddSectionFromFile(scriptName.c_str());
-		if( result < 0 )
+		if ( result < 0 )
 		{
 			SLOG("Unkown error while loading script file: "+scriptName);
 			SLOG("Failed to add script file");
 			return result;
 		}
 		result = builder.BuildModule();
-		if( result < 0 )
+		if ( result < 0 )
 		{
 			SLOG("Failed to build the module");
 			return result;
@@ -946,23 +946,23 @@ int ScriptEngine::loadScript(String _scriptName)
 
 	// get some other optional functions
 	frameStepFunctionPtr = mod->GetFunctionIdByDecl("void frameStep(float)");
-	if(frameStepFunctionPtr > 0) callbacks["frameStep"].push_back(frameStepFunctionPtr);
+	if (frameStepFunctionPtr > 0) callbacks["frameStep"].push_back(frameStepFunctionPtr);
 	
 	wheelEventFunctionPtr = mod->GetFunctionIdByDecl("void wheelEvents(int, string, string, string)");
-	if(wheelEventFunctionPtr > 0) callbacks["wheelEvents"].push_back(wheelEventFunctionPtr);
+	if (wheelEventFunctionPtr > 0) callbacks["wheelEvents"].push_back(wheelEventFunctionPtr);
 
 	eventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void eventCallback(int, int)");
-	if(eventCallbackFunctionPtr > 0) callbacks["eventCallback"].push_back(eventCallbackFunctionPtr);
+	if (eventCallbackFunctionPtr > 0) callbacks["eventCallback"].push_back(eventCallbackFunctionPtr);
 
 	defaultEventCallbackFunctionPtr = mod->GetFunctionIdByDecl("void defaultEventCallback(int, string, string, int)");
-	if(defaultEventCallbackFunctionPtr > 0) callbacks["defaultEventCallback"].push_back(defaultEventCallbackFunctionPtr);
+	if (defaultEventCallbackFunctionPtr > 0) callbacks["defaultEventCallback"].push_back(defaultEventCallbackFunctionPtr);
 
 	int cb = mod->GetFunctionIdByDecl("void on_terrain_loading(string lines)");
-	if(cb > 0) callbacks["on_terrain_loading"].push_back(cb);
+	if (cb > 0) callbacks["on_terrain_loading"].push_back(cb);
 
 	// Find the function that is to be called.
 	int funcId = mod->GetFunctionIdByDecl("void main()");
-	if( funcId < 0 )
+	if ( funcId < 0 )
 	{
 		// The function couldn't be found. Instruct the script writer to include the
 		// expected function in the script.
@@ -978,7 +978,7 @@ int ScriptEngine::loadScript(String _scriptName)
 	/*
 	// TOFIX: AS crashes badly when using these :-\
 	result = context->SetLineCallback(AngelScript::asMETHOD(ScriptEngine, LineCallback), &timeOut, AngelScript::asCALL_THISCALL);
-	if(result < 0)
+	if (result < 0)
 	{
 		SLOG("Failed to set the line callback function.");
 		context->Release();
@@ -986,7 +986,7 @@ int ScriptEngine::loadScript(String _scriptName)
 	}
 
 	result = context->SetExceptionCallback(AngelScript::asMETHOD(ScriptEngine,ExceptionCallback), this, AngelScript::asCALL_THISCALL);
-	if(result < 0)
+	if (result < 0)
 	{
 		SLOG("Failed to set the exception callback function.");
 		context->Release();
@@ -1000,7 +1000,7 @@ int ScriptEngine::loadScript(String _scriptName)
 	// times, it might be a good idea to store the function id returned by
 	// GetFunctionIDByDecl(), so that this relatively slow call can be skipped.
 	result = context->Prepare(funcId);
-	if(result < 0)
+	if (result < 0)
 	{
 		SLOG("Failed to prepare the context.");
 		context->Release();
@@ -1013,14 +1013,14 @@ int ScriptEngine::loadScript(String _scriptName)
 
 	SLOG("Executing main()");
 	result = context->Execute();
-	if( result != AngelScript::asEXECUTION_FINISHED )
+	if ( result != AngelScript::asEXECUTION_FINISHED )
 	{
 		// The execution didn't complete as expected. Determine what happened.
-		if( result == AngelScript::asEXECUTION_ABORTED )
+		if ( result == AngelScript::asEXECUTION_ABORTED )
 		{
 			SLOG("The script was aborted before it could finish. Probably it timed out.");
 		}
-		else if( result == AngelScript::asEXECUTION_EXCEPTION )
+		else if ( result == AngelScript::asEXECUTION_EXCEPTION )
 		{
 			// An exception occurred, let the script writer know what happened so it can be corrected.
 			SLOG("An exception '" + String(context->GetExceptionString()) + "' occurred. Please correct the code in file '" + scriptName + "' and try again.");
@@ -1049,18 +1049,18 @@ int ScriptEngine::loadScript(String _scriptName)
 StringVector ScriptEngine::getAutoComplete(String command)
 {
 	StringVector result;
-	if(!engine) return result;
-	if(!context) context = engine->CreateContext();
+	if (!engine) return result;
+	if (!context) context = engine->CreateContext();
 	AngelScript::asIScriptModule *mod = engine->GetModule(moduleName, AngelScript::asGM_CREATE_IF_NOT_EXISTS);
 
-	for(unsigned int i = 0; i < mod->GetGlobalVarCount(); i++)
+	for (unsigned int i = 0; i < mod->GetGlobalVarCount(); i++)
 	{
 		const char *name = mod->GetGlobalVarDeclaration(i);
 		result.push_back(String(name));
 		//SLOG(" VAR > " + String(name));
 	}
 
-	for(unsigned int i = 0; i < mod->GetFunctionCount(); i++)
+	for (unsigned int i = 0; i < mod->GetFunctionCount(); i++)
 	{
 		int idx = mod->GetFunctionIdByIndex(i);
 		AngelScript::asIScriptFunction *desc = engine->GetFunctionById(idx); //mod->GetFunctionDescriptorById(idx);
@@ -1069,13 +1069,13 @@ StringVector ScriptEngine::getAutoComplete(String command)
 	}
 
 
-	for(unsigned int i = 0; i < engine->GetGlobalPropertyCount(); i++)
+	for (unsigned int i = 0; i < engine->GetGlobalPropertyCount(); i++)
 	{
 		const char *name;
 		int  typeId = 0;
 		bool isConst = false;
 
-		if(!engine->GetGlobalPropertyByIndex(i, &name, &typeId, &isConst))
+		if (!engine->GetGlobalPropertyByIndex(i, &name, &typeId, &isConst))
 		{
 			result.push_back(String(name));
 			//SLOG(" PROPERTY > " + String(name));
@@ -1083,19 +1083,19 @@ StringVector ScriptEngine::getAutoComplete(String command)
 
 	}
 
-	if(!command.empty())
+	if (!command.empty())
 	{
 		StringVector res2;
 		// now check if we hit anything
-		for(unsigned int i = 0; i < result.size(); i++)
+		for (unsigned int i = 0; i < result.size(); i++)
 		{
-			if(result[i].substr(0, command.size()) == command)
+			if (result[i].substr(0, command.size()) == command)
 			{
 				res2.push_back(result[i]);
 			}
 		}
 
-		if(command.find(".") != command.npos)
+		if (command.find(".") != command.npos)
 		{
 			// oh, property of an object D:
 			// TODO

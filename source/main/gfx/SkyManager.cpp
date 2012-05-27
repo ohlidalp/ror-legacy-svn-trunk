@@ -53,13 +53,13 @@ SkyManager::~SkyManager()
 
 void SkyManager::notifyCameraChanged(Camera *cam)
 {
-	if(mCaelumSystem)
+	if (mCaelumSystem)
 		mCaelumSystem->notifyCameraChanged(cam);
 }
 
 void SkyManager::forceUpdate(float dt)
 {
-	if(mCaelumSystem)
+	if (mCaelumSystem)
 		mCaelumSystem->updateSubcomponents(dt);
 }
 
@@ -73,7 +73,7 @@ void SkyManager::loadScript(String script)
 		// overwrite some settings
 #ifdef CAELUM_VERSION_SEC
 		// important: overwrite fog setings if not using infinite farclip
-		if(globalEnvironment->ogreCamera->getFarClipDistance() > 0)
+		if (globalEnvironment->ogreCamera->getFarClipDistance() > 0)
 		{
 			// non infinite farclip
 			Real farclip = globalEnvironment->ogreCamera->getFarClipDistance();
@@ -89,7 +89,7 @@ void SkyManager::loadScript(String script)
 #error please use a recent Caelum version, see http://www.rigsofrods.com/wiki/pages/Compiling_3rd_party_libraries#Caelum
 #endif // CAELUM_VERSION
 		// now optimize the moon a bit
-		if(mCaelumSystem->getMoon())
+		if (mCaelumSystem->getMoon())
 		{
 			mCaelumSystem->getMoon()->setAutoDisable(true);
 			//mCaelumSystem->getMoon()->setAutoDisableThreshold(1);
@@ -116,7 +116,7 @@ void SkyManager::setTimeFactor(Real factor)
 
 Light *SkyManager::getMainLight()
 {
-	if(mCaelumSystem && mCaelumSystem->getSun())
+	if (mCaelumSystem && mCaelumSystem->getSun())
 		return mCaelumSystem->getSun()->getMainLight();
 	return 0;
 }

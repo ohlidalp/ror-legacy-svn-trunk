@@ -51,7 +51,7 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
 		WCHAR out[3];
 
 		deadKey = '\0';
-		if(FoldStringW(MAP_PRECOMPOSED, (LPWSTR)wcBuff, 3, (LPWSTR)out, 3))
+		if (FoldStringW(MAP_PRECOMPOSED, (LPWSTR)wcBuff, 3, (LPWSTR)out, 3))
 			return out[0];
 	}
 	else if (ascii == 1)
@@ -60,7 +60,7 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
 		deadKey = '\0';
 		return buff[0];
 	}
-	else if(ascii == 2)
+	else if (ascii == 2)
 	{
 		// Convert a non-combining diacritical mark into a combining diacritical mark
 		// Combining versions range from 0x300 to 0x36F; only 5 (for French) have been mapped below
@@ -108,30 +108,30 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	bool handled = MyGUI::InputManager::getInstance().injectMouseMove(mCursorX, mCursorY, _arg.state.Z.abs);
 
-	if(handled)
+	if (handled)
 	{
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
 		// hack for console, we want to use the mouse through that control
-		if(w && w->getName().substr(0, 7) == "Console")
+		if (w && w->getName().substr(0, 7) == "Console")
 			handled = false;
-		if(w && w->getUserString("interactive") == "0")
+		if (w && w->getUserString("interactive") == "0")
 			handled = false;
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		// update the old airplane / autopilot gui
 		handled = globalEnvironment->frameListener->getOverlayWrapper()->mouseMoved(_arg);
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
-		if(sm)
+		if (sm)
 		{
 			// not handled by gui
 			bool fixed = sm->mouseMoved(_arg);
-			if(fixed)
+			if (fixed)
 			{
 				// you would really need to "fix" the actual mouse position, see
 				// http://www.wreckedgames.com/forum/index.php?topic=1104.0
@@ -145,7 +145,7 @@ bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 	mCursorY = _arg.state.Y.abs;
 
 	GUI_MainMenu *menu =GUI_MainMenu::getSingletonPtr();
-	if(menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
+	if (menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
 
 	checkPosition();
 	return true;
@@ -159,31 +159,31 @@ bool GUIInputManager::mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButton
 	mCursorY = _arg.state.Y.abs;
 
 	GUI_MainMenu *menu =GUI_MainMenu::getSingletonPtr();
-	if(menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
+	if (menu) menu->updatePositionUponMousePosition(mCursorX, mCursorY);
 
 	// fallback, handle by GUI, then by SceneMouse
 	bool handled = MyGUI::InputManager::getInstance().injectMousePress(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
 
-	if(handled)
+	if (handled)
 	{
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
 		// hack for console, we want to use the mouse through that control
-		if(w && w->getName().substr(0, 7) == "Console")
+		if (w && w->getName().substr(0, 7) == "Console")
 			handled = false;
-		if(w && w->getUserString("interactive") == "0")
+		if (w && w->getUserString("interactive") == "0")
 			handled = false;
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		// update the old airplane / autopilot gui
 		handled = globalEnvironment->frameListener->getOverlayWrapper()->mousePressed(_arg, _id);
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
-		if(sm) return sm->mousePressed(_arg, _id);
+		if (sm) return sm->mousePressed(_arg, _id);
 	}
 	return handled;
 }
@@ -196,26 +196,26 @@ bool GUIInputManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButto
 	bool handled = MyGUI::InputManager::getInstance().injectMouseRelease(mCursorX, mCursorY, MyGUI::MouseButton::Enum(_id));
 
 
-	if(handled)
+	if (handled)
 	{
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getMouseFocusWidget();
 		// hack for console, we want to use the mouse through that control
-		if(w && w->getName().substr(0, 7) == "Console")
+		if (w && w->getName().substr(0, 7) == "Console")
 			handled = false;
-		if(w && w->getUserString("interactive") == "0")
+		if (w && w->getUserString("interactive") == "0")
 			handled = false;
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		// update the old airplane / autopilot gui
 		handled = globalEnvironment->frameListener->getOverlayWrapper()->mouseReleased(_arg, _id);
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
-		if(sm) return sm->mouseReleased(_arg, _id);
+		if (sm) return sm->mouseReleased(_arg, _id);
 	}
 	return handled;
 }
@@ -245,18 +245,18 @@ bool GUIInputManager::keyPressed(const OIS::KeyEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	bool handled = MyGUI::InputManager::getInstance().injectKeyPress(key, text);
 
-	if(handled)
+	if (handled)
 	{
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getKeyFocusWidget();
 		// hack for console, we want to use the mouse through that control
-		if(w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
+		if (w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
 			handled = false;
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
-		if(sm) return sm->keyPressed(_arg);
+		if (sm) return sm->keyPressed(_arg);
 	}
 
 	return handled;
@@ -267,18 +267,18 @@ bool GUIInputManager::keyReleased(const OIS::KeyEvent& _arg)
 	// fallback, handle by GUI, then by SceneMouse
 	bool handled = MyGUI::InputManager::getInstance().injectKeyRelease(MyGUI::KeyCode::Enum(_arg.key));
 
-	if(handled)
+	if (handled)
 	{
 		MyGUI::Widget *w = MyGUI::InputManager::getInstance().getKeyFocusWidget();
 		// hack for console, we want to use the mouse through that control
-		if(w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
+		if (w && w->getName().substr(0, 7) == "Console" && w->getName() != "ConsoleInput")
 			handled = false;
 	}
 
-	if(!handled)
+	if (!handled)
 	{
 		SceneMouse *sm = SceneMouse::getSingletonPtr();
-		if(sm) return sm->keyReleased(_arg);
+		if (sm) return sm->keyReleased(_arg);
 	}
 
 	return handled;
@@ -319,7 +319,7 @@ void GUIInputManager::activateGUI()
 	MyGUI::PointerManager::getInstance().setVisible(true);
 
 	GUI_MainMenu *menu =GUI_MainMenu::getSingletonPtr();
-	if(menu) menu->setVisible(true);
+	if (menu) menu->setVisible(true);
 }
 
 #endif // USE_MYGUI

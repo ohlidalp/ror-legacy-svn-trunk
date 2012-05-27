@@ -103,7 +103,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 		Beam **trucks = BeamFactory::getSingleton().getTrucks();
 		int trucksnum = BeamFactory::getSingleton().getTruckCount();
 		grab_truck = NULL;
-		for(int i = 0; i < trucksnum; i++)
+		for (int i = 0; i < trucksnum; i++)
 		{
 			if (!trucks[i]) continue;
 			if (trucks[i] && (trucks[i]->state == ACTIVATED || trucks[i]->state == DESACTIVATED))
@@ -140,7 +140,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 			mouseGrabState = 1;
 			pickLineNode->setVisible(true);
 
-			for(std::vector <hook_t>::iterator it = grab_truck->hooks.begin(); it!=grab_truck->hooks.end(); it++)
+			for (std::vector <hook_t>::iterator it = grab_truck->hooks.begin(); it!=grab_truck->hooks.end(); it++)
 			{
 				if (it->hookNode->id == minnode)
 				{

@@ -141,7 +141,7 @@ void ColoredTextAreaOverlayElement::setCaption(const DisplayString& text)
 
 void ColoredTextAreaOverlayElement::updateColours(void)
 {
-	if(!mRenderOp.vertexData) return;
+	if (!mRenderOp.vertexData) return;
 	// Convert to system-specific
 	RGBA topColour, bottomColour;
 	// Set default to white

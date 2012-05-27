@@ -56,38 +56,38 @@ bool LoadingWindow::getFrameForced()
 
 void LoadingWindow::setProgress(int _percent, const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
-	if(BSETTING("REPO_MODE", false)) return;
+	if (BSETTING("REPO_MODE", false)) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 
 	mBarProgress->setProgressAutoTrack(false);
 	mBarProgress->setProgressPosition(_percent);
 
-	if( _updateRenderFrame ) renderOneFrame();
+	if ( _updateRenderFrame ) renderOneFrame();
 }
 
 void LoadingWindow::setAutotrack(const Ogre::UTFString& _text, bool _updateRenderFrame)
 {
-	if(BSETTING("REPO_MODE", false)) return;
+	if (BSETTING("REPO_MODE", false)) return;
 	mMainWidget->setVisible(true);
 	mInfoStaticText->setCaption(convertToMyGUIString(_text));
 	mBarProgress->setProgressPosition(0);
 	mBarProgress->setProgressAutoTrack(true);
 
-	if( _updateRenderFrame ) renderOneFrame();
+	if ( _updateRenderFrame ) renderOneFrame();
 }
 
 void LoadingWindow::hide()
 {
-	if(BSETTING("REPO_MODE", false)) return;
+	if (BSETTING("REPO_MODE", false)) return;
 	GUIManager::getSingleton().unfocus();
 	mMainWidget->setVisible(false);
 }
 
 void LoadingWindow::renderOneFrame(bool force)
 {
-	if(BSETTING("REPO_MODE", false)) return;
-	if(t->getMilliseconds() > 200 || force)
+	if (BSETTING("REPO_MODE", false)) return;
+	if (t->getMilliseconds() > 200 || force)
 	{
 		mFrameForced=true;
 		// we must pump the window messages, otherwise the window will get white on Vista ...

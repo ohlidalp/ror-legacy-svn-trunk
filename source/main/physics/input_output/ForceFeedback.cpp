@@ -35,7 +35,7 @@ ForceFeedback::ForceFeedback(OIS::ForceFeedback* ffdevice, Real overall_gain, Re
 		LOG("ForceFeedback: supported effects:");
 		OIS::ForceFeedback::SupportedEffectList::const_iterator efit;
 #ifdef OISHEAD
-		for(efit=supEffects.begin(); efit!=supEffects.end(); ++efit)
+		for (efit=supEffects.begin(); efit!=supEffects.end(); ++efit)
 			LOG(String("ForceFeedback: ")+OIS::Effect::getEffectTypeName(efit->second));
 #endif //OISHEAD
 	}

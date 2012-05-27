@@ -38,20 +38,20 @@ Road2::Road2(int id) :
 
 Road2::~Road2()
 {
-	if(snode)
+	if (snode)
 	{
 		snode->removeAndDestroyAllChildren();
 		delete snode;
 		snode=0;
 	}
-	if(!msh.isNull())
+	if (!msh.isNull())
 	{
 		MeshManager::getSingleton().remove(msh->getName());
 		msh.setNull();
 	}
-	if(registeredCollTris.size() > 0)
+	if (registeredCollTris.size() > 0)
 	{
-		for(std::vector<int>::iterator it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
+		for (std::vector<int>::iterator it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
 		{
 			//coll->enableCollisionTri(*it, false);
 			globalEnvironment->collisions->removeCollisionTri(*it);
@@ -180,12 +180,12 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			static int pillarcounter = 0;
 			pillarcounter++;
 
-			if(pillartype == 2)
+			if (pillartype == 2)
 			{
 				// always in the middle
 				sidefactor=0.5;
 				// only build every fifth pillar
-				if(pillarcounter%5)
+				if (pillarcounter%5)
 					builtpillars=false;
 			}
 			
@@ -194,7 +194,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			float len = middle.y - globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(middle.x, middle.z) + 5;
 			float width2 = len / 30;
 
-			if(pillartype == 2 && len > 20)
+			if (pillartype == 2 && len > 20)
 				// no over-long pillars
 				builtpillars=false;
 
@@ -202,7 +202,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			// do not draw too small pillars, the bridge may hold without them ;)
 			if (width2 > 5) width2 = 5;
 
-			if(pillartype == 2)
+			if (pillartype == 2)
 				width2=0.2;
 			
 			if (width2 >= 0.2 && builtpillars)
@@ -342,7 +342,7 @@ inline Vector3 Road2::baseOf(Vector3 p)
 
 void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, bool collision, Vector3 pos, Vector3 lastpos, float width, bool flip)
 {
-	if(vertexcount+3 >= MAX_VERTEX || tricount*3+3+2 >= MAX_TRIS*3) return;
+	if (vertexcount+3 >= MAX_VERTEX || tricount*3+3+2 >= MAX_TRIS*3) return;
 	Vector2 texf[4];
 	textureFit(p1, p2, p3, p4, texfit, texf, pos, lastpos, width);
 	//vertexes
@@ -436,7 +436,7 @@ void Road2::textureFit(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfi
 			{
 				float ty = 0.746-trv.y*0.25/4.5;
 				// fix overlapping
-				if(ty>1)
+				if (ty>1)
 					ty=1;
 				texc[i]=Vector2(trv.x/10.0, ty);
 			}
@@ -444,7 +444,7 @@ void Road2::textureFit(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfi
 			{
 				// fix overlapping
 				float ty = 0.496-(trv.y-0.7)*0.25/4.5;
-				if(ty>1)
+				if (ty>1)
 					ty=1;
 				texc[i]=Vector2(trv.x/10.0,ty);
 			}
@@ -452,7 +452,7 @@ void Road2::textureFit(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfi
 			{
 				float ty = 0.496+trv.y*0.25/4.5;
 				// fix overlapping
-				if(ty>1)
+				if (ty>1)
 					ty=1;
 				texc[i]=Vector2(trv.x/10.0,ty);
 			}
@@ -522,18 +522,18 @@ void Road2::addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, gro
 	if (flip)
 	{
 		triID = globalEnvironment->collisions->addCollisionTri(p1, p2, p4, gm);
-		if(triID>=0) registeredCollTris.push_back(triID);
+		if (triID>=0) registeredCollTris.push_back(triID);
 
 		triID = globalEnvironment->collisions->addCollisionTri(p4, p2, p3, gm);
-		if(triID>=0) registeredCollTris.push_back(triID);
+		if (triID>=0) registeredCollTris.push_back(triID);
 	}
 	else
 	{
 		triID = globalEnvironment->collisions->addCollisionTri(p1, p2, p3, gm);
-		if(triID>=0) registeredCollTris.push_back(triID);
+		if (triID>=0) registeredCollTris.push_back(triID);
 
 		triID = globalEnvironment->collisions->addCollisionTri(p1, p3, p4, gm);
-		if(triID>=0) registeredCollTris.push_back(triID);
+		if (triID>=0) registeredCollTris.push_back(triID);
 	}
 
 //		globalEnvironment->collisions->addCollisionTri(p1, p4, p3);

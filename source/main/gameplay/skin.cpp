@@ -81,7 +81,7 @@ int Skin::hasReplacementForTexture(Ogre::String texture)
 Ogre::String Skin::getReplacementForTexture(Ogre::String texture)
 {
 	String res = replaceTextures[texture];
-	if(res.empty()) res = texture;
+	if (res.empty()) res = texture;
 	return res;
 }
 
@@ -89,42 +89,42 @@ Ogre::String Skin::stripMaterialNameUniqueNess(Ogre::String matName)
 {
 	// MORE MAGIC
 	size_t pos = matName.find("_#UNIQUESKINMATERIAL#_");
-	if(pos == matName.npos) return matName;
+	if (pos == matName.npos) return matName;
 	return matName.substr(0, pos);
 }
 
 Ogre::String Skin::getReplacementForMaterial(Ogre::String material)
 {
 	String res = replaceMaterials[stripMaterialNameUniqueNess(material)];
-	if(res.empty()) res = material;
+	if (res.empty()) res = material;
 	return res;
 }
 
 void Skin::replaceMaterialTextures(Ogre::String materialName)
 {
 	MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
-	if(!mat.isNull())
+	if (!mat.isNull())
 	{
-		for(int t = 0; t < mat->getNumTechniques(); t++)
+		for (int t = 0; t < mat->getNumTechniques(); t++)
 		{
 			Technique *tech = mat->getTechnique(0);
-			if(!tech) continue;
-			for(int p=0; p < tech->getNumPasses(); p++)
+			if (!tech) continue;
+			for (int p=0; p < tech->getNumPasses(); p++)
 			{
 				Pass *pass = tech->getPass(p);
-				if(!pass) continue;
-				for(int tu = 0; tu < pass->getNumTextureUnitStates(); tu++)
+				if (!pass) continue;
+				for (int tu = 0; tu < pass->getNumTextureUnitStates(); tu++)
 				{
 					TextureUnitState *tus = pass->getTextureUnitState(tu);
-					if(!tus) continue;
+					if (!tus) continue;
 
-					//if(tus->getTextureType() != TEX_TYPE_2D) continue; // only replace 2d images
+					//if (tus->getTextureType() != TEX_TYPE_2D) continue; // only replace 2d images
 					// walk the frames, usually there is only one
-					for(unsigned int fr=0; fr<tus->getNumFrames(); fr++)
+					for (unsigned int fr=0; fr<tus->getNumFrames(); fr++)
 					{
 						String textureName = tus->getFrameTextureName(fr);
 						std::map<Ogre::String, Ogre::String>::iterator it = replaceTextures.find(textureName);
-						if(it != replaceTextures.end())
+						if (it != replaceTextures.end())
 						{
 							textureName = it->second; //getReplacementForTexture(textureName);
 							tus->setFrameTextureName(textureName, fr);
@@ -138,18 +138,18 @@ void Skin::replaceMaterialTextures(Ogre::String materialName)
 
 void Skin::replaceMeshMaterials(Ogre::Entity *e)
 {
-	if(!e) return;
+	if (!e) return;
 
 	// make it unique FIRST, otherwise we change the base material ...
 	uniquifyMeshMaterials(e);
 
 	// then walk the entity and look for replacements
-	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	for (int n=0; n<(int)e->getNumSubEntities();n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		String materialName = subent->getMaterialName();
 		std::map<Ogre::String, Ogre::String>::iterator it = replaceMaterials.find(stripMaterialNameUniqueNess(materialName));
-		if(it != replaceMaterials.end())
+		if (it != replaceMaterials.end())
 		{
 			materialName = it->second;
 			subent->setMaterialName(materialName);
@@ -163,9 +163,9 @@ void Skin::replaceMeshMaterials(Ogre::Entity *e)
 
 void Skin::uniquifyMeshMaterials(Ogre::Entity *e)
 {
-	if(!e) return;
+	if (!e) return;
 
-	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	for (int n=0; n<(int)e->getNumSubEntities();n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		String oldMaterialName = subent->getMaterialName();
@@ -173,7 +173,7 @@ void Skin::uniquifyMeshMaterials(Ogre::Entity *e)
 		String newMaterialName = oldMaterialName + "_#UNIQUESKINMATERIAL#_" + TOSTRING(counter++);
 
 		MaterialPtr mat = MaterialManager::getSingleton().getByName(oldMaterialName);
-		if(!mat.isNull())
+		if (!mat.isNull())
 		{
 			mat->clone(newMaterialName);
 			subent->setMaterialName(newMaterialName);

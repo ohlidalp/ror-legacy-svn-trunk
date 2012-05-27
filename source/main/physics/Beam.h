@@ -553,7 +553,7 @@ inline void Beam::setMass(float m)
 
 inline bool Beam::getBrakeLightVisible()
 {
-	if(state==NETWORKED)
+	if (state==NETWORKED)
 		return netBrakeLight;
 
 //		return (brake > 0.15 && !parkingbrake);
@@ -568,7 +568,7 @@ inline bool Beam::getCustomLightVisible(int number)
 
 inline void Beam::setCustomLightVisible(int number, bool visible)
 {
-	if(netCustomLightArray[number] == -1)
+	if (netCustomLightArray[number] == -1)
 		return;
 	flares[netCustomLightArray[number]].controltoggle_status = visible;
 }

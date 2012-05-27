@@ -30,7 +30,7 @@ using namespace Ogre;
 int VideoCamera::counter = 0;
 
 VideoCamera::VideoCamera(rig_t *truck) :
-	, truck(truck)
+	  truck(truck)
 	, debugMode(false)
 	, debugNode(0)
 	, mVidCam()
@@ -51,15 +51,15 @@ void VideoCamera::init()
 	bool fullscreenRW = BSETTING("VideoCameraFullscreen", false);
 
 	// check if this vidcamera is also affected
-	if(useExternalMirrorWindow && fullscreenRW)
+	if (useExternalMirrorWindow && fullscreenRW)
 	{
 		int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter), 0);
-		if(monitor < 0)
+		if (monitor < 0)
 			useExternalMirrorWindow = false;
 		// < 0 = fallback to texture
 	}
 
-	if(!useExternalMirrorWindow)
+	if (!useExternalMirrorWindow)
 	{
 		Ogre::TexturePtr rttTexPtr = Ogre::TextureManager::getSingleton().createManual(materialName + "_texture"
 			, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
@@ -75,36 +75,36 @@ void VideoCamera::init()
 	} else
 	{
 		NameValuePairList misc;
-		if(!SSETTING("VideoCameraFSAA", "").empty())
+		if (!SSETTING("VideoCameraFSAA", "").empty())
 			misc["FSAA"] = SSETTING("VideoCameraFSAA", "");
 		
-		if(!SSETTING("VideoCameraColourDepth", "").empty())
+		if (!SSETTING("VideoCameraColourDepth", "").empty())
 			misc["colourDepth"] = SSETTING("VideoCameraColourDepth", "");
 		else
 			misc["colourDepth"] = "32";
 		
-		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
+		if (ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
 			misc["left"] = SSETTING("VideoCameraLeft_" + TOSTRING(counter), "");
 		
-		if(ISETTING("VideoCameraTop_" + TOSTRING(counter), 0) > 0)
+		if (ISETTING("VideoCameraTop_" + TOSTRING(counter), 0) > 0)
 			misc["top"] = SSETTING("VideoCameraTop_" + TOSTRING(counter), "");
-		if(!SSETTING("VideoCameraWindowBorder", "").empty())
+		if (!SSETTING("VideoCameraWindowBorder", "").empty())
 			misc["border"] = SSETTING("VideoCameraWindowBorder", ""); // fixes for windowed mode
 
 		misc["outerDimensions"] = "true"; // fixes for windowed mode
 
 		bool fullscreen = BSETTING("VideoCameraFullscreen", false);
-		if(fullscreen)
+		if (fullscreen)
 		{
 			int monitor = ISETTING("VideoCameraMonitor_" + TOSTRING(counter), 0);
 			misc["monitorIndex"] = TOSTRING(monitor);
 		}
 		
 		rwMirror =  Ogre::Root::getSingleton().createRenderWindow(vidCamName, mirrorSize.x, mirrorSize.y, fullscreen, &misc);
-		if(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
+		if (ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0) > 0)
 			rwMirror->reposition(ISETTING("VideoCameraLeft_" + TOSTRING(counter), 0), ISETTING("VideoCameraTop_" + TOSTRING(counter), 0));
 
-		if(ISETTING("VideoCameraWidth_" + TOSTRING(counter), 0) > 0)
+		if (ISETTING("VideoCameraWidth_" + TOSTRING(counter), 0) > 0)
 			rwMirror->resize(ISETTING("VideoCameraWidth_" + TOSTRING(counter), 0), ISETTING("VideoCameraHeight_" + TOSTRING(counter), 0));
 		
 		rwMirror->setAutoUpdated(false);
@@ -121,7 +121,7 @@ void VideoCamera::init()
 	disabledTexture = mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
 	mat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
 
-	if(rttTex)
+	if (rttTex)
 	{
 		Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
@@ -137,7 +137,7 @@ void VideoCamera::init()
 			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureUScale (-1);
 	}
 
-	if(rwMirror)
+	if (rwMirror)
 	{
 		Ogre::Viewport *vp = rwMirror->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
@@ -148,7 +148,7 @@ void VideoCamera::init()
 		mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
 	}
 	
-	if(debugMode)
+	if (debugMode)
 	{
 		Entity *ent = globalEnvironment->ogreSceneManager->createEntity("debug-camera.mesh");
 		debugNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
@@ -160,7 +160,7 @@ void VideoCamera::init()
 
 void VideoCamera::setActive(bool state)
 {
-	if(rttTex)
+	if (rttTex)
 	{
 		rttTex->setActive(state);
 		if (state)
@@ -169,21 +169,21 @@ void VideoCamera::setActive(bool state)
 			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(disabledTexture);
 	}
 	
-	if(rwMirror) rwMirror->setActive(state);
+	if (rwMirror) rwMirror->setActive(state);
 }
 
 void VideoCamera::update(float dt)
 {
 #ifdef USE_CAELUM
 	// caelum needs to know that we changed the cameras
-	if(globalEnvironment->sky)
+	if (globalEnvironment->sky)
 		globalEnvironment->sky->notifyCameraChanged(mVidCam);
 #endif // USE_CAELUM
 
 	// update the texture now, otherwise shuttering
-	if(rttTex) rttTex->update();
+	if (rttTex) rttTex->update();
 
-	if(rwMirror) rwMirror->update();
+	if (rwMirror) rwMirror->update();
 
 	// get the normal of the camera plane now
 	Vector3 normal=(-(truck->nodes[nref].smoothpos - truck->nodes[nz].smoothpos)).crossProduct(-(truck->nodes[nref].smoothpos - truck->nodes[ny].smoothpos));
@@ -237,7 +237,7 @@ void VideoCamera::update(float dt)
 		}
 	}
 
-	if(debugMode)
+	if (debugMode)
 	{
 		debugNode->setPosition(pos);
 		debugNode->setOrientation(mVidCam->getOrientation());
@@ -278,7 +278,7 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 		cmode   = PARSEINT (args[17]);
 		strncpy(materialname, args[18].c_str(), 255);
 		materialname[255] = '\0';
-		if(n > 19)
+		if (n > 19)
 			strncpy(vidCamName, args[19].c_str(), 255);
 		else
 			strncpy(vidCamName, materialname, 255); // fallback, use materialname
@@ -297,20 +297,20 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 			return 0;
 		}
 
-		if(cmode < -2 )
+		if (cmode < -2 )
 		{
 			truck->parser_warning(c, "Camera Mode setting incorrect, trying to continue ...");
 			return 0;
 		}
 
-		if(crole < -1 || crole >1)
+		if (crole < -1 || crole >1)
 		{
 			truck->parser_warning(c, "Camera Role (camera, trace, mirror) setting incorrect, trying to continue ...");
 			return 0;
 		}
 
 		MaterialPtr mat = MaterialManager::getSingleton().getByName(materialname);
-		if(mat.isNull())
+		if (mat.isNull())
 		{
 			truck->parser_warning(c, "unknown material: '"+String(materialname)+"', trying to continue ...");
 			return 0;
@@ -321,7 +321,7 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 		MaterialPtr matNew = mat->clone(newMaterialName);
 
 		// we need to find and replace any materials that could come afterwards
-		if(truck && truck->materialReplacer)
+		if (truck && truck->materialReplacer)
 			truck->materialReplacer->addMaterialReplace(mat->getName(), newMaterialName);
 
 		VideoCamera *v  = new VideoCamera(truck);
@@ -337,7 +337,7 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 		v->vidCamName   = vidCamName;
 		v->mirrorSize   = Vector2(texx, texy);
 
-		if(crole != 1)                     //rotate camera picture 180°, skip for mirrors
+		if (crole != 1)                     //rotate camera picture 180°, skip for mirrors
 			rotz += 180;
 
 		v->rotation     = Quaternion(Degree(rotz), Vector3::UNIT_Z) * Quaternion(Degree(roty), Vector3::UNIT_Y) * Quaternion(Degree(rotx), Vector3::UNIT_X);

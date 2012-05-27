@@ -19,8 +19,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 13th of August 2009
 #ifdef USE_MYGUI
-#ifndef __GUI_MENU_H_
-#define __GUI_MENU_H_
+#ifndef _GUI_Menu_H_
+#define _GUI_Menu_H_
 
 #include "RoRPrerequisites.h"
 
@@ -33,7 +33,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class GUI_MainMenu : public RoRSingletonNoCreation< GUI_MainMenu >
 {
 public:
-	GUI_MainMenu(RoRFrameListener *efl);
+
+	GUI_MainMenu();
 	~GUI_MainMenu();
 
 	bool getVisible();
@@ -48,7 +49,7 @@ public:
 	void triggerUpdateVehicleList();
 
 protected:
-	RoRFrameListener *mefl;
+
 	MyGUI::MenuBarPtr mainmenu;
 	int menuWidth, menuHeight;
 
@@ -64,5 +65,6 @@ protected:
 	MyGUI::PopupMenuPtr vehiclesMenu;
 };
 
-#endif // __GUI_MENU_H_
+#endif // _GUI_Menu_H_
+
 #endif // USE_MYGUI

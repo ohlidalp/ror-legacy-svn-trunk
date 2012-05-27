@@ -748,7 +748,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	// create main menu :D
 	if (!isEmbedded)
 	{
-		new GUI_MainMenu(this);
+		new GUI_MainMenu();
 		GUI_Friction::getSingleton();
 	}
 
@@ -913,7 +913,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 	{
 		Ogre::StringVector str = StringUtil::split(cmd, "/");
 		// process args now
-		for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
+		for (Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		{
 
 			String argstr = *it;
@@ -1141,7 +1141,7 @@ RoRFrameListener::~RoRFrameListener()
 
 //	if (joy) delete (joy);
 #ifdef USE_PAGED
-	for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
+	for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
 	{
 		if (it->geom)
 		{
@@ -3129,7 +3129,7 @@ bool RoRFrameListener::updateTruckMirrors(float dt)
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 	if (!curr_truck) return false;
 
-	for(std::vector<VideoCamera *>::iterator it=curr_truck->vidcams.begin(); it!=curr_truck->vidcams.end(); it++)
+	for (std::vector<VideoCamera *>::iterator it=curr_truck->vidcams.begin(); it!=curr_truck->vidcams.end(); it++)
 	{
 		(*it)->update(dt);
 	}
@@ -3296,7 +3296,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	{
 #ifdef USE_PAGED
 		// paged geometry
-		for(std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
+		for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
 		{
 			if (it->geom) it->geom->update();
 		}
@@ -3674,7 +3674,7 @@ void RoRFrameListener::reloadCurrentTruck()
 	// copy over the most basic info
 	if (curr_truck->free_node == newBeam->free_node)
 	{
-		for(int i=0;i<curr_truck->free_node;i++)
+		for (int i=0;i<curr_truck->free_node;i++)
 		{
 			// copy over nodes attributes if the amount of them didnt change
 			newBeam->nodes[i].AbsPosition = curr_truck->nodes[i].AbsPosition;

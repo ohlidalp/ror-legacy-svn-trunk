@@ -57,7 +57,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // some shortcuts for us
 #define LOG(x)       Ogre::LogManager::getSingleton().logMessage(x)
-#define LOGSAFE(x)   do { if(Ogre::LogManager::getSingletonPtr()) Ogre::LogManager::getSingleton().logMessage(x);  } while(0) // use this if you log whenever its unsure if Ogre was started properly beforehand
+#define LOGSAFE(x)   do { if (Ogre::LogManager::getSingletonPtr()) Ogre::LogManager::getSingleton().logMessage(x);  } while(0) // use this if you log whenever its unsure if Ogre was started properly beforehand
 #define TOSTRING(x)  Ogre::StringConverter::toString(x)
 #define TOUTFSTRING(x)  ANSI_TO_UTF(Ogre::StringConverter::toString(x))
 #define PARSEINT(x)  Ogre::StringConverter::parseInt(x)
@@ -89,7 +89,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef FEAT_DEBUG_ASSERT
 # ifdef WIN32
 // __debugbreak will break into the debugger in visual studio
-#  define MYASSERT(x)       do { if(x) { } else { LOGSAFE("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
+#  define MYASSERT(x)       do { if (x) { } else { LOGSAFE("***ASSERT FAILED: "+OGREFUNCTIONSTRING); __debugbreak(); }; } while(0)
 # endif //WIN32
 #else //!FEAT_DEBUG_ASSERT
 # define MYASSERT(x)         assert(x)

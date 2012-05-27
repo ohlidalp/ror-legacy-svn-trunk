@@ -749,7 +749,7 @@ void FlexAirfoil::addwash(int propid, float ratio)
 
 void FlexAirfoil::updateForces()
 {
-	if(!airfoil) return;
+	if (!airfoil) return;
 	if (broken) return;
 //	if (innan) {LOG("STEP "+TOSTRING(innan)+" "+TOSTRING(nblu));innan++;}
 	//evaluate wind direction
@@ -870,6 +870,6 @@ void FlexAirfoil::updateForces()
 
 FlexAirfoil::~FlexAirfoil()
 {
-	if(airfoil) delete airfoil; airfoil=0;
-	if(!msh.isNull()) msh->unload();
+	if (airfoil) delete airfoil; airfoil=0;
+	if (!msh.isNull()) msh->unload();
 }

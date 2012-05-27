@@ -84,7 +84,7 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 	Vector3 normal = Vector3::UNIT_Y;
 	Vector3 position = Vector3::ZERO;
 	Quaternion orientation = Quaternion::ZERO;
-	if(ref >= 0)
+	if (ref >= 0)
 	{
 		Vector3 diffX = nodes[nx].smoothpos-nodes[ref].smoothpos;
 		Vector3 diffY = nodes[ny].smoothpos-nodes[ref].smoothpos;
@@ -117,7 +117,7 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 	}catch(...)
 	{
 	}
-	if(groupname == "")
+	if (groupname == "")
 	{
 		LOG("FLEXBODY mesh not found: "+String(meshname));
 		faulty=true;
@@ -134,24 +134,24 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 	// now find possible LODs
  	String basename, ext;
 	StringUtil::splitBaseFilename(String(meshname), basename, ext);
-	for(int i=0; i<4;i++)
+	for (int i=0; i<4;i++)
 	{
 		String fn = basename + "_" + TOSTRING(i) + ".mesh";
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(fn);
-		if(!exists) continue;
+		if (!exists) continue;
 
 		float distance = 3;
-		if(i == 1) distance = 20;
-		if(i == 2) distance = 50;
-		if(i == 3) distance = 200;
+		if (i == 1) distance = 20;
+		if (i == 2) distance = 50;
+		if (i == 3) distance = 200;
 		newmesh->createManualLodLevel(distance, fn);
 	}
 
 	Entity *ent = globalEnvironment->ogreSceneManager->createEntity(uname, uname_mesh);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
-	if(mfm) mfm->replaceMeshMaterials(ent);
-	if(mr) mr->replaceMeshMaterials(ent);
-	if(usedSkin) usedSkin->replaceMeshMaterials(ent);
+	if (mfm) mfm->replaceMeshMaterials(ent);
+	if (mr) mr->replaceMeshMaterials(ent);
+	if (usedSkin) usedSkin->replaceMeshMaterials(ent);
 	//LOG("FLEXBODY unique mesh created: "+String(meshname)+" -> "+String(uname_mesh));
 
 	msh=ent->getMesh();
@@ -496,20 +496,20 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 
 #if 0
 	// XXX TODO: fix 1.7 LODs
-	if(enable_truck_lod)
+	if (enable_truck_lod)
 	{
 		String lodstr = "FLEXBODY LODs: ";
-		for(int i=0;i<msh->getNumLodLevels();i++)
+		for (int i=0;i<msh->getNumLodLevels();i++)
 		{
-			if(i) lodstr += ", ";
+			if (i) lodstr += ", ";
 			lodstr += TOSTRING(Real(sqrt(msh->getLodLevel(i).fromDepthSquared))) + "m";
 
-			if(msh->getLodLevel(i).edgeData)
+			if (msh->getLodLevel(i).edgeData)
 			{
 				lodstr += "(" + TOSTRING(msh->getLodLevel(i).edgeData->triangles.size()) + " triangles)";
 			} else
 			{
-				if(msh->getEdgeList(i))
+				if (msh->getEdgeList(i))
 					lodstr += "(" + TOSTRING(msh->getEdgeList(i)->triangles.size()) +" triangles)";
 			}
 		}
@@ -540,22 +540,22 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 
 void FlexBody::setEnabled(bool e)
 {
-	if(faulty) return;
+	if (faulty) return;
 	setVisible(e);
 	enabled = e;
 }
 
 void FlexBody::setVisible(bool visible)
 {
-	if(faulty) return;
-	if(!enabled) return;
-	if(snode)
+	if (faulty) return;
+	if (!enabled) return;
+	if (snode)
 		snode->setVisible(visible);
 }
 
 void FlexBody::printMeshInfo(Mesh* mesh)
 {
-	if(faulty) return;
+	if (faulty) return;
 	if (mesh->sharedVertexData)
 	{
 		LOG("FLEXBODY Mesh has Shared Vertices:");
@@ -623,7 +623,7 @@ Vector3 FlexBody::flexit()
 	Vector3 normal;
 	Vector3 center;
 
-	if(cref >= 0)
+	if (cref >= 0)
 	{
 		Vector3 diffX = nodes[cx].smoothpos-nodes[cref].smoothpos;
 		Vector3 diffY = nodes[cy].smoothpos-nodes[cref].smoothpos;
@@ -676,7 +676,7 @@ Vector3 FlexBody::flexit()
 
 void FlexBody::reset()
 {
-	if(faulty) return;
+	if (faulty) return;
 	if (hasblend)
 	{
 		for (int i=0; i<(int)vertex_count; i++) srccolors[i]=0x00000000;
@@ -686,7 +686,7 @@ void FlexBody::reset()
 
 void FlexBody::writeBlend()
 {
-	if(!enabled) return;
+	if (!enabled) return;
 	if (!hasblend) return;
 	ARGB *cpt=srccolors;
 	if (hasshared)
@@ -703,7 +703,7 @@ void FlexBody::writeBlend()
 
 void FlexBody::updateBlend() //so easy!
 {
-	if(!enabled) return;
+	if (!enabled) return;
 	bool changed=false;
 	for (int i=0; i<(int)vertex_count; i++)
 	{

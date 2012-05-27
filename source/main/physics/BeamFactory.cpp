@@ -189,7 +189,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 
 	// fill truckconfig
 	std::vector<String> truckconfig;
-	for(int t=0; t<10; t++)
+	for (int t=0; t<10; t++)
 	{
 		if (!strnlen(treg->truckconfig[t], 60))
 			break;
@@ -653,7 +653,7 @@ void BeamFactory::removeInstance(stream_del_t *del)
 	if (del->streamid == -1)
 	{
 		// delete all streams
-		for(it_beam=it_stream->second.begin(); it_beam != it_stream->second.end(); it_beam++)
+		for (it_beam=it_stream->second.begin(); it_beam != it_stream->second.end(); it_beam++)
 			removeInstance(it_beam->second);
 	} else
 	{
@@ -668,9 +668,9 @@ void BeamFactory::removeInstance(stream_del_t *del)
 void BeamFactory::windowResized()
 {
 #ifdef USE_MYGUI
-	for(int t=0; t < free_truck; t++)
+	for (int t=0; t < free_truck; t++)
 	{
-		if(trucks[t])
+		if (trucks[t])
 		{
 			trucks[t]->dash->windowResized();
 		}

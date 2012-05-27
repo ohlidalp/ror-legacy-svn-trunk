@@ -19,7 +19,7 @@ void BootstrapLoadingState::enter()
 	LOG("creating loading bar");
 	// load all resources now, so the zip files are also initiated
 	mLoadingBar = new ExampleLoadingBar();
-	if(mLoadingBar)
+	if (mLoadingBar)
 	{
 		RenderWindow *win = OgreFramework::getSingleton().m_pRenderWnd;
 		mLoadingBar->start(win, 8, 8, 0.75);
@@ -51,17 +51,17 @@ void BootstrapLoadingState::exit()
 	m_pSceneMgr->clearSpecialCaseRenderQueues();
 	m_pSceneMgr->setSpecialCaseRenderQueueMode(SceneManager::SCRQM_EXCLUDE);
 
-	if(mLoadingBar)
+	if (mLoadingBar)
 	{
 		mLoadingBar->finish();
 		delete(mLoadingBar);
 		mLoadingBar=NULL;
 	}
 	
-	if(m_pCamera)
+	if (m_pCamera)
 		m_pSceneMgr->destroyCamera(m_pCamera);
 
-    if(m_pSceneMgr)
+    if (m_pSceneMgr)
         OgreFramework::getSingletonPtr()->m_pRoot->destroySceneManager(m_pSceneMgr);
 
 }

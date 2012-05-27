@@ -60,13 +60,13 @@ void NetworkStreamManager::addLocalStream(Streamable *stream, stream_register_t 
 	stream->isOrigin = true;
 
 	// add new stream map to the streams map
-	if(streams.find(mysourceid) == streams.end())
+	if (streams.find(mysourceid) == streams.end())
 		streams[mysourceid] = std::map < unsigned int, Streamable *>();
 	// map the stream
 	streams[mysourceid][streamid] = stream;
 	LOG("adding local stream: " + TOSTRING(mysourceid) + ":"+ TOSTRING(streamid) + ", type: " + TOSTRING(reg->type));
 	// send stream setup notice to server
-	if(size == 0) size = sizeof(stream_register_t);
+	if (size == 0) size = sizeof(stream_register_t);
 	stream->addPacket(MSG2_STREAM_REGISTER, size, (char*)reg);
 
 	// increase stream counter
@@ -105,11 +105,11 @@ void NetworkStreamManager::removeStream(int sourceid, int streamid)
 			streams[sourceid].erase(it_stream);
 	}
 
-	if(sourceid != mysourceid)
+	if (sourceid != mysourceid)
 	{
 		// now iterate over all factories and remove their instances (only triggers)
 		std::vector < StreamableFactoryInterface * >::iterator it;
-		for(it=factories.begin(); it!=factories.end(); it++)
+		for (it=factories.begin(); it!=factories.end(); it++)
 		{
 			(*it)->deleteRemote(sourceid, streamid);
 		}
@@ -132,7 +132,7 @@ void NetworkStreamManager::resumeStream(Streamable *stream)
 void NetworkStreamManager::removeUser(int sourceID)
 {
 	MUTEX_LOCK(&stream_mutex);
-	if(streams.find(sourceID) == streams.end())
+	if (streams.find(sourceID) == streams.end())
 	{
 		// no such stream?!
 		MUTEX_UNLOCK(&stream_mutex);
@@ -143,7 +143,7 @@ void NetworkStreamManager::removeUser(int sourceID)
 
 	// now iterate over all factories and remove their instances (only triggers)
 	std::vector < StreamableFactoryInterface * >::iterator it;
-	for(it=factories.begin(); it!=factories.end(); it++)
+	for (it=factories.begin(); it!=factories.end(); it++)
 	{
 		(*it)->deleteRemote(sourceID, -1); // -1 = all streams
 	}
@@ -154,19 +154,19 @@ void NetworkStreamManager::removeUser(int sourceID)
 void NetworkStreamManager::pushReceivedStreamMessage(header_t header, char *buffer)
 {
 	MUTEX_LOCK(&stream_mutex);
-	if(streams.find(header.source) == streams.end())
+	if (streams.find(header.source) == streams.end())
 	{
 		// no such stream?!
 		LOG("EEE Source not found: "+TOSTRING(header.source)+":"+TOSTRING(header.streamid));
 		MUTEX_UNLOCK(&stream_mutex);
 		return;
 	}
-	if(streams.find(header.source)->second.find(header.streamid) == streams.find(header.source)->second.end())
+	if (streams.find(header.source)->second.find(header.streamid) == streams.find(header.source)->second.end())
 	{
 		// no such stream?!
 		
 		// removed: too verbose
-		//if(header.streamid != 0)
+		//if (header.streamid != 0)
 		//	LOG("EEE Stream not found: "+TOSTRING(header.source)+":"+TOSTRING(header.streamid));
 		
 		MUTEX_UNLOCK(&stream_mutex);
@@ -195,12 +195,12 @@ void NetworkStreamManager::sendStreams(Network *net, SWInetSocket *socket)
 	int bufferSize=0;
 
 	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
-	for(it=streams.begin(); it!=streams.end(); it++)
+	for (it=streams.begin(); it!=streams.end(); it++)
 	{
 		std::map<unsigned int,Streamable *>::iterator it2;
-		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
+		for (it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			if(!it2->second) continue;
+			if (!it2->second) continue;
 			std::deque <Streamable::bufferedPacket_t> *packets = it2->second->getPacketQueue();
 
 			while (!packets->empty())
@@ -245,7 +245,7 @@ void NetworkStreamManager::syncRemoteStreams()
 	MUTEX_LOCK(&stream_mutex);
 	// iterate over all factories
 	std::vector < StreamableFactoryInterface * >::iterator it;
-	for(it=factories.begin(); it!=factories.end(); it++)
+	for (it=factories.begin(); it!=factories.end(); it++)
 	{
 		(*it)->syncRemoteStreams();
 	}
@@ -258,12 +258,12 @@ void NetworkStreamManager::receiveStreams()
 	char *buffer = 0;
 	int bufferSize=0;
 	std::map < int, std::map < unsigned int, Streamable *> >::iterator it;
-	for(it=streams.begin(); it!=streams.end(); it++)
+	for (it=streams.begin(); it!=streams.end(); it++)
 	{
 		std::map<unsigned int,Streamable *>::iterator it2;
-		for(it2=it->second.begin(); it2!=it->second.end(); it2++)
+		for (it2=it->second.begin(); it2!=it->second.end(); it2++)
 		{
-			if(!it2->second) continue;
+			if (!it2->second) continue;
 			it2->second->lockReceiveQueue();
 			std::deque <recvPacket_t> *packets = it2->second->getReceivePacketQueue();
 
@@ -274,7 +274,7 @@ void NetworkStreamManager::receiveStreams()
 
 				//Network::debugPacket("receive-2", &packet.header, (char *)packet.buffer);
 
-				if(it2->second) it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
+				if (it2->second) it2->second->receiveStreamData(packet.header.command, packet.header.source, packet.header.streamid, (char*)packet.buffer, packet.header.size);
 
 				packets->pop_front();
 			}

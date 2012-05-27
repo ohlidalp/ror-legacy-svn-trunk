@@ -100,7 +100,7 @@ void DustPool::allocSmoke(Vector3 pos, Vector3 vel)
 //
 void DustPool::allocSparks(Vector3 pos, Vector3 vel)
 {
-	if(vel.length() < 0.1) return; // try to prevent emitting sparks while standing
+	if (vel.length() < 0.1) return; // try to prevent emitting sparks while standing
 	if (allocated==size) return;
 	positions[allocated]=pos;
 	velocities[allocated]=vel;
@@ -160,7 +160,7 @@ void DustPool::update(float gspeed)
 	{
 		/*
 		// show particle if requested
-		if(pss[i] && visible[i])
+		if (pss[i] && visible[i])
 		{
 			pss[i]->setVisible(true);
 			//pss[i]->setEmitting(true);
@@ -175,7 +175,7 @@ void DustPool::update(float gspeed)
 			ndir=ndir/2.0;
 			//if (ndir.y<0) ndir.y=-ndir.y;
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -198,7 +198,7 @@ void DustPool::update(float gspeed)
 			Real vel=ndir.length();
 			ndir.y+=vel/5.5;
 			vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -217,7 +217,7 @@ void DustPool::update(float gspeed)
 			ndir=ndir/4.0;
 			//if (ndir.y<0) ndir.y=-ndir.y;
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -233,7 +233,7 @@ void DustPool::update(float gspeed)
 			Vector3 ndir=-velocities[i];
 			//ndir.y=-ndir.y;
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -246,7 +246,7 @@ void DustPool::update(float gspeed)
 			ParticleEmitter *emit=pss[i]->getEmitter(0);
 			Vector3 ndir=velocities[i];
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -261,7 +261,7 @@ void DustPool::update(float gspeed)
 			ParticleEmitter *emit=pss[i]->getEmitter(0);
 			Vector3 ndir=velocities[i];
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);
@@ -277,7 +277,7 @@ void DustPool::update(float gspeed)
 			if (ndir.y<0) ndir.y=-ndir.y/2.0;
 			ndir=ndir/2.0;
 			Real vel=ndir.length();
-			if(vel == 0)
+			if (vel == 0)
 				vel += 0.0001;
 			ndir=ndir/vel;
 			emit->setEnabled(true);

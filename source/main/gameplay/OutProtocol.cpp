@@ -93,7 +93,7 @@ void OutProtocol::startup()
 	sendaddr.sin_port        = htons(port);
 
 	// connect
-	if( connect(sockfd, (struct sockaddr *) &sendaddr, sizeof(sendaddr)) == SOCKET_ERROR )
+	if ( connect(sockfd, (struct sockaddr *) &sendaddr, sizeof(sendaddr)) == SOCKET_ERROR )
 	{
 		LOG(String("error connecting socket for OutGauge: ").append(strerror(errno)));
 		return;
@@ -116,7 +116,7 @@ bool OutProtocol::update(float dt)
 
 	// below the set delay?
 	timer += dt;
-	if( timer < delay )
+	if ( timer < delay )
 	{
 		return true;
 	}
@@ -164,18 +164,18 @@ bool OutProtocol::update(float dt)
 		gd.DashLights |= DL_SIGNAL_L;
 		gd.DashLights |= DL_SIGNAL_R;
 		gd.DashLights |= DL_SIGNAL_ANY;
-		if(truck->tc_present)   gd.DashLights |= DL_TC;
-		if(truck->alb_present)  gd.DashLights |= DL_ABS;
+		if (truck->tc_present)   gd.DashLights |= DL_TC;
+		if (truck->alb_present)  gd.DashLights |= DL_ABS;
 
 		gd.ShowLights = 0;
-		if(truck->parkingbrake)   gd.ShowLights |= DL_HANDBRAKE;
-		if(truck->lights)         gd.ShowLights |= DL_FULLBEAM;
-		if(truck->engine->hasContact() && !truck->engine->isRunning()) gd.ShowLights |=  DL_BATTERY;
-		if(truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
-		if(truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
-		if(truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
-		if(truck->tc_mode)        gd.ShowLights |= DL_TC;
-		if(truck->alb_mode)       gd.ShowLights |= DL_ABS;
+		if (truck->parkingbrake)   gd.ShowLights |= DL_HANDBRAKE;
+		if (truck->lights)         gd.ShowLights |= DL_FULLBEAM;
+		if (truck->engine->hasContact() && !truck->engine->isRunning()) gd.ShowLights |=  DL_BATTERY;
+		if (truck->left_blink_on)  gd.ShowLights |= DL_SIGNAL_L;
+		if (truck->right_blink_on) gd.ShowLights |= DL_SIGNAL_R;
+		if (truck->warn_blink_on)  gd.ShowLights |= DL_SIGNAL_ANY;
+		if (truck->tc_mode)        gd.ShowLights |= DL_TC;
+		if (truck->alb_mode)       gd.ShowLights |= DL_ABS;
 
 		gd.Throttle = truck->engine->getAcc();
 		gd.Brake    = truck->brake / truck->brakeforce;

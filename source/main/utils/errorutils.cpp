@@ -54,7 +54,7 @@ int showMsgBox(Ogre::UTFString title, Ogre::UTFString err, int type)
 	//LOG("message box: " + title + ": " + err);
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	int mtype = MB_ICONERROR;
-	if(type == 1) mtype = MB_ICONINFORMATION;
+	if (type == 1) mtype = MB_ICONINFORMATION;
 	MessageBoxW( NULL, err.asWStr_c_str(), title.asWStr_c_str(), MB_OK | mtype | MB_TOPMOST);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	printf("\n\n%s: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str());
@@ -80,7 +80,7 @@ int showOgreWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString
 	stored_url = url;
 
 	RigsOfRods *ror = RigsOfRods::getSingletonPtr();
-	if(ror) ror->tryShutdown();
+	if (ror) ror->tryShutdown();
 	
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	printf("\n\n%s: %s / url: %s\n\n", title.asUTF8_c_str(), err.asUTF8_c_str(), url.asUTF8_c_str());
@@ -93,7 +93,7 @@ int showOgreWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString
 
 void showStoredOgreWebErrors()
 {
-	if(!storederror) return;
+	if (!storederror) return;
 	showWebError(stored_title, stored_err, stored_url);
 }
 
@@ -106,7 +106,7 @@ int showWebError(Ogre::UTFString title, Ogre::UTFString err, Ogre::UTFString url
 	err = err + additional;
 	int Response = MessageBoxW( NULL, err.asWStr_c_str(), title.asWStr_c_str(), MB_YESNO | MB_ICONERROR | MB_TOPMOST | MB_SYSTEMMODAL | MB_SETFOREGROUND );
 	// 6 (IDYES) = yes, 7 (IDNO) = no
-	if(Response == IDYES)
+	if (Response == IDYES)
 	{
 		// Microsoft conversion hell follows :|
 		wchar_t *command = L"open";

@@ -49,14 +49,14 @@ std::deque < recvPacket_t > *Streamable::getReceivePacketQueue()
 void Streamable::addPacket(int type, unsigned int len, char* content)
 {
 #ifdef USE_SOCKETW
-	if(packets.size() > packetBufferSizeDiscardData && type == MSG2_STREAM_DATA)
+	if (packets.size() > packetBufferSizeDiscardData && type == MSG2_STREAM_DATA)
 		// discard unimportant data packets for some while
 		return;
 
-	if(packets.size() > packetBufferSize)
+	if (packets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
-	if(len > maxPacketLen)
+	if (len > maxPacketLen)
 		// packet too big, discarded
 		return;
 
@@ -111,11 +111,11 @@ void Streamable::addPacket(int type, unsigned int len, char* content)
 
 void Streamable::addReceivedPacket(header_t header, char *buffer)
 {
-	if(packets.size() > packetBufferSizeDiscardData && header.command == MSG2_STREAM_DATA)
+	if (packets.size() > packetBufferSizeDiscardData && header.command == MSG2_STREAM_DATA)
 		// discard unimportant data packets for some while
 		return;
 
-	if(receivedPackets.size() > packetBufferSize)
+	if (receivedPackets.size() > packetBufferSize)
 		// buffer full, packet discarded
 		return;
 	MUTEX_LOCK(&recv_work_mutex);
@@ -148,7 +148,7 @@ void Streamable::addStreamRegistrationResult(int sourceid, stream_register_t reg
 
 int Streamable::getStreamRegisterResultForSource(int sourceid, stream_register_t *reg)
 {
-	if(mStreamableResults.find(sourceid) == mStreamableResults.end())
+	if (mStreamableResults.find(sourceid) == mStreamableResults.end())
 		return 1;
 	*reg = mStreamableResults[sourceid];
 	return 0;
@@ -156,7 +156,7 @@ int Streamable::getStreamRegisterResultForSource(int sourceid, stream_register_t
 
 bool Streamable::getStreamResultsChanged()
 {
-	if(streamResultsChanged)
+	if (streamResultsChanged)
 	{
 		streamResultsChanged = false;
 		return true;

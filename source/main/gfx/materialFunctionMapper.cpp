@@ -27,11 +27,11 @@ using namespace Ogre;
 void MaterialFunctionMapper::addMaterial(int flareid, materialmapping_t t)
 {
 	MaterialPtr m = Ogre::MaterialManager::getSingleton().getByName(t.material);
-	if(m.isNull()) return;
+	if (m.isNull()) return;
 	Technique *tech = m->getTechnique(0);
-	if(!tech) return;
+	if (!tech) return;
 	Pass *p = tech->getPass(0);
-	if(!p) return;
+	if (!p) return;
 	// save emissive colour and then set to zero (light disabled by default)
 	t.emissiveColour = p->getSelfIllumination();
 	t.laststate = false;
@@ -43,28 +43,28 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 {
 	std::vector<materialmapping_t> mb = materialBindings[flareid];
 	std::vector<materialmapping_t>::iterator it;
-	for(it=mb.begin(); it!=mb.end(); it++)
+	for (it=mb.begin(); it!=mb.end(); it++)
 	{
-		//if(it->laststate == isvisible)
+		//if (it->laststate == isvisible)
 		//	continue;
 		//it->laststate = isvisible;
 
 		MaterialPtr m = Ogre::MaterialManager::getSingleton().getByName(it->material);
-		if(m.isNull()) continue;
+		if (m.isNull()) continue;
 
-		for(int i=0;i<m->getNumTechniques();i++)
+		for (int i=0;i<m->getNumTechniques();i++)
 		{
 			Technique *tech = m->getTechnique(i);
-			if(!tech) continue;
+			if (!tech) continue;
 
-			if(tech->getSchemeName() == "glow")
+			if (tech->getSchemeName() == "glow")
 			{
 				// glowing technique
 				// set the ambient value as glow amount
 				Pass *p = tech->getPass(0);
-				if(!p) continue;
+				if (!p) continue;
 
-				if(isvisible)
+				if (isvisible)
 				{
 					p->setSelfIllumination(it->emissiveColour);
 					p->setAmbient(ColourValue::White);
@@ -79,19 +79,19 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 			{
 				// normal technique
 				Pass *p = tech->getPass(0);
-				if(!p) continue;
+				if (!p) continue;
 
 				TextureUnitState *tus = p->getTextureUnitState(0);
-				if(!tus) continue;
+				if (!tus) continue;
 
-				if(tus->getNumFrames() < 2)
+				if (tus->getNumFrames() < 2)
 					continue;
 
 				int frame = isvisible?1:0;
 
 				tus->setCurrentFrame(frame);
 
-				if(isvisible)
+				if (isvisible)
 					p->setSelfIllumination(it->emissiveColour);
 				else
 					p->setSelfIllumination(ColourValue::ZERO);
@@ -103,23 +103,23 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 
 void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
-	if(!e)
+	if (!e)
 	{
 		LOG("MaterialFunctionMapper: got invalid Entity in replaceMeshMaterials");
 		return;
 	}
 	// this is not nice, but required (its not so much performance relevant ...
-	for(std::map <int, std::vector<materialmapping_t> >::iterator mfb=materialBindings.begin();mfb!=materialBindings.end();mfb++)
+	for (std::map <int, std::vector<materialmapping_t> >::iterator mfb=materialBindings.begin();mfb!=materialBindings.end();mfb++)
 	{
-		for(std::vector<materialmapping_t>::iterator mm=mfb->second.begin();mm!=mfb->second.end();mm++)
+		for (std::vector<materialmapping_t>::iterator mm=mfb->second.begin();mm!=mfb->second.end();mm++)
 		{
 			MeshPtr m = e->getMesh();
-			if(!m.isNull())
+			if (!m.isNull())
 			{
-				for(int n=0; n<(int)m->getNumSubMeshes();n++)
+				for (int n=0; n<(int)m->getNumSubMeshes();n++)
 				{
 					SubMesh *sm = m->getSubMesh(n);
-					if(sm->getMaterialName() ==  mm->originalmaterial)
+					if (sm->getMaterialName() ==  mm->originalmaterial)
 					{
 						sm->setMaterialName(mm->material);
 						LOG("MaterialFunctionMapper: replaced mesh material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
@@ -127,10 +127,10 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 				}
 			}
 
-			for(int n=0; n<(int)e->getNumSubEntities();n++)
+			for (int n=0; n<(int)e->getNumSubEntities();n++)
 			{
 				SubEntity *subent = e->getSubEntity(n);
-				if(subent->getMaterialName() ==  mm->originalmaterial)
+				if (subent->getMaterialName() ==  mm->originalmaterial)
 				{
 					subent->setMaterialName(mm->material);
 					LOG("MaterialFunctionMapper: replaced entity material " + mm->originalmaterial + " with new new material " + mm->material + " on entity " + e->getName());
@@ -143,7 +143,7 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 int MaterialFunctionMapper::simpleMaterialCounter = 0;
 void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c)
 {
-	if(!e)
+	if (!e)
 	{
 		LOG("MaterialFunctionMapper: got invalid Entity in replaceSimpleMeshMaterials");
 		return;
@@ -151,7 +151,7 @@ void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::C
 	if (!BSETTING("SimpleMaterials", false)) return;
 
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/simple");
-	if(mat.isNull()) return;
+	if (mat.isNull()) return;
 
 	String newMatName = "tracks/simple/" + TOSTRING(simpleMaterialCounter);
 	MaterialPtr newmat = mat->clone(newMatName);
@@ -161,16 +161,16 @@ void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::C
 	simpleMaterialCounter++;
 	
 	MeshPtr m = e->getMesh();
-	if(!m.isNull())
+	if (!m.isNull())
 	{
-		for(int n=0; n<(int)m->getNumSubMeshes();n++)
+		for (int n=0; n<(int)m->getNumSubMeshes();n++)
 		{
 			SubMesh *sm = m->getSubMesh(n);
 			sm->setMaterialName(newMatName);
 		}
 	}
 
-	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	for (int n=0; n<(int)e->getNumSubEntities();n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		subent->setMaterialName(newMatName);

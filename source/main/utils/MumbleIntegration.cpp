@@ -90,7 +90,7 @@ void MumbleIntegration::update(Ogre::Vector3 cameraPos, Ogre::Vector3 avatarPos)
 {
 	if (! lm) return;
 
-	if(lm->uiVersion != 2)
+	if (lm->uiVersion != 2)
 	{
 		wcsncpy(lm->name, L"Rigs of Rods", 256);
 		wcsncpy(lm->description, L"This plugin links Rigs of Rods with Mumble", 2048);

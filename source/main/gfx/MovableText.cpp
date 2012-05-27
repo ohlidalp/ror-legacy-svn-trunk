@@ -74,7 +74,7 @@ MovableText::~MovableText()
 
 void MovableText::setFontName(const UTFString &fontName)
 {
-	if((Ogre::MaterialManager::getSingletonPtr()->resourceExists(mName + "Material")))
+	if ((Ogre::MaterialManager::getSingletonPtr()->resourceExists(mName + "Material")))
 	{
 		Ogre::MaterialManager::getSingleton().remove(mName + "Material");
 	}
@@ -144,12 +144,12 @@ void MovableText::setSpaceWidth(Real width)
 
 void MovableText::setTextAlignment(const HorizontalAlignment& horizontalAlignment, const VerticalAlignment& verticalAlignment)
 {
-	if(mHorizontalAlignment != horizontalAlignment)
+	if (mHorizontalAlignment != horizontalAlignment)
 	{
 		mHorizontalAlignment = horizontalAlignment;
 		mNeedUpdate = true;
 	}
-	if(mVerticalAlignment != verticalAlignment)
+	if (mVerticalAlignment != verticalAlignment)
 	{
 		mVerticalAlignment = verticalAlignment;
 		mNeedUpdate = true;
@@ -167,7 +167,7 @@ void MovableText::setAdditionalHeight( Real height )
 
 void MovableText::showOnTop(bool show)
 {
-	if( mOnTop != show && !mpMaterial.isNull() )
+	if ( mOnTop != show && !mpMaterial.isNull() )
 	{
 		mOnTop = show;
 		mpMaterial->setDepthBias(1.0,1.0);
@@ -255,7 +255,7 @@ void MovableText::_setupGeometry()
 	bool newLine = true;
 	Real len = 0.0f;
 
-	if(mVerticalAlignment == MovableText::V_ABOVE)
+	if (mVerticalAlignment == MovableText::V_ABOVE)
 	{
 		// Raise the first line of the caption
 		top += mCharHeight;
@@ -312,7 +312,7 @@ void MovableText::_setupGeometry()
 		// First tri
 		//
 		// Upper left
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);
@@ -322,7 +322,7 @@ void MovableText::_setupGeometry()
 		*pPCBuff++ = v1;
 
 		// Deal with bounds
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			currPos = Ogre::Vector3(left, top, -1.0);
 		else
 			currPos = Ogre::Vector3(left - (len / 2), top, -1.0);
@@ -342,7 +342,7 @@ void MovableText::_setupGeometry()
 		top -= mCharHeight * 2.0;
 
 		// Bottom left
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);
@@ -352,7 +352,7 @@ void MovableText::_setupGeometry()
 		*pPCBuff++ = v2;
 
 		// Deal with bounds
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			currPos = Ogre::Vector3(left, top, -1.0);
 		else
 			currPos = Ogre::Vector3(left - (len / 2), top, -1.0);
@@ -364,7 +364,7 @@ void MovableText::_setupGeometry()
 		left += horiz_height * mCharHeight * 2.0;
 
 		// Top right
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);
@@ -375,7 +375,7 @@ void MovableText::_setupGeometry()
 		//-------------------------------------------------------------------------------------
 
 		// Deal with bounds
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			currPos = Ogre::Vector3(left, top, -1.0);
 		else
 			currPos = Ogre::Vector3(left - (len / 2), top, -1.0);
@@ -387,7 +387,7 @@ void MovableText::_setupGeometry()
 		// Second tri
 		//
 		// Top right (again)
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);
@@ -405,7 +405,7 @@ void MovableText::_setupGeometry()
 		left -= horiz_height  * mCharHeight * 2.0;
 
 		// Bottom left (again)
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);
@@ -422,7 +422,7 @@ void MovableText::_setupGeometry()
 		left += horiz_height  * mCharHeight * 2.0;
 
 		// Bottom right
-		if(mHorizontalAlignment == MovableText::H_LEFT)
+		if (mHorizontalAlignment == MovableText::H_LEFT)
 			*pPCBuff++ = left;
 		else
 			*pPCBuff++ = left - (len / 2);

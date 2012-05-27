@@ -63,21 +63,21 @@ void GameState::resume()
 
 void GameState::exit()
 {
-	if(BSETTING("REPO_MODE", false))
+	if (BSETTING("REPO_MODE", false))
 	{
 		std::exit(1);
 	}
 
     LOG("Leaving GameState...");
 
-	if(mFrameListener)
+	if (mFrameListener)
 	{
 		OgreFramework::getSingleton().m_pRoot->removeFrameListener(mFrameListener);
 		delete mFrameListener;
 	}
 
     m_pSceneMgr->destroyCamera(m_pCamera);
-    if(m_pSceneMgr)
+    if (m_pSceneMgr)
         OgreFramework::getSingletonPtr()->m_pRoot->destroySceneManager(m_pSceneMgr);
 }
 

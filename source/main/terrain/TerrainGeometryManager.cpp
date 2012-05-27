@@ -132,7 +132,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 	terrainOptions->setMaxPixelError(PARSEINT(terrainConfig.getSetting("MaxPixelError")));
 
 	// Important to set these so that the terrain knows what to use for derived (non-realtime) data
-	if(light)
+	if (light)
 	{
 		terrainOptions->setLightMapDirection(light->getDerivedDirection());
 		terrainOptions->setCompositeMapDiffuse(light->getDiffuseColour());
@@ -178,7 +178,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 	{
 		defaultimp.layerList.resize(terrainLayers);
 		blendInfo.resize(terrainLayers);
-		for(int i = 0; i < terrainLayers; i++)
+		for (int i = 0; i < terrainLayers; i++)
 		{
 			defaultimp.layerList[i].worldSize = PARSEINT(terrainConfig.getSetting("Layers."+TOSTRING(i)+".size"));
 			defaultimp.layerList[i].textureNames.push_back(terrainConfig.getSetting("Layers."+TOSTRING(i)+".diffusespecular"));
@@ -197,7 +197,7 @@ void TerrainGeometryManager::initBlendMaps( Ogre::Terrain* terrain )
 	bool debugBlendMaps = StringConverter::parseBool(terrainConfig.getSetting("DebugBlendMaps"));
 
 	int layerCount = terrain->getLayerCount();
-	for(int i = 1; i < layerCount; i++)
+	for (int i = 1; i < layerCount; i++)
 	{
 		blendLayerInfo_t &bi = blendInfo[i];
 		Ogre::Image img;
@@ -216,7 +216,7 @@ void TerrainGeometryManager::initBlendMaps( Ogre::Terrain* terrain )
 
 		// resize that blending map so it will fit
 		Ogre::uint32 blendmapSize = terrain->getLayerBlendMapSize();
-		if(img.getWidth() != blendmapSize)
+		if (img.getWidth() != blendmapSize)
 			img.resize(blendmapSize, blendmapSize);
 
 		// now to the ugly part
@@ -241,17 +241,17 @@ void TerrainGeometryManager::initBlendMaps( Ogre::Terrain* terrain )
 		blendmap->update();
 	}
 
-	if(debugBlendMaps)
+	if (debugBlendMaps)
 	{
-		for(int i = 1; i < layerCount; i++)
+		for (int i = 1; i < layerCount; i++)
 		{
 			Ogre::TerrainLayerBlendMap* blendMap = terrain->getLayerBlendMap(i);
 			Ogre::uint32 blendmapSize = terrain->getLayerBlendMapSize();
 			Ogre::Image img;
 			unsigned short *idata = OGRE_ALLOC_T(unsigned short, blendmapSize * blendmapSize, Ogre::MEMCATEGORY_RESOURCE);
 			float scale = 65535.0f;
-			for(unsigned int x = 0; x < blendmapSize; x++)
-				for(unsigned int y = 0; y < blendmapSize; y++)
+			for (unsigned int x = 0; x < blendmapSize; x++)
+				for (unsigned int y = 0; y < blendmapSize; y++)
 					idata[x + y * blendmapSize] = (unsigned short)(blendMap->getBlendValue(x, blendmapSize - y) * scale);
 			img.loadDynamicImage((Ogre::uchar*)(idata), blendmapSize, blendmapSize, Ogre::PF_L16);
 			std::string fileName = "blendmap_layer_" + Ogre::StringConverter::toString(i) + ".png";

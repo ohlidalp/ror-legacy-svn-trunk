@@ -57,7 +57,7 @@ void ContentManager::loadMainResource(String name, String group)
 #endif
 
 	String zipFilename = SSETTING("Resources Path", "resources\\")+name+".zip";
-	if(fileExists(zipFilename.c_str()))
+	if (fileExists(zipFilename.c_str()))
 	{
 		ResourceGroupManager::getSingleton().addResourceLocation(zipFilename, "Zip", group);
 	} else
@@ -161,25 +161,25 @@ bool ContentManager::init(void)
 	if (SSETTING("Sky effects", "Caelum (best looking, slower)") == "Caelum (best looking, slower)")
 		loadMainResource("caelum");
 
-	//if(BSETTING("Hydrax", false))
+	//if (BSETTING("Hydrax", false))
 	//	loadMainResource("hydrax", "Hydrax"); // special resource group required!
 
-	if(SSETTING("Vegetation", "None (fastest)") != "None (fastest)")
+	if (SSETTING("Vegetation", "None (fastest)") != "None (fastest)")
 		loadMainResource("paged");
 
-	if(BSETTING("HDR", false))
+	if (BSETTING("HDR", false))
 		loadMainResource("hdr");
 
-	if(BSETTING("DOF", false))
+	if (BSETTING("DOF", false))
 		loadMainResource("dof");
 
-	if(BSETTING("Glow", false))
+	if (BSETTING("Glow", false))
 		loadMainResource("glow");
 
-	if(BSETTING("Motion blur", false))
+	if (BSETTING("Motion blur", false))
 		loadMainResource("blur");
 
-	if(BSETTING("HeatHaze", false))
+	if (BSETTING("HeatHaze", false))
 		loadMainResource("heathaze");
 
 	if (BSETTING("Sunburn", false))
@@ -209,7 +209,7 @@ bool ContentManager::init(void)
 	OverlayManager::getSingleton().addOverlayElementFactory(pCT);
 
 	// set default mipmap level (NB some APIs ignore this)
-	if(TextureManager::getSingletonPtr())
+	if (TextureManager::getSingletonPtr())
 		TextureManager::getSingleton().setDefaultNumMipmaps(5);
 	String tft=SSETTING("Texture Filtering", "Trilinear");
 	TextureFilterOptions tfo=TFO_NONE;
@@ -277,9 +277,9 @@ bool ContentManager::resourceCollision(Ogre::Resource *resource, Ogre::ResourceM
 {
 	/*
 	// TODO: do something useful here
-	if(resourceManager->getResourceType() == "Material")
+	if (resourceManager->getResourceType() == "Material")
 	{
-		if(instanceCountMap.find(resource->getName()) == instanceCountMap.end())
+		if (instanceCountMap.find(resource->getName()) == instanceCountMap.end())
 		{
 			instanceCountMap[resource->getName()] = 1;
 		}
@@ -306,7 +306,7 @@ void ContentManager::exploreZipFolders(Ogre::String rg)
 	FileInfoList::iterator iterFiles = files->begin();
 	for (; iterFiles!= files->end(); ++iterFiles)
 	{
-		if(!iterFiles->archive) continue;
+		if (!iterFiles->archive) continue;
 		String fullpath = iterFiles->archive->getName() + dirsep;
 		rgm.addResourceLocation(fullpath + iterFiles->filename, "Zip", rg);
 	}
@@ -325,7 +325,7 @@ void ContentManager::exploreFolders(Ogre::String rg)
 	FileInfoList::iterator iterFiles = files->begin();
 	for (; iterFiles!= files->end(); ++iterFiles)
 	{
-		if(!iterFiles->archive) continue;
+		if (!iterFiles->archive) continue;
 		if (iterFiles->filename==String(".svn")) continue;
 		// trying to get the full path
 		String fullpath = iterFiles->archive->getName() + dirsep;

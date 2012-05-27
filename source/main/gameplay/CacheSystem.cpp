@@ -57,7 +57,7 @@ CacheSystem::CacheSystem() :
 	known_extensions.push_back("load");
 	known_extensions.push_back("train");
 
-	if(BSETTING("streamCacheGenerationOnly", false))
+	if (BSETTING("streamCacheGenerationOnly", false))
 	{
 		writeStreamCache();
 		exit(0);
@@ -76,7 +76,7 @@ void CacheSystem::setLocation(String cachepath, String configpath)
 
 void CacheSystem::startup(bool forcecheck)
 {
-	if(BSETTING("NOCACHE", false))
+	if (BSETTING("NOCACHE", false))
 	{
 		LOG("Cache disabled via command line switch");
 		return;
@@ -89,11 +89,11 @@ void CacheSystem::startup(bool forcecheck)
 	currentSHA1 = filenamesSHA1();
 
 	int valid = isCacheValid();
-	if(forcecheck)
+	if (forcecheck)
 		valid = -1;
 	// valid == -1 : try incemental update
 	// valid == -2 : must update fully
-	if(valid<0)
+	if (valid<0)
 	{
 		LOG("cache invalid, updating ...");
 		// generate the cache
@@ -109,7 +109,7 @@ void CacheSystem::startup(bool forcecheck)
 	loadCache();
 
 	// show error on zero content
-	if(entries.empty())
+	if (entries.empty())
 	{
 		showOgreWebError(_L("No content installed"), _L("You have no content installed"), _L("http://www.rigsofrods.com/wiki/pages/Install_Content"));
 		exit(1337);
@@ -133,7 +133,7 @@ void CacheSystem::unloadUselessResourceGroups()
 {
 	StringVector sv = ResourceGroupManager::getSingleton().getResourceGroups();
 	StringVector::iterator it;
-	for(it = sv.begin(); it!=sv.end(); it++)
+	for (it = sv.begin(); it!=sv.end(); it++)
 	{
 		if (it->substr(0, 8) == "General-")
 		{
@@ -175,7 +175,7 @@ bool CacheSystem::resourceExistsInAllGroups(Ogre::String filename)
 	{
 		exists=false;
 	}
-	if(group.empty())
+	if (group.empty())
 		exists = false;
 	return exists;
 }
@@ -185,7 +185,7 @@ int CacheSystem::isCacheValid()
 	String cfgfilename = getCacheConfigFilename(false);
 	ImprovedConfigFile cfg;
 	ConfigFile ff;
-	if(!resourceExistsInAllGroups(cfgfilename))
+	if (!resourceExistsInAllGroups(cfgfilename))
 	{
 		LOG("unable to load config file: "+cfgfilename);
 		return -2;
@@ -197,12 +197,12 @@ int CacheSystem::isCacheValid()
 	String shaone = cfg.getSetting("shaone");
 	String cacheformat = cfg.getSetting("cacheformat");
 
-	if(shaone == "" || shaone != currentSHA1)
+	if (shaone == "" || shaone != currentSHA1)
 	{
 		LOG("* mod cache is invalid (not up to date), regenerating new one ...");
 		return -1;
 	}
-	if(cacheformat != String(CACHE_FILE_FORMAT))
+	if (cacheformat != String(CACHE_FILE_FORMAT))
 	{
 		entries.clear();
 		LOG("* mod cache has invalid format, trying to regenerate");
@@ -534,7 +534,7 @@ void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
 		{
 			String mat = params[1];
 			Ogre::StringVector ar = StringUtil::split(mat," ");
-			for(Ogre::StringVector::iterator it = ar.begin(); it!=ar.end(); it++)
+			for (Ogre::StringVector::iterator it = ar.begin(); it!=ar.end(); it++)
 				t.materials.insert(*it);
 		}
 }
@@ -596,7 +596,7 @@ bool CacheSystem::loadCache()
 			if ( line == "}" )
 			{
 				// Finished
-				if( !t.deleted )
+				if ( !t.deleted )
 				{
 					entries.push_back(t);
 				}
@@ -621,7 +621,7 @@ Ogre::String CacheSystem::fileTime(String filename)
 	if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite))
 		return "";
 
-	if(!FileTimeToSystemTime(&ftWrite, &st))
+	if (!FileTimeToSystemTime(&ftWrite, &st))
 		return "";
 
 	char tmp[256] = "";
@@ -659,7 +659,7 @@ int CacheSystem::incrementalCacheUpdate()
 {
 	entries.clear();
 
-	if(!loadCache())
+	if (!loadCache())
 		//error loading cache!
 		return -1;
 
@@ -672,7 +672,7 @@ int CacheSystem::incrementalCacheUpdate()
 	UTFString tmp = "";
 	String fn = "";
 	int counter = 0;
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++, counter++)
+	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++, counter++)
 	{
 #ifdef USE_MYGUI
 		int progress = ((float)counter/(float)(entries.size()))*100;
@@ -685,7 +685,7 @@ int CacheSystem::incrementalCacheUpdate()
 		else if (it->type == "FileSystem")
 			fn = getRealPath(it->dirname + "/" + it->fname);
 
-		if((it->type == "FileSystem" || it->type == "Zip") && !fileExists(fn.c_str()))
+		if ((it->type == "FileSystem" || it->type == "Zip") && !fileExists(fn.c_str()))
 		{
 			LOG("- "+fn+" is not existing");
 #ifdef USE_MYGUI
@@ -699,12 +699,12 @@ int CacheSystem::incrementalCacheUpdate()
 			continue;
 		}
 		// check whether it changed
-		if(it->type == "Zip")
+		if (it->type == "Zip")
 		{
 			// check file time, if that fails, fall back to sha1 (needed for platforms where filetime is not yet implemented!
 			bool check = false;
 			String ft = fileTime(fn);
-			if(ft.empty() || it->filetime.empty() || it->filetime == "unknown")
+			if (ft.empty() || it->filetime.empty() || it->filetime == "unknown")
 			{
 				// slow sha1 check
 				char hash[256] = {};
@@ -737,12 +737,12 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(40, _L("incremental check: processing changed zips\n"));
 #endif //USE_MYGUI
-	for(std::vector<Cache_Entry>::iterator it = changed_entries.begin(); it != changed_entries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = changed_entries.begin(); it != changed_entries.end(); it++)
 	{
 		bool found=false;
-		for(std::vector<Ogre::String>::iterator it2 = reloaded_zips.begin(); it2!=reloaded_zips.end(); it2++)
+		for (std::vector<Ogre::String>::iterator it2 = reloaded_zips.begin(); it2!=reloaded_zips.end(); it2++)
 		{
-			if(*it2 == it->dirname)
+			if (*it2 == it->dirname)
 			{
 				found=true;
 				break;
@@ -773,12 +773,12 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(90, _L("incremental check: duplicates\n"));
 #endif //USE_MYGUI
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
 	{
-		if(it->deleted) continue;
-		for(std::vector<Cache_Entry>::iterator it2 = entries.begin(); it2 != entries.end(); it2++)
+		if (it->deleted) continue;
+		for (std::vector<Cache_Entry>::iterator it2 = entries.begin(); it2 != entries.end(); it2++)
 		{
-			if(it2->deleted) continue;
+			if (it2->deleted) continue;
 			// clean paths, important since we compare them ...
 			String basename, basepath;
 
@@ -813,17 +813,17 @@ int CacheSystem::incrementalCacheUpdate()
 			StringUtil::toLowerCase(filenameWUIDB);
 
 			// hard duplicate
-			if(dira == dirb && dnameA == dnameB && filenameA == filenameB)
+			if (dira == dirb && dnameA == dnameB && filenameA == filenameB)
 			{
-				if(it->number == it2->number) continue; // do not delete self
+				if (it->number == it2->number) continue; // do not delete self
 				LOG("- "+ it2->dirname+"/" + it->fname + " hard duplicate");
 				it2->deleted=true;
 				continue;
 			}
 			// soft duplicates
-			else if(dira == dirb && dnameA == dnameB && filenameWUIDA == filenameWUIDB)
+			else if (dira == dirb && dnameA == dnameB && filenameWUIDA == filenameWUIDB)
 			{
-				if(it->number == it2->number) continue; // do not delete self
+				if (it->number == it2->number) continue; // do not delete self
 				LOG("- "+ it2->dirname+"/" + it->fname + " soft duplicate, resolving ...");
 				// create sha1 and see whats the correct entry :)
 				RoR::CSHA1 sha1;
@@ -832,11 +832,11 @@ int CacheSystem::incrementalCacheUpdate()
 				char hashres[256]="";
 				sha1.ReportHash(hashres, RoR::CSHA1::REPORT_HEX_SHORT);
 				String hashstr = String(hashres);
-				if(hashstr == it->hash)
+				if (hashstr == it->hash)
 				{
 					LOG("  - entry 2 removed");
 					it2->deleted=true;
-				} else if(hashstr == it2->hash)
+				} else if (hashstr == it2->hash)
 				{
 					LOG("  - entry 1 removed");
 					it->deleted=true;
@@ -867,7 +867,7 @@ int CacheSystem::incrementalCacheUpdate()
 
 Cache_Entry *CacheSystem::getEntry(int modid)
 {
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
 	{
 		if (modid == it->number)
 			return (Cache_Entry *)&*it;
@@ -893,32 +893,32 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 	String result = "";
 	result += "\tnumber="+TOSTRING(counter)+"\n"; // always count linear!
 	result += "\tdeleted="+TOSTRING(t.deleted)+"\n";
-	if(!t.deleted)
+	if (!t.deleted)
 	{
 		// this ensures that we wont break the format with empty ("") values
-		if(t.minitype.empty())
+		if (t.minitype.empty())
 			t.minitype = "unknown";
-		if(t.type.empty())
+		if (t.type.empty())
 			t.type = "unknown";
-		if(t.dirname.empty())
+		if (t.dirname.empty())
 			t.dirname = "unknown";
-		if(t.fname.empty())
+		if (t.fname.empty())
 			t.fname = "unknown";
-		if(t.fext.empty())
+		if (t.fext.empty())
 			t.fext = "unknown";
-		if(t.filetime.empty())
+		if (t.filetime.empty())
 			t.filetime = "unknown";
-		if(t.dname.empty())
+		if (t.dname.empty())
 			t.dname = "unknown";
-		if(t.hash.empty())
+		if (t.hash.empty())
 			t.hash = "none";
-		if(t.uniqueid.empty())
+		if (t.uniqueid.empty())
 			t.uniqueid = "no-uid";
-		if(t.guid.empty())
+		if (t.guid.empty())
 			t.guid = "no-guid";
-		if(t.fname_without_uid.empty())
+		if (t.fname_without_uid.empty())
 			t.fname_without_uid = "unknown";
-		if(t.filecachename.empty())
+		if (t.filecachename.empty())
 			t.filecachename = "none";
 
 		result += "\tusagecounter="+TOSTRING(t.usagecounter)+"\n";
@@ -939,13 +939,13 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		result += "\tfilecachename="+t.filecachename+"\n";
 		//result += "\tnumauthors="+TOSTRING(t.authors.size())+"\n";
 
-		if(t.authors.size() > 0)
+		if (t.authors.size() > 0)
 		{
-			for(int i=0;i<(int)t.authors.size();i++)
+			for (int i=0;i<(int)t.authors.size();i++)
 			{
-				if(t.authors[i].type.empty())  t.authors[i].type = "unknown";
-				if(t.authors[i].name.empty())  t.authors[i].name = "unknown";
-				if(t.authors[i].email.empty()) t.authors[i].email = "unknown";
+				if (t.authors[i].type.empty())  t.authors[i].type = "unknown";
+				if (t.authors[i].name.empty())  t.authors[i].name = "unknown";
+				if (t.authors[i].email.empty()) t.authors[i].email = "unknown";
 				result += "\tauthor=" + (t.authors[i].type) + \
 					"," + TOSTRING(t.authors[i].id) + \
 					"," + (t.authors[i].name) + "," + (t.authors[i].email) + "\n";
@@ -953,56 +953,56 @@ Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
 		}
 
 		// now add the truck details if existing
-		if(t.description!="") result += "\tdescription="+normalizeText(t.description)+"\n";
-		if(t.tags!="") result += "\ttags="+t.tags+"\n";
-		if(t.fileformatversion!=0) result += "\tfileformatversion="+TOSTRING(t.fileformatversion)+"\n";
-		if(t.hasSubmeshs) result += "\thasSubmeshs=1\n";
-		if(t.nodecount!=0) result += "\tnodecount="+TOSTRING(t.nodecount)+"\n";
-		if(t.beamcount!=0) result += "\tbeamcount="+TOSTRING(t.beamcount)+"\n";
-		if(t.shockcount!=0) result += "\tshockcount="+TOSTRING(t.shockcount)+"\n";
-		if(t.fixescount!=0) result += "\tfixescount="+TOSTRING(t.fixescount)+"\n";
-		if(t.hydroscount!=0) result += "\thydroscount="+TOSTRING(t.hydroscount)+"\n";
-		if(t.wheelcount!=0) result += "\twheelcount="+TOSTRING(t.wheelcount)+"\n";
-		if(t.propwheelcount!=0) result += "\tpropwheelcount="+TOSTRING(t.propwheelcount)+"\n";
-		if(t.commandscount!=0) result += "\tcommandscount="+TOSTRING(t.commandscount)+"\n";
-		if(t.flarescount!=0) result += "\tflarescount="+TOSTRING(t.flarescount)+"\n";
-		if(t.propscount!=0) result += "\tpropscount="+TOSTRING(t.propscount)+"\n";
-		if(t.wingscount!=0) result += "\twingscount="+TOSTRING(t.wingscount)+"\n";
-		if(t.turbopropscount!=0) result += "\tturbopropscount="+TOSTRING(t.turbopropscount)+"\n";
-		if(t.turbojetcount!=0) result += "\tturbojetcount="+TOSTRING(t.turbojetcount)+"\n";
-		if(t.rotatorscount!=0) result += "\trotatorscount="+TOSTRING(t.rotatorscount)+"\n";
-		if(t.exhaustscount!=0) result += "\texhaustscount="+TOSTRING(t.exhaustscount)+"\n";
-		if(t.flexbodiescount!=0) result += "\tflexbodiescount="+TOSTRING(t.flexbodiescount)+"\n";
-		if(t.materialflarebindingscount!=0) result += "\tmaterialflarebindingscount="+TOSTRING(t.materialflarebindingscount)+"\n";
-		if(t.soundsourcescount!=0) result += "\tsoundsourcescount="+TOSTRING(t.soundsourcescount)+"\n";
-		if(t.managedmaterialscount!=0) result += "\tmanagedmaterialscount="+TOSTRING(t.managedmaterialscount)+"\n";
-		if(t.truckmass>1) result += "\ttruckmass="+TOSTRING(t.truckmass)+"\n";
-		if(t.loadmass>1) result += "\tloadmass="+TOSTRING(t.loadmass)+"\n";
-		if(t.minrpm>1) result += "\tminrpm="+TOSTRING(t.minrpm)+"\n";
-		if(t.maxrpm>1) result += "\tmaxrpm="+TOSTRING(t.maxrpm)+"\n";
-		if(t.torque>1) result += "\ttorque="+TOSTRING(t.torque)+"\n";
-		if(t.customtach) result += "\tcustomtach=1\n";
-		if(t.custom_particles) result += "\tcustom_particles=1\n";
-		if(t.forwardcommands) result += "\tforwardcommands=1\n";
-		if(t.importcommands) result += "\timportcommands=1\n";
-		if(t.rollon) result += "\trollon=1\n";
-		if(t.rescuer) result += "\trescuer=1\n";
-		if(t.driveable!=0) result += "\tdriveable="+TOSTRING(t.driveable)+"\n";
-		if(t.numgears!=0) result += "\tnumgears="+TOSTRING(t.numgears)+"\n";
-		if(t.enginetype!=0) result += "\tenginetype="+TOSTRING(t.enginetype)+"\n";
-		if(t.materials.size())
+		if (t.description!="") result += "\tdescription="+normalizeText(t.description)+"\n";
+		if (t.tags!="") result += "\ttags="+t.tags+"\n";
+		if (t.fileformatversion!=0) result += "\tfileformatversion="+TOSTRING(t.fileformatversion)+"\n";
+		if (t.hasSubmeshs) result += "\thasSubmeshs=1\n";
+		if (t.nodecount!=0) result += "\tnodecount="+TOSTRING(t.nodecount)+"\n";
+		if (t.beamcount!=0) result += "\tbeamcount="+TOSTRING(t.beamcount)+"\n";
+		if (t.shockcount!=0) result += "\tshockcount="+TOSTRING(t.shockcount)+"\n";
+		if (t.fixescount!=0) result += "\tfixescount="+TOSTRING(t.fixescount)+"\n";
+		if (t.hydroscount!=0) result += "\thydroscount="+TOSTRING(t.hydroscount)+"\n";
+		if (t.wheelcount!=0) result += "\twheelcount="+TOSTRING(t.wheelcount)+"\n";
+		if (t.propwheelcount!=0) result += "\tpropwheelcount="+TOSTRING(t.propwheelcount)+"\n";
+		if (t.commandscount!=0) result += "\tcommandscount="+TOSTRING(t.commandscount)+"\n";
+		if (t.flarescount!=0) result += "\tflarescount="+TOSTRING(t.flarescount)+"\n";
+		if (t.propscount!=0) result += "\tpropscount="+TOSTRING(t.propscount)+"\n";
+		if (t.wingscount!=0) result += "\twingscount="+TOSTRING(t.wingscount)+"\n";
+		if (t.turbopropscount!=0) result += "\tturbopropscount="+TOSTRING(t.turbopropscount)+"\n";
+		if (t.turbojetcount!=0) result += "\tturbojetcount="+TOSTRING(t.turbojetcount)+"\n";
+		if (t.rotatorscount!=0) result += "\trotatorscount="+TOSTRING(t.rotatorscount)+"\n";
+		if (t.exhaustscount!=0) result += "\texhaustscount="+TOSTRING(t.exhaustscount)+"\n";
+		if (t.flexbodiescount!=0) result += "\tflexbodiescount="+TOSTRING(t.flexbodiescount)+"\n";
+		if (t.materialflarebindingscount!=0) result += "\tmaterialflarebindingscount="+TOSTRING(t.materialflarebindingscount)+"\n";
+		if (t.soundsourcescount!=0) result += "\tsoundsourcescount="+TOSTRING(t.soundsourcescount)+"\n";
+		if (t.managedmaterialscount!=0) result += "\tmanagedmaterialscount="+TOSTRING(t.managedmaterialscount)+"\n";
+		if (t.truckmass>1) result += "\ttruckmass="+TOSTRING(t.truckmass)+"\n";
+		if (t.loadmass>1) result += "\tloadmass="+TOSTRING(t.loadmass)+"\n";
+		if (t.minrpm>1) result += "\tminrpm="+TOSTRING(t.minrpm)+"\n";
+		if (t.maxrpm>1) result += "\tmaxrpm="+TOSTRING(t.maxrpm)+"\n";
+		if (t.torque>1) result += "\ttorque="+TOSTRING(t.torque)+"\n";
+		if (t.customtach) result += "\tcustomtach=1\n";
+		if (t.custom_particles) result += "\tcustom_particles=1\n";
+		if (t.forwardcommands) result += "\tforwardcommands=1\n";
+		if (t.importcommands) result += "\timportcommands=1\n";
+		if (t.rollon) result += "\trollon=1\n";
+		if (t.rescuer) result += "\trescuer=1\n";
+		if (t.driveable!=0) result += "\tdriveable="+TOSTRING(t.driveable)+"\n";
+		if (t.numgears!=0) result += "\tnumgears="+TOSTRING(t.numgears)+"\n";
+		if (t.enginetype!=0) result += "\tenginetype="+TOSTRING(t.enginetype)+"\n";
+		if (t.materials.size())
 		{
 			String matStr = "";
-			for(std::set < Ogre::String >::iterator it = t.materials.begin(); it != t.materials.end(); it++)
+			for (std::set < Ogre::String >::iterator it = t.materials.begin(); it != t.materials.end(); it++)
 			{
 				matStr += *it + " ";
 			}
 			result += "\tmaterials=" + matStr + "\n";
 		}
 
-		if(t.sectionconfigs.size() > 0)
+		if (t.sectionconfigs.size() > 0)
 		{
-			for(int i=0;i<(int)t.sectionconfigs.size();i++)
+			for (int i=0;i<(int)t.sectionconfigs.size();i++)
 				result += "\tsectionconfig="+t.sectionconfigs[i]+"\n";
 		}
 	}
@@ -1015,7 +1015,7 @@ Ogre::String CacheSystem::normalizeText(Ogre::String text)
 {
 	String result = "";
 	Ogre::StringVector str = Ogre::StringUtil::split(text, "\n");
-	for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
+	for (Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		result += *it + "$";
 	return result;
 }
@@ -1024,7 +1024,7 @@ Ogre::String CacheSystem::deNormalizeText(Ogre::String text)
 {
 	String result = "";
 	Ogre::StringVector str = Ogre::StringUtil::split(text, "$");
-	for(Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
+	for (Ogre::StringVector::iterator it = str.begin(); it!=str.end(); it++)
 		result += *it + "\n";
 	return result;
 }
@@ -1045,7 +1045,7 @@ void CacheSystem::writeGeneratedCache()
 	LOG("writing cache to file ("+path+")...");
 
 	FILE *f = fopen(path.c_str(), "w");
-	if(!f)
+	if (!f)
 		return;
 	fprintf(f, "shaone=%s\n", const_cast<char*>(currentSHA1.c_str()));
 	fprintf(f, "modcount=%d\n", (int)entries.size());
@@ -1054,9 +1054,9 @@ void CacheSystem::writeGeneratedCache()
 	// mods
 	std::vector<Cache_Entry>::iterator it;
 	int counter=0;
-	for(it = entries.begin(); it != entries.end(); it++)
+	for (it = entries.begin(); it != entries.end(); it++)
 	{
-		if(it->deleted) continue;
+		if (it->deleted) continue;
 		fprintf(f, "%s", formatEntry(counter, *it).c_str());
 		counter++;
 	}
@@ -1087,12 +1087,12 @@ void CacheSystem::writeStreamCache()
 		// iterate through mods
 		std::vector<Cache_Entry>::iterator it;
 		int counter=0;
-		for(it = entries.begin(); it != entries.end(); it++)
+		for (it = entries.begin(); it != entries.end(); it++)
 		{
-			if(it->deleted) continue;
-			if(it->dirname.substr(0, dirName.size()) == dirName)
+			if (it->deleted) continue;
+			if (it->dirname.substr(0, dirName.size()) == dirName)
 			{
-				if(f) fprintf(f, "%s", formatEntry(counter, *it).c_str());
+				if (f) fprintf(f, "%s", formatEntry(counter, *it).c_str());
 
 				ResourceGroupManager::getSingleton().addResourceLocation(it->dirname, "Zip");
 				generateFileCache(*it, dirName + dirsep);
@@ -1100,7 +1100,7 @@ void CacheSystem::writeStreamCache()
 				counter++;
 			}
 		}
-		if(f) fclose(f);
+		if (f) fclose(f);
 	}
 #endif
 }
@@ -1127,7 +1127,7 @@ char *CacheSystem::restoreSpaces(char *str)
 bool CacheSystem::stringHasUID(Ogre::String uidstr)
 {
 	size_t pos = uidstr.find("-");
-	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
+	if (pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
 		return true;
 	return false;
 }
@@ -1135,7 +1135,7 @@ bool CacheSystem::stringHasUID(Ogre::String uidstr)
 Ogre::String CacheSystem::stripUIDfromString(Ogre::String uidstr)
 {
 	size_t pos = uidstr.find("-");
-	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
+	if (pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
 		return uidstr.substr(pos+1, uidstr.length()-pos);
 	return uidstr;
 }
@@ -1143,7 +1143,7 @@ Ogre::String CacheSystem::stripUIDfromString(Ogre::String uidstr)
 Ogre::String CacheSystem::getUIDfromString(Ogre::String uidstr)
 {
 	size_t pos = uidstr.find("-");
-	if(pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
+	if (pos != String::npos && pos >= 3 && uidstr.substr(pos-3, 3) == "UID")
 		return uidstr.substr(0, pos);
 	return "";
 }
@@ -1152,7 +1152,7 @@ void CacheSystem::addFile(Ogre::FileInfo f, String ext)
 {
 	String archiveType = "FileSystem";
 	String archiveDirectory = "";
-	if(f.archive)
+	if (f.archive)
 	{
 		archiveType = f.archive->getType();
 		archiveDirectory = f.archive->getName();
@@ -1167,11 +1167,11 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 
 	//read first line
 	Cache_Entry entry;
-	if(!resourceExistsInAllGroups(filename))
+	if (!resourceExistsInAllGroups(filename))
 		return;
 
 	String group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
-	if(ResourceGroupManager::getSingleton().resourceExists(group, filename))
+	if (ResourceGroupManager::getSingleton().resourceExists(group, filename))
 	{
 		try
 		{
@@ -1179,7 +1179,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 			entry.dname = ds->getLine();
 
-			if(ext == "terrn")
+			if (ext == "terrn")
 				fillTerrainDetailInfo(entry, ds, filename);
 			else
 				fillTruckDetailInfo(entry, ds, filename);
@@ -1202,16 +1202,16 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			entry.hash="none";
 			entry.changedornew=true;
 			generateFileCache(entry);
-			if(archiveType == "Zip")
+			if (archiveType == "Zip")
 				entry.hash = zipHashes[getVirtualPath(archiveDirectory)];
-			if(entry.hash == "")
+			if (entry.hash == "")
 				// fallback if no hash was found
 				entry.hash="none";
 			// read in author and category
 			entries.push_back(entry);
 		} catch(Ogre::Exception& e)
 		{
-			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
+			if (e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LOG(" *** error opening archive '"+filename+"': some files are duplicates of existing files. The file will be ignored.");
 				LOG("error while opening resource: " + e.getFullDescription());
@@ -1234,12 +1234,12 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 
 	// copy over some values
 
-	for(unsigned int i=0; i<r.description.size(); i++)    entry.description += r.description[i] + "\n";
-	for(unsigned int i=0; i<r.authors.size(); i++)        entry.authors.push_back(r.authors[i]);
-	for(unsigned int i=0; i<r.sectionconfigs.size(); i++) entry.sectionconfigs.push_back(r.sectionconfigs[i]);
+	for (unsigned int i=0; i<r.description.size(); i++)    entry.description += r.description[i] + "\n";
+	for (unsigned int i=0; i<r.authors.size(); i++)        entry.authors.push_back(r.authors[i]);
+	for (unsigned int i=0; i<r.sectionconfigs.size(); i++) entry.sectionconfigs.push_back(r.sectionconfigs[i]);
 
 
-	if(r.engine)
+	if (r.engine)
 	{
 		entry.numgears = (int)r.engine->getNumGears();
 		entry.minrpm  = r.engine->getIdleRPM();
@@ -1285,8 +1285,8 @@ void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds
 int CacheSystem::addUniqueString(std::set<Ogre::String> &list, Ogre::String str)
 {
 	// ignore some render texture targets
-	if(str == "mirror") return 0;
-	if(str == "renderdash") return 0;
+	if (str == "mirror") return 0;
+	if (str == "renderdash") return 0;
 
 	str = stripUIDfromString(str);
 
@@ -1302,16 +1302,16 @@ Ogre::String CacheSystem::addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e)
 {
 	String materials = "";
 	MeshPtr m = e->getMesh();
-	if(!m.isNull())
+	if (!m.isNull())
 	{
-		for(int n=0; n<(int)m->getNumSubMeshes();n++)
+		for (int n=0; n<(int)m->getNumSubMeshes();n++)
 		{
 			SubMesh *sm = m->getSubMesh(n);
 			addUniqueString(entry.materials, sm->getMaterialName());
 		}
 	}
 
-	for(int n=0; n<(int)e->getNumSubEntities();n++)
+	for (int n=0; n<(int)e->getNumSubEntities();n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		addUniqueString(entry.materials, subent->getMaterialName());
@@ -1327,16 +1327,16 @@ int CacheSystem::getTimeStamp()
 void CacheSystem::deleteFileCache(char *filename)
 {
 	int res = remove(filename);
-	if(res!=0)
+	if (res!=0)
 		LOG("error deleting file '"+String(filename)+"'");
 }
 
 Ogre::String CacheSystem::detectFilesMiniType(String filename)
 {
 	//search if mini picture exists
-	if(!resourceExistsInAllGroups(filename+".dds"))
+	if (!resourceExistsInAllGroups(filename+".dds"))
 	{
-		if(!resourceExistsInAllGroups(filename+".png"))
+		if (!resourceExistsInAllGroups(filename+".png"))
 			return "none";
 		else
 			return "png";
@@ -1347,7 +1347,7 @@ Ogre::String CacheSystem::detectFilesMiniType(String filename)
 void CacheSystem::removeFileFromFileCache(std::vector<Cache_Entry>::iterator iter)
 {
 	//LOG("removing file cache number "+TOSTRING(iter->number));
-	if(iter->minitype != "none")
+	if (iter->minitype != "none")
 	{
 		String fn = location + iter->filecachename;
 		deleteFileCache(const_cast<char*>(fn.c_str()));
@@ -1360,14 +1360,14 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 	try
 	{
 
-		if(directory.empty() && !entry.changedornew)
+		if (directory.empty() && !entry.changedornew)
 			return;
 
-		if(entry.fname == "")
+		if (entry.fname == "")
 			return;
 
 		LOG(" -"+entry.fname+" ...");
-		if(entry.minitype == "none")
+		if (entry.minitype == "none")
 		{
 			entry.filecachename = "none";
 			return;
@@ -1377,7 +1377,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 		String outPath = "";
 		StringUtil::splitFilename(entry.dirname, outBasename, outPath);
 
-		if(directory.empty())
+		if (directory.empty())
 			directory = location;
 
 		String dst = directory + outBasename + "_" + entry.fname + ".mini." + entry.minitype;
@@ -1391,13 +1391,13 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 
 		String group = "";
 		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
-		if(!exists)
+		if (!exists)
 		{
 			String base, ext;
 			StringUtil::splitBaseFilename(entry.fname, base, ext);
 			entry.minitype = detectFilesMiniType(base + "-mini");
 			exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(minifn);
-			if(!exists)
+			if (!exists)
 			{
 				// no minipic found
 				entry.filecachename = "none";
@@ -1426,7 +1426,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 			buffer = (char*)malloc(fsize);
 			memset(buffer, 0, fsize);
 			size_t read = ds->read(buffer, fsize);
-			if(read != fsize)
+			if (read != fsize)
 				return;
 		}
 
@@ -1442,7 +1442,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 			}
 			free(buffer);
 		}
-		if(!written)
+		if (!written)
 		{
 			deleteFileCache(const_cast<char*>(dst.c_str()));
 		}
@@ -1456,7 +1456,7 @@ void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
 
 void CacheSystem::parseKnownFilesAllRG()
 {
-	for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+	for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 		parseFilesAllRG(*sit);
 }
 
@@ -1464,7 +1464,7 @@ void CacheSystem::parseFilesAllRG(Ogre::String ext)
 {
 	StringVector sv = ResourceGroupManager::getSingleton().getResourceGroups();
 	StringVector::iterator it;
-	for(it = sv.begin(); it!=sv.end(); it++)
+	for (it = sv.begin(); it!=sv.end(); it++)
 		parseFilesOneRG(ext, *it);
 
 	LOG("* parsing files of all Resource Groups (" + ext + ") finished!");
@@ -1472,7 +1472,7 @@ void CacheSystem::parseFilesAllRG(Ogre::String ext)
 
 void CacheSystem::parseKnownFilesOneRG(Ogre::String rg)
 {
-	for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+	for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 		parseFilesOneRG(*sit, rg);
 }
 
@@ -1480,17 +1480,17 @@ void CacheSystem::parseKnownFilesOneRGDirectory(Ogre::String rg, Ogre::String di
 {
 	String dirb = dir;
 	getVirtualPath(dirb);
-	for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+	for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 	{
 		FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(rg, String("*.")+*sit);
 		for (FileInfoList::iterator iterFiles = files->begin(); iterFiles!= files->end(); ++iterFiles)
 		{
-			if(!iterFiles->archive) continue;
+			if (!iterFiles->archive) continue;
 
 			String dira = iterFiles->archive->getName();
 			getVirtualPath(dira);
 
-			if(dira == dirb)
+			if (dira == dirb)
 				addFile(*iterFiles, *sit);
 		}
 	}
@@ -1511,9 +1511,9 @@ void CacheSystem::parseFilesOneRG(Ogre::String ext, Ogre::String rg)
 
 bool CacheSystem::isFileInEntries(Ogre::String filename)
 {
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
-		if(it->fname == filename)
+		if (it->fname == filename)
 			return true;
 	}
 	return false;
@@ -1521,7 +1521,7 @@ bool CacheSystem::isFileInEntries(Ogre::String filename)
 void CacheSystem::generateZipList()
 {
 	zipCacheList.clear();
-	for(std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
+	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		zipCacheList.insert(getVirtualPath(it->dirname));
 		//LOG("zip path added: "+getVirtualPath(it->dirname));
@@ -1530,7 +1530,7 @@ void CacheSystem::generateZipList()
 
 bool CacheSystem::isZipUsedInEntries(Ogre::String filename)
 {
-	if(zipCacheList.empty())
+	if (zipCacheList.empty())
 		generateZipList();
 	//LOG("isZipUsedInEntries: "+getVirtualPath(filename));
 
@@ -1543,14 +1543,14 @@ bool CacheSystem::isDirectoryUsedInEntries(Ogre::String directory)
 	dira = getVirtualPath(dira);
 
 	std::vector<Cache_Entry>::iterator it;
-	for(it = entries.begin(); it!=entries.end(); it++)
+	for (it = entries.begin(); it!=entries.end(); it++)
 	{
-		if(it->type != "FileSystem") continue;
+		if (it->type != "FileSystem") continue;
 		String dirb = it->dirname;
 		dirb = getVirtualPath(dirb);
-		if(dira == dirb)
+		if (dira == dirb)
 			return true;
-		if(dira.substr(0,dirb.size()) == dirb) //check if its a subdirectory
+		if (dira.substr(0,dirb.size()) == dirb) //check if its a subdirectory
 			return true;
 	}
 	return false;
@@ -1558,7 +1558,7 @@ bool CacheSystem::isDirectoryUsedInEntries(Ogre::String directory)
 
 void CacheSystem::checkForNewKnownFiles()
 {
-	for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+	for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 		checkForNewFiles(*sit);
 }
 
@@ -1570,7 +1570,7 @@ void CacheSystem::checkForNewFiles(Ogre::String ext)
 	StringVector sv = ResourceGroupManager::getSingleton().getResourceGroups();
 	StringVector::iterator it;
 	int rcounter=0;
-	for(it = sv.begin(); it!=sv.end(); it++,rcounter++)
+	for (it = sv.begin(); it!=sv.end(); it++,rcounter++)
 	{
 		FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo(*it, fname);
 		FileInfoList::iterator iterFiles = files->begin();
@@ -1578,9 +1578,9 @@ void CacheSystem::checkForNewFiles(Ogre::String ext)
 		for (; iterFiles!= files->end(); ++iterFiles, i++)
 		{
 			String fn = iterFiles->filename.c_str();
-			if(!isFileInEntries(fn))
+			if (!isFileInEntries(fn))
 			{
-				if(iterFiles->archive->getType() == "Zip")
+				if (iterFiles->archive->getType() == "Zip")
 					LOG("- " + fn + " is new (in zip)");
 				else
 					LOG("- " + fn + " is new");
@@ -1599,14 +1599,14 @@ String CacheSystem::filenamesSHA1()
 	/*
 	StringVector sv = ResourceGroupManager::getSingleton().getResourceGroups();
 	StringVector::iterator it;
-	for(it = sv.begin(); it!=sv.end(); it++)
+	for (it = sv.begin(); it!=sv.end(); it++)
 	{
 		StringVectorPtr files = ResourceGroupManager::getSingleton().listResourceNames(*it);
-		for(StringVector::iterator i=files->begin(); i!=files->end(); i++)
+		for (StringVector::iterator i=files->begin(); i!=files->end(); i++)
 		{
 			// only use the important files :)
-			for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
-				if(i->find("."+*sit) != String::npos && i->find(".dds") == String::npos && i->find(".png") == String::npos)
+			for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+				if (i->find("."+*sit) != String::npos && i->find(".dds") == String::npos && i->find(".png") == String::npos)
 					filenames += "General/" + *i + "\n";
 		}
 	}
@@ -1614,23 +1614,23 @@ String CacheSystem::filenamesSHA1()
 
 	// and we use all folders and files for the hash
 	String restype[3] = {"Packs", "TerrainFolders", "VehicleFolders"};
-	for(int i=0;i<3;i++)
+	for (int i=0;i<3;i++)
 	{
-		for(int b=0;b<2;b++)
+		for (int b=0;b<2;b++)
 		{
 			FileInfoListPtr list = ResourceGroupManager::getSingleton().listResourceFileInfo(restype[i], (b==1));
-			for(FileInfoList::iterator iterFiles = list->begin(); iterFiles!=list->end(); iterFiles++)
+			for (FileInfoList::iterator iterFiles = list->begin(); iterFiles!=list->end(); iterFiles++)
 			{
 				String name = restype[i] + "/";
-				if(iterFiles->archive) name += iterFiles->archive->getName() + "/";
+				if (iterFiles->archive) name += iterFiles->archive->getName() + "/";
 
-				if(b==0)
+				if (b==0)
 				{
 					// special file handling, only add important files!
 					bool vipfile=false;
-					for(std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
+					for (std::vector<Ogre::String>::iterator sit=known_extensions.begin();sit!=known_extensions.end();sit++)
 					{
-						if(
+						if (
 							(iterFiles->filename.find("."+*sit) != String::npos && iterFiles->filename.find(".dds") == String::npos && iterFiles->filename.find(".png") == String::npos)
 							|| (iterFiles->filename.find(".zip") != String::npos)
 						  )
@@ -1639,7 +1639,7 @@ String CacheSystem::filenamesSHA1()
 							break;
 						}
 					}
-					if(!vipfile) continue;
+					if (!vipfile) continue;
 				}
 				name += iterFiles->filename;
 				filenames += name + "\n";
@@ -1677,7 +1677,7 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 	// try to get unique ID from the filename!
 	String uniqueid = "no-uid";
 	String fileuid = getUIDfromString(fname);
-	if(fileuid != "") uniqueid = fileuid;
+	if (fileuid != "") uniqueid = fileuid;
 
 	while (!ds->eof())
 	{
@@ -1720,15 +1720,15 @@ void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr 
 				continue;
 			}
 
-			if(uniqueid != "")
+			if (uniqueid != "")
 			{
 				// remove trailing comma
 				size_t slen = strnlen(uidtmp, 250);
-				if(slen > 0 && uidtmp[slen-1] == ',')
+				if (slen > 0 && uidtmp[slen-1] == ',')
 					uidtmp[slen-1] = 0;
 
 				// fix the -1 from the old format
-				if(strnlen(uidtmp, 5) > 0 && strncmp(uidtmp, "-1", 2))
+				if (strnlen(uidtmp, 5) > 0 && strncmp(uidtmp, "-1", 2))
 					uniqueid = String(uidtmp);
 			}
 
@@ -1794,8 +1794,8 @@ Cache_Entry CacheSystem::getResourceInfo(Ogre::String &filename)
 {
 	Cache_Entry def;
 	std::vector<Cache_Entry>::iterator it;
-	for(it = entries.begin(); it != entries.end(); it++)
-		if(it->fname == filename || it->fname_without_uid == filename)
+	for (it = entries.begin(); it != entries.end(); it++)
+		if (it->fname == filename || it->fname_without_uid == filename)
 			return *it;
 	return def;
 }
@@ -1811,7 +1811,7 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 
 	std::vector<Cache_Entry>::iterator it;
 
-	for(it = entries.begin(); it != entries.end(); it++)
+	for (it = entries.begin(); it != entries.end(); it++)
 	{
 		// case insensitive comparison
 		String fname = it->fname;
@@ -1839,10 +1839,10 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 {
 	static int rgcountera = 0;
 	static std::map<String, bool> loaded;
-	if(t.resourceLoaded || loaded[t.dirname])
+	if (t.resourceLoaded || loaded[t.dirname])
 		// only load once
 		return true;
-	if(t.type == "Zip")
+	if (t.type == "Zip")
 	{
 		//ScopeLog log("cache_"+t.fname);
 		try
@@ -1855,14 +1855,14 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 			return true;
 		} catch(Ogre::Exception& e)
 		{
-			if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
+			if (e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 			{
 				LOG(" *** error opening '"+t.dirname+"': some files are duplicates of existing files. The archive/directory will be ignored.");
 				LOG("error while opening resource: " + e.getFullDescription());
 			} else
 			{
 				LOG("error opening '"+t.dirname+"'.");
-				if(t.type == "Zip")
+				if (t.type == "Zip")
 					LOG("Is the zip archive corrupt? Error: " + e.getFullDescription());
 				LOG("Error description : " + e.getFullDescription());
 				LOG("trying to continue ...");
@@ -1881,7 +1881,7 @@ void CacheSystem::loadSingleZip(Ogre::FileInfo f, bool unload, bool ownGroup)
 {
 	String zippath = f.archive->getName() + "/" + f.filename;
 	int cfactor = -1;
-	if(f.uncompressedSize > 0)
+	if (f.uncompressedSize > 0)
 		cfactor = (f.compressedSize / f.uncompressedSize) * 100.0f;
 	loadSingleZip(zippath, cfactor, unload, ownGroup);
 }
@@ -1898,7 +1898,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 
 	try
 	{
-		if(alreadyLoaded)
+		if (alreadyLoaded)
 		{
 			parseKnownFilesOneRGDirectory(group, dirname);
 		} else
@@ -1923,7 +1923,7 @@ void CacheSystem::loadSingleDirectory(String dirname, String group, bool already
 
 	} catch(Ogre::Exception& e)
 	{
-		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
+		if (e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LOG(" *** error opening directory '"+dirname+"': some files are duplicates of existing files. The directory will be ignored.");
 			LOG("error while opening resource: " + e.getFullDescription());
@@ -1960,7 +1960,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 
 
 	String compr = "";
-	if(cfactor > 99)
+	if (cfactor > 99)
 		compr = "(No Compression)";
 	else if (cfactor > 0)
 		compr = "(Compression: " + TOSTRING(cfactor) + ")";
@@ -1970,7 +1970,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 	String rgname = "General-"+TOSTRING(rgcounter);
 
 	// use general group?
-	if(!ownGroup)
+	if (!ownGroup)
 		rgname = ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME;
 
 	try
@@ -1986,7 +1986,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		parseKnownFilesOneRG(rgname);
 
 		// unload it again
-		if(unload)
+		if (unload)
 		{
 			LOG("Unloading " + realzipPath);
 #ifdef USE_OPENAL
@@ -2000,7 +2000,7 @@ void CacheSystem::loadSingleZip(String zippath, int cfactor, bool unload, bool o
 		}
 	} catch(Ogre::Exception& e)
 	{
-		if(e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
+		if (e.getNumber() == Ogre::Exception::ERR_DUPLICATE_ITEM)
 		{
 			LOG(" *** error opening archive '"+realzipPath+"': some files are duplicates of existing files. The archive will be ignored.");
 			LOG("error while opening resource: " + e.getFullDescription());
@@ -2024,7 +2024,7 @@ void CacheSystem::loadAllZipsInResourceGroup(String group)
 	size_t i=0, filecount=files->size();
 	for (; iterFiles!= files->end(); ++iterFiles, i++)
 	{
-		if(loadedZips[iterFiles->filename])
+		if (loadedZips[iterFiles->filename])
 		{
 			LOG(" zip already loaded: " + iterFiles->filename);
 			// already loaded for some strange reason
@@ -2052,7 +2052,7 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 	size_t i=0, filecount=list->size();
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem,i++)
 	{
-		if(!listitem->archive) continue;
+		if (!listitem->archive) continue;
 		String dirname = listitem->archive->getName() + SSETTING("dirsep", "\\") + listitem->filename;
 		// update loader
 		int progress = ((float)i/(float)filecount)*100;
@@ -2070,7 +2070,7 @@ void CacheSystem::loadAllDirectoriesInResourceGroup(String group)
 void CacheSystem::loadAllZips()
 {
 	static bool lodedalready=false;
-	if(lodedalready)
+	if (lodedalready)
 		return;
 	lodedalready=true;
 	//setup zip packages
@@ -2093,7 +2093,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 	{
 		String zippath = iterFiles->archive->getName() + "\\" + iterFiles->filename;
 		String zippath2="";
-		if(iterFiles->archive->getName()[iterFiles->archive->getName().size()-1] != '/')
+		if (iterFiles->archive->getName()[iterFiles->archive->getName().size()-1] != '/')
 			zippath2 = iterFiles->archive->getName() + "/" + iterFiles->filename;
 		else
 			zippath2 = iterFiles->archive->getName() + iterFiles->filename;
@@ -2108,7 +2108,7 @@ void CacheSystem::checkForNewZipsInResourceGroup(String group)
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("checking for new zips in ") + group + "\n" + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //USE_MYGUI
-		if(!isZipUsedInEntries(zippath2))
+		if (!isZipUsedInEntries(zippath2))
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(progress, _L("checking for new zips in ") + group + "\n" + _L("loading new zip: ") + iterFiles->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
@@ -2129,13 +2129,13 @@ void CacheSystem::checkForNewDirectoriesInResourceGroup(String group)
 	size_t i=0, filecount=list->size();
 	for (FileInfoList::iterator listitem = list->begin(); listitem!= list->end(); ++listitem, i++)
 	{
-		if(!listitem->archive) continue;
+		if (!listitem->archive) continue;
 		String dirname = listitem->archive->getName() + SSETTING("dirsep", "\\") + listitem->filename;
 		int progress = ((float)i/(float)filecount)*100;
 #ifdef USE_MYGUI
 		LoadingWindow::getSingleton().setProgress(progress, _L("checking for new directories in ") + group + "\n" + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));
 #endif //USE_MYGUI
-		if(!isDirectoryUsedInEntries(dirname))
+		if (!isDirectoryUsedInEntries(dirname))
 		{
 #ifdef USE_MYGUI
 			LoadingWindow::getSingleton().setProgress(progress, _L("checking for new directories in ") + group + "\n" + _L("loading new directory: ") + listitem->filename + "\n" + TOSTRING(i) + "/" + TOSTRING(filecount));

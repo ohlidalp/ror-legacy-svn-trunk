@@ -39,7 +39,7 @@ Axle::Axle() :
 void Axle::addDiffType(DiffType diff)
 {
 	available_diff_method.push_back(diff);
-	if(!current_callback) current_callback = getDiffEquation(diff);
+	if (!current_callback) current_callback = getDiffEquation(diff);
 }
 
 const std::vector<DiffType>& Axle::availableDiffs()
@@ -56,12 +56,12 @@ void Axle::toggleDiff()
 
 void Axle::calcTorque( differential_data_t& diff_data )
 {
-	if(current_callback) current_callback( diff_data );
+	if (current_callback) current_callback( diff_data );
 }
 
 Ogre::UTFString Axle::getDiffTypeName()
 {
-	if(available_diff_method.size() <= 0) return "invalid";
+	if (available_diff_method.size() <= 0) return "invalid";
 
 	switch(available_diff_method[which_diff])
 	{

@@ -113,7 +113,7 @@ Turboprop::Turboprop(char* propname, node_t *nd, int nr, int nb, int np1, int np
 		}
 
 		heathazePS=0;
-		if(heathaze)
+		if (heathaze)
 		{
 			sprintf(dename,"%s-smoke-heat", propname);
 			heathazePS=globalEnvironment->ogreSceneManager->createParticleSystem(dename, "tracks/TurbopropHeatHaze");
@@ -147,12 +147,12 @@ void Turboprop::updateVisuals()
 		smokeNode->setPosition(nodes[nodeback].AbsPosition);
 		ParticleEmitter *emit=smokePS->getEmitter(0);
 		ParticleEmitter *hemit=0;
-		if(heathazePS)
+		if (heathazePS)
 			hemit=heathazePS->getEmitter(0);
 		Vector3 dir=nodes[nodeback].RelPosition-nodes[noderef].RelPosition;
 		emit->setDirection(dir);
 		emit->setParticleVelocity(propwash-propwash/10, propwash+propwash/10);
-		if(hemit)
+		if (hemit)
 		{
 			hemit->setDirection(dir);
 			hemit->setParticleVelocity(propwash-propwash/10, propwash+propwash/10);
@@ -164,7 +164,7 @@ void Turboprop::updateVisuals()
 				emit->setEnabled(true);
 				emit->setColour(ColourValue(0.0,0.0,0.0,0.03+throtle*0.05));
 				emit->setTimeToLive((0.03+throtle*0.05)/0.1);
-				if(hemit)
+				if (hemit)
 				{
 					hemit->setEnabled(true);
 					hemit->setTimeToLive((0.03+throtle*0.05)/0.1);
@@ -173,7 +173,7 @@ void Turboprop::updateVisuals()
 			else
 			{
 				emit->setEnabled(false);
-				if(hemit)
+				if (hemit)
 					hemit->setEnabled(false);
 			}
 		}
@@ -184,7 +184,7 @@ void Turboprop::updateVisuals()
 			emit->setEnabled(true);
 			emit->setColour(ColourValue(0.0,0.0,0.0,0.1));
 			emit->setTimeToLive(0.1/0.1);
-			if(hemit)
+			if (hemit)
 			{
 				hemit->setDirection(Vector3(0,1,0));
 				hemit->setParticleVelocity(5, 9);
@@ -195,7 +195,7 @@ void Turboprop::updateVisuals()
 	}
 
 #ifdef USE_ANGELSCRIPT
-	if(failed != failedold)
+	if (failed != failedold)
 	{
 		TRIGGER_EVENT(SE_TRUCK_ENGINE_FIRE, trucknum);
 		failedold = failed;

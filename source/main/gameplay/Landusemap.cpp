@@ -56,7 +56,7 @@ Landusemap::~Landusemap()
 
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
-	if(!data) return 0;
+	if (!data) return 0;
 #ifdef USE_PAGED
 	// we return the default ground model if we are not anymore in this map
 	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
@@ -90,7 +90,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 	try
 	{
 		// try to load directly otherwise via resource group
-		if(group == "")
+		if (group == "")
 			cfg.load(filename);
 		else
 			cfg.load(filename, group, "\x09:=", true);
@@ -112,21 +112,21 @@ int Landusemap::loadConfig(Ogre::String filename)
 			kname = i->first;
 			kvalue = i->second;
 			// we got all the data available now, processing now
-			if(secName == "general" || secName == "config")
+			if (secName == "general" || secName == "config")
 			{
 				// set some class properties accoring to the information in this section
-				if(kname == "texture")
+				if (kname == "texture")
 					textureFilename = kvalue;
-				else if(kname == "frictionconfig" || kname == "loadGroundModelsConfig")
+				else if (kname == "frictionconfig" || kname == "loadGroundModelsConfig")
 					coll->loadGroundModelsConfigFile(kvalue);
-				else if(kname == "defaultuse")
+				else if (kname == "defaultuse")
 					default_ground_model = coll->getGroundModelByString(kvalue);
-				else if(kname == "version")
+				else if (kname == "version")
 					version = StringConverter::parseInt(kvalue);
 
-			} else if(secName == "use-map")
+			} else if (secName == "use-map")
 			{
-				if(kname.size() != 10)
+				if (kname.size() != 10)
 				{
 					LOG("invalid color in landuse line in " + filename);
 					continue;
@@ -147,7 +147,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 	/*
 	// debug things below
 	printf("found ground use definitions:\n");
-	for(std::map < uint32, String >::iterator it=usemap.begin(); it!=usemap.end(); it++)
+	for (std::map < uint32, String >::iterator it=usemap.begin(); it!=usemap.end(); it++)
 	{
 		printf(" 0x%Lx : %s\n", it->first, it->second.c_str());
 	}
@@ -159,9 +159,9 @@ int Landusemap::loadConfig(Ogre::String filename)
 	data = new ground_model_t*[mapsizex * mapsizez];
 	ground_model_t **ptr = data;
 	//std::map < String, int > counters;
-	for(int z=0; z<mapsizez; z++)
+	for (int z=0; z<mapsizez; z++)
 	{
-		for(int x=0; x<mapsizex; x++)
+		for (int x=0; x<mapsizex; x++)
 		{
 			unsigned int col = colourMap->getColorAt(x, z, bounds);
 			if (bgr)
@@ -173,7 +173,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 				col = cols;
 			}
 			String use = usemap[col];
-			//if(use!="")
+			//if (use!="")
 			//	counters[use]++;
 
 			// store the pointer to the ground model in the data slot

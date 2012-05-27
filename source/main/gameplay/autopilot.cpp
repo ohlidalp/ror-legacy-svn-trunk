@@ -187,7 +187,7 @@ float Autopilot::getRudder()
 
 float Autopilot::getThrottle(float thrtl, float dt)
 {
-	if(!mode_ias) {return thrtl;};
+	if (!mode_ias) {return thrtl;};
 
 	float val=thrtl;
 	if (ref_l && ref_r)
@@ -301,7 +301,7 @@ void Autopilot::gpws_update(float spawnheight)
 
 void Autopilot::getRadioFix(TerrainObjectManager::localizer_t *localizers, int free_localizer, float *vdev, float *hdev)
 {
-	if(!ref_l || !ref_r)
+	if (!ref_l || !ref_r)
 		return;
 	Vector3 position=(ref_l->AbsPosition+ref_r->AbsPosition)/2.0;
 	float closest_hdist=-1;

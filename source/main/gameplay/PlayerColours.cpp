@@ -73,20 +73,20 @@ Ogre::String PlayerColours::getColourMaterial(int colourNum)
 Ogre::ColourValue PlayerColours::getColour(int colourNum)
 {
     int numColours = sizeof(cvals) / sizeof(ColourValue);
-	if(colourNum < 0 || colourNum >= numColours) return ColourValue::ZERO;
+	if (colourNum < 0 || colourNum >= numColours) return ColourValue::ZERO;
 	return cvals[colourNum];
 }
 
 void PlayerColours::updateMaterial(int colourNum, String materialName, int textureUnitStateNum)
 {
     int numColours = sizeof(cvals) / sizeof(ColourValue);
-    if(colourNum < 0 || colourNum >= numColours) return;
+    if (colourNum < 0 || colourNum >= numColours) return;
 
 	ColourValue cval = cvals[colourNum];
 
     MaterialPtr mat = MaterialManager::getSingleton().getByName(materialName);
-    if(mat.isNull()) return;
-    if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && textureUnitStateNum < mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates())
+    if (mat.isNull()) return;
+    if (mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && textureUnitStateNum < mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates())
     {
         mat->getTechnique(0)->getPass(0)->getTextureUnitState(textureUnitStateNum)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
         mat->getTechnique(0)->getPass(0)->getTextureUnitState(textureUnitStateNum)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);
@@ -96,12 +96,12 @@ void PlayerColours::updateMaterial(int colourNum, String materialName, int textu
 void PlayerColours::updatePlayerColours()
 {
     int numColours = sizeof(cvals) / sizeof(ColourValue);
-	for(int i=0;i<numColours;i++)
+	for (int i=0;i<numColours;i++)
 	{
 		ColourValue cval = cvals[i];
 		MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/PlayerColours/"+TOSTRING(i));
-        if(mat.isNull()) continue;
-		if(mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
+        if (mat.isNull()) continue;
+		if (mat->getNumTechniques()>0 && mat->getTechnique(0)->getNumPasses()>0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
 		{
 			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setAlphaOperation(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, 0.8);
 			mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setColourOperationEx(LBX_BLEND_CURRENT_ALPHA , LBS_MANUAL, LBS_CURRENT, cval, cval, 1);

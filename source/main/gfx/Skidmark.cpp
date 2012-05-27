@@ -78,7 +78,7 @@ int SkidmarkManager::loadDefaultModels()
 		}
 		
 		// process the line if we got a model
-		if(!currentModel.empty())
+		if (!currentModel.empty())
 			processLine(args, currentModel);
 	}
 	return 0;
@@ -100,7 +100,7 @@ int SkidmarkManager::processLine(StringVector args,  String modelName)
 	cfg.slipFrom = StringConverter::parseReal(args[2]);
 	cfg.slipTo = StringConverter::parseReal(args[3]);
 
-	if(!models.size() || models.find(modelName) == models.end())
+	if (!models.size() || models.find(modelName) == models.end())
 		models[modelName] = std::vector<skidmark_config_t>();
 
 	models[modelName].push_back(cfg);
@@ -109,10 +109,10 @@ int SkidmarkManager::processLine(StringVector args,  String modelName)
 
 int SkidmarkManager::getTexture(String model, String ground, float slip, String &texture)
 {
-	if(models.find(model) == models.end()) return 1;
-	for(std::vector<skidmark_config_t>::iterator it=models[model].begin(); it!=models[model].end(); it++)
+	if (models.find(model) == models.end()) return 1;
+	for (std::vector<skidmark_config_t>::iterator it=models[model].begin(); it!=models[model].end(); it++)
 	{
-		if(it->ground == ground && it->slipFrom <= slip && it->slipTo > slip)
+		if (it->ground == ground && it->slipFrom <= slip && it->slipTo > slip)
 		{
 			texture = it->texture;
 			return 0;
@@ -178,7 +178,7 @@ void Skidmark::addObject(Vector3 start, String texture)
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
-	for(int i = 0; i < lenght; i++)
+	for (int i = 0; i < lenght; i++)
 	{
 		skid.points[i] = start;
 		skid.faceSizes[i] = 0;
@@ -197,7 +197,7 @@ void Skidmark::addObject(Vector3 start, String texture)
 
 void Skidmark::limitObjects()
 {
-	if((int)objects.size() > bucketCount)
+	if ((int)objects.size() > bucketCount)
 	{
 		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
@@ -227,11 +227,11 @@ void Skidmark::updatePoint()
 	SkidmarkManager::getSingleton().getTexture("default", wheel->lastGroundModel->name, wheel->lastSlip, texture);
 	
 	// dont add points with no texture
-	if(texture == "none") return;
+	if (texture == "none") return;
 
-	if(wheel->speed > 1) maxDist *= wheel->speed;
+	if (wheel->speed > 1) maxDist *= wheel->speed;
 
-	if(!objects.size())
+	if (!objects.size())
 	{
 		// add first bucket
 		addObject(thisPoint, texture);
@@ -242,17 +242,17 @@ void Skidmark::updatePoint()
 
 		distance = skid.lastPointAv.distance(thisPointAV);
 		// too near to update?
-		if(distance < minDistance)
+		if (distance < minDistance)
 		{
 			//LOG("E: too near for update");
 			return;
 		}
 		
 		// change ground texture if required
-		if(skid.pos > 0 && skid.groundTexture[0] != texture)
+		if (skid.pos > 0 && skid.groundTexture[0] != texture)
 		{
 			// new object with new texture
-			if(distance > maxDist)
+			if (distance > maxDist)
 			{
 				// to far away for connection
 				addObject(thisPoint, texture);
@@ -270,9 +270,9 @@ void Skidmark::updatePoint()
 			// no texture change required :D
 
 			// far enough for new bucket?
-			if(skid.pos >= (int)skid.points.size())
+			if (skid.pos >= (int)skid.points.size())
 			{
-				if(distance > maxDist)
+				if (distance > maxDist)
 				{
 					// to far away for connection
 					addObject(thisPoint, texture);
@@ -286,7 +286,7 @@ void Skidmark::updatePoint()
 					addPoint(lp1, distance, texture);
 				}
 			}
-			else if(distance > maxDistance)
+			else if (distance > maxDistance)
 			{
 				// just new bucket, no connection to last bucket
 				addObject(thisPoint, texture);
@@ -306,7 +306,7 @@ void Skidmark::updatePoint()
 	//LOG("ground normal: "+TOSTRING(wheel->refnode1->RelPosition.dotProduct(groundNormal)));
 
 	// choose node wheel by the latest added point
-	if(!wheel->lastContactType)
+	if (!wheel->lastContactType)
 	{
 		// choose inner
 		//LOG("inner");
@@ -335,7 +335,7 @@ void Skidmark::updatePoint()
 
 void Skidmark::addPoint(const Vector3 &value, Real fsize, String texture)
 {
-	if(objects.back().pos >= lenght)
+	if (objects.back().pos >= lenght)
 	{
 		//LOG("E: boundary protection hit");
 		return;
@@ -346,7 +346,7 @@ void Skidmark::addPoint(const Vector3 &value, Real fsize, String texture)
 
 void Skidmark::update()
 {
-	if(!objects.size()) return;
+	if (!objects.size()) return;
 	skidmark_t skid = objects.back();
 	Vector3 vaabMin = skid.points[0];
 	Vector3 vaabMax = skid.points[0];
@@ -356,20 +356,20 @@ void Skidmark::update()
 	int to_counter=0;
 	float tcox_counter=0;
 
-	for(int i = 0; i < lenght; i++, to_counter++)
+	for (int i = 0; i < lenght; i++, to_counter++)
 	{
-		if(i>=skid.pos) behindEnd=true;
+		if (i>=skid.pos) behindEnd=true;
 
-		if(to_counter>3)
+		if (to_counter>3)
 			to_counter=0;
 
-		if(!behindEnd)
+		if (!behindEnd)
 			tcox_counter += skid.faceSizes[i] / minDistance;
 
 		while(tcox_counter>1)
 			tcox_counter--;
 
-		if(behindEnd)
+		if (behindEnd)
 		{
 			skid.obj->position(lastValid);
 			skid.obj->textureCoord(0,0);
@@ -384,12 +384,12 @@ void Skidmark::update()
 			lastValid = skid.points[i];
 		}
 		
-		if(skid.points[i].x < vaabMin.x) vaabMin.x = skid.points[i].x;
-		if(skid.points[i].y < vaabMin.y) vaabMin.y = skid.points[i].y;
-		if(skid.points[i].z < vaabMin.z) vaabMin.z = skid.points[i].z;
-		if(skid.points[i].x > vaabMax.x) vaabMax.x = skid.points[i].x;
-		if(skid.points[i].y > vaabMax.y) vaabMax.y = skid.points[i].y;
-		if(skid.points[i].z > vaabMax.z) vaabMax.z = skid.points[i].z;
+		if (skid.points[i].x < vaabMin.x) vaabMin.x = skid.points[i].x;
+		if (skid.points[i].y < vaabMin.y) vaabMin.y = skid.points[i].y;
+		if (skid.points[i].z < vaabMin.z) vaabMin.z = skid.points[i].z;
+		if (skid.points[i].x > vaabMax.x) vaabMax.x = skid.points[i].x;
+		if (skid.points[i].y > vaabMax.y) vaabMax.y = skid.points[i].y;
+		if (skid.points[i].z > vaabMax.z) vaabMax.z = skid.points[i].z;
 	}
     skid.obj->end();
 

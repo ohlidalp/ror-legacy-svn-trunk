@@ -46,7 +46,7 @@ DustManager::~DustManager()
 {
 	// delete all created dustpools and remove them
 	std::map < Ogre::String , DustPool * >::iterator it;
-	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	for (it=dustpools.begin(); it!=dustpools.end();it++)
 	{
 		// delete the DustPool instance
 		delete(it->second);
@@ -62,13 +62,13 @@ DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 
 	/*
 	// disabled for now...
-	if(!mEnabled) return 0;
+	if (!mEnabled) return 0;
 
 	// if we have a non particle type, then return 0
-	if(g->fx_type != FX_PARTICLE) return 0;
+	if (g->fx_type != FX_PARTICLE) return 0;
 
 	String pname = String(g->particle_name);
-	if(!dustpools.size() || dustpools.find(pname) == dustpools.end())
+	if (!dustpools.size() || dustpools.find(pname) == dustpools.end())
 	{
 		addNewDustPool(g);
 	}
@@ -80,7 +80,7 @@ DustPool *DustManager::getGroundModelDustPool(ground_model_t *g)
 /*
 void DustManager::addNewDustPool(ground_model_t *g)
 {
-	if(!mEnabled) return;
+	if (!mEnabled) return;
 
 	// simple and clean addition of a new dustpool class instance
 	String pname = String(g->particle_name);
@@ -100,9 +100,9 @@ void DustManager::addNewDustPool(ground_model_t *g)
 
 void DustManager::update(float wspeed)
 {
-	if(!mEnabled) return;
+	if (!mEnabled) return;
 	std::map < Ogre::String , DustPool * >::iterator it;
-	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	for (it=dustpools.begin(); it!=dustpools.end();it++)
 	{
 		it->second->update(wspeed);
 	}
@@ -110,9 +110,9 @@ void DustManager::update(float wspeed)
 
 void DustManager::setVisible(bool visible)
 {
-	if(!mEnabled) return;
+	if (!mEnabled) return;
 	std::map < Ogre::String , DustPool * >::iterator it;
-	for(it=dustpools.begin(); it!=dustpools.end();it++)
+	for (it=dustpools.begin(); it!=dustpools.end();it++)
 	{
 		it->second->setVisible(visible);
 	}
@@ -120,7 +120,7 @@ void DustManager::setVisible(bool visible)
 
 DustPool *DustManager::getDustPool(Ogre::String name)
 {
-	if(dustpools.find(name) == dustpools.end())
+	if (dustpools.find(name) == dustpools.end())
 		return 0;
 	return dustpools[name];
 }

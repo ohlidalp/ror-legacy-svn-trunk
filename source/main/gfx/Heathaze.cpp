@@ -84,7 +84,7 @@ void HeatHaze::setEnable(bool en)
 
 void HeatHaze::update()
 {
-	if(rttTex)
+	if (rttTex)
 		rttTex->update();
 }
 

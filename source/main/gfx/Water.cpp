@@ -82,14 +82,14 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 {
 	vRtt1 = vRtt2 = 0;
 	mScale = 1.0f;
-	if(globalEnvironment->terrainManager->getMax().x < 1500)
+	if (globalEnvironment->terrainManager->getMax().x < 1500)
 		mScale = 1.5f;
 	//reading wavefield
 	visible=true;
 	free_wavetrain=0;
 	maxampl=0;
 
-	if(haswaves)
+	if (haswaves)
 	{
 		char line[1024] = {};
 		FILE *fd = fopen((SSETTING("Config Root", "")+"wavefield.cfg").c_str(), "r");
@@ -101,7 +101,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 				if (line[0] == ';') continue;
 				float wl,amp,mx,dir;
 				res = sscanf(line,"%f, %f, %f, %f",&wl,&amp,&mx,&dir);
-				if(res < 4) continue;
+				if (res < 4) continue;
 				wavetrains[free_wavetrain].wavelength=wl;
 				wavetrains[free_wavetrain].amplitude=amp;
 				wavetrains[free_wavetrain].maxheight=mx;
@@ -289,11 +289,11 @@ bool Water::allowUnderWater()
 void Water::setVisible(bool value)
 {
 	visible = value;
-	if(pPlaneEnt)
+	if (pPlaneEnt)
 		pPlaneEnt->setVisible(value);
-	if(pTestNode)
+	if (pTestNode)
 		pTestNode->setVisible(value);
-	if(pBottomNode)
+	if (pBottomNode)
 		pBottomNode->setVisible(value);
 
 }
@@ -301,8 +301,8 @@ void Water::setVisible(bool value)
 void Water::setFadeColour(ColourValue ambient)
 {
 	// update the viewports background colour!
-	if(vRtt1) vRtt1->setBackgroundColour(ambient);
-	if(vRtt2) vRtt2->setBackgroundColour(ambient);
+	if (vRtt1) vRtt1->setBackgroundColour(ambient);
+	if (vRtt2) vRtt2->setBackgroundColour(ambient);
 }
 
 
@@ -354,13 +354,13 @@ void Water::showWave(Vector3 refpos)
 	}
 //	wbuf->lock(HardwareBuffer::HBL_DISCARD);
 	wbuf->writeData(0, (WAVEREZ+1)*(WAVEREZ+1)*32, wbuffer, true);
-//	if(wbuf->isLocked())
+//	if (wbuf->isLocked())
 //		wbuf->unlock();
 }
 
 void Water::update()
 {
-	if(!visible)
+	if (!visible)
 		return;
 	framecounter++;
 	if (mType==WATER_FULL_SPEED)
@@ -416,7 +416,7 @@ void Water::setHeight(float value)
 float Water::getHeightWaves(Vector3 pos)
 {
 	// no waves?
-	if(!haswaves)
+	if (!haswaves)
 	{
 		// constant height, sea is flat as pancake
 		return height;
@@ -457,7 +457,7 @@ float Water::getHeightWaves(Vector3 pos)
 
 Vector3 Water::getVelocity(Vector3 pos)
 {
-	if(!haswaves) return Vector3::ZERO;
+	if (!haswaves) return Vector3::ZERO;
 
 	if (pos.y>height+maxampl) return Vector3::ZERO;
 	int i;

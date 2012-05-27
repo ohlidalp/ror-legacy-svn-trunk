@@ -58,7 +58,7 @@ String hexdump(void *pAddressIn, long  lSize)
 					 "    %08lX", (long unsigned int)(pTmp-pAddress));
 		lOutLen2 = lOutLen;
 
-		for(lIndex = 1+lIndent, lIndex2 = 53-15+lIndent, lRelPos = 0;
+		for (lIndex = 1+lIndent, lIndex2 = 53-15+lIndent, lRelPos = 0;
 		  lOutLen2;
 		  lOutLen2--, lIndex += 2, lIndex2++
 			)
@@ -66,7 +66,7 @@ String hexdump(void *pAddressIn, long  lSize)
 			ucTmp = *pTmp++;
 
 			sprintf(szBuf + lIndex, "%02X ", (unsigned short)ucTmp);
-			if(!isprint(ucTmp))  ucTmp = '.'; // nonprintable char
+			if (!isprint(ucTmp))  ucTmp = '.'; // nonprintable char
 			szBuf[lIndex2] = ucTmp;
 
 			if (!(++lRelPos & 3))     // extra blank after 4 bytes
@@ -91,7 +91,7 @@ UTFString tryConvertUTF(const char *buffer)
 	try
 	{
 		UTFString s = UTFString(buffer);
-		if(s.empty())
+		if (s.empty())
 			s = UTFString("(UTF conversion error 1)");
 		return s;
 
@@ -116,10 +116,10 @@ UTFString formatBytes(double bytes)
 String getASCIIFromCharString(char *str, int maxlen)
 {
 	char *ptr = str;
-	for(int i=0; i < maxlen; i++, ptr++)
+	for (int i=0; i < maxlen; i++, ptr++)
 	{
-		if(*ptr == 0) break;
-		if(*ptr < 32 || *ptr > 126)
+		if (*ptr == 0) break;
+		if (*ptr < 32 || *ptr > 126)
 		{
 			*ptr = 95;
 		}
@@ -134,10 +134,10 @@ String getASCIIFromOgreString(String s, int maxlen)
 	char str[1024] = "";
 	strncpy(str, s.c_str(), 1023);
 	char *ptr = str;
-	for(int i=0; i < maxlen; i++, ptr++)
+	for (int i=0; i < maxlen; i++, ptr++)
 	{
-		if(*ptr == 0) break;
-		if(*ptr < 32 || *ptr > 126)
+		if (*ptr == 0) break;
+		if (*ptr < 32 || *ptr > 126)
 		{
 			*ptr = 95;
 		}
@@ -155,7 +155,7 @@ int getTimeStamp()
 String getVersionString(bool multiline)
 {
 	char tmp[1024] = "";
-	if(multiline)
+	if (multiline)
 	{
 		sprintf(tmp, "Rigs of Rods\n"
 			" version: %s\n"
@@ -176,7 +176,7 @@ bool fileExists(const char *filename)
 {
 	// be careful about what you use here...
 	FILE *f = fopen(filename, "r");
-	if(!f)
+	if (!f)
 		return false;
 	fclose(f);
 	return true;
@@ -203,14 +203,14 @@ String stripNonASCII(String s)
 {
 	char filename[9046] = "";
 	sprintf(filename, "%s", s.c_str());
-	for(size_t i=0;i<s.size(); i++)
+	for (size_t i=0;i<s.size(); i++)
 	{
 		bool replace = true;
 		if     (filename[i] >= 48 && filename[i] <= 57) replace = false; // 0-9
-		else if(filename[i] >= 65 && filename[i] <= 90) replace = false; // A-Z
-		else if(filename[i] >= 97 && filename[i] <= 122) replace = false; // a-z
-		else if(filename[i] == 45 || filename[i] == 95 || filename[i] == 46) replace = false; // -_.
-		if(replace)
+		else if (filename[i] >= 65 && filename[i] <= 90) replace = false; // A-Z
+		else if (filename[i] >= 97 && filename[i] <= 122) replace = false; // a-z
+		else if (filename[i] == 45 || filename[i] == 95 || filename[i] == 46) replace = false; // -_.
+		if (replace)
 			filename[i]='_';
 	}
 	return String(filename);
@@ -325,7 +325,7 @@ std::wstring ANSI_TO_WCHAR(const String source)
 	char *outbuf    = (char *)calloc((outbytes*4+1)*sizeof(char), 1);
 
 	size_t res = iconv(icv, &inpbuf, &inbytes, &outbuf, &outbytes);
-	if(res == (size_t) -1)
+	if (res == (size_t) -1)
 	{
 		//free(outbuf);
 		return std::wstring(L"ERR2");
@@ -344,9 +344,9 @@ std::wstring ANSI_TO_WCHAR(const String source)
 void trimUTFString( UTFString &str, bool left, bool right)
 {
 	static const String delims = " \t\r";
-	if(right)
+	if (right)
 		str.erase(str.find_last_not_of(delims)+1); // trim right
-	if(left)
+	if (left)
 		str.erase(0, str.find_first_not_of(delims)); // trim left
 }
 

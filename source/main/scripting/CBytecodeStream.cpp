@@ -28,19 +28,19 @@ CBytecodeStream::CBytecodeStream(std::string filename) : f(0)
 
 CBytecodeStream::~CBytecodeStream()
 {
-	if(f)
+	if (f)
 		fclose(f);
 }
 
 void CBytecodeStream::Write(const void *ptr, AngelScript::asUINT size)
 {
-	if(!f) return;
+	if (!f) return;
 	fwrite(ptr, size, 1, f);
 }
 
 void CBytecodeStream::Read(void *ptr, AngelScript::asUINT size)
 {
-	if(!f) return;
+	if (!f) return;
 	fread(ptr, size, 1, f);
 }
 

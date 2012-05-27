@@ -51,7 +51,7 @@ Network *net_instance;
 void *s_sendthreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(!BSETTING("NoCrashRpt"))
+	if (!BSETTING("NoCrashRpt"))
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper;
@@ -65,7 +65,7 @@ void *s_sendthreadstart(void* vid)
 void *s_receivethreadstart(void* vid)
 {
 #ifdef USE_CRASHRPT
-	if(!BSETTING("NoCrashRpt"))
+	if (!BSETTING("NoCrashRpt"))
 	{
 		// add the crash handler for this thread
 		CrThreadAutoInstallHelper cr_thread_install_helper(0);
@@ -141,14 +141,14 @@ Network::~Network()
 
 void Network::netFatalError(UTFString errormsg, bool exitProgram)
 {
-	if(shutdown)
+	if (shutdown)
 		return;
 
 	SWBaseSocket::SWBaseError error;
 	socket.set_timeout(1, 1000);
 	socket.disconnect(&error);
 	showError(_L("Network Connection Problem"), _L("Network fatal error: ") + errormsg);
-	if(exitProgram)
+	if (exitProgram)
 		exit(124);
 }
 
@@ -184,13 +184,13 @@ bool Network::connect()
 		netFatalError(_L("Establishing network session: error getting server version"), false);
 		return false;
 	}
-	if(header.command == MSG2_WRONG_VER)
+	if (header.command == MSG2_WRONG_VER)
 	{
 		netFatalError(_L("server uses a different protocol version"));
 		return false;
 	}
 	
-	if(header.command != MSG2_HELLO)
+	if (header.command != MSG2_HELLO)
 	{
 		netFatalError(_L("Establishing network session: error getting server hello"));
 		return false;
@@ -226,7 +226,7 @@ bool Network::connect()
 
 	char sha1pwresult[250];
 	memset(sha1pwresult, 0, 250);
-	if(strnlen(pwbuffer, 250)>0)
+	if (strnlen(pwbuffer, 250)>0)
 	{
 		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)pwbuffer, (uint32_t)strnlen(pwbuffer, 250));
@@ -274,7 +274,7 @@ bool Network::connect()
 	{
 		wchar_t tmp[512];
 		memset(tmp, 0, 512);
-		if(buffer && strnlen(buffer, 20)>0)
+		if (buffer && strnlen(buffer, 20)>0)
 		{
 			buffer[header.size]=0;
 			UTFString tmp2 = _L("Establishing network session: sorry, you are banned:\n%s");
@@ -320,7 +320,7 @@ bool Network::connect()
 
 Ogre::UTFString Network::getNickname(bool colour)
 {
-	if(colour)
+	if (colour)
 		return ChatSystem::getColouredName(nickname, myauthlevel, userdata.colournum);
 	else
 		return nickname;
@@ -363,7 +363,7 @@ int Network::sendmessage(SWInetSocket *socket, int type, unsigned int streamid, 
 	// construct buffer
 	const int msgsize = sizeof(header_t) + len;
 
-	if(msgsize >= MAX_MESSAGE_LENGTH)
+	if (msgsize >= MAX_MESSAGE_LENGTH)
 	{
     	return -2;
 	}
@@ -412,12 +412,12 @@ int Network::receivemessage(SWInetSocket *socket, header_t *head, char* content,
 
 	memcpy(head, buffer, sizeof(header_t));
 
-	if(head->size >= MAX_MESSAGE_LENGTH)
+	if (head->size >= MAX_MESSAGE_LENGTH)
 	{
     	return -3;
 	}
 
-	if(head->size>0)
+	if (head->size>0)
 	{
 		//read the rest
 		while (hlen<(int)sizeof(header_t)+(int)head->size)
@@ -452,7 +452,7 @@ int Network::getSpeedDown()
 void Network::calcSpeed()
 {
 	int t = timer.getMilliseconds();
-	if(t - speed_time > 1000)
+	if (t - speed_time > 1000)
 	{
 		// we measure bytes / second
 		speed_bytes_sent = speed_bytes_sent_tmp;
@@ -487,7 +487,7 @@ void Network::disconnect()
 int Network::sendScriptMessage(char* content, unsigned int len)
 {
 	int result = sendmessage(&socket, MSG2_GAME_CMD, 0, len, content);
-	if(result<0) LOG("An error occurred while sending a script message to the server.");
+	if (result<0) LOG("An error occurred while sending a script message to the server.");
 	return result;
 }
 
@@ -530,7 +530,7 @@ void Network::receivethreadstart()
 		}
 
 		// check for stream registration errors and notify the remote client
-		if(BeamFactory::getSingletonPtr() && BeamFactory::getSingletonPtr()->getStreamRegistrationResults(&streamCreationResults))
+		if (BeamFactory::getSingletonPtr() && BeamFactory::getSingletonPtr()->getStreamRegistrationResults(&streamCreationResults))
 		{
 			while (!streamCreationResults.empty())
 			{
@@ -542,15 +542,15 @@ void Network::receivethreadstart()
 		}
 
 		// TODO: produce new streamable classes when required
-		if(header.command == MSG2_STREAM_REGISTER)
+		if (header.command == MSG2_STREAM_REGISTER)
 		{
-			if(header.source == (int)myuid)
+			if (header.source == (int)myuid)
 				// our own stream, ignore
 				continue;
 			stream_register_t *reg = (stream_register_t *)buffer;
 			client_t *client = getClientInfo(header.source);
 			int playerColour = 0;
-			if(client) playerColour = client->user.colournum;
+			if (client) playerColour = client->user.colournum;
 
 			String typeStr = "unknown";
 			switch(reg->type)
@@ -561,7 +561,7 @@ void Network::receivethreadstart()
 			};
 			LOG(" * received stream registration: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid) + ", type: "+typeStr);
 
-			if(reg->type == 0)
+			if (reg->type == 0)
 			{
 				// truck
 				BeamFactory::getSingleton().createRemote(header.source, header.streamid, reg, playerColour);
@@ -579,30 +579,30 @@ void Network::receivethreadstart()
 			}
 			continue;
 		}
-		else if(header.command == MSG2_STREAM_REGISTER_RESULT)
+		else if (header.command == MSG2_STREAM_REGISTER_RESULT)
 		{
 			stream_register_t *reg = (stream_register_t *)buffer;
 			BeamFactory::getSingleton().addStreamRegistrationResults(header.source, reg);
 			LOG(" * received stream registration result: " + TOSTRING(header.source) + ": "+TOSTRING(header.streamid));
 		}
-		else if(header.source == -1 && (header.command == MSG2_UTF_CHAT || header.command == MSG2_UTF_PRIVCHAT))
+		else if (header.source == -1 && (header.command == MSG2_UTF_CHAT || header.command == MSG2_UTF_PRIVCHAT))
 		{
 			// NOTE: this is only a shortcut for server messages, other UIDs propagate over the standard way
 			ChatSystem *cs = ChatSystemFactory::getSingleton().getFirstChatSystem();
-			if(cs) cs->addReceivedPacket(header, buffer);
+			if (cs) cs->addReceivedPacket(header, buffer);
 			continue;
 		}
-		else if(header.command == MSG2_NETQUALITY && header.source == -1)
+		else if (header.command == MSG2_NETQUALITY && header.source == -1)
 		{
-			if(header.size != sizeof(int))
+			if (header.size != sizeof(int))
 				continue;
 			int quality = *(int *)buffer;
 			setNetQuality(quality);
 			continue;
 		}
-		else if(header.command == MSG2_USER_LEAVE)
+		else if (header.command == MSG2_USER_LEAVE)
 		{
-			if(header.source == (int)myuid)
+			if (header.source == (int)myuid)
 			{
 				netFatalError(_L("disconnected: remote side closed the connection"), false);
 				return;
@@ -610,7 +610,7 @@ void Network::receivethreadstart()
 
 			// remove all things that belong to that user
 			client_t *client = getClientInfo(header.source);
-			if(client)
+			if (client)
 				client->used = false;
 
 			// now remove all possible streams
@@ -622,9 +622,9 @@ void Network::receivethreadstart()
 #endif // USE_MYGUI
 			continue;
 		}
-		else if(header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
+		else if (header.command == MSG2_USER_INFO || header.command == MSG2_USER_JOIN)
 		{
-			if(header.source == (int)myuid)
+			if (header.source == (int)myuid)
 			{
 				// we got data about ourself!
 				memcpy(&userdata, buffer, sizeof(user_info_t));
@@ -647,7 +647,7 @@ void Network::receivethreadstart()
 				// data about someone else, try to update the array
 				bool found = false; // whether to add a new client
 				client_t *client = getClientInfo(header.source);
-				if(client)
+				if (client)
 				{
 					memcpy(&client->user, cinfo, sizeof(user_info_t));
 
@@ -681,7 +681,7 @@ void Network::receivethreadstart()
 
 			continue;
 		}
-		else if(header.command == MSG2_GAME_CMD)
+		else if (header.command == MSG2_GAME_CMD)
 		{
 #ifdef USE_ANGELSCRIPT
 			ScriptEngine::getSingleton().queueStringForExecution(Ogre::String(buffer));
@@ -695,9 +695,9 @@ void Network::receivethreadstart()
 
 int Network::getClientInfos(client_t c[MAX_PEERS])
 {
-	if(!initiated) return 1;
+	if (!initiated) return 1;
 	MUTEX_LOCK(&clients_mutex);
-	for(int i=0;i<MAX_PEERS;i++)
+	for (int i=0;i<MAX_PEERS;i++)
 		c[i] = clients[i]; // copy the whole client list
 	MUTEX_UNLOCK(&clients_mutex);
 	return 0;
@@ -721,7 +721,7 @@ void Network::debugPacket(const char *name, header_t *header, char *buffer)
 {
 	char sha1result[250];
 	memset(sha1result, 0, 250);
-	if(buffer)
+	if (buffer)
 	{
 		RoR::CSHA1 sha1;
 		sha1.UpdateHash((uint8_t *)buffer, header->size);

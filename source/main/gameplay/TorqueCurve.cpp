@@ -38,7 +38,7 @@ TorqueCurve::~TorqueCurve()
 
 Real TorqueCurve::getEngineTorque(Real rpmRatio)
 {
-	if(!usedSpline) return 1.0f; //return a good value upon error?
+	if (!usedSpline) return 1.0f; //return a good value upon error?
 	return usedSpline->interpolate(rpmRatio).y;
 }
 
@@ -82,7 +82,7 @@ int TorqueCurve::loadDefaultTorqueModels()
 		}
 
 		// process the line if we got a model
-		if(!currentModel.empty())
+		if (!currentModel.empty())
 			processLine(args, currentModel);
 	}
 	return 0;
@@ -108,7 +108,7 @@ int TorqueCurve::processLine(Ogre::StringVector args, String model)
 	Vector3 point = Vector3(pointx,pointy,0);
 
 	// find the spline to attach the points
-	if(splines.find(model) == splines.end())
+	if (splines.find(model) == splines.end())
 		splines[model] = SimpleSpline();
 
 	// attach the points to the spline
@@ -117,7 +117,7 @@ int TorqueCurve::processLine(Ogre::StringVector args, String model)
 
 	// special case for custom model:
 	// we set it as active curve as well!
-	if(model == TorqueCurve::customModel)
+	if (model == TorqueCurve::customModel)
 		setTorqueModel(TorqueCurve::customModel);
 
 	return 0;

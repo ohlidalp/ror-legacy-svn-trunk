@@ -33,7 +33,7 @@ using namespace Ogre;
 
 ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), headerWritten(false), counter(0), disabled(false), warning(0), error(0), obsoleteWarning(0), info(0)
 {
-	if(!BSETTING("Advanced Logging", false))
+	if (!BSETTING("Advanced Logging", false))
 	{
 		disabled=true;
 		return;
@@ -55,12 +55,12 @@ ScopeLog::ScopeLog(String name) : orgLog(0), logFileName(), name(name), f(0), he
 
 ScopeLog::~ScopeLog()
 {
-	if(disabled) return;
+	if (disabled) return;
 	// remove self as listener
 	orgLog->removeListener(this);
 
 	// destroy our log
-	if(f)
+	if (f)
 	{
 		time_t t = time(NULL);
 		fprintf(f, "<tr><td colspan=\"4\" class='logtd'>Log ended: %s</td></tr>\n", ctime(&t));
@@ -69,7 +69,7 @@ ScopeLog::~ScopeLog()
 	}
 
 	// if the new log file is empty, remove it.
-	if(!headerWritten)
+	if (!headerWritten)
 	{
 		remove(logFileName.c_str());
 	}
@@ -82,10 +82,10 @@ void ScopeLog::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel
 void ScopeLog::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel lml, bool maskDebug, const Ogre::String &logName, bool& skipThisMessage)
 #endif // OGRE_VERSION
 {
-	if(!f) return;
+	if (!f) return;
 	
 	counter++;
-	if(!headerWritten)
+	if (!headerWritten)
 	{
 		time_t t = time(NULL);
 		fprintf(f, "<html><header><title>%s</title>\n", name.c_str());
@@ -123,132 +123,132 @@ void ScopeLog::messageLogged( const Ogre::String& message, Ogre::LogMessageLevel
 	sprintf(type, "LogMessageLevel%d", lml);
 
 	// reminder: this if switch is highly sorted
-	if(message.find("you should upgrade it as soon as possible using the OgreMeshUpgrade tool") != String::npos)
+	if (message.find("you should upgrade it as soon as possible using the OgreMeshUpgrade tool") != String::npos)
 	{
 		sprintf(type, "WarningMeshFormat");
 		obsoleteWarning++;
 	}
-	else if(message.find("WARNING:") != String::npos)
+	else if (message.find("WARNING:") != String::npos)
 	{
 		sprintf(type, "Warning");
 		warning++;
 	}
-	else if(message.find("Can't assign material ") != String::npos)
+	else if (message.find("Can't assign material ") != String::npos)
 	{
 		sprintf(type, "MaterialError");
 		error++;
 	}
-	else if(message.find("Compiler error: ") != String::npos)
+	else if (message.find("Compiler error: ") != String::npos)
 	{
 		sprintf(type, "CompilerError");
 		error++;
 	}
-	else if(message.find("Invalid WAV file: ") != String::npos)
+	else if (message.find("Invalid WAV file: ") != String::npos)
 	{
 		sprintf(type, "GeneralError");
 		error++;
 	}
-	else if(message.find("Error while loading Terrain: ") != String::npos)
+	else if (message.find("Error while loading Terrain: ") != String::npos)
 	{
 		sprintf(type, "GeneralError");
 		error++;
 	}
-	else if(message.find("Error loading texture ") != String::npos)
+	else if (message.find("Error loading texture ") != String::npos)
 	{
 		sprintf(type, "GeneralError");
 		error++;
 	}
-	else if(message.find("ODEF: ") != String::npos)
+	else if (message.find("ODEF: ") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputInfo");
 		info++;
 	}
-	else if(message.find("BIO|INFO") != String::npos)
+	else if (message.find("BIO|INFO") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputInfo");
 		info++;
 	}
-	else if(message.find("BIO|WARNING") != String::npos)
+	else if (message.find("BIO|WARNING") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputWarning");
 		// no counter usage, handle differently for BIO
 	}
-	else if(message.find("BIO|ERROR") != String::npos)
+	else if (message.find("BIO|ERROR") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputError");
 		// no counter usage, handle differently for BIO
 	}
-	else if(message.find("BIO|FATAL") != String::npos)
+	else if (message.find("BIO|FATAL") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputFatal");
 		// no counter usage, handle differently for BIO
 	}
-	else if(message.find("Inertia|") != String::npos)
+	else if (message.find("Inertia|") != String::npos)
 	{
 		sprintf(type, "BeamInputOutputInfo");
 		info++;
 	}
-	else if(message.find("Mesh: Loading ") != String::npos)
+	else if (message.find("Mesh: Loading ") != String::npos)
 	{
 		sprintf(type, "OgreNotice");
 		info++;
 	}
-	else if(message.find("Loading 2D Texture") != String::npos)
+	else if (message.find("Loading 2D Texture") != String::npos)
 	{
 		sprintf(type, "OgreNotice");
 		info++;
 	}
-	else if(message.find("Loading 2D Texture") != String::npos)
+	else if (message.find("Loading 2D Texture") != String::npos)
 	{
 		sprintf(type, "OgreNotice");
 		info++;
 	}
-	else if(message.find("Texture: ") != String::npos)
+	else if (message.find("Texture: ") != String::npos)
 	{
 		sprintf(type, "OgreNotice");
 		info++;
 	}
-	else if(message.find("Caelum: ") != String::npos)
+	else if (message.find("Caelum: ") != String::npos)
 	{
 		sprintf(type, "OgreNotice");
 		info++;
 	}
-	else if(message.find("Info: Freetype returned ") != String::npos)
+	else if (message.find("Info: Freetype returned ") != String::npos)
 	{
 		sprintf(type, "IgnoreThis");
 		// no counter
 	}
-	else if(message.find("static map icon not found: ") != String::npos)
+	else if (message.find("static map icon not found: ") != String::npos)
 	{
 		sprintf(type, "IgnoreThis");
 		// no counter
 	}
-	else if(message.find("COLL: ") != String::npos)
+	else if (message.find("COLL: ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;
 	}
-	else if(message.find("Loading WAV file ") != String::npos)
+	else if (message.find("Loading WAV file ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;
 	}
-	else if(message.find("SoundScriptInstance: instance created: ") != String::npos)
+	else if (message.find("SoundScriptInstance: instance created: ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;
 	}
-	else if(message.find("FLEXBODY ") != String::npos)
+	else if (message.find("FLEXBODY ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;
 	}
-	else if(message.find("MaterialFunctionMapper: replaced mesh material ") != String::npos)
+	else if (message.find("MaterialFunctionMapper: replaced mesh material ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;
 	}
-	else if(message.find("MaterialFunctionMapper: replaced entity material ") != String::npos)
+	else if (message.find("MaterialFunctionMapper: replaced entity material ") != String::npos)
 	{
 		sprintf(type, "RoRNotice");
 		info++;

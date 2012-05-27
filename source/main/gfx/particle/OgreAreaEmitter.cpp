@@ -173,7 +173,7 @@ namespace Ogre {
 
 		// setup
 		ParticleVisualData* pData = pParticle->getVisualData();
-		if(pData != NULL) {
+		if (pData != NULL) {
 			ParticleCustomParam* pCustom = static_cast<ParticleCustomParam*>(pData);
 			pCustom->paramValue = mCustomParamValue;
 		}

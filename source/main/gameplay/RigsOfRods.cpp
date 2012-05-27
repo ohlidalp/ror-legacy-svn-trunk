@@ -51,14 +51,14 @@ void RigsOfRods::go(void)
 {
 	// init ogre
 	new OgreFramework();
-	if(!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd, embedded))
+	if (!OgreFramework::getSingletonPtr()->initOgre(name, hwnd, mainhwnd, embedded))
 		return;
 
 	// now add the states
 	stateManager = new AppStateManager();
 	new ContentManager();
 
-	if(!BSETTING("REPO_MODE", false))
+	if (!BSETTING("REPO_MODE", false))
 	{
 		// dummy state to display the progress bar
 		BootstrapLoadingState::create(stateManager,  "BootstrapLoadingState");
@@ -82,7 +82,7 @@ void RigsOfRods::go(void)
 	LobbyState::create(stateManager, "LobbyState");
 
 	// select the first one
-	if(embedded)
+	if (embedded)
 	{
 		LOG("Rigs of Rods embedded initialized!");
 		stateManager->changeAppState(stateManager->findByName(startState));
@@ -100,7 +100,7 @@ void RigsOfRods::update(double dt)
 
 void RigsOfRods::shutdown()
 {
-	if(stateManager)
+	if (stateManager)
 	{
 		stateManager->shutdown();
 	} else
@@ -111,7 +111,7 @@ void RigsOfRods::shutdown()
 
 void RigsOfRods::tryShutdown()
 {
-	if(stateManager)
+	if (stateManager)
 		stateManager->tryShutdown();
 }
 

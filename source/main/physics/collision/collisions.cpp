@@ -182,7 +182,7 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 	try
 	{
 		// try to load directly otherwise via resource group
-		if(group == "")
+		if (group == "")
 			cfg.load(filename);
 		else
 			cfg.load(filename, group, "\x09:=", true);
@@ -197,11 +197,11 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 
 	// after it was parsed, resolve the dependencies
 	std::map<Ogre::String, ground_model_t>::iterator it;
-	for(it=ground_models.begin(); it!=ground_models.end(); it++)
+	for (it=ground_models.begin(); it!=ground_models.end(); it++)
 	{
-		if(!it->second.basename) continue; // no base, normal material
+		if (!it->second.basename) continue; // no base, normal material
 		String bname = String(it->second.basename);
-		if(ground_models.find(bname) == ground_models.end()) continue; // base not found!
+		if (ground_models.find(bname) == ground_models.end()) continue; // base not found!
 		// copy the values from the base if not set otherwise
 		ground_model_t *thisgm = &(it->second);
 		ground_model_t *basegm = &ground_models[bname];
@@ -212,7 +212,7 @@ int Collisions::loadGroundModelsConfigFile(Ogre::String filename)
 		parseGroundConfig(&cfg, it->first);
 	}
 	// check the version
-	if(this->collision_version != LATEST_GROUND_MODEL_VERSION)
+	if (this->collision_version != LATEST_GROUND_MODEL_VERSION)
 	{
 		// message box
 		String url = "http://wiki.rigsofrods.com/index.php?title=Error_Old_ground_model#"+TOSTRING(this->collision_version)+"to"+TOSTRING(LATEST_GROUND_MODEL_VERSION);
@@ -233,7 +233,7 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 		secName = seci.peekNextKey();
 		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
 
-		if(!groundModel.empty() && secName != groundModel) continue;
+		if (!groundModel.empty() && secName != groundModel) continue;
 
 		Ogre::ConfigFile::SettingsMultiMap::iterator i;
 		for (i = settings->begin(); i != settings->end(); ++i)
@@ -241,14 +241,14 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 			kname = i->first;
 			kvalue = i->second;
 			// we got all the data available now, processing now
-			if(secName == "general" || secName == "config")
+			if (secName == "general" || secName == "config")
 			{
 				// set some class properties accoring to the information in this section
-				if(kname == "version") this->collision_version = StringConverter::parseInt(kvalue);
+				if (kname == "version") this->collision_version = StringConverter::parseInt(kvalue);
 			} else
 			{
 				// we assume that all other sections are separate ground types!
-				if(ground_models.find(secName) == ground_models.end())
+				if (ground_models.find(secName) == ground_models.end())
 				{
 					// ground models not known yet, init it!
 					ground_models[secName] = ground_model_t();
@@ -269,46 +269,46 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 
 				}
 
-				if(kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
-				else if(kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
-				else if(kname == "sliding friction coefficient") ground_models[secName].mc = StringConverter::parseReal(kvalue);
-				else if(kname == "hydrodynamic friction") ground_models[secName].t2 = StringConverter::parseReal(kvalue);
-				else if(kname == "stribeck velocity") ground_models[secName].vs = StringConverter::parseReal(kvalue);
-				else if(kname == "alpha") ground_models[secName].alpha = StringConverter::parseReal(kvalue);
-				else if(kname == "strength") ground_models[secName].strength = StringConverter::parseReal(kvalue);
-				else if(kname == "base") strncpy(ground_models[secName].basename, kvalue.c_str(), 255);
-				else if(kname == "fx_type")
+				if (kname == "adhesion velocity") ground_models[secName].va = StringConverter::parseReal(kvalue);
+				else if (kname == "static friction coefficient") ground_models[secName].ms = StringConverter::parseReal(kvalue);
+				else if (kname == "sliding friction coefficient") ground_models[secName].mc = StringConverter::parseReal(kvalue);
+				else if (kname == "hydrodynamic friction") ground_models[secName].t2 = StringConverter::parseReal(kvalue);
+				else if (kname == "stribeck velocity") ground_models[secName].vs = StringConverter::parseReal(kvalue);
+				else if (kname == "alpha") ground_models[secName].alpha = StringConverter::parseReal(kvalue);
+				else if (kname == "strength") ground_models[secName].strength = StringConverter::parseReal(kvalue);
+				else if (kname == "base") strncpy(ground_models[secName].basename, kvalue.c_str(), 255);
+				else if (kname == "fx_type")
 				{
-					if(kvalue == "PARTICLE")
+					if (kvalue == "PARTICLE")
 						ground_models[secName].fx_type = FX_PARTICLE;
-					else if(kvalue == "HARD")
+					else if (kvalue == "HARD")
 						ground_models[secName].fx_type = FX_HARD;
-					else if(kvalue == "DUSTY")
+					else if (kvalue == "DUSTY")
 						ground_models[secName].fx_type = FX_DUSTY;
-					else if(kvalue == "CLUMPY")
+					else if (kvalue == "CLUMPY")
 						ground_models[secName].fx_type = FX_CLUMPY;
 				}
-				else if(kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 255);
-				else if(kname == "fx_colour") ground_models[secName].fx_colour = StringConverter::parseColourValue(kvalue);
-				else if(kname == "fx_particle_amount") ground_models[secName].fx_particle_amount = StringConverter::parseInt(kvalue);
-				else if(kname == "fx_particle_min_velo") ground_models[secName].fx_particle_min_velo = StringConverter::parseReal(kvalue);
-				else if(kname == "fx_particle_max_velo") ground_models[secName].fx_particle_max_velo = StringConverter::parseReal(kvalue);
-				else if(kname == "fx_particle_fade") ground_models[secName].fx_particle_fade = StringConverter::parseReal(kvalue);
-				else if(kname == "fx_particle_timedelta") ground_models[secName].fx_particle_timedelta = StringConverter::parseReal(kvalue);
-				else if(kname == "fx_particle_velo_factor") ground_models[secName].fx_particle_velo_factor = StringConverter::parseReal(kvalue);
-				else if(kname == "fx_particle_ttl") ground_models[secName].fx_particle_ttl = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_name") strncpy(ground_models[secName].particle_name, kvalue.c_str(), 255);
+				else if (kname == "fx_colour") ground_models[secName].fx_colour = StringConverter::parseColourValue(kvalue);
+				else if (kname == "fx_particle_amount") ground_models[secName].fx_particle_amount = StringConverter::parseInt(kvalue);
+				else if (kname == "fx_particle_min_velo") ground_models[secName].fx_particle_min_velo = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_max_velo") ground_models[secName].fx_particle_max_velo = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_fade") ground_models[secName].fx_particle_fade = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_timedelta") ground_models[secName].fx_particle_timedelta = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_velo_factor") ground_models[secName].fx_particle_velo_factor = StringConverter::parseReal(kvalue);
+				else if (kname == "fx_particle_ttl") ground_models[secName].fx_particle_ttl = StringConverter::parseReal(kvalue);
 
 
-				else if(kname == "fluid density") ground_models[secName].fluid_density = StringConverter::parseReal(kvalue);
-				else if(kname == "flow consistency index") ground_models[secName].flow_consistency_index = StringConverter::parseReal(kvalue);
-				else if(kname == "flow behavior index") ground_models[secName].flow_behavior_index = StringConverter::parseReal(kvalue);
-				else if(kname == "solid ground level") ground_models[secName].solid_ground_level = StringConverter::parseReal(kvalue);
-				else if(kname == "drag anisotropy") ground_models[secName].drag_anisotropy = StringConverter::parseReal(kvalue);
+				else if (kname == "fluid density") ground_models[secName].fluid_density = StringConverter::parseReal(kvalue);
+				else if (kname == "flow consistency index") ground_models[secName].flow_consistency_index = StringConverter::parseReal(kvalue);
+				else if (kname == "flow behavior index") ground_models[secName].flow_behavior_index = StringConverter::parseReal(kvalue);
+				else if (kname == "solid ground level") ground_models[secName].solid_ground_level = StringConverter::parseReal(kvalue);
+				else if (kname == "drag anisotropy") ground_models[secName].drag_anisotropy = StringConverter::parseReal(kvalue);
 
 			}
 		}
 
-		if(!groundModel.empty()) break; // we dont need to go through the other sections
+		if (!groundModel.empty()) break; // we dont need to go through the other sections
 	}
 }
 
@@ -354,7 +354,7 @@ void Collisions::setupLandUse(const char *configfile)
 {
 #if 0
 #ifdef USE_PAGED
-	if(landuse) return;
+	if (landuse) return;
 	landuse = new Landusemap(configfile);
 #else
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
@@ -364,7 +364,7 @@ void Collisions::setupLandUse(const char *configfile)
 
 ground_model_t *Collisions::getGroundModelByString(const String name)
 {
-	if(!ground_models.size() || ground_models.find(name) == ground_models.end())
+	if (!ground_models.size() || ground_models.find(name) == ground_models.end())
 		return 0;
 
 	return &ground_models[name];
@@ -650,12 +650,12 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		// box content
 		ManualObject *mo = globalEnvironment->ogreSceneManager->createManualObject();
 		String matName = "tracks/debug/collision/box";
-		if(virt && scripthandler == -1)
+		if (virt && scripthandler == -1)
 			matName = "tracks/debug/eventbox/unused";
 		else if (virt)
 			matName = "tracks/debug/eventbox/used";
 		AxisAlignedBox *aa = new AxisAlignedBox();
-		for(int i=0; i < 8; i++)
+		for (int i=0; i < 8; i++)
 		{
 			aa->merge(cube_points[i]);
 		}
@@ -768,19 +768,19 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 int Collisions::removeCollisionBox(int num)
 {
-	if(num < 0 || num > free_collision_box)
+	if (num < 0 || num > free_collision_box)
 		return 1;
 	
 	collision_box_t& coll_box = collision_boxes[num];
 	
-	if(!coll_box.enabled)
+	if (!coll_box.enabled)
 		return 2;
 
 	// disable the box
 	coll_box.enabled = false;
 
 	// disable the event
-	if(coll_box.eventsourcenum != -1 && coll_box.eventsourcenum >= 0 && coll_box.eventsourcenum < free_eventsource)
+	if (coll_box.eventsourcenum != -1 && coll_box.eventsourcenum >= 0 && coll_box.eventsourcenum < free_eventsource)
 	{
 		eventsource_t& es = eventsources[coll_box.eventsourcenum];
 		es.enabled = false;
@@ -842,7 +842,7 @@ int Collisions::addCollisionTri(Vector3 p1, Vector3 p2, Vector3 p3, ground_model
 		}
 	}
 	
-	if(debugMode)
+	if (debugMode)
 	{
 		debugmo->position(p1);
 		debugmo->position(p2);
@@ -866,15 +866,15 @@ bool Collisions::envokeScriptCallback(collision_box_t *cbox, node_t *node)
 	bool handled = false;
 
 	// check if this box is active anymore
-	if(!eventsources[cbox->eventsourcenum].enabled)
+	if (!eventsources[cbox->eventsourcenum].enabled)
 		return false;
 	
 	// this prevents that the same callback gets called at 2k FPS all the time, serious hit on FPS ...
-	if(last_called_cbox != cbox)
+	if (last_called_cbox != cbox)
 	{
 #ifdef USE_ANGELSCRIPT
 		int ret = ScriptEngine::getSingleton().envokeCallback(eventsources[cbox->eventsourcenum].scripthandler, &eventsources[cbox->eventsourcenum], node);
-		if(ret == 0)
+		if (ret == 0)
 			handled = true;
 
 		last_called_cbox = cbox;
@@ -901,7 +901,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	refx=(int)(refpos->x/(float)CELL_SIZE);
 	refz=(int)(refpos->z/(float)CELL_SIZE);
 	cell_t *cell=hash_find(refx, refz);
-	if( !cell ) return false;
+	if ( !cell ) return false;
 
 	collision_tri_t *minctri=0;
 	float minctridist=100.0;
@@ -912,7 +912,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 		if ((*cell)[k] != (int)UNUSED_CELLELEMENT && (*cell)[k]<MAX_COLLISION_BOXES)
 		{
 			collision_box_t *cbox=&collision_boxes[(*cell)[k]];
-			if( !( (*refpos) > cbox->lo && (*refpos) < cbox->hi ) ) continue;
+			if ( !( (*refpos) > cbox->lo && (*refpos) < cbox->hi ) ) continue;
 
 			if (cbox->refined || cbox->selfrotated)
 			{
@@ -980,7 +980,7 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 		else
 		{
 			collision_tri_t *ctri=&collision_tris[(*cell)[k]-MAX_COLLISION_BOXES];
-			if(!ctri->enabled)
+			if (!ctri->enabled)
 				continue;
 			// check if this tri is minimal
 			// transform
@@ -1014,15 +1014,15 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 bool Collisions::permitEvent(int filter)
 {
 	Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-	if(filter == EVENT_ALL)
+	if (filter == EVENT_ALL)
 		return true;
-	else if(filter == EVENT_AVATAR && !b)
+	else if (filter == EVENT_AVATAR && !b)
 		return true;
-	else if(filter == EVENT_TRUCK && b && b->driveable == TRUCK)
+	else if (filter == EVENT_TRUCK && b && b->driveable == TRUCK)
 		return true;
-	else if(filter == EVENT_AIRPLANE && b && b->driveable == AIRPLANE)
+	else if (filter == EVENT_AIRPLANE && b && b->driveable == AIRPLANE)
 		return true;
-	else if(filter == EVENT_DELETE && !b)
+	else if (filter == EVENT_DELETE && !b)
 		return true;
 	return false;
 }
@@ -1267,7 +1267,7 @@ eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 	{
 		collision_box_t *cb = &collision_boxes[eventsources[i].cbox];
 
-		if(!cb->enabled)
+		if (!cb->enabled)
 			continue;
 
 		// check all nodes
@@ -1282,7 +1282,7 @@ eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 				break;
 			}
 		}
-		if(allInside && cb->eventsourcenum != -1)
+		if (allInside && cb->eventsourcenum != -1)
 		{
 			return &eventsources[cb->eventsourcenum];
 		}
@@ -1476,7 +1476,7 @@ int Collisions::createCollisionDebugVisualization()
 	// create materials
 	int i = 0;
 	char bname[256];
-	for(i=0;i<=100;i++)
+	for (i=0;i<=100;i++)
 	{
 		// register a material for skeleton view
 		sprintf(bname, "mat-coll-dbg-%d", i);
@@ -1505,14 +1505,14 @@ int Collisions::createCollisionDebugVisualization()
 		mat->setReceiveShadows(false);
 	}
 
-	for(int x=0; x<(int)(globalEnvironment->terrainManager->getMax().x); x+=(int)CELL_SIZE)
+	for (int x=0; x<(int)(globalEnvironment->terrainManager->getMax().x); x+=(int)CELL_SIZE)
 	{
-		for(int z=0; z<(int)(globalEnvironment->terrainManager->getMax().z); z+=(int)CELL_SIZE)
+		for (int z=0; z<(int)(globalEnvironment->terrainManager->getMax().z); z+=(int)CELL_SIZE)
 		{
 			int cellx = (int)(x/(float)CELL_SIZE);
 			int cellz = (int)(z/(float)CELL_SIZE);
 			cell_t *cell=hash_find(cellx, cellz);
-			if(cell)
+			if (cell)
 			{
 				float groundheight = -9999;
 				float x2 = x+CELL_SIZE;
@@ -1523,13 +1523,13 @@ int Collisions::createCollisionDebugVisualization()
 				Real h2=hFinder->getHeightAt(x2, z);
 				Real h3=hFinder->getHeightAt(x, z2);
 				Real h4=hFinder->getHeightAt(x2, z2);
-				if(h1>groundheight)
+				if (h1>groundheight)
 					groundheight = h1;
-				if(h2>groundheight)
+				if (h2>groundheight)
 					groundheight = h2;
-				if(h3>groundheight)
+				if (h3>groundheight)
 					groundheight = h3;
-				if(h4>groundheight)
+				if (h4>groundheight)
 					groundheight = h4;
 				groundheight+=0.1; // 10 cm hover
 				// ground height should fit
@@ -1539,7 +1539,7 @@ int Collisions::createCollisionDebugVisualization()
 				float percent = cc / (float)CELL_BLOCKSIZE;
 
 				float percentd = percent;
-				if(percentd > 1) percentd = 1;
+				if (percentd > 1) percentd = 1;
 				String matName = "mat-coll-dbg-"+TOSTRING((int)(percentd*100));
 				String cell_name="("+TOSTRING(cellx)+","+ TOSTRING(cellz)+")";
 
@@ -1602,7 +1602,7 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 	Entity *ent = globalEnvironment->ogreSceneManager->createEntity(meshname);
 	ent->setMaterialName("tracks/debug/collision/mesh");
 
-	if(!gm)
+	if (!gm)
 	{
 		gm = getGroundModelByString("concrete");
 	}
@@ -1618,13 +1618,13 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 	for (int i=0; i<(int)index_count/3; i++)
 	{
 		int triID = addCollisionTri(vertices[indices[i*3]], vertices[indices[i*3+1]], vertices[indices[i*3+2]], gm);
-		if(collTris)
+		if (collTris)
 			collTris->push_back(triID);
 	}
 
 	delete[] vertices;
 	delete[] indices;
-	if(!debugMode)
+	if (!debugMode)
 	{
 		globalEnvironment->ogreSceneManager->destroyEntity(ent);
 	} else
@@ -1667,14 +1667,14 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 	//size_t prev_ind = index_count;
 
 	// Calculate how many vertices and indices we're going to need
-	for(int i = 0;i < mesh->getNumSubMeshes();i++)
+	for (int i = 0;i < mesh->getNumSubMeshes();i++)
 	{
 		SubMesh* submesh = mesh->getSubMesh(i);
 
 		// We only need to add the shared vertices once
-		if(submesh->useSharedVertices)
+		if (submesh->useSharedVertices)
 		{
-			if(!added_shared)
+			if (!added_shared)
 			{
 				VertexData* vertex_data = mesh->sharedVertexData;
 				vertex_count += vertex_data->vertexCount;
@@ -1699,14 +1699,14 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 	added_shared = false;
 
 	// Run through the sub-meshes again, adding the data into the arrays
-	for(int i = 0;i < mesh->getNumSubMeshes();i++)
+	for (int i = 0;i < mesh->getNumSubMeshes();i++)
 	{
 		SubMesh* submesh = mesh->getSubMesh(i);
 
 		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
+		if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
 		{
-			if(submesh->useSharedVertices)
+			if (submesh->useSharedVertices)
 			{
 				added_shared = true;
 				shared_offset = current_offset;
@@ -1717,7 +1717,7 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 			unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
 			Ogre::Real* pReal;
 
-			for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+			for (size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
 			{
 				posElem->baseVertexPointerToElement(vertex, &pReal);
 
@@ -1747,7 +1747,7 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 		if (use32bitindexes) pInt = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
 		else pShort = static_cast<unsigned short*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
 
-		for(size_t k = 0; k < numTris; ++k)
+		for (size_t k = 0; k < numTris; ++k)
 		{
 			size_t offset = (submesh->useSharedVertices)?shared_offset:current_offset;
 
@@ -1767,7 +1767,7 @@ void Collisions::getMeshInformation(Mesh* mesh,size_t &vertex_count,Vector3* &ve
 
 void Collisions::finishLoadingTerrain()
 {
-	if(debugMode)
+	if (debugMode)
 	{
 		SceneNode *debugsn = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		debugmo->end();

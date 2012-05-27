@@ -864,8 +864,8 @@ beam_t *Beam::addBeam(int id1, int id2)
 		}
 	}
 
-	int pos=add_beam(&nodes[id1], &nodes[id2], \
-			beamsRoot, type, default_break * default_break_scale, default_spring * default_spring_scale, \
+	int pos=add_beam(beamsRoot, &nodes[id1], &nodes[id2], \
+			type, default_break * default_break_scale, default_spring * default_spring_scale, \
 			default_damp * default_damp_scale, detacher_group_state,-1, -1, -1, 1, \
 			default_beam_diameter);
 

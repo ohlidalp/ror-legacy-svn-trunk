@@ -107,7 +107,7 @@ public:
 		{
 			stream_reg_t reg = stream_registrations.front();
 			Streamable *s = createRemoteInstance(&reg);
-			if(s)
+			if (s)
 			{
 				// add it to the streams list
 				NetworkStreamManager::getSingleton().addRemoteStream(s, reg.sourceid, reg.streamid);
@@ -124,7 +124,7 @@ public:
 			// only save registration results for beam streams
 			// TODO: maybe enforce general design to allow all stream types to
 			// have a feedback channel
-			if(reg.reg.type == 0)
+			if (reg.reg.type == 0)
 			{
 				stream_creation_results.push_back(reg);
 			}
@@ -157,13 +157,13 @@ public:
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		for(it1=streamables.begin(); it1!=streamables.end();++it1)
+		for (it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			if(it1->first != del->sourceid) continue;
+			if (it1->first != del->sourceid) continue;
 
-			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
+			for (it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
-				if(del->streamid == -1 || del->streamid == (int)it2->first)
+				if (del->streamid == -1 || del->streamid == (int)it2->first)
 				{
 					// deletes the stream
 					delete it2->second;
@@ -185,13 +185,13 @@ public:
 
 		int ok = 0;
 		int num = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();++it1)
+		for (it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			if(it1->first != sourceid) continue;
-			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
+			if (it1->first != sourceid) continue;
+			for (it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
 				num++;
-				if(it2->second != 0)
+				if (it2->second != 0)
 				{
 					ok = 1;
 					break;
@@ -199,7 +199,7 @@ public:
 			}
 			break;
 		}
-		if(!num)
+		if (!num)
 			ok = 2;
 		unlockStreams();
 		return ok;
@@ -212,12 +212,12 @@ public:
 		typename std::map < int, std::map < unsigned int, X *> >::iterator it1;
 		typename std::map < unsigned int, X *>::iterator it2;
 
-		for(it1=streamables.begin(); it1!=streamables.end();++it1)
+		for (it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
+			for (it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
-				if(!it2->second) continue;
-				if(it2->second->getStreamResultsChanged())
+				if (!it2->second) continue;
+				if (it2->second->getStreamResultsChanged())
 				{
 					unlockStreams();
 					return 1;
@@ -238,28 +238,28 @@ public:
 
 		int ok = 0;
 		int originstreams = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();++it1)
+		for (it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
+			for (it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
-				if(!it2->second)
+				if (!it2->second)
 					continue;
-				if(!it2->second->getIsOrigin())
+				if (!it2->second->getIsOrigin())
 					continue;
 				originstreams++;
 				stream_register_t reg;
 				reg.status = -2;
 				int res = it2->second->getStreamRegisterResultForSource(sourceid, &reg);
-				if(!res)
+				if (!res)
 				{
-					if(reg.status == 1)
+					if (reg.status == 1)
 						ok = 1;
 				}
 				break;
 			}
 			break;
 		}
-		if(!originstreams)
+		if (!originstreams)
 			ok = 2;
 		unlockStreams();
 		return ok;
@@ -297,21 +297,21 @@ public:
 		typename std::map < unsigned int, X *>::iterator it2;
 
 		int res = 0;
-		for(it1=streamables.begin(); it1!=streamables.end();++it1)
+		for (it1=streamables.begin(); it1!=streamables.end();++it1)
 		{
-			for(it2=it1->second.begin(); it2!=it1->second.end();++it2)
+			for (it2=it1->second.begin(); it2!=it1->second.end();++it2)
 			{
-				if(!it2->second)
+				if (!it2->second)
 					continue;
-				if(!it2->second->getIsOrigin())
+				if (!it2->second->getIsOrigin())
 					continue;
 				//int sid = it2->second->getSourceID(); // unused
 				int stid = it2->second->getStreamID();
 				// only use our locally created streams
-				if(stid == reg->origin_streamid)
+				if (stid == reg->origin_streamid)
 				{
 					it2->second->addStreamRegistrationResult(sourceid, *reg);
-					if(reg->status == 1)
+					if (reg->status == 1)
 						LOG("Client " + TOSTRING(sourceid) + " successfully loaded stream " + TOSTRING(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + TOSTRING(reg->status));
 					else
 						LOG("Client " + TOSTRING(sourceid) + " could not load stream " + TOSTRING(reg->origin_streamid) + " with name '" + reg->name + "', result code: " + TOSTRING(reg->status));

@@ -99,7 +99,7 @@ void GUIManager::createGui()
 	while (it.hasMoreElements())
 	{
 		ResourcePtr res = it.getNext();
-		if(res->getName().find("TrueTypeFont") != String::npos)
+		if (res->getName().find("TrueTypeFont") != String::npos)
 		{
 			Image image;
 			TexturePtr tex = (TexturePtr)res;
@@ -113,7 +113,7 @@ void GUIManager::createGui()
 	//MyGUI::PluginManager::getInstance().loadPlugin("Plugin_BerkeliumWidget.dll");
 	MyGUI::PointerManager::getInstance().setVisible(true);
 	Console *c = Console::getSingletonPtrNoCreation();
-	if(c) c->resized();
+	if (c) c->resized();
 }
 
 void GUIManager::destroyGui()
@@ -140,7 +140,7 @@ bool GUIManager::frameStarted(const FrameEvent& evt)
 
 
 	// now hide the mouse cursor if not used since a long time
-	if(getLastMouseMoveTime() > 5000)
+	if (getLastMouseMoveTime() > 5000)
 	{
 		MyGUI::PointerManager::getInstance().setVisible(false);
 		//GUI_MainMenu::getSingleton().setVisible(false);
@@ -161,10 +161,10 @@ void GUIManager::windowResized()
 	setInputViewSize(width, height);
 
 	BeamFactory *bf = BeamFactory::getSingletonPtr();
-	if(bf) bf->windowResized();
+	if (bf) bf->windowResized();
 
 	Console *c = Console::getSingletonPtrNoCreation();
-	if(c) c->resized();
+	if (c) c->resized();
 }
 
 void GUIManager::windowClosed()
@@ -181,14 +181,14 @@ String GUIManager::getRandomWallpaperImage()
 {
 	
 	FileInfoListPtr files = ResourceGroupManager::getSingleton().findResourceFileInfo("Wallpapers", "*.jpg", false);
-	if(files.isNull() || files->empty())
+	if (files.isNull() || files->empty())
 	{
 		return "";
 	}
 	srand ( time(NULL) );
 
 	int num = 0;
-	for(int i = 0; i<Math::RangeRandom(0, 10); i++)
+	for (int i = 0; i<Math::RangeRandom(0, 10); i++)
 		num = Math::RangeRandom(0, files->size());
 
 	return files->at(num).filename;

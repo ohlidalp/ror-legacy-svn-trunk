@@ -121,7 +121,7 @@ bool CollisionTools::collidesWithEntity(const Ogre::Vector3& fromPoint, const Og
 	Ogre::Vector3 toPointAdj(toPoint.x, toPoint.y + rayHeightLevel, toPoint.z);
 	Ogre::Vector3 normal = toPointAdj - fromPointAdj;
 	float distToDest = normal.normalise();
-	if(distToDest>10)
+	if (distToDest>10)
 		return false;
 
 	Ogre::Vector3 myResult(0, 0, 0);
@@ -172,7 +172,7 @@ void CollisionTools::calculateY(Ogre::SceneNode *n, const bool doTerrainCheck, c
 
 	float terrY = 0, colY = 0, colY2 = 0;
 
-	if( raycastFromPoint(Ogre::Vector3(x,y,z),Ogre::Vector3::NEGATIVE_UNIT_Y,myResult,myObject, distToColl, queryMask)){
+	if ( raycastFromPoint(Ogre::Vector3(x,y,z),Ogre::Vector3::NEGATIVE_UNIT_Y,myResult,myObject, distToColl, queryMask)){
 		if (myObject != NULL) {
 			colY = myResult.y;
 		} else {
@@ -182,7 +182,7 @@ void CollisionTools::calculateY(Ogre::SceneNode *n, const bool doTerrainCheck, c
 
 	//if doGridCheck is on, repeat not to fall through small holes for example when crossing a hangbridge
 	if (doGridCheck) {
-		if( raycastFromPoint(Ogre::Vector3(x,y,z)+(n->getOrientation()*Ogre::Vector3(0,0,gridWidth)),Ogre::Vector3::NEGATIVE_UNIT_Y,myResult, myObject, distToColl, queryMask)){
+		if ( raycastFromPoint(Ogre::Vector3(x,y,z)+(n->getOrientation()*Ogre::Vector3(0,0,gridWidth)),Ogre::Vector3::NEGATIVE_UNIT_Y,myResult, myObject, distToColl, queryMask)){
 			if (myObject != NULL) {
 				colY = myResult.y;
 			} else {
@@ -203,7 +203,7 @@ void CollisionTools::calculateY(Ogre::SceneNode *n, const bool doTerrainCheck, c
 		terrY = getTSMHeightAt(x,z);
 #endif
 
-		if(terrY < colY ) {
+		if (terrY < colY ) {
 			n->setPosition(x,colY+_heightAdjust,z);
 		} else {
 			n->setPosition(x,terrY+_heightAdjust,z);
@@ -315,10 +315,10 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 
 			// this is a quick hack to prevent that we allocate unlimited amount of memory
 			// it clears the memory if we have more than 4 regions saved
-			if(meshInfoStorage.size() > 4)
+			if (meshInfoStorage.size() > 4)
 			{
 				// free everything
-				for(std::map<Ogre::String, mesh_info_t>::iterator it=meshInfoStorage.begin(); it!=meshInfoStorage.end(); it++)
+				for (std::map<Ogre::String, mesh_info_t>::iterator it=meshInfoStorage.begin(); it!=meshInfoStorage.end(); it++)
 				{
 					// free memory before clearing map
 					free(it->second.indices);
@@ -328,7 +328,7 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 				meshInfoStorage.clear();
 			}
 
-			if(meshInfoStorage.find(rg->getName()) == meshInfoStorage.end())
+			if (meshInfoStorage.find(rg->getName()) == meshInfoStorage.end())
 			{
 				// get mesh and store it
 				getStaticGeometry(rg->getParent(), rg, meshInfo.vertex_count, meshInfo.vertices, meshInfo.index_count, meshInfo.indices,
@@ -349,7 +349,7 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 		}
 
 
-		if(valid)
+		if (valid)
 		{
 			// test for hitting individual triangles on the mesh
 			bool new_closest_found = false;
@@ -373,7 +373,7 @@ bool CollisionTools::raycast(const Ogre::Ray &ray, Ogre::Vector3 &result,Ogre::M
 			}
 
 			// free the verticies and indicies memory if we are not storing the data
-			if(!meshInfo.store)
+			if (!meshInfo.store)
 			{
 				delete[] meshInfo.vertices;
 				delete[] meshInfo.indices;
@@ -429,9 +429,9 @@ void CollisionTools::GetMeshInformation(const Ogre::MeshPtr mesh,
 		Ogre::SubMesh* submesh = mesh->getSubMesh( i );
 
 		// We only need to add the shared vertices once
-		if(submesh->useSharedVertices)
+		if (submesh->useSharedVertices)
 		{
-			if( !added_shared )
+			if ( !added_shared )
 			{
 				vertex_count += mesh->sharedVertexData->vertexCount;
 				added_shared = true;
@@ -460,9 +460,9 @@ void CollisionTools::GetMeshInformation(const Ogre::MeshPtr mesh,
 
 		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
 
-		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
+		if ((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared))
 		{
-			if(submesh->useSharedVertices)
+			if (submesh->useSharedVertices)
 			{
 				added_shared = true;
 				shared_offset = current_offset;
@@ -483,7 +483,7 @@ void CollisionTools::GetMeshInformation(const Ogre::MeshPtr mesh,
 			//      Ogre::Ogre::Real* pOgre::Real;
 			float* pReal;
 
-			for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
+			for ( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize())
 			{
 				posElem->baseVertexPointerToElement(vertex, &pReal);
 
@@ -586,7 +586,7 @@ void CollisionTools::getStaticGeometry(
 
 			vertices.resize(vertices.size() + vertex_data->vertexCount);
 			posElem->baseVertexPointerToElement(vertex, reinterpret_cast<Ogre::Real **>(&vertex));
-			for(size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize()) {
+			for (size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize()) {
 				++cv;
 				Ogre::Vector3 pt = *(Ogre::Vector3 const *)vertex;
 				vertices[next_offset + j] = (orient * (pt * scale)) + position;// + center;
@@ -600,7 +600,7 @@ void CollisionTools::getStaticGeometry(
 			bool use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
 			void *pIndex = ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY);
 
-			for(size_t k = 0; k < index_data->indexCount; ++k) {
+			for (size_t k = 0; k < index_data->indexCount; ++k) {
 
 				unsigned int vindex = use32bitindexes ? *(unsigned int *)pIndex : *(unsigned short *)pIndex;
 				pIndex = (char *)pIndex + (use32bitindexes ? 4 : 2);

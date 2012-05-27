@@ -122,9 +122,9 @@ public:
 #ifdef USE_MYGUI
 		MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Core/RoRLoadingScreen");
 		String randomWallpaper = GUIManager::getRandomWallpaperImage();
-		if(!randomWallpaper.empty() && !mat.isNull())
+		if (!randomWallpaper.empty() && !mat.isNull())
 		{
-			if(mat->getNumTechniques() > 0 && mat->getTechnique(0)->getNumPasses() > 0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
+			if (mat->getNumTechniques() > 0 && mat->getTechnique(0)->getNumPasses() > 0 && mat->getTechnique(0)->getPass(0)->getNumTextureUnitStates() > 0)
 			{
 				mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName(randomWallpaper);
 			}
@@ -166,7 +166,7 @@ public:
 
 	void frameUpdate(bool force = false)
 	{
-		if(t->getMilliseconds() > 200 || force)
+		if (t->getMilliseconds() > 200 || force)
 		{
 			mWindow->update();
 			RoRWindowEventUtilities::messagePump();

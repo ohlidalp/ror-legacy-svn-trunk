@@ -50,13 +50,13 @@ static void Vector3InitConstructorScaler(float s, Vector3 *self)
 static int Vector3Cmp(const Vector3 &a, const Vector3 &b)
 {
 	// If a is greater than b, then we return a positive number
-	if( a > b )
+	if ( a > b )
 		return 1;
 	// If a is smaller than b, then we return a negative number
-	else if( a < b )
+	else if ( a < b )
 		return -1;
 	// If a is equal to b, then we return zero
-	else if( a == b)
+	else if ( a == b)
 		return 0;
 	// Now, what are we supposed to return if none of the above is true???
 	else
@@ -81,9 +81,9 @@ static void RadianInitConstructor(float r, Radian *self)
 
 static int RadianCmp(const Radian &a, const Radian &b)
 {	
-	if( a > b )
+	if ( a > b )
 		return 1;
-	else if( a < b )
+	else if ( a < b )
 		return -1;
 	else
 		return 0;
@@ -107,9 +107,9 @@ static void DegreeInitConstructor(float r, Degree *self)
 
 static int DegreeCmp(const Degree &a, const Degree &b)
 {	
-	if( a > b )
+	if ( a > b )
 		return 1;
-	else if( a < b )
+	else if ( a < b )
 		return -1;
 	else
 		return 0;

@@ -41,9 +41,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-GUI_MainMenu::GUI_MainMenu(RoRFrameListener *efl) :
-	  mefl(efl)
-	, menuWidth(800)
+GUI_MainMenu::GUI_MainMenu() :
+	  menuWidth(800)
 	, menuHeight(20)
 	, vehicleListNeedsUpdate(false)
 {
@@ -170,15 +169,15 @@ UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 	tmp = tmp + U(" #000000(");
 
 	// some more info
-	if(user.authstatus & AUTH_ADMIN)
+	if (user.authstatus & AUTH_ADMIN)
 		tmp = tmp + _L("#c97100admin#000000, ");
-	if(user.authstatus & AUTH_RANKED)
+	if (user.authstatus & AUTH_RANKED)
 		tmp = tmp + _L("#00c900ranked#000000, ");
-	if(user.authstatus & AUTH_MOD)
+	if (user.authstatus & AUTH_MOD)
 		tmp = tmp + _L("#c90000moderator#000000, ");
-	if(user.authstatus & AUTH_BANNED)
+	if (user.authstatus & AUTH_BANNED)
 		tmp = tmp + _L("banned, ");
-	if(user.authstatus & AUTH_BOT)
+	if (user.authstatus & AUTH_BOT)
 		tmp = tmp + _L("#0000c9bot#000000, ");
 
 	tmp = tmp + _L("#0000ddversion:#000000 ");
@@ -189,7 +188,7 @@ UTFString GUI_MainMenu::getUserString(user_info_t &user, int num_vehicles)
 	tmp = tmp + ANSI_TO_UTF(user.language);
 	tmp = tmp + U(", ");
 
-	if(num_vehicles == 0)
+	if (num_vehicles == 0)
 		tmp = tmp + _L("no vehicles");
 	else
 		tmp = tmp + TOUTFSTRING(num_vehicles) + _L(" vehicles");
@@ -206,11 +205,11 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 
 	// now search the vehicles of that user together
 	std::vector<int> matches;
-	for(int j = 0; j < numTrucks; j++)
+	for (int j = 0; j < numTrucks; j++)
 	{
-		if(!trucks[j]) continue;
+		if (!trucks[j]) continue;
 
-		if(trucks[j]->getSourceID() == user.uniqueid)
+		if (trucks[j]->getSourceID() == user.uniqueid)
 		{
 			// match, found truck :)
 			matches.push_back(j);
@@ -224,9 +223,9 @@ void GUI_MainMenu::addUserToMenu(user_info_t &user)
 		vehiclesMenu->addItem(userStr, MyGUI::MenuItemType::Normal, "USER_"+TOSTRING(user.uniqueid));
 
 		// and add the vehicles below the user name
-		if(!matches.empty())
+		if (!matches.empty())
 		{
-			for(unsigned int j = 0; j < matches.size(); j++)
+			for (unsigned int j = 0; j < matches.size(); j++)
 			{
 				char tmp[512] = "";
 				sprintf(tmp, "  + %s (%s)", trucks[matches[j]]->realtruckname.c_str(),  trucks[matches[j]]->realtruckfilename.c_str());
@@ -243,18 +242,18 @@ void GUI_MainMenu::vehiclesListUpdate()
 	
 	bool netmode = (globalEnvironment->network != 0);
 
-	if(!netmode)
+	if (!netmode)
 	{
 		// single player mode: add vehicles simply, no users
 		int numTrucks = BeamFactory::getSingleton().getTruckCount();
 		Beam **trucks = BeamFactory::getSingleton().getTrucks();
 
 		// simple iterate through :)
-		for(int i = 0; i < numTrucks; i++)
+		for (int i = 0; i < numTrucks; i++)
 		{
-			if(!trucks[i]) continue;
+			if (!trucks[i]) continue;
 
-			if(trucks[i]->hideInChooser) continue;
+			if (trucks[i]->hideInChooser) continue;
 
 			char tmp[255] = {};
 			sprintf(tmp, "[%d] %s", i, trucks[i]->realtruckname.c_str());
@@ -273,9 +272,9 @@ void GUI_MainMenu::vehiclesListUpdate()
 		client_t c[MAX_PEERS];
 		globalEnvironment->network->getClientInfos(c);
 		// iterate over them
-		for(int i = 0; i < MAX_PEERS; i++)
+		for (int i = 0; i < MAX_PEERS; i++)
 		{
-			if(!c[i].used) continue;
+			if (!c[i].used) continue;
 			addUserToMenu(c[i].user);
 		}
 	}
@@ -292,148 +291,148 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	UTFString miname = UTFString(_item->getCaption().asWStr());
 	String id     = _item->getItemId();
 
-	if(id.substr(0,6) == "TRUCK_")
+	if (id.substr(0,6) == "TRUCK_")
 	{
 		int truck = PARSEINT(id.substr(6));
-		if(truck >= 0 && truck < BeamFactory::getSingleton().getTruckCount())
+		if (truck >= 0 && truck < BeamFactory::getSingleton().getTruckCount())
 		{
 			BeamFactory::getSingleton().setCurrentTruck(-1);
 			BeamFactory::getSingleton().setCurrentTruck(truck);
 		}
 	}
 
-	if(id.substr(0,5) == "USER_")
+	if (id.substr(0,5) == "USER_")
 	{
 		int user_uid = PARSEINT(id.substr(5));
 
 		// cannot whisper with self...
-		if(user_uid == globalEnvironment->network->getUID()) return;
+		if (user_uid == globalEnvironment->network->getUID()) return;
 
 		Console::getSingleton().startPrivateChat(user_uid);
 	}
 
 
-	if(miname == _L("get new Vehicle") && mefl->person)
+	if (miname == _L("get new Vehicle") && globalEnvironment->frameListener->person)
 	{
-		if(mefl->loading_state == NONE_LOADED)
+		if (globalEnvironment->frameListener->loading_state == NONE_LOADED)
 			return;
 		// get out first
-		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
-		mefl->reload_pos = mefl->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
-		mefl->freeTruckPosition=true;
-		mefl->loading_state=RELOADING;
+		//globalEnvironment->frameListener->reload_pos = globalEnvironment->frameListener->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
+		globalEnvironment->frameListener->freeTruckPosition=true;
+		globalEnvironment->frameListener->loading_state=RELOADING;
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_AllBeam);
 
-	} else if(miname == _L("Save Scenery") || miname == _L("Load Scenery"))
+	} else if (miname == _L("Save Scenery") || miname == _L("Load Scenery"))
 	{
-		if(mefl->loading_state != ALL_LOADED)
+		if (globalEnvironment->frameListener->loading_state != ALL_LOADED)
 		{
 			LOG("you need to open a map before trying to save or load its scenery.");
 			return;
 		}
-		String fname = SSETTING("Cache Path", "") + mefl->loadedTerrain + ".rorscene";
+		//String fname = SSETTING("Cache Path", "") + globalEnvironment->frameListener->loadedTerrain + ".rorscene";
 
-		Savegame s;
-		if(miname == _L("Save Scenery"))
+		//Savegame s;
+		if (miname == _L("Save Scenery"))
 		{
-			s.save(fname);
+			//s.save(fname);
 		} else
 		{
-			s.load(fname);
+			//s.load(fname);
 		}
 
-	} else if(miname == _L("Terrain Editor Mode"))
+	} else if (miname == _L("Terrain Editor Mode"))
 	{
-		mefl->loading_state = RoRFrameListener::TERRAIN_EDITOR;
+		globalEnvironment->frameListener->loading_state = RoRFrameListener::TERRAIN_EDITOR;
 		CameraManager::getSingleton().switchBehavior(CameraManager::CAMERA_BEHAVIOR_ISOMETRIC, true);
 		
 
-	} else if(miname == _L("remove current Vehicle"))
+	} else if (miname == _L("remove current Vehicle"))
 	{
 		BeamFactory::getSingleton().removeCurrentTruck();
 
-	} else if(miname == _L("activate all Vehicles"))
+	} else if (miname == _L("activate all Vehicles"))
 	{
 		BeamFactory::getSingleton().activateAllTrucks();
 		
-	} else if(miname == _L("send all Vehicles to sleep"))
+	} else if (miname == _L("send all Vehicles to sleep"))
 	{
 		// get out first
-		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
 		BeamFactory::getSingleton().sendAllTrucksSleeping();
 
-	} else if(miname == _L("reload Truck from File"))
+	} else if (miname == _L("reload Truck from File"))
 	{
-		if(BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
+		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 		{
-			mefl->reloadCurrentTruck();
+			globalEnvironment->frameListener->reloadCurrentTruck();
 			GUIManager::getSingleton().unfocus();
 		}
 
-	} else if(miname == _L("Friction Settings"))
+	} else if (miname == _L("Friction Settings"))
 	{
 		GUI_Friction::getSingleton().setVisible(true);
 
-	} else if(miname == _L("Exit"))
+	} else if (miname == _L("Exit"))
 	{
-		mefl->shutdown_final();
-	} else if(miname == _L("Show Console"))
+		globalEnvironment->frameListener->shutdown_final();
+	} else if (miname == _L("Show Console"))
 	{
 		Console *c = Console::getSingletonPtrNoCreation();
-		if(c) c->setVisible(!c->getVisible());
+		if (c) c->setVisible(!c->getVisible());
 	}
 	// the debug menu
-	else if(miname == _L("no visual debug"))
+	else if (miname == _L("no visual debug"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(0);
-	} else if(miname == _L("show Node numbers"))
+		if (b) b->setDebugOverlayState(0);
+	} else if (miname == _L("show Node numbers"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(1);
-	} else if(miname == _L("show Beam numbers"))
+		if (b) b->setDebugOverlayState(1);
+	} else if (miname == _L("show Beam numbers"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(2);
-	} else if(miname == _L("show Node&Beam numbers"))
+		if (b) b->setDebugOverlayState(2);
+	} else if (miname == _L("show Node&Beam numbers"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(3);
-	} else if(miname == _L("show Node mass"))
+		if (b) b->setDebugOverlayState(3);
+	} else if (miname == _L("show Node mass"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(4);
-	} else if(miname == _L("show Node locked"))
+		if (b) b->setDebugOverlayState(4);
+	} else if (miname == _L("show Node locked"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(5);
-	} else if(miname == _L("show Beam compression"))
+		if (b) b->setDebugOverlayState(5);
+	} else if (miname == _L("show Beam compression"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(6);
-	} else if(miname == _L("show Beam broken"))
+		if (b) b->setDebugOverlayState(6);
+	} else if (miname == _L("show Beam broken"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(7);
-	} else if(miname == _L("show Beam stress"))
+		if (b) b->setDebugOverlayState(7);
+	} else if (miname == _L("show Beam stress"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(8);
-	} else if(miname == _L("show Beam strength"))
+		if (b) b->setDebugOverlayState(8);
+	} else if (miname == _L("show Beam strength"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(9);
-	} else if(miname == _L("show Beam hydros"))
+		if (b) b->setDebugOverlayState(9);
+	} else if (miname == _L("show Beam hydros"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(10);
-	} else if(miname == _L("show Beam commands"))
+		if (b) b->setDebugOverlayState(10);
+	} else if (miname == _L("show Beam commands"))
 	{
 		Beam *b = BeamFactory::getSingleton().getCurrentTruck();
-		if(b) b->setDebugOverlayState(11);
-	} else if(miname == _L("Texture Tool"))
+		if (b) b->setDebugOverlayState(11);
+	} else if (miname == _L("Texture Tool"))
 	{
 		TextureToolWindow::getSingleton().show();
 	}
@@ -445,7 +444,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 void GUI_MainMenu::setVisible(bool value)
 {
 	mainmenu->setVisible(value);
-	if(!value) GUIManager::getSingleton().unfocus();
+	if (!value) GUIManager::getSingleton().unfocus();
 	//MyGUI::PointerManager::getInstance().setVisible(value);
 }
 
@@ -458,15 +457,15 @@ void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
 {
 	int h = mainmenu->getHeight();
 	bool focused = false;
-	for(unsigned int i=0;i<pop.size(); i++)
+	for (unsigned int i=0;i<pop.size(); i++)
 		focused |= pop[i]->getVisible();
 
-	if(focused)
+	if (focused)
 	{
 		mainmenu->setPosition(0, 0);
 	} else
 	{
-		if(y > 2*h)
+		if (y > 2*h)
 			mainmenu->setPosition(0, -h);
 
 		else
@@ -474,7 +473,7 @@ void GUI_MainMenu::updatePositionUponMousePosition(int x, int y)
 	}
 
 	// this is hacky, but needed as the click callback is not working
-	if(vehicleListNeedsUpdate)
+	if (vehicleListNeedsUpdate)
 	{
 		vehiclesListUpdate();
 		MUTEX_LOCK(&updateLock);
