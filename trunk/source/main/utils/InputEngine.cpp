@@ -1682,7 +1682,7 @@ bool InputEngine::setup(String hwnd, bool capture, bool capturemouse, int _grabM
 		{
 			//This demo uses at most 10 joysticks - use old way to create (i.e. disregard vendor)
 			int numSticks = std::min(mInputManager->getNumberOfDevices(OISJoyStick), 10);
-			free_joysticks=0;
+			free_joysticks = 0;
 			for (int i = 0; i < numSticks; ++i)
 			{
 				mJoy[i] = (JoyStick*)mInputManager->createInputObject(OISJoyStick, true);
@@ -1858,11 +1858,23 @@ String InputEngine::getKeyNameForKeyCode(OIS::KeyCode keycode)
 
 void InputEngine::Capture()
 {
-	if (mKeyboard) mKeyboard->capture();
-	if (mMouse) mMouse->capture();
-	if (free_joysticks)
-		for (int i=0;i<free_joysticks;i++)
-			if (mJoy[i]) mJoy[i]->capture();
+	if (mKeyboard)
+	{
+		mKeyboard->capture();
+	}
+
+	if (mMouse)
+	{
+		mMouse->capture();
+	}
+
+	for (int i=0; i < free_joysticks; i++)
+	{
+		if (mJoy[i])
+		{
+			mJoy[i]->capture();
+		}
+	}
 }
 
 void InputEngine::windowResized()
