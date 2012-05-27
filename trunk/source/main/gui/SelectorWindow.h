@@ -43,7 +43,7 @@ public:
 	void show(LoaderType type);
 	void hide();
 
-	Cache_Entry *getSelection() { return mSelectedTruck; }
+	CacheEntry *getSelection() { return mSelectedTruck; }
 	Skin *getSelectedSkin() { return mSelectedSkin; }
 	std::vector<Ogre::String> getTruckConfig() { return mTruckConfigs; }
 	void setEnableCancel(bool enabled);
@@ -66,19 +66,19 @@ private:
 	void onCategorySelected(int categoryID);
 	void onEntrySelected(int entryID);
 	void selectionDone();
-	bool searchCompare(Ogre::String searchString, Cache_Entry *ce);
+	bool searchCompare(Ogre::String searchString, CacheEntry *ce);
 
-	void updateControls(Cache_Entry *entry);
+	void updateControls(CacheEntry *entry);
 	void setPreviewImage(Ogre::String texture);
 
-	Cache_Entry *mSelectedTruck;
+	CacheEntry *mSelectedTruck;
 	LoaderType mLoaderType;
 	Ogre::Camera *mCamera;
 	Ogre::String lastImageTextureName;
 	Skin *mSelectedSkin;
 	bool mSelectionDone;
 	int visibleCounter;
-	std::vector<Cache_Entry> mEntries;
+	std::vector<CacheEntry> mEntries;
 	std::vector<Ogre::String> mTruckConfigs;
 	std::vector<Skin *> mCurrentSkins;
 

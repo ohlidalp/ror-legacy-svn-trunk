@@ -123,7 +123,7 @@ std::map<int, Category_Entry> *CacheSystem::getCategories()
 	return &categories;
 }
 
-std::vector<Cache_Entry> *CacheSystem::getEntries()
+std::vector<CacheEntry> *CacheSystem::getEntries()
 {
 	return &entries;
 }
@@ -213,12 +213,12 @@ int CacheSystem::isCacheValid()
 }
 
 
-void CacheSystem::logBadTruckAttrib(const String& line, Cache_Entry& t)
+void CacheSystem::logBadTruckAttrib(const String& line, CacheEntry& t)
 {
 	LOG("Bad Mod attribute line: " + line + " in mod " + t.dname);
 }
 
-void CacheSystem::parseModAttribute(const String& line, Cache_Entry& t)
+void CacheSystem::parseModAttribute(const String& line, CacheEntry& t)
 {
 	Ogre::StringVector params = StringUtil::split(line, "\x09\x0a=,");
 	String& attrib = params[0];
@@ -557,7 +557,7 @@ bool CacheSystem::loadCache()
 
 	LOG("CacheSystem::loadCache");
 
-	Cache_Entry t;
+	CacheEntry t;
 	String line = "";
 	int mode = 0;
 
@@ -583,7 +583,7 @@ bool CacheSystem::loadCache()
 			if ( line == "mod" )
 			{
 				mode = 1;
-				t = Cache_Entry();
+				t = CacheEntry();
 				t.resourceLoaded = false;
 				t.deleted        = false;
 				t.changedornew   = false; // default upon loading
@@ -668,11 +668,11 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(20, _L("incremental check: deleted and changed files"));
 #endif //USE_MYGUI
-	std::vector<Cache_Entry> changed_entries;
+	std::vector<CacheEntry> changed_entries;
 	UTFString tmp = "";
 	String fn = "";
 	int counter = 0;
-	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++, counter++)
+	for (std::vector<CacheEntry>::iterator it = entries.begin(); it != entries.end(); it++, counter++)
 	{
 #ifdef USE_MYGUI
 		int progress = ((float)counter/(float)(entries.size()))*100;
@@ -737,7 +737,7 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(40, _L("incremental check: processing changed zips\n"));
 #endif //USE_MYGUI
-	for (std::vector<Cache_Entry>::iterator it = changed_entries.begin(); it != changed_entries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = changed_entries.begin(); it != changed_entries.end(); it++)
 	{
 		bool found=false;
 		for (std::vector<Ogre::String>::iterator it2 = reloaded_zips.begin(); it2!=reloaded_zips.end(); it2++)
@@ -773,10 +773,10 @@ int CacheSystem::incrementalCacheUpdate()
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().setProgress(90, _L("incremental check: duplicates\n"));
 #endif //USE_MYGUI
-	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = entries.begin(); it != entries.end(); it++)
 	{
 		if (it->deleted) continue;
-		for (std::vector<Cache_Entry>::iterator it2 = entries.begin(); it2 != entries.end(); it2++)
+		for (std::vector<CacheEntry>::iterator it2 = entries.begin(); it2 != entries.end(); it2++)
 		{
 			if (it2->deleted) continue;
 			// clean paths, important since we compare them ...
@@ -865,12 +865,12 @@ int CacheSystem::incrementalCacheUpdate()
 	return 0;
 }
 
-Cache_Entry *CacheSystem::getEntry(int modid)
+CacheEntry *CacheSystem::getEntry(int modid)
 {
-	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it != entries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = entries.begin(); it != entries.end(); it++)
 	{
 		if (modid == it->number)
-			return (Cache_Entry *)&*it;
+			return (CacheEntry *)&*it;
 	}
 	return 0;
 }
@@ -888,7 +888,7 @@ void CacheSystem::generateCache(bool forcefull)
 	}
 }
 
-Ogre::String CacheSystem::formatInnerEntry(int counter, Cache_Entry t)
+Ogre::String CacheSystem::formatInnerEntry(int counter, CacheEntry t)
 {
 	String result = "";
 	result += "\tnumber="+TOSTRING(counter)+"\n"; // always count linear!
@@ -1029,7 +1029,7 @@ Ogre::String CacheSystem::deNormalizeText(Ogre::String text)
 	return result;
 }
 
-Ogre::String CacheSystem::formatEntry(int counter, Cache_Entry t)
+Ogre::String CacheSystem::formatEntry(int counter, CacheEntry t)
 {
 	String result = "mod\n";
 	result += "{\n";
@@ -1052,7 +1052,7 @@ void CacheSystem::writeGeneratedCache()
 	fprintf(f, "cacheformat=%s\n", CACHE_FILE_FORMAT);
 
 	// mods
-	std::vector<Cache_Entry>::iterator it;
+	std::vector<CacheEntry>::iterator it;
 	int counter=0;
 	for (it = entries.begin(); it != entries.end(); it++)
 	{
@@ -1085,7 +1085,7 @@ void CacheSystem::writeStreamCache()
 		FILE *f = fopen(cacheFilename.c_str(), "w");
 
 		// iterate through mods
-		std::vector<Cache_Entry>::iterator it;
+		std::vector<CacheEntry>::iterator it;
 		int counter=0;
 		for (it = entries.begin(); it != entries.end(); it++)
 		{
@@ -1105,7 +1105,7 @@ void CacheSystem::writeStreamCache()
 #endif
 }
 
-void CacheSystem::updateSingleTruckEntryCache(int number, Cache_Entry t)
+void CacheSystem::updateSingleTruckEntryCache(int number, CacheEntry t)
 {
 	// todo: to be implemented
 }
@@ -1166,7 +1166,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 	LOG("Preparing to add " + filename);
 
 	//read first line
-	Cache_Entry entry;
+	CacheEntry entry;
 	if (!resourceExistsInAllGroups(filename))
 		return;
 
@@ -1225,7 +1225,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 	}
 }
 
-void CacheSystem::fillTruckDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
+void CacheSystem::fillTruckDetailInfo(CacheEntry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
 
 	SerializedRig r;
@@ -1298,7 +1298,7 @@ int CacheSystem::addUniqueString(std::set<Ogre::String> &list, Ogre::String str)
 	return 0;
 }
 
-Ogre::String CacheSystem::addMeshMaterials(Cache_Entry &entry, Ogre::Entity *e)
+Ogre::String CacheSystem::addMeshMaterials(CacheEntry &entry, Ogre::Entity *e)
 {
 	String materials = "";
 	MeshPtr m = e->getMesh();
@@ -1344,7 +1344,7 @@ Ogre::String CacheSystem::detectFilesMiniType(String filename)
 	return "dds";
 }
 
-void CacheSystem::removeFileFromFileCache(std::vector<Cache_Entry>::iterator iter)
+void CacheSystem::removeFileFromFileCache(std::vector<CacheEntry>::iterator iter)
 {
 	//LOG("removing file cache number "+TOSTRING(iter->number));
 	if (iter->minitype != "none")
@@ -1355,7 +1355,7 @@ void CacheSystem::removeFileFromFileCache(std::vector<Cache_Entry>::iterator ite
 
 }
 
-void CacheSystem::generateFileCache(Cache_Entry &entry, Ogre::String directory)
+void CacheSystem::generateFileCache(CacheEntry &entry, Ogre::String directory)
 {
 	try
 	{
@@ -1511,7 +1511,7 @@ void CacheSystem::parseFilesOneRG(Ogre::String ext, Ogre::String rg)
 
 bool CacheSystem::isFileInEntries(Ogre::String filename)
 {
-	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		if (it->fname == filename)
 			return true;
@@ -1521,7 +1521,7 @@ bool CacheSystem::isFileInEntries(Ogre::String filename)
 void CacheSystem::generateZipList()
 {
 	zipCacheList.clear();
-	for (std::vector<Cache_Entry>::iterator it = entries.begin(); it!=entries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = entries.begin(); it!=entries.end(); it++)
 	{
 		zipCacheList.insert(getVirtualPath(it->dirname));
 		//LOG("zip path added: "+getVirtualPath(it->dirname));
@@ -1542,7 +1542,7 @@ bool CacheSystem::isDirectoryUsedInEntries(Ogre::String directory)
 	String dira = directory;
 	dira = getVirtualPath(dira);
 
-	std::vector<Cache_Entry>::iterator it;
+	std::vector<CacheEntry>::iterator it;
 	for (it = entries.begin(); it!=entries.end(); it++)
 	{
 		if (it->type != "FileSystem") continue;
@@ -1658,7 +1658,7 @@ String CacheSystem::filenamesSHA1()
 	return String(result);
 }
 
-void CacheSystem::fillTerrainDetailInfo(Cache_Entry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
+void CacheSystem::fillTerrainDetailInfo(CacheEntry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
 	char authorformat[256] = "//author %s %i %s %s";
 	char authortag[256] = "//author";
@@ -1790,10 +1790,10 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename)
 	return checkResourceLoaded(filename, group);
 }
 
-Cache_Entry CacheSystem::getResourceInfo(Ogre::String &filename)
+CacheEntry CacheSystem::getResourceInfo(Ogre::String &filename)
 {
-	Cache_Entry def;
-	std::vector<Cache_Entry>::iterator it;
+	CacheEntry def;
+	std::vector<CacheEntry>::iterator it;
 	for (it = entries.begin(); it != entries.end(); it++)
 		if (it->fname == filename || it->fname_without_uid == filename)
 			return *it;
@@ -1809,7 +1809,7 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 		return true;
 	}
 
-	std::vector<Cache_Entry>::iterator it;
+	std::vector<CacheEntry>::iterator it;
 
 	for (it = entries.begin(); it != entries.end(); it++)
 	{
@@ -1835,7 +1835,7 @@ bool CacheSystem::checkResourceLoaded(Ogre::String &filename, Ogre::String &grou
 	return false;
 }
 
-bool CacheSystem::checkResourceLoaded(Cache_Entry t)
+bool CacheSystem::checkResourceLoaded(CacheEntry t)
 {
 	static int rgcountera = 0;
 	static std::map<String, bool> loaded;
@@ -1872,7 +1872,7 @@ bool CacheSystem::checkResourceLoaded(Cache_Entry t)
 	return false;
 }
 
-void CacheSystem::loadSingleZip(Cache_Entry e, bool unload, bool ownGroup)
+void CacheSystem::loadSingleZip(CacheEntry e, bool unload, bool ownGroup)
 {
 	loadSingleZip(e.dirname, -1, unload, ownGroup);
 }

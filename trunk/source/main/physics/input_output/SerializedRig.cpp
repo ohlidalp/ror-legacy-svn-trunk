@@ -48,7 +48,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "TerrainManager.h"
 #include "TorqueCurve.h"
-#include "turboprop.h"
+#include "TurboProp.h"
 #include "TurboJet.h"
 #include "Utils.h"
 #include "VideoCamera.h"

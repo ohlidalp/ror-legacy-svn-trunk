@@ -77,7 +77,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SoundScriptManager.h"
 #include "TerrainManager.h"
 #include "TruckHUD.h"
-#include "turboprop.h"
+#include "TurboProp.h"
 #include "Utils.h"
 #include "VideoCamera.h"
 #include "Water.h"
@@ -1088,7 +1088,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, Ogre::String inputhwnd
 		}
 
 		// set the terrain cache entry
-		Cache_Entry ce = CACHE.getResourceInfo(preselected_map);
+		CacheEntry ce = CACHE.getResourceInfo(preselected_map);
 		terrainUID = ce.uniqueid;
 
 		loadTerrain(preselected_map);
@@ -2568,7 +2568,7 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			if (loading_state==NONE_LOADED)
 			{
-				Cache_Entry *sel = SelectorWindow::getSingleton().getSelection();
+				CacheEntry *sel = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				if (sel)
 				{
@@ -2597,7 +2597,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				}
 			} else if (loading_state==TERRAIN_LOADED)
 			{
-				Cache_Entry *selection = SelectorWindow::getSingleton().getSelection();
+				CacheEntry *selection = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				std::vector<Ogre::String> config = SelectorWindow::getSingleton().getTruckConfig();
 				std::vector<Ogre::String> *configptr = &config;
@@ -2609,7 +2609,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 			} else if (loading_state==RELOADING)
 			{
-				Cache_Entry *selection = SelectorWindow::getSingleton().getSelection();
+				CacheEntry *selection = SelectorWindow::getSingleton().getSelection();
 				Skin *skin = SelectorWindow::getSingleton().getSelectedSkin();
 				Beam *localTruck = 0;
 				if (selection)
@@ -3208,6 +3208,9 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		CameraManager::getSingleton().update(dt);
 	}
 
+	// update mirrors after moving the camera as we use the camera position in mirrors
+	updateTruckMirrors(dt);
+
 #ifdef USE_OPENAL
 	// update audio listener position
 	static Vector3 lastCameraPosition;
@@ -3216,45 +3219,45 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	SoundScriptManager::getSingleton().setCamera(globalEnvironment->ogreCamera->getPosition(), globalEnvironment->ogreCamera->getDirection(), globalEnvironment->ogreCamera->getUp(), cameraSpeed);
 #endif // USE_OPENAL
-
+	
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	// environment map
-	if (globalEnvironment->terrainManager->getEnvmap())
+	if (globalEnvironment->terrainManager)
 	{
-		if (curr_truck)
+		if (globalEnvironment->terrainManager->getEnvmap())
 		{
-			globalEnvironment->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
-		} else
-		{
-			float height = globalEnvironment->terrainManager->getMax().y;
-			if (globalEnvironment->terrainManager->getHeightFinder())
+			if (curr_truck)
 			{
-				height = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );
+				globalEnvironment->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
+			} else
+			{
+				float height = globalEnvironment->terrainManager->getMax().y;
+				if (globalEnvironment->terrainManager->getHeightFinder())
+				{
+					height = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );
+				}
+				globalEnvironment->terrainManager->getEnvmap()->update(Vector3(terrainxsize / 2.0f, height + 50.0f, terrainzsize / 2.0f));
 			}
-			globalEnvironment->terrainManager->getEnvmap()->update(Vector3(terrainxsize / 2.0f, height + 50.0f, terrainzsize / 2.0f));
 		}
-	}
 
-	// water
-	if (globalEnvironment->terrainManager->getWater())
-	{
-		if (curr_truck)
+		// water
+		if (globalEnvironment->terrainManager->getWater())
 		{
-			globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
-		} else
-		{
-			globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeight());
+			if (curr_truck)
+			{
+				globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
+			} else
+			{
+				globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeight());
+			}
 		}
-	}
 
-	// update mirrors after moving the camera as we use the camera position in mirrors
-	updateTruckMirrors(dt);
-
-	// update water after the camera!
-	if ((loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR) && globalEnvironment->terrainManager->getWater())
-	{
-		globalEnvironment->terrainManager->getWater()->framestep(dt);
+		// update water after the camera!
+		if ((loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR) && globalEnvironment->terrainManager->getWater())
+		{
+			globalEnvironment->terrainManager->getWater()->framestep(dt);
+		}
 	}
 
 	//update visual - antishaking

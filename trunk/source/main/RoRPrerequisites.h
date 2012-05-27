@@ -117,7 +117,7 @@ class Beam;
 class BeamEngine;
 class BeamThreadStats;
 class Buoyance;
-class Cache_Entry;
+class CacheEntry;
 class Character;
 class ChatSystem;
 class CmdKeyInertia;

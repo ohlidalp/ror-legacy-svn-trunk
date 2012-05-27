@@ -304,8 +304,8 @@ void SelectorWindow::getData()
 	}
 
 	int ts = getTimeStamp();
-	std::vector<Cache_Entry> *entries = CACHE.getEntries();
-	for (std::vector<Cache_Entry>::iterator it = entries->begin(); it!=entries->end(); it++)
+	std::vector<CacheEntry> *entries = CACHE.getEntries();
+	for (std::vector<CacheEntry>::iterator it = entries->begin(); it!=entries->end(); it++)
 	{
 		// category hidden
 		if (it->categoryid == CacheSystem::CID_Unsorted)
@@ -387,7 +387,7 @@ void SelectorWindow::getData()
 	}
 }
 
-bool SelectorWindow::searchCompare(String searchString, Cache_Entry *ce)
+bool SelectorWindow::searchCompare(String searchString, CacheEntry *ce)
 {
 	if (searchString.find(":") == String::npos)
 	{
@@ -496,7 +496,7 @@ void SelectorWindow::onCategorySelected(int categoryID)
 
 	mModelList->removeAllItems();
 	
-	for (std::vector<Cache_Entry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
+	for (std::vector<CacheEntry>::iterator it = mEntries.begin(); it != mEntries.end(); it++)
 	{
 		if (it->categoryid == categoryID || categoryID == CacheSystem::CID_All
 										|| categoryID == CacheSystem::CID_Fresh && (ts - it->addtimestamp < CACHE_FILE_FRESHNESS)
@@ -563,7 +563,7 @@ void SelectorWindow::onEntrySelected(int entryID)
 		}
 		return;
 	}
-	Cache_Entry *entry = CACHE.getEntry(entryID);
+	CacheEntry *entry = CACHE.getEntry(entryID);
 	if (!entry) return;
 	mSelectedTruck = entry;
 	updateControls(mSelectedTruck);
@@ -606,7 +606,7 @@ void SelectorWindow::selectionDone()
 	}
 }
 
-void SelectorWindow::updateControls(Cache_Entry *entry)
+void SelectorWindow::updateControls(CacheEntry *entry)
 {
 	int modnumber = entry->number;
 	String minitype = entry->minitype;
