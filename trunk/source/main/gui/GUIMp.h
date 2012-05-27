@@ -20,9 +20,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 // created by Thomas Fischer thomas{AT}thomasfischer{DOT}biz, 18th of July 2010
 #ifdef USE_MYGUI
 #ifdef USE_SOCKETW
-
-#ifndef __GUI_MP_H_
-#define __GUI_MP_H_
+#ifndef __GUI_Mp_H_
+#define __GUI_Mp_H_
 
 #include "RoRPrerequisites.h"
 
@@ -75,7 +74,6 @@ protected:
 	static const int sidebarWidth = 250;
 };
 
-#endif // __GUI_MP_H_
-
+#endif // __GUI_Mp_H_
 #endif // USE_SOCKETW
 #endif // USE_MYGUI

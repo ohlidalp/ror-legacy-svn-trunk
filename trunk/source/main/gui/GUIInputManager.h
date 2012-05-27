@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-#ifndef __GUI_INPUTMANAGER_H_
-#define __GUI_INPUTMANAGER_H_
+#ifndef __GUI_InputManager_H_
+#define __GUI_InputManager_H_
 
 #include "RoRPrerequisites.h"
 
@@ -29,7 +29,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class GUIInputManager
 {
 	friend class InputEngine;
+
 public:
+
     GUIInputManager();
     virtual ~GUIInputManager();
 
@@ -40,6 +42,7 @@ public:
 	float getLastMouseMoveTime() { return lastMouseMoveTime->getMilliseconds(); };
 
 protected:
+
     virtual bool mouseMoved(const OIS::MouseEvent& _arg);
     virtual bool mousePressed(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
     virtual bool mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonID _id);
@@ -49,10 +52,11 @@ protected:
     void checkPosition();
 
 private:
+
     int mCursorX, mCursorY, width, height;
 	Ogre::Timer *lastMouseMoveTime;
 	void activateGUI();
 };
 
-#endif // __GUI_INPUTMANAGER_H_
+#endif // __GUI_InputManager_H_
 #endif // USE_MYGUI

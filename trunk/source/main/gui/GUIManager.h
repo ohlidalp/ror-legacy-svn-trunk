@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-
 #ifndef __GUI_Manager_H_
 #define __GUI_Manager_H_
 
@@ -67,17 +66,11 @@ private:
 
 	void eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result);
 
-
-private:
-
 	MyGUI::Gui* mGUI;
 	MyGUI::OgrePlatform* mPlatform;
-
-	bool mExit;
-
 	Ogre::String mResourceFileName;
+	bool mExit;
 };
 
 #endif // __GUI_Manager_H_
-
 #endif // USE_MYGUI

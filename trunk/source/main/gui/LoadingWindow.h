@@ -18,9 +18,8 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-
-#ifndef __LOADPROGRESS_H__
-#define __LOADPROGRESS_H__
+#ifndef __LoadingWindow_H_
+#define __LoadingWindow_H_
 
 #include "RoRPrerequisites.h"
 #include "Singleton.h"
@@ -33,9 +32,11 @@ class LoadingWindow :
 	public RoRSingleton<LoadingWindow>
 {
 	friend class RoRSingleton<LoadingWindow>;
+
+public:
+
 	LoadingWindow();
 	~LoadingWindow();
-public:
 
 	void setProgress(int _percent, const Ogre::UTFString& _text = "", bool _updateRenderFrame = true);
 	void setAutotrack(const Ogre::UTFString& _text = "", bool _updateRenderFrame = true);
@@ -43,19 +44,21 @@ public:
 	void hide();
 
 	bool getFrameForced();
+
 private:
+
 	void renderOneFrame(bool force = false);
-	Ogre::Timer *t;
-private:
+	
+
 	ATTRIBUTE_FIELD_WIDGET_NAME(LoadingWindow, mBarProgress, "Bar");
 	MyGUI::ProgressBar* mBarProgress;
 	ATTRIBUTE_FIELD_WIDGET_NAME(LoadingWindow, mInfoStaticText, "Info");
 	MyGUI::TextBox* mInfoStaticText;
 
 	bool mFrameForced;
+	Ogre::Timer *t;
 };
 
-#endif // __LOADPROGRESS_H__
+#endif // __LoadingWindow_H_
 
-#endif //MYGUI
-
+#endif // USE_MYGUI

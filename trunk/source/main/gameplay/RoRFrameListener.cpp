@@ -3144,7 +3144,9 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
 	if (globalEnvironment->ogreRenderWindow->isClosed())
+	{
 		return false;
+	}
 
 	// update GUI
 	INPUTENGINE.Capture();
@@ -3154,11 +3156,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// exit frame started method when just displaying the GUI
 #ifdef USE_MYGUI
 	if (LoadingWindow::getSingleton().getFrameForced())
+	{
 		return true;
+	}
 #endif //MYGUI
-
-	if (shutdownall)
-		return false;
 
 	if (shutdownall) // shortcut: press ESC in credits
 	{
@@ -3168,8 +3169,9 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 	// update OutProtocol
 	if (OutProtocol::getSingletonPtr())
+	{
 		OutProtocol::getSingleton().update(dt);
-
+	}
 	// the truck we use got deleted D:
 	//if (current_truck != -1 && trucks[current_truck] == 0)
 	//	BeamFactory::getSingleton().setCurrentTruck(-1);
@@ -3283,16 +3285,21 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		char tmp[256];
 		Real distance = 0;
 		if (curr_truck && curr_truck->state == ACTIVATED)
+		{
 			distance = curr_truck->getPosition().distance(dirArrowPointed);
-		else
+		} else
+		{
 			distance = person->getPosition().distance(dirArrowPointed);
+		}
 		sprintf(tmp,"%0.1f meter", distance);
 		ow->directionArrowDistance->setCaption(tmp);
 	}
 
 	// one of the input modes is immediate, so setup what is needed for immediate mouse/key movement
 	if (mTimeUntilNextToggle >= 0)
+	{
 		mTimeUntilNextToggle -= dt;
+	}
 
 	// one of the input modes is immediate, so update the movement vector
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
