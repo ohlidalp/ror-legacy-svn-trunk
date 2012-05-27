@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __TRUCKHUD_H_
-#define __TRUCKHUD_H_
+#ifndef __TruckHUD_H_
+#define __TruckHUD_H_
 
 #include "RoRPrerequisites.h"
 
@@ -54,4 +54,4 @@ protected:
 	static const unsigned int COMMANDS_VISIBLE = 25;
 };
 
-#endif // __TRUCKHUD_H_
+#endif // __TruckHUD_H_

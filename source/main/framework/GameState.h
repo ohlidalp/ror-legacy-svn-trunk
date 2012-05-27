@@ -17,9 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef GAME_STATE_HPP
-#define GAME_STATE_HPP
+#ifndef __GameState_H_
+#define __GameState_H_
 
 #include "RoRPrerequisites.h"
 #include "AppState.h"
@@ -27,6 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class GameState : public AppState
 {
 public:
+
 	GameState();
 	DECLARE_APPSTATE_CLASS(GameState)
 
@@ -40,4 +40,4 @@ public:
 	void resized(Ogre::RenderWindow *r);
 };
 
-#endif //GAME_STATE_HPP
+#endif // __GameState_H_

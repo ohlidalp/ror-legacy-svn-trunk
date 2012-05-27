@@ -17,9 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef LOBBY_STATE_HPP
-#define LOBBY_STATE_HPP
+#ifndef __LobbyState_H_
+#define __LobbyState_H_
 
 #include "RoRPrerequisites.h"
 #include "AppState.h"
@@ -40,4 +39,4 @@ public:
 	void resized(Ogre::RenderWindow *r);
 };
 
-#endif //LOBBY_STATE_HPP
+#endif // __LobbyState_H_

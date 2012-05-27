@@ -17,7 +17,7 @@ void LobbyState::enter()
 
 	m_pSceneMgr = OgreFramework::getSingletonPtr()->m_pRoot->createSceneManager(ST_INTERIOR);
 
-	INPUTENGINE.setupDefault(OgreFramework::getSingleton().m_pRenderWnd);
+	INPUTENGINE.setupDefault();
 
 	//CREATE CAMERA
 	LOG("Creating camera");
@@ -74,5 +74,5 @@ void LobbyState::update(double dt)
 
 void LobbyState::resized(Ogre::RenderWindow *rw)
 {
-	INPUTENGINE.windowResized(rw);
+	INPUTENGINE.windowResized();
 }

@@ -35,6 +35,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "Scripting.h"
 #include "Settings.h"
+#include "TerrainManager.h"
 #include "utils.h"
 
 #if MYGUI_PLATFORM == MYGUI_PLATFORM_LINUX

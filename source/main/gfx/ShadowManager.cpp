@@ -47,8 +47,6 @@ void ShadowManager::loadConfiguration()
 
 int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
-	SceneManager *globalEnvironment->ogreSceneManager = globalEnvironment->ogreSceneManager;
-
 	float shadowFarDistance = std::min(200.0f, (FSETTING("SightRange", 2000)* 0.8f));
 	float scoef=0.2;
 	globalEnvironment->ogreSceneManager->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));

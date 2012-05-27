@@ -33,6 +33,7 @@ class SkyManager;
 class GlobalEnvironment
 {
 public:
+
 	GlobalEnvironment() :
 		  collisions(0)
 		, embeddedMode(false)

@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname)
+FlexObj::FlexObj(node_t *nds, int numtexcoords, Vector3* texcoords, int numtriangles, int* triangles, int numsubmeshes, int* subtexindex, int* subtriindex, char* texname, char* name, int* subisback, char* backtexname, char* transtexname)
 {
 	unsigned int i;
 	int j;
@@ -80,7 +80,7 @@ FlexObj::FlexObj(SceneManager *manager, node_t *nds, int numtexcoords, Vector3* 
 	}
 */
 	//finished munching
-	smanager=manager;
+	globalEnvironment->ogreSceneManager=globalEnvironment->ogreSceneManager;
 	nodes=nds;
 	/// Create the mesh via the MeshManager
     msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
@@ -348,7 +348,7 @@ Vector3 FlexObj::updateShadowVertices()
 Vector3 FlexObj::flexit()
 {
 	Vector3 center;
-	if (smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding

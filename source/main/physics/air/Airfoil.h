@@ -17,23 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __AIRFOIL_H_
-#define __AIRFOIL_H_
+#ifndef __Airfoil_H_
+#define __Airfoil_H_
 
 #include "RoRPrerequisites.h"
 
 class Airfoil
 {
-private:
-	float cl[3601];
-	float cd[3601];
-	float cm[3601];
 public:
+
 	Airfoil(char* fname);
 	~Airfoil();
 
 	void getparams(float a, float cratio, float cdef, float* ocl, float* ocd, float* ocm);
+
+private:
+
+	float cl[3601];
+	float cd[3601];
+	float cm[3601];
 };
 
-
-#endif // __AIRFOIL_H_
+#endif // __Airfoil_H_
