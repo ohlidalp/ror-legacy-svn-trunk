@@ -48,7 +48,7 @@ public:
 	 * @param se pointer to the ScriptEngine instance
 	 * @param efl pointer to the RoRFrameListener instance
 	 */
-	GameScript(ScriptEngine *se, RoRFrameListener *efl);
+	GameScript(ScriptEngine *se);
 
 	/**
 	 * destructor

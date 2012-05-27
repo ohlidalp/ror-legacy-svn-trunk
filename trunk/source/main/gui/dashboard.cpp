@@ -50,7 +50,7 @@ Dashboard::Dashboard() :
 	MaterialPtr mat = MaterialManager::getSingleton().getByName("renderdash");
 	mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName("dashtexture");
 
-	mDashboardListener = new DashboardListener(globalEnvironment->ogreSceneManager);
+	mDashboardListener = new DashboardListener();
 
 	rttTex->addListener(mDashboardListener);
 

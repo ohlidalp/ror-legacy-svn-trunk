@@ -1872,7 +1872,6 @@ void InputEngine::windowResized()
 	//update mouse area
 	unsigned int width, height, depth;
 	int left, top;
-	global
 	globalEnvironment->ogreRenderWindow->getMetrics(width, height, depth, left, top);
 	const OIS::MouseState &ms = mMouse->getMouseState();
 	ms.width = width;

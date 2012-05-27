@@ -58,13 +58,11 @@ enum {
 
 class SerializedRig : public rig_t
 {
-protected:
-	std::map<Ogre::String, int> node_names;
 public:
+
 	SerializedRig();
 	~SerializedRig();
-
-
+	
 	// virtual truck loading - just load the data but do not add anything to the scene or load resources
 	int loadTruckVirtual(Ogre::String fname, bool ignoreProblems=false);
 
@@ -79,14 +77,19 @@ public:
 	void serialize(Ogre::String targetFilename, ScopeLog *scope_log);
 
 	std::vector <parsecontext_t> &getWarnings() { return warnings; };
+
 protected:
+
 	bool virtuallyLoaded;
 	bool ignoreProblems;
 
-	std::vector <parsecontext_t> warnings;
-	std::vector <parsecontext_t> modehistory;
+	std::map<Ogre::String, int> node_names;
 
-	void init_node(int pos
+	std::vector <parsecontext_t> modehistory;
+	std::vector <parsecontext_t> warnings;
+
+	void init_node(
+		  int pos
 		, float x
 		, float y
 		, float z
@@ -101,9 +104,10 @@ protected:
 		, float nsurface=NODE_SURFACE_COEF_DEFAULT
 		, float nloadweight=NODE_LOADWEIGHT_DEFAULT);
 	
-	int add_beam(node_t *p1
+	int add_beam(
+		  Ogre::SceneNode* parent
+		, node_t *p1
 		, node_t *p2
-		, Ogre::SceneNode *parent
 		, int type
 		, float strength
 		, float spring
@@ -116,7 +120,8 @@ protected:
 		, float diameter=DEFAULT_BEAM_DIAMETER
 		, parsecontext_t *c=0);
 
-	void addWheel(Ogre::SceneNode *parent
+	void addWheel(
+		  Ogre::SceneNode* parent
 		, float radius
 		, float width
 		, int rays
@@ -137,7 +142,8 @@ protected:
 		, bool rimreverse=false
 		, parsecontext_t *c=0);
 	
-	void addWheel2(Ogre::SceneNode *parent
+	void addWheel2(
+		  Ogre::SceneNode* parent
 		, float radius
 		, float radius2
 		, float width
@@ -157,7 +163,8 @@ protected:
 		, char* texb
 		, parsecontext_t *c=0);
 
-		void addWheel3(Ogre::SceneNode *parent
+	void addWheel3(
+		  Ogre::SceneNode* parent
 		, float radius
 		, float radius2
 		, float width
@@ -184,7 +191,7 @@ protected:
 	void addCamera(int nodepos, int nodedir, int noderoll);
 	float warea(Ogre::Vector3 ref, Ogre::Vector3 x, Ogre::Vector3 y, Ogre::Vector3 aref);
 
-	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type=-2, parsecontext_t *c=0);
+	void addSoundSource(SoundScriptInstance *ssi, int nodenum, int type = -2, parsecontext_t *c = 0);
 
 
 	/**

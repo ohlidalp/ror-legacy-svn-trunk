@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) :
+FlexMeshWheel::FlexMeshWheel(char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* meshname, char* texband, float rimradius, bool rimreverse, MaterialFunctionMapper *mfm, Skin *usedSkin, MaterialReplacer *mr) :
 	  id0(n1)
 	, id1(n2)
 	, idstart(nstart)
@@ -34,18 +34,17 @@ FlexMeshWheel::FlexMeshWheel(SceneManager *manager, char* name, node_t *nds, int
 	, nodes(nds)
 	, revrim(rimreverse)
 	, rim_radius(rimradius)
-	, smanager(manager)
 {
 
 	//the rim object
 	char rimname[256];
 	sprintf(rimname, "rim-%s", name);
-	rimEnt = manager->createEntity(rimname, meshname);
+	rimEnt = globalEnvironment->ogreSceneManager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
 	if(mfm) mfm->replaceMeshMaterials(rimEnt);
 	if(mr) mr->replaceMeshMaterials(rimEnt);
 	if(usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
-	rnode=manager->getRootSceneNode()->createChildSceneNode();
+	rnode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	rnode->attachObject(rimEnt);
 
 	/// Create the mesh via the MeshManager
@@ -303,7 +302,7 @@ void FlexMeshWheel::setVisible(bool visible)
 Vector3 FlexMeshWheel::flexit()
 {
 	Vector3 center;
-	if (smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding

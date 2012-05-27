@@ -26,54 +26,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class Turboprop: public AeroEngine
 {
-private:
-	node_t *nodes;
-	int nodeback;
-	int nodep[4];
-	int torquenode;
-	float torquedist;
-	Airfoil *airfoil;
-	float fullpower; //in kW
-	float proparea;
-	float airdensity;
-	float timer;
-	float lastflip;
-	float warmupstart;
-	float warmuptime;
-	int number;
-	int numblades;
-	float bladewidth;
-	float pitchspeed;
-	float maxrevpitch;
-	float regspeed;
-	Ogre::SceneNode* vspinner;
-	Ogre::SceneNode* vpales[4];
-	int free_vpale;
-	Ogre::ParticleSystem* smokePS;
-	Ogre::ParticleSystem* heathazePS;
-    Ogre::SceneNode *smokeNode;
-	float twistmap[5];
-	double rotenergy;
-	float fixed_pitch;
-
-	bool reverse;
-	bool warmup;
-	bool ignition;
-	float radius;
-	bool failed;
-	bool failedold;
-	float rpm;
-	float throtle;
-	int noderef;
-	char debug[256];
-	float propwash;
-	Ogre::Vector3 axis;
-	bool heathaze;
-	int trucknum;
-	int mod_id;
-	int src_id;
-	int thr_id;
 public:
+
 	bool is_piston;
 	float pitch;
 	float indicated_torque;
@@ -109,6 +63,55 @@ public:
 	int getNoderef() { return noderef; };
 	bool getWarmup() { return warmup; };
 	float getRadius() { return radius; };
+
+private:
+
+	node_t *nodes;
+	int nodeback;
+	int nodep[4];
+	int torquenode;
+	float torquedist;
+	Airfoil *airfoil;
+	float fullpower; //in kW
+	float proparea;
+	float airdensity;
+	float timer;
+	float lastflip;
+	float warmupstart;
+	float warmuptime;
+	int number;
+	int numblades;
+	float bladewidth;
+	float pitchspeed;
+	float maxrevpitch;
+	float regspeed;
+	Ogre::SceneNode* vspinner;
+	Ogre::SceneNode* vpales[4];
+	int free_vpale;
+	Ogre::ParticleSystem* smokePS;
+	Ogre::ParticleSystem* heathazePS;
+	Ogre::SceneNode *smokeNode;
+	float twistmap[5];
+	double rotenergy;
+	float fixed_pitch;
+
+	bool reverse;
+	bool warmup;
+	bool ignition;
+	float radius;
+	bool failed;
+	bool failedold;
+	float rpm;
+	float throtle;
+	int noderef;
+	char debug[256];
+	float propwash;
+	Ogre::Vector3 axis;
+	bool heathaze;
+	int trucknum;
+	int mod_id;
+	int src_id;
+	int thr_id;
 };
 
 #endif // __Turboprop_H_

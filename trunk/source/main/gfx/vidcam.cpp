@@ -24,18 +24,18 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "SkyManager.h"
 #include "utils.h"
-#include <Ogre.h>
 
 using namespace Ogre;
 
 int VideoCamera::counter = 0;
 
-VideoCamera::VideoCamera(rig_t *truck) : truck(truck)
-	, mVidCam()
-	, rttTex(0)
-	, mat()
+VideoCamera::VideoCamera(rig_t *truck) :
+	, truck(truck)
 	, debugMode(false)
 	, debugNode(0)
+	, mVidCam()
+	, mat()
+	, rttTex(0)
 	, rwMirror(0)
 {
 	debugMode = SETTINGS.getBooleanSetting("VideoCameraDebug", false);
@@ -208,7 +208,7 @@ void VideoCamera::update(float dt)
 		//rotate the normal of the mirror by user rotation setting so it reflects correct
 		normal = rotation * normal;
 		// merge camera direction and reflect it on our plane
-		mVidCam->setDirection((pos - mCamera->getPosition()).reflect(normal));
+		mVidCam->setDirection((pos - globalEnvironment->ogreCamera->getPosition()).reflect(normal));
 	} else
 	{
 		// this is a videocamera
@@ -324,7 +324,7 @@ VideoCamera *VideoCamera::parseLine(SerializedRig *truck, parsecontext_t &c)
 		if(truck && truck->materialReplacer)
 			truck->materialReplacer->addMaterialReplace(mat->getName(), newMaterialName);
 
-		VideoCamera *v  = new VideoCamera(globalEnvironment->ogreSceneManager, camera, truck);
+		VideoCamera *v  = new VideoCamera(truck);
 		v->fov          = fov;
 		v->minclip      = minclip;
 		v->maxclip      = maxclip;

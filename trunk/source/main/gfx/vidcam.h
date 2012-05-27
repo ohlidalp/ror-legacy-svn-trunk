@@ -17,8 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __VIDCAM_H_
-#define __VIDCAM_H_
+#ifndef __VidCam_H_
+#define __VidCam_H_
 
 #include "RoRPrerequisites.h"
 
@@ -60,4 +60,4 @@ protected:
 	Ogre::RenderWindow *rwMirror;
 };
 
-#endif // __VIDCAM_H_
+#endif // __VidCam_H_

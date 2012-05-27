@@ -24,12 +24,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-FlexMesh::FlexMesh(SceneManager *manager, char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed, float rimratio) :
+FlexMesh::FlexMesh(char* name, node_t *nds, int n1, int n2, int nstart, int nrays, char* texface, char* texband, bool rimmed, float rimratio) :
 	  is_rimmed(rimmed)
 	, nbrays(nrays)
 	, nodes(nds)
 	, rim_ratio(rimratio)
-	, smanager(manager)
 {
 	/// Create the mesh via the MeshManager
 	msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
@@ -411,7 +410,7 @@ Vector3 FlexMesh::updateShadowVertices()
 Vector3 FlexMesh::flexit()
 {
 	Vector3 center;
-	if (smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || smanager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding
