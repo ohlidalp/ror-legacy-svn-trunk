@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
-
 #include "GUIInputManager.h"
 
 #include "OverlayWrapper.h"
@@ -86,11 +85,11 @@ MyGUI::Char translateWin32Text(MyGUI::KeyCode kc)
 #endif
 
 GUIInputManager::GUIInputManager() :
-	mCursorX(0),
-	mCursorY(0),
-	width(0),
-	height(0),
-	lastMouseMoveTime(0)
+	  height(0)
+	, lastMouseMoveTime(0)
+	, mCursorX(0)
+	, mCursorY(0)
+	, width(0)
 {
 	lastMouseMoveTime = new Ogre::Timer();
 }
@@ -99,6 +98,15 @@ GUIInputManager::~GUIInputManager()
 {
 }
 
+float GUIInputManager::getLastMouseMoveTime()
+{
+	if (lastMouseMoveTime)
+	{
+		return lastMouseMoveTime->getMilliseconds();
+	}
+
+	return 0.0f;
+}
 
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
