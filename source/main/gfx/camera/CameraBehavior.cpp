@@ -107,7 +107,7 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 			, cos(targetDirection.valueRadians() + camRotX.valueRadians()) * cos(targetPitch.valueRadians() + camRotY.valueRadians())
 			);
 
-	if ( gEnv->terrainManager->getHeightFinder() )
+	if ( gEnv->terrainManager && gEnv->terrainManager->getHeightFinder() )
 	{
 		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(desiredPosition.x, desiredPosition.z) + 1.0f;
 

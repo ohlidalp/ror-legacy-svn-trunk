@@ -45,7 +45,7 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	camPosition.z = ((int)(lookAt.z) / 100) * 100 + 50;
 	camPosition.y =        lookAt.y;
 
-	if ( gEnv->terrainManager->getHeightFinder() )
+	if ( gEnv->terrainManager && gEnv->terrainManager->getHeightFinder() )
 	{
 		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z);
 
@@ -63,7 +63,6 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 
 	if ( ctx.mDof )
 	{
-		ctx.mDof->setFocusMode(DOFManager::Manual);
 		ctx.mDof->setFocus(camDist);
 		ctx.mDof->setLensFOV(Radian(fov));
 	}
@@ -72,6 +71,11 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
 	fovPreviously = gEnv->mainCamera->getFOVy();
+
+	if ( ctx.mDof )
+	{
+		ctx.mDof->setFocusMode(DOFManager::Manual);
+	}
 }
 
 void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
