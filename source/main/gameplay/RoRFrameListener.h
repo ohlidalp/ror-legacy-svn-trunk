@@ -50,7 +50,7 @@ namespace Forests
 }
 #endif //USE_PAGED
 
-class RoRFrameListener: public Ogre::FrameListener, public Ogre::WindowEventListener
+class RoRFrameListener: public Ogre::FrameListener, public Ogre::WindowEventListener, public ZeroedMemoryAllocator
 {
 public:
 	// Constructor takes a RenderWindow because it uses that to determine input context
