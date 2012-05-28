@@ -114,7 +114,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 		desiredPosition.y = std::max(h, desiredPosition.y);
 	}
 
-	Vector3 precedingPosition = gEnv->ogreCamera->getPosition(); 
+	Vector3 precedingPosition = gEnv->mainCamera->getPosition(); 
 	
 	if ( ctx.mCurrTruck )
 	{
@@ -123,8 +123,8 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = (1.0f / (camRatio + 1.0f)) * desiredPosition + (camRatio / (camRatio + 1.0f)) * precedingPosition;
 
-	gEnv->ogreCamera->setPosition(camPosition);
-	gEnv->ogreCamera->lookAt(camLookAt);
+	gEnv->mainCamera->setPosition(camPosition);
+	gEnv->mainCamera->lookAt(camLookAt);
 }
 
 bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
@@ -145,5 +145,5 @@ bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const
 void CameraBehavior::reset(const CameraManager::cameraContext_t &ctx)
 {
 	camRotX = 0.0f;
-	gEnv->ogreCamera->setFOVy(ctx.fovExternal);
+	gEnv->mainCamera->setFOVy(ctx.fovExternal);
 }

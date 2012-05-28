@@ -33,8 +33,8 @@ DustPool::DustPool(const char* dname, int dsize) :
 	{
 		char dename[256];
 		sprintf(dename,"Dust %s %i", dname, i);
-		sns[i]=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-		pss[i]=gEnv->ogreSceneManager->createParticleSystem(dename, dname);
+		sns[i]=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+		pss[i]=gEnv->sceneManager->createParticleSystem(dename, dname);
 		if (pss[i])
 		{
 			sns[i]->attachObject(pss[i]);

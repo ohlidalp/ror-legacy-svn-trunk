@@ -47,7 +47,7 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 	nodes[cx].iIsSkin=true;
 	nodes[cy].iIsSkin=true;
 
-	hasshadows=(gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
+	hasshadows=(gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE);
 
 	//parsing set definition
 	char* pos=setdef;
@@ -147,7 +147,7 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 		newmesh->createManualLodLevel(distance, fn);
 	}
 
-	Entity *ent = gEnv->ogreSceneManager->createEntity(uname, uname_mesh);
+	Entity *ent = gEnv->sceneManager->createEntity(uname, uname_mesh);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(ent, ColourValue(0.5, 0.5, 1));
 	if (mfm) mfm->replaceMeshMaterials(ent);
 	if (mr) mr->replaceMeshMaterials(ent);
@@ -489,7 +489,7 @@ FlexBody::FlexBody(node_t *nds, int numnds, char* meshname, char* uname, int ref
 
 	LOG("FLEXBODY show mesh");
 	//okay, show the mesh now
-	snode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	snode=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ent);
 	snode->setPosition(position);
 	//ent->setCastShadows(enableShadows);

@@ -51,9 +51,9 @@ GUIManager::~GUIManager()
 bool GUIManager::create()
 {
 	gEnv->ogreRoot->addFrameListener(this);
-	RoRWindowEventUtilities::addWindowEventListener(gEnv->ogreRenderWindow, this);
+	RoRWindowEventUtilities::addWindowEventListener(gEnv->renderWindow, this);
 
-	windowResized(gEnv->ogreRenderWindow);
+	windowResized(gEnv->renderWindow);
 	createGui();
 #ifdef WIN32
 	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
@@ -76,7 +76,7 @@ void GUIManager::createGui()
 {
 	String gui_logfilename = SSETTING("Log Path", "") + "mygui.log";
 	mPlatform = new MyGUI::OgrePlatform();
-	mPlatform->initialise(gEnv->ogreRenderWindow, gEnv->ogreSceneManager, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
+	mPlatform->initialise(gEnv->renderWindow, gEnv->sceneManager, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME, gui_logfilename); // use cache resource group so preview images are working
 	mGUI = new MyGUI::Gui();
 
 	// empty init
@@ -91,7 +91,7 @@ void GUIManager::createGui()
 	MyGUI::ResourceManager::getInstance().load(LanguageEngine::getSingleton().getMyGUIFontConfigFilename());
 
 	// move the mouse into the middle of the screen, assuming we start at the top left corner (0,0)
-	MyGUI::InputManager::getInstance().injectMouseMove(gEnv->ogreRenderWindow->getWidth()*0.5f, gEnv->ogreRenderWindow->getHeight()*0.5f, 0);
+	MyGUI::InputManager::getInstance().injectMouseMove(gEnv->renderWindow->getWidth()*0.5f, gEnv->renderWindow->getHeight()*0.5f, 0);
 
 	// now find that font texture and save it - for debugging purposes
 	/*

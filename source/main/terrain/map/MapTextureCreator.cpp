@@ -53,7 +53,7 @@ bool MapTextureCreator::init()
 
 	mRttTex->setAutoUpdated(false);
 
-	mCamera = gEnv->ogreSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
+	mCamera = gEnv->sceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
 
 	mViewport = mRttTex->addViewport(mCamera);
 	mViewport->setBackgroundColour(ColourValue::Black);

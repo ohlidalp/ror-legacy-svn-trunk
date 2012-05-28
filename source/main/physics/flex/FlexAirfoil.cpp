@@ -702,7 +702,7 @@ void FlexAirfoil::setControlDeflection(float val)
 Vector3 FlexAirfoil::flexit()
 {
 	Vector3 center;
-	if (gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding

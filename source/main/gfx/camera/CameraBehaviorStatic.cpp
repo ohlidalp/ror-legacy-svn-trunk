@@ -57,9 +57,9 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	float camDist = camPosition.distance(lookAt);
 	float fov = atan2(20.0f, camDist);
 
-	gEnv->ogreCamera->setPosition(camPosition);
-	gEnv->ogreCamera->lookAt(lookAt);
-	gEnv->ogreCamera->setFOVy(Radian(fov));
+	gEnv->mainCamera->setPosition(camPosition);
+	gEnv->mainCamera->lookAt(lookAt);
+	gEnv->mainCamera->setFOVy(Radian(fov));
 
 	if ( ctx.mDof )
 	{
@@ -71,12 +71,12 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
-	fovPreviously = gEnv->ogreCamera->getFOVy();
+	fovPreviously = gEnv->mainCamera->getFOVy();
 }
 
 void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
 {
-	gEnv->ogreCamera->setFOVy(fovPreviously);
+	gEnv->mainCamera->setFOVy(fovPreviously);
 
 	if ( ctx.mDof )
 	{

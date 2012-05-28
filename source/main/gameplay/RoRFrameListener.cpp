@@ -795,12 +795,12 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	if (ow)
 	{
 		// setup direction arrow
-		Entity *arrent = gEnv->ogreSceneManager->createEntity("dirArrowEntity", "arrow2.mesh");
+		Entity *arrent = gEnv->sceneManager->createEntity("dirArrowEntity", "arrow2.mesh");
 	#if OGRE_VERSION<0x010602
 		arrent->setNormaliseNormals(true);
 	#endif //OGRE_VERSION
 		// Add entity to the scene node
-		dirArrowNode= new SceneNode(gEnv->ogreSceneManager);
+		dirArrowNode= new SceneNode(gEnv->sceneManager);
 		dirArrowNode->attachObject(arrent);
 		dirArrowNode->setVisible(false);
 		dirArrowNode->setScale(0.1, 0.1, 0.1);
@@ -831,11 +831,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 
 	CACHE.startup();
 
-	screenWidth=gEnv->ogreRenderWindow->getWidth();
-	screenHeight=gEnv->ogreRenderWindow->getHeight();
+	screenWidth=gEnv->renderWindow->getWidth();
+	screenHeight=gEnv->renderWindow->getHeight();
 
-	windowResized(gEnv->ogreRenderWindow);
-	RoRWindowEventUtilities::addWindowEventListener(gEnv->ogreRenderWindow, this);
+	windowResized(gEnv->renderWindow);
+	RoRWindowEventUtilities::addWindowEventListener(gEnv->renderWindow, this);
 
 	debugCollisions = BSETTING("Debug Collisions", false);
 
@@ -1341,7 +1341,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 			// add some more data into the image
-			AdvancedScreen *as = new AdvancedScreen(gEnv->ogreRenderWindow, tmpfn);
+			AdvancedScreen *as = new AdvancedScreen(gEnv->renderWindow, tmpfn);
 			//as->addData("terrain_Name", loadedTerrain);
 			//as->addData("terrain_ModHash", terrainModHash);
 			//as->addData("terrain_FileHash", terrainFileHash);
@@ -1364,17 +1364,17 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
 			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
-			as->addData("Camera_Position", TOSTRING(gEnv->ogreCamera->getPosition()));
+			as->addData("Camera_Position", TOSTRING(gEnv->mainCamera->getPosition()));
 
-			const RenderTarget::FrameStats& stats = gEnv->ogreRenderWindow->getStatistics();
+			const RenderTarget::FrameStats& stats = gEnv->renderWindow->getStatistics();
 			as->addData("AVGFPS", TOSTRING(stats.avgFPS));
 
 			as->write();
 			delete(as);
 		} else
 		{
-			gEnv->ogreRenderWindow->update();
-			gEnv->ogreRenderWindow->writeContentsToFile(tmpfn);
+			gEnv->renderWindow->update();
+			gEnv->renderWindow->writeContentsToFile(tmpfn);
 		}
 
 #ifdef USE_MYGUI
@@ -1459,7 +1459,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	// camera FOV settings
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS, 0.1f) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE, 0.1f))
 	{
-		int fov = gEnv->ogreCamera->getFOVy().valueDegrees();
+		int fov = gEnv->mainCamera->getFOVy().valueDegrees();
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS))
 			fov--;
@@ -1468,7 +1468,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (fov >= 10 && fov <= 160)
 		{
-			gEnv->ogreCamera->setFOVy(Degree(fov));
+			gEnv->mainCamera->setFOVy(Degree(fov));
 
 	#ifdef USE_MYGUI
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
@@ -1496,21 +1496,21 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FULLSCREEN_TOGGLE, 2.0f))
 	{
 		static int org_width = -1, org_height = -1;
-		int width = gEnv->ogreRenderWindow->getWidth();
-		int height = gEnv->ogreRenderWindow->getHeight();
+		int width = gEnv->renderWindow->getWidth();
+		int height = gEnv->renderWindow->getHeight();
 		if (org_width == -1)
 			org_width = width;
 		if (org_height == -1)
 			org_height = height;
-		bool mode = gEnv->ogreRenderWindow->isFullScreen();
+		bool mode = gEnv->renderWindow->isFullScreen();
 		if (!mode)
 		{
-			gEnv->ogreRenderWindow->setFullscreen(true, org_width, org_height);
+			gEnv->renderWindow->setFullscreen(true, org_width, org_height);
 			LOG(" ** switched to fullscreen: "+TOSTRING(width)+"x"+TOSTRING(height));
 		} else
 		{
-			gEnv->ogreRenderWindow->setFullscreen(false, 640, 480);
-			gEnv->ogreRenderWindow->setFullscreen(false, org_width, org_height);
+			gEnv->renderWindow->setFullscreen(false, 640, 480);
+			gEnv->renderWindow->setFullscreen(false, org_width, org_height);
 			LOG(" ** switched to windowed mode: ");
 		}
 	}
@@ -2419,13 +2419,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			switch (mSceneDetailIndex)
 			{
 			case 0:
-				gEnv->ogreCamera->setPolygonMode(PM_SOLID);
+				gEnv->mainCamera->setPolygonMode(PM_SOLID);
 				break;
 			case 1:
-				gEnv->ogreCamera->setPolygonMode(PM_WIREFRAME);
+				gEnv->mainCamera->setPolygonMode(PM_WIREFRAME);
 				break;
 			case 2:
-				gEnv->ogreCamera->setPolygonMode(PM_POINTS);
+				gEnv->mainCamera->setPolygonMode(PM_POINTS);
 				break;
 			}
 		}
@@ -2721,10 +2721,10 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 	//update window
-	if (!gEnv->ogreRenderWindow->isAutoUpdated())
+	if (!gEnv->renderWindow->isAutoUpdated())
 	{
 		if (dirty)
-			gEnv->ogreRenderWindow->update();
+			gEnv->renderWindow->update();
 		else
 			sleepMilliSeconds(10);
 	}
@@ -3142,7 +3142,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (dt==0) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
-	if (gEnv->ogreRenderWindow->isClosed())
+	if (gEnv->renderWindow->isClosed())
 	{
 		return false;
 	}
@@ -3200,7 +3200,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 		// now update mumble 3d audio things
 #ifdef USE_MUMBLE
-		MumbleIntegration::getSingleton().update(gEnv->ogreCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
+		MumbleIntegration::getSingleton().update(gEnv->mainCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
 #endif // USE_MUMBLE
 	}
 
@@ -3215,10 +3215,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_OPENAL
 	// update audio listener position
 	static Vector3 lastCameraPosition;
-	Vector3 cameraSpeed = (gEnv->ogreCamera->getPosition() - lastCameraPosition) / dt;
-	lastCameraPosition = gEnv->ogreCamera->getPosition();
+	Vector3 cameraSpeed = (gEnv->mainCamera->getPosition() - lastCameraPosition) / dt;
+	lastCameraPosition = gEnv->mainCamera->getPosition();
 
-	SoundScriptManager::getSingleton().setCamera(gEnv->ogreCamera->getPosition(), gEnv->ogreCamera->getDirection(), gEnv->ogreCamera->getUp(), cameraSpeed);
+	SoundScriptManager::getSingleton().setCamera(gEnv->mainCamera->getPosition(), gEnv->mainCamera->getDirection(), gEnv->mainCamera->getUp(), cameraSpeed);
 #endif // USE_OPENAL
 	
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -3247,10 +3247,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		{
 			if (curr_truck)
 			{
-				gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
+				gEnv->terrainManager->getWater()->moveTo(gEnv->mainCamera, gEnv->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
 			} else
 			{
-				gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeight());
+				gEnv->terrainManager->getWater()->moveTo(gEnv->mainCamera, gEnv->terrainManager->getWater()->getHeight());
 			}
 		}
 

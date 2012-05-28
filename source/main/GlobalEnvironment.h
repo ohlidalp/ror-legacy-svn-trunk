@@ -39,10 +39,10 @@ public:
 		, embeddedMode(false)
 		, frameListener(0)
 		, network(0)
-		, ogreCamera(0)
-		, ogreRenderWindow(0)
-		, ogreSceneManager(0)
-		, ogreViewPort(0)
+		, mainCamera(0)
+		, renderWindow(0)
+		, sceneManager(0)
+		, viewPort(0)
 		, player(0)
 		, sky(0)
 		, surveyMap(0)
@@ -51,11 +51,11 @@ public:
 	{
 	}
 
-	Ogre::Camera *ogreCamera;
-	Ogre::RenderWindow *ogreRenderWindow;
+	Ogre::Camera *mainCamera;
+	Ogre::RenderWindow *renderWindow;
 	Ogre::Root *ogreRoot;
-	Ogre::SceneManager *ogreSceneManager;
-	Ogre::Viewport *ogreViewPort;
+	Ogre::SceneManager *sceneManager;
+	Ogre::Viewport *viewPort;
 
 	Character *player;
 	Collisions *collisions;

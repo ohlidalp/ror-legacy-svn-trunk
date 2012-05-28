@@ -48,8 +48,8 @@ void PreviewRenderer::render()
 
 	LOG("starting previewRenderer...");
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	SceneManager *sceneMgr = gEnv->ogreSceneManager;
-	Viewport *vp = gEnv->ogreViewPort;
+	SceneManager *sceneMgr = gEnv->sceneManager;
+	Viewport *vp = gEnv->viewPort;
 
 	// disable skybox
 	//sceneMgr->setSkyBox(false, "");
@@ -116,7 +116,7 @@ void PreviewRenderer::render()
 
 	SceneNode *camNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
 
-	Camera *cam = gEnv->ogreCamera;
+	Camera *cam = gEnv->mainCamera;
 	cam->setLodBias(1000.0f);
 	cam->setAspectRatio(1.0f);
 

@@ -80,8 +80,8 @@ void Road2::finish()
 	createMesh();
 	String entity_name = String("RoadSystem_Instance-").append(StringConverter::toString(mid));
 	String mesh_name = String("RoadSystem-").append(StringConverter::toString(mid));
-	Entity *ec = gEnv->ogreSceneManager->createEntity(entity_name, mesh_name);
-	snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	Entity *ec = gEnv->sceneManager->createEntity(entity_name, mesh_name);
+	snode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ec);
 }
 

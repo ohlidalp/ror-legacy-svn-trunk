@@ -84,7 +84,7 @@ void TerrainGeometryManager::initTerrain()
 
 	Vector3 mTerrainPos(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
 
-	mTerrainGroup = OGRE_NEW TerrainGroup(gEnv->ogreSceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
+	mTerrainGroup = OGRE_NEW TerrainGroup(gEnv->sceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
 	mTerrainGroup->setFilenameConvention(baseName, filenameSuffix);
 	mTerrainGroup->setOrigin(mTerrainPos);
 	mTerrainGroup->setResourceGroup("cache");
@@ -137,7 +137,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 		terrainOptions->setLightMapDirection(light->getDerivedDirection());
 		terrainOptions->setCompositeMapDiffuse(light->getDiffuseColour());
 	}
-	terrainOptions->setCompositeMapAmbient(gEnv->ogreSceneManager->getAmbientLight());
+	terrainOptions->setCompositeMapAmbient(gEnv->sceneManager->getAmbientLight());
 
 	// Configure default import settings for if we use imported image
 	Ogre::Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();

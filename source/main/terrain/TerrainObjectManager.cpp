@@ -162,7 +162,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
-			SceneNode *n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			n->setPosition(pos);
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
@@ -272,7 +272,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				treeLoader->setColorMap(ColorMap);
 			}
 
-			curTree = gEnv->ogreSceneManager->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
+			curTree = gEnv->sceneManager->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
 
 			if (gridspacing > 0)
 			{
@@ -612,7 +612,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 
 	// okay, now bake everything
-	bakesg = gEnv->ogreSceneManager->createStaticGeometry("bakeSG");
+	bakesg = gEnv->sceneManager->createStaticGeometry("bakeSG");
 	bakesg->setCastShadows(true);
 	bakesg->addSceneNode(bakeNode);
 	bakesg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -968,11 +968,11 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 				// hacky: prevent duplicates
 				String paname = String(pname);
-				while(gEnv->ogreSceneManager->hasParticleSystem(paname))
+				while(gEnv->sceneManager->hasParticleSystem(paname))
 					paname += "_";
 
 				// create particle system
-				ParticleSystem* pParticleSys = gEnv->ogreSceneManager->createParticleSystem(paname, String(sname));
+				ParticleSystem* pParticleSys = gEnv->sceneManager->createParticleSystem(paname, String(sname));
 				pParticleSys->setCastShadows(false);
 				pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 

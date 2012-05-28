@@ -118,7 +118,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 	}
 	//theCam=camera;
 	pTestNode=0;
-	waterSceneMgr=gEnv->ogreSceneManager;
+	waterSceneMgr=gEnv->sceneManager;
 	framecounter=0;
 	//height=wheight;
 	orgheight=wheight;
@@ -130,7 +130,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 	mRefractCam=0;
 	//wbuf=0;
 	//ColourValue fade=camera->getViewport()->getBackgroundColour();
-	ColourValue fade=gEnv->ogreSceneManager->getFogColour();
+	ColourValue fade=gEnv->sceneManager->getFogColour();
 
 	if (mType == WATER_FULL_QUALITY || mType == WATER_FULL_SPEED || mType == WATER_REFLECT)
 	{
@@ -168,12 +168,12 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 			TexturePtr rttTex1Ptr = TextureManager::getSingleton().createManual("Refraction", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 			rttTex1 = rttTex1Ptr->getBuffer()->getRenderTarget();
 			{
-				mRefractCam = gEnv->ogreSceneManager->createCamera("RefractCam");
-				mRefractCam->setNearClipDistance(gEnv->ogreCamera->getNearClipDistance());
-				mRefractCam->setFarClipDistance(gEnv->ogreCamera->getFarClipDistance());
+				mRefractCam = gEnv->sceneManager->createCamera("RefractCam");
+				mRefractCam->setNearClipDistance(gEnv->mainCamera->getNearClipDistance());
+				mRefractCam->setFarClipDistance(gEnv->mainCamera->getFarClipDistance());
 				mRefractCam->setAspectRatio(
-					(Real)gEnv->ogreRenderWindow->getViewport(0)->getActualWidth() /
-					(Real)gEnv->ogreRenderWindow->getViewport(0)->getActualHeight());
+					(Real)gEnv->renderWindow->getViewport(0)->getActualWidth() /
+					(Real)gEnv->renderWindow->getViewport(0)->getActualHeight());
 
 				vRtt1 = rttTex1->addViewport( mRefractCam );
 				vRtt1->setClearEveryFrame( true );
@@ -199,12 +199,12 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		TexturePtr rttTex2Ptr = TextureManager::getSingleton().createManual("Reflection", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 512, 512, 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 		rttTex2 = rttTex2Ptr->getBuffer()->getRenderTarget();
 		{
-			mReflectCam = gEnv->ogreSceneManager->createCamera("ReflectCam");
-			mReflectCam->setNearClipDistance(gEnv->ogreCamera->getNearClipDistance());
-			mReflectCam->setFarClipDistance(gEnv->ogreCamera->getFarClipDistance());
+			mReflectCam = gEnv->sceneManager->createCamera("ReflectCam");
+			mReflectCam->setNearClipDistance(gEnv->mainCamera->getNearClipDistance());
+			mReflectCam->setFarClipDistance(gEnv->mainCamera->getFarClipDistance());
 			mReflectCam->setAspectRatio(
-				(Real)gEnv->ogreRenderWindow->getViewport(0)->getActualWidth() /
-				(Real)gEnv->ogreRenderWindow->getViewport(0)->getActualHeight());
+				(Real)gEnv->renderWindow->getViewport(0)->getActualWidth() /
+				(Real)gEnv->renderWindow->getViewport(0)->getActualHeight());
 
 			vRtt2 = rttTex2->addViewport( mReflectCam );
 			vRtt2->setClearEveryFrame( true );
@@ -234,12 +234,12 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
 			gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-		pPlaneEnt = gEnv->ogreSceneManager->createEntity( "plane", "ReflectPlane" );
+		pPlaneEnt = gEnv->sceneManager->createEntity( "plane", "ReflectPlane" );
 		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED) pPlaneEnt->setMaterialName("Examples/FresnelReflectionRefraction");
 		else pPlaneEnt->setMaterialName("Examples/FresnelReflection");
 		//        globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode()->attachObject(pPlaneEnt);
 		//position
-		pTestNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
+		pTestNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
 		pTestNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
 	}
@@ -252,10 +252,10 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
 			gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-		pPlaneEnt = gEnv->ogreSceneManager->createEntity( "plane", "WaterPlane" );
+		pPlaneEnt = gEnv->sceneManager->createEntity( "plane", "WaterPlane" );
 		pPlaneEnt->setMaterialName("tracks/basicwater");
 		//position
-		pTestNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
+		pTestNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
 		pTestNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
 	}
@@ -266,10 +266,10 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		bottomPlane,
 		gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,1,1,true,1,1,1,Vector3::UNIT_Z);
-	Entity *pE = gEnv->ogreSceneManager->createEntity( "bplane", "BottomPlane" );
+	Entity *pE = gEnv->sceneManager->createEntity( "bplane", "BottomPlane" );
 	pE->setMaterialName("tracks/seabottom");
 	//position
-	pBottomNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("BottomWaterPlane");
+	pBottomNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("BottomWaterPlane");
 	pBottomNode->attachObject(pE);
 	pBottomNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
 	//setup for waves
@@ -367,34 +367,34 @@ void Water::update()
 	{
 		if (framecounter%2)
 		{
-			mReflectCam->setOrientation(gEnv->ogreCamera->getOrientation());
-			mReflectCam->setPosition(gEnv->ogreCamera->getPosition());
-			mReflectCam->setFOVy(gEnv->ogreCamera->getFOVy());
+			mReflectCam->setOrientation(gEnv->mainCamera->getOrientation());
+			mReflectCam->setPosition(gEnv->mainCamera->getPosition());
+			mReflectCam->setFOVy(gEnv->mainCamera->getFOVy());
 			rttTex2->update();
 		}
 		else
 		{
-			mRefractCam->setOrientation(gEnv->ogreCamera->getOrientation());
-			mRefractCam->setPosition(gEnv->ogreCamera->getPosition());
-			mRefractCam->setFOVy(gEnv->ogreCamera->getFOVy());
+			mRefractCam->setOrientation(gEnv->mainCamera->getOrientation());
+			mRefractCam->setPosition(gEnv->mainCamera->getPosition());
+			mRefractCam->setFOVy(gEnv->mainCamera->getFOVy());
 			rttTex1->update();
 		}
 	} else if (mType==WATER_FULL_QUALITY)
 	{
-		mReflectCam->setOrientation(gEnv->ogreCamera->getOrientation());
-		mReflectCam->setPosition(gEnv->ogreCamera->getPosition());
-		mReflectCam->setFOVy(gEnv->ogreCamera->getFOVy());
+		mReflectCam->setOrientation(gEnv->mainCamera->getOrientation());
+		mReflectCam->setPosition(gEnv->mainCamera->getPosition());
+		mReflectCam->setFOVy(gEnv->mainCamera->getFOVy());
 		rttTex2->update();
-		mRefractCam->setOrientation(gEnv->ogreCamera->getOrientation());
-		mRefractCam->setPosition(gEnv->ogreCamera->getPosition());
-		mRefractCam->setFOVy(gEnv->ogreCamera->getFOVy());
+		mRefractCam->setOrientation(gEnv->mainCamera->getOrientation());
+		mRefractCam->setPosition(gEnv->mainCamera->getPosition());
+		mRefractCam->setFOVy(gEnv->mainCamera->getFOVy());
 		rttTex1->update();
 	}
 	else if (mType==WATER_REFLECT)
 	{
-		mReflectCam->setOrientation(gEnv->ogreCamera->getOrientation());
-		mReflectCam->setPosition(gEnv->ogreCamera->getPosition());
-		mReflectCam->setFOVy(gEnv->ogreCamera->getFOVy());
+		mReflectCam->setOrientation(gEnv->mainCamera->getOrientation());
+		mReflectCam->setPosition(gEnv->mainCamera->getPosition());
+		mReflectCam->setFOVy(gEnv->mainCamera->getFOVy());
 		rttTex2->update();
 	}
 }

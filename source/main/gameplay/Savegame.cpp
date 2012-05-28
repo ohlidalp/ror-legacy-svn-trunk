@@ -79,9 +79,9 @@ int Savegame::save(Ogre::String &filename)
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if (gEnv->ogreCamera)
+			if (gEnv->mainCamera)
 			{
-				Vector3 pos = gEnv->ogreCamera->getPosition();
+				Vector3 pos = gEnv->mainCamera->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}

@@ -143,7 +143,7 @@ Collisions::Collisions() :
 
 	if (debugMode)
 	{
-		debugmo = gEnv->ogreSceneManager->createManualObject();
+		debugmo = gEnv->sceneManager->createManualObject();
 		debugmo->begin("tracks/debug/collision/triangle", RenderOperation::OT_TRIANGLE_LIST);
 	}
 }
@@ -584,7 +584,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	
 	if (debugMode)
 	{
-		debugsn = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		debugsn = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	}
 
 	// set raw box
@@ -648,7 +648,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	{
 		debugsn->setPosition(p);
 		// box content
-		ManualObject *mo = gEnv->ogreSceneManager->createManualObject();
+		ManualObject *mo = gEnv->sceneManager->createManualObject();
 		String matName = "tracks/debug/collision/box";
 		if (virt && scripthandler == -1)
 			matName = "tracks/debug/eventbox/unused";
@@ -694,7 +694,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 		debugsn->attachObject(mo);
 
 		// the border
-		mo = gEnv->ogreSceneManager->createManualObject();
+		mo = gEnv->sceneManager->createManualObject();
 		mo->begin(matName, Ogre::RenderOperation::OT_LINE_LIST);
 		mo->position(cube_points[0]);
 		mo->position(cube_points[1]);
@@ -736,7 +736,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 			mt->setColor(ColourValue::Black);
 			mt->setRenderingDistance(200);
 
-			SceneNode *n2 = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n2 = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			n2->attachObject(mt);
 			n2->setPosition(coll_box.lo + (coll_box.hi - coll_box.lo) * 0.5f);
 		}
@@ -1543,8 +1543,8 @@ int Collisions::createCollisionDebugVisualization()
 				String matName = "mat-coll-dbg-"+TOSTRING((int)(percentd*100));
 				String cell_name="("+TOSTRING(cellx)+","+ TOSTRING(cellz)+")";
 
-				ManualObject *mo =  gEnv->ogreSceneManager->createManualObject("collisionDebugVisualization"+cell_name);
-				SceneNode *mo_node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
+				ManualObject *mo =  gEnv->sceneManager->createManualObject("collisionDebugVisualization"+cell_name);
+				SceneNode *mo_node = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("collisionDebugVisualization_node"+cell_name);
 
 				mo->begin(matName, Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
@@ -1599,7 +1599,7 @@ int Collisions::createCollisionDebugVisualization()
 int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm, std::vector<int> *collTris)
 {
 	// normal, non virtual collision box
-	Entity *ent = gEnv->ogreSceneManager->createEntity(meshname);
+	Entity *ent = gEnv->sceneManager->createEntity(meshname);
 	ent->setMaterialName("tracks/debug/collision/mesh");
 
 	if (!gm)
@@ -1626,10 +1626,10 @@ int Collisions::addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre:
 	delete[] indices;
 	if (!debugMode)
 	{
-		gEnv->ogreSceneManager->destroyEntity(ent);
+		gEnv->sceneManager->destroyEntity(ent);
 	} else
 	{
-		SceneNode *n=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		SceneNode *n=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(ent);
 		n->setPosition(pos);
 		n->setScale(scale);
@@ -1769,7 +1769,7 @@ void Collisions::finishLoadingTerrain()
 {
 	if (debugMode)
 	{
-		SceneNode *debugsn = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		SceneNode *debugsn = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		debugmo->end();
 		debugsn->setPosition(Vector3::ZERO);
 		debugsn->attachObject(debugmo);

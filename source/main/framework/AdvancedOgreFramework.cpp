@@ -13,7 +13,7 @@
 
 using namespace Ogre;
 
-
+// this is the global instance of GlobalEnvironment that everyone uses
 GlobalEnvironment *gEnv = new GlobalEnvironment();
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
@@ -177,8 +177,8 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
     m_pViewport = m_pRenderWnd->addViewport(0);
 
 	gEnv->ogreRoot         = m_pRoot;
-	gEnv->ogreViewPort     = m_pViewport;
-	gEnv->ogreRenderWindow = m_pRenderWnd;
+	gEnv->viewPort     = m_pViewport;
+	gEnv->renderWindow = m_pRenderWnd;
 	gEnv->embeddedMode     = embedded;
 	
     m_pViewport->setBackgroundColour(ColourValue(0.5f, 0.5f, 0.5f, 1.0f));
