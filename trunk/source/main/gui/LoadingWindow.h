@@ -29,7 +29,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 ATTRIBUTE_CLASS_LAYOUT(LoadingWindow, "LoadingWindow.layout");
 class LoadingWindow :
 	public wraps::BaseLayout,
-	public RoRSingleton<LoadingWindow>
+	public RoRSingleton<LoadingWindow>,
+	public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<LoadingWindow>;
 

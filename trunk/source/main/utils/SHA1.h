@@ -82,7 +82,7 @@ typedef union
 
 namespace RoR
 {
-class CSHA1
+class CSHA1 : public ZeroedMemoryAllocator
 {
 public:
 #ifdef SHA1_UTILITY_FUNCTIONS

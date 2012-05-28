@@ -33,7 +33,7 @@ namespace Forests {
 class TreeIterator3D;
 class TreeIterator2D;
 
-class RandomTreeLoader : public TreeLoader2D
+class RandomTreeLoader : public TreeLoader2D, public ZeroedMemoryAllocator
 {
 public:
 	RandomTreeLoader(PagedGeometry *geom, const TBounds &bounds) : TreeLoader2D(geom, bounds)

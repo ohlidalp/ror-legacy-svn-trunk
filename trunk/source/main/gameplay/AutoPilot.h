@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "TerrainObjectManager.h"
 
-class Autopilot
+class Autopilot : public ZeroedMemoryAllocator
 {
 public:
 

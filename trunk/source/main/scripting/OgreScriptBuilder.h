@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // our own class that wraps the CScriptBuilder and just overwrites the file loading parts
 // to use the ogre resource system
-class OgreScriptBuilder : public AngelScript::CScriptBuilder
+class OgreScriptBuilder : public AngelScript::CScriptBuilder, public ZeroedMemoryAllocator
 {
 public:
 	Ogre::String getHash() { return hash; };

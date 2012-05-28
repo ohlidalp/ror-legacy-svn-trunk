@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define ISETTING(x, y)    Settings::getSingleton().getIntegerSetting(x, y)     //<! get int setting
 #define FSETTING(x, y)    Settings::getSingleton().getFloatSetting(x, y)       //<! get float setting
 
-class Settings : public RoRSingleton<Settings>
+class Settings : public RoRSingleton<Settings>, public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<Settings>;
 

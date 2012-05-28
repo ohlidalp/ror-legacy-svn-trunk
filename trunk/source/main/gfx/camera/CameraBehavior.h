@@ -24,11 +24,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ICameraBehavior.h"
 
-class CameraBehavior : public ICameraBehavior
+class CameraBehaviorOrbit : public ICameraBehavior, public ZeroedMemoryAllocator
 {
 public:
 
-	CameraBehavior();
+	CameraBehaviorOrbit();
 
 	void update(const CameraManager::cameraContext_t &ctx);
 

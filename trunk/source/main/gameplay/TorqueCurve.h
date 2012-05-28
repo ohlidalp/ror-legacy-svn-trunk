@@ -36,7 +36,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 /**
  *  @brief This class loads and processes a torque curve for a truck.
  */
-class TorqueCurve
+class TorqueCurve : public ZeroedMemoryAllocator
 {
 public:
 	const static Ogre::String customModel;

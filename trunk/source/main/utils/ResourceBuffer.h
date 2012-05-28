@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include <OgreResource.h>
 
-class ResourceBuffer : public Ogre::ManualResourceLoader
+class ResourceBuffer : public Ogre::ManualResourceLoader, public ZeroedMemoryAllocator
 {
 public:
 	void loadResource(Ogre::Resource *resource)

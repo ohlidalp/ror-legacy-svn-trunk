@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
 
-class HeatHazeListener : public Ogre::RenderTargetListener
+class HeatHazeListener : public Ogre::RenderTargetListener, public ZeroedMemoryAllocator
 {
 public:
 
@@ -32,7 +32,7 @@ public:
     void postRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
 };
 
-class HeatHaze
+class HeatHaze : public ZeroedMemoryAllocator
 {
 public:
 

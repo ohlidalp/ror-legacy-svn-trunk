@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreConfigFile.h>
 
-class TerrainManager
+class TerrainManager : public ZeroedMemoryAllocator
 {
 public:
 

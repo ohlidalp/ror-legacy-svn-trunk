@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h"
 #include "Ogre.h"
 
-class FlexObj
+class FlexObj : public ZeroedMemoryAllocator
 {
 private:
 	typedef struct

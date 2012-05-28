@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CameraBehavior.h"
 
-class CameraBehaviorCharacter : public CameraBehavior
+class CameraBehaviorCharacter : public CameraBehaviorOrbit
 {
 public:
 

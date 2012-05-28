@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <AL/al.h>
 #include <AL/alc.h>
 
-class SoundManager
+class SoundManager : public ZeroedMemoryAllocator
 {
 	friend class Sound;
 

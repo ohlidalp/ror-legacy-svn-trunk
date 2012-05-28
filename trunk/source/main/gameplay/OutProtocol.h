@@ -37,7 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
 #endif //WIN32
 
-class OutProtocol : public RoRSingleton< OutProtocol >
+class OutProtocol : public RoRSingleton< OutProtocol >, public ZeroedMemoryAllocator
 {
 public:
 

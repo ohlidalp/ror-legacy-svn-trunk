@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <MyGUI.h>
 
-class GUI_Friction : public RoRSingleton < GUI_Friction >
+class GUI_Friction : public RoRSingleton < GUI_Friction >, public ZeroedMemoryAllocator
 {
 public:
 

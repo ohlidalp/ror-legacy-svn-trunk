@@ -29,7 +29,8 @@ ATTRIBUTE_CLASS_LAYOUT(SelectorWindow, "SelectorWindow.layout");
 
 class SelectorWindow :
 	public wraps::BaseLayout,
-	public RoRSingleton<SelectorWindow>
+	public RoRSingleton<SelectorWindow>,
+	public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<SelectorWindow>;
 	SelectorWindow();

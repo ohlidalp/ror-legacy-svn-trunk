@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "OgrePrerequisites.h"
 
-class CmdKeyInertia
+class CmdKeyInertia : public ZeroedMemoryAllocator
 {
 public:
 	CmdKeyInertia(int maxCmdKeys);

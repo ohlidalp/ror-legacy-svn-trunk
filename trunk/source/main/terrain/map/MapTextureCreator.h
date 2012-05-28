@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Ogre.h"
 
-class MapTextureCreator : public Ogre::RenderTargetListener
+class MapTextureCreator : public Ogre::RenderTargetListener, public ZeroedMemoryAllocator
 {
 public:
 

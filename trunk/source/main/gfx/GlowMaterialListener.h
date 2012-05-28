@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <Ogre.h>
 #include <OgreMaterialManager.h>
 
-class GlowMaterialListener : public Ogre::MaterialManager::Listener
+class GlowMaterialListener : public Ogre::MaterialManager::Listener, public ZeroedMemoryAllocator
 {
 protected:
 	Ogre::MaterialPtr mBlackMat;

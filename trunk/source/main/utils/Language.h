@@ -58,7 +58,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #define MOFILENAME "ror"
 
-class LanguageEngine : public RoRSingleton<LanguageEngine>
+class LanguageEngine : public RoRSingleton<LanguageEngine>, public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<LanguageEngine>;
 

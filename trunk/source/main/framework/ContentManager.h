@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <OgreResourceGroupManager.h>
 
-class ContentManager : public RoRSingleton<ContentManager>, public Ogre::ResourceLoadingListener
+class ContentManager : public RoRSingleton<ContentManager>, public Ogre::ResourceLoadingListener, public ZeroedMemoryAllocator
 {
 public:
 	ContentManager();

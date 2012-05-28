@@ -38,6 +38,7 @@ class GUIManager :
 	, public GUIInputManager
 	, public Ogre::FrameListener
 	, public Ogre::WindowEventListener
+	, public ZeroedMemoryAllocator
 {
 public:
 

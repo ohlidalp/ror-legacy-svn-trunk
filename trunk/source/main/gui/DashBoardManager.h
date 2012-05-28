@@ -167,7 +167,7 @@ enum {
 };
 
 // this class is NOT intended to be thread safe - performance is required
-class DashBoardManager
+class DashBoardManager : public ZeroedMemoryAllocator
 {
 public:
 	DashBoardManager(void);
@@ -210,7 +210,7 @@ protected:
 	int free_dashboard;
 };
 
-class DashBoard
+class DashBoard : public ZeroedMemoryAllocator
 {
 	//friend class DashBoardManager;
 public:

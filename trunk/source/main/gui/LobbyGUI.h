@@ -30,7 +30,8 @@ ATTRIBUTE_CLASS_LAYOUT(LobbyGUI, "Lobby.layout");
 class LobbyGUI :
 	public wraps::BaseLayout,
 	public RoRSingleton<LobbyGUI>,
-	public IRCWrapper
+	public IRCWrapper,
+	public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<LobbyGUI>;
 	LobbyGUI();

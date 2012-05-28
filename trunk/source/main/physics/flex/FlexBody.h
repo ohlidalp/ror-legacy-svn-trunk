@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MaterialFunctionMapper.h"
 #include "Ogre.h"
 
-class FlexBody
+class FlexBody : public ZeroedMemoryAllocator
 {
 private:
 	MaterialReplacer *mr;

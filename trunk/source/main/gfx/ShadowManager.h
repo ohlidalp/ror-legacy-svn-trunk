@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "OgreTerrain.h"
 
-class ShadowManager
+class ShadowManager : public ZeroedMemoryAllocator
 {
 public:
 

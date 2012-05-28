@@ -29,7 +29,7 @@ typedef struct _RoadType
 	Ogre::SceneNode *node;
 } RoadType_t;
 
-class Road
+class Road : public ZeroedMemoryAllocator
 {
 	friend class RoRFrameListener;
 

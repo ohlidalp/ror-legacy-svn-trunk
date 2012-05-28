@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-class BeamEngine
+class BeamEngine : public ZeroedMemoryAllocator
 {
 	friend class Beam;
 

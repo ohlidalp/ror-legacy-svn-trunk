@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "OISForceFeedback.h"
 
-class ForceFeedback
+class ForceFeedback : public ZeroedMemoryAllocator
 {
 private:
 	OIS::ForceFeedback* ffdevice;

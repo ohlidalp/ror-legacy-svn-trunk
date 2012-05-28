@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 extern float mrtime;
 
-class Water : public IWater
+class Water : public IWater, public ZeroedMemoryAllocator
 {
 public:
 

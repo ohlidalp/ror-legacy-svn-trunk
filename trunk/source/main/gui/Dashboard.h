@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class DashboardListener;
 
-class Dashboard
+class Dashboard : public ZeroedMemoryAllocator
 {
 public:
 
@@ -45,7 +45,7 @@ private:
 	Ogre::RenderTexture *rttTex;
 };
 
-class DashboardListener : public Ogre::RenderTargetListener
+class DashboardListener : public Ogre::RenderTargetListener, public ZeroedMemoryAllocator
 {
 	friend class Dashboard;
 public:

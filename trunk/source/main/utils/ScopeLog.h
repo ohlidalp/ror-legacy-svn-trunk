@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
  * @brief: this class will change the default log with the scope of its creation.
  * Upon scope leaving, the previous default Log is restored.
  */
-class ScopeLog : Ogre::LogListener
+class ScopeLog : Ogre::LogListener, public ZeroedMemoryAllocator
 {
 protected:
 	Ogre::Log *orgLog;

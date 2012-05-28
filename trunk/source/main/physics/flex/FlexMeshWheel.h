@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MaterialFunctionMapper.h"
 #include "Ogre.h"
 
-class FlexMeshWheel: public Flexable
+class FlexMeshWheel: public Flexable, public ZeroedMemoryAllocator
 {
 private:
 	MaterialReplacer *mr;

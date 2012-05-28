@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "AeroEngine.h"
 
-class Turbojet: public AeroEngine
+class Turbojet: public AeroEngine, public ZeroedMemoryAllocator
 {
 public:
 

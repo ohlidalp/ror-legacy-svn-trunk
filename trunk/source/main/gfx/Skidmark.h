@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Singleton.h"
 
-class SkidmarkManager : public RoRSingleton<SkidmarkManager>
+class SkidmarkManager : public RoRSingleton<SkidmarkManager>, public ZeroedMemoryAllocator
 {
 public:
 
@@ -48,7 +48,7 @@ private:
 	int processLine(Ogre::StringVector args,  Ogre::String model);
 };
 
-class Skidmark
+class Skidmark : public ZeroedMemoryAllocator
 {
 public:
 

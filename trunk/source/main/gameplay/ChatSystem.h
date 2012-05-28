@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Streamable.h"
 #include "StreamableFactory.h"
 
-class ChatSystem : public Streamable
+class ChatSystem : public Streamable, public ZeroedMemoryAllocator
 {
 	friend class ChatSystemFactory;
 	friend class Network;
@@ -59,7 +59,7 @@ protected:
 	void receiveStreamData(unsigned int &type, int &source, unsigned int &streamid, char *buffer, unsigned int &len);
 };
 
-class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >
+class ChatSystemFactory : public StreamableFactory < ChatSystemFactory, ChatSystem >, public ZeroedMemoryAllocator
 {
 	friend class Network;
 

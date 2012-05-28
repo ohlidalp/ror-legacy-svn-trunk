@@ -62,7 +62,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 		camLookAt = ctx.mCurrTruck->getPosition();
 	}
 
-	CameraBehavior::update(ctx);
+	CameraBehaviorOrbit::update(ctx);
 }
 
 void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
@@ -101,7 +101,7 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 		return true;
 	} else
 	{
-		return CameraBehavior::mouseMoved(ctx, _arg);
+		return CameraBehaviorOrbit::mouseMoved(ctx, _arg);
 	}
 }
 
