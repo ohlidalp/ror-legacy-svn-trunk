@@ -20,7 +20,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorFree.h"
 
 #include "Console.h"
-#include "DepthOfFieldEffect.h"
 #include "IHeightFinder.h"
 #include "InputEngine.h"
 #include "Language.h"
@@ -101,7 +100,7 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = gEnv->mainCamera->getPosition() + gEnv->mainCamera->getOrientation() * mTrans.normalisedCopy() * mTransScale;
 
-	if ( gEnv->terrainManager->getHeightFinder() )
+	if ( gEnv->terrainManager && gEnv->terrainManager->getHeightFinder() )
 	{
 		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z) + 1.0f;
 
@@ -127,10 +126,6 @@ bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, c
 
 void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
-	if ( ctx.mDof )
-	{
-		ctx.mDof->setFocusMode(DOFManager::Auto);
-	}
 #ifdef USE_MYGUI
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);
 #endif // USE_MYGUI
