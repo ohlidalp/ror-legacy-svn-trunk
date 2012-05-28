@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define SVN_ID "$Id$"
 
 #define ROR_VERSION_STRING_SHORT      "0.39"
-#define ROR_VERSION_STRING            "0.39.7"
-#define ROR_VERSION_STRING_WIN         0,39,7,0
+#define ROR_VERSION_STRING            "0.39.8"
+#define ROR_VERSION_STRING_WIN         0,39,8,0
 
 #endif //RORVERSION_H__
