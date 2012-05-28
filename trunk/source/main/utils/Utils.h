@@ -135,7 +135,7 @@ inline Ogre::String getThreadIDAsString()
 Ogre::Real Round(Ogre::Real value, unsigned short ndigits = 0);
 
 // generates a hash from a DataStream, beware, its loading the whole thing into a buffer, so its not suited for big files
-Ogre::String generateHashFromDataStream(Ogre::DataStreamPtr &ds);
-Ogre::String generateHashFromFile(Ogre::String filename);
+void generateHashFromDataStream(Ogre::DataStream *ds, Ogre::String &hash);
+void generateHashFromFile(Ogre::String filename, Ogre::String &hash);
 
 #endif // __UTILS_H_

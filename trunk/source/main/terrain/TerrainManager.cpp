@@ -69,7 +69,7 @@ void TerrainManager::loadTerrain(String filename)
 	}
 
 	// now generate the hash of it
-	fileHash = generateHashFromDataStream(ds);
+	generateHashFromDataStream(ds.get(), fileHash);
 
 	mTerrainConfig.load(ds, "\t:=", false);
 

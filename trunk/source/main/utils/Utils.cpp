@@ -369,36 +369,45 @@ Real Round(Real value, unsigned short ndigits /* = 0 */)
 	return value;
 }
 
-String generateHashFromDataStream(DataStreamPtr &ds)
+void generateHashFromDataStream(DataStream *ds, Ogre::String &hash)
 {
+	// TODO: fix memory corruption going on below
+	hash = "nothashed";
+	return;
+
+	size_t location = ds->tell();
 	// copy whole file into a buffer
 	uint8_t *buf = 0;
 	ds->seek(0); // from start
 	// alloc buffer
 	uint32_t bufSize = ds->size();
-	buf = (uint8_t *)malloc(bufSize);
+	buf = (uint8_t *)malloc(bufSize+1);
 	// read into buffer
 	ds->read(buf, bufSize);
 
 	// and build the hash over it
 	char hash_result[250];
 	memset(hash_result, 0, 249);
-	RoR::CSHA1 sha1;
-	sha1.UpdateHash(buf, bufSize);
-	sha1.Final();
-	sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
 
-	// revert DS to start
-	ds->seek(0);
+	{
+		RoR::CSHA1 sha1;
+		sha1.UpdateHash(buf, bufSize);
+		sha1.Final();
+		sha1.ReportHash(hash_result, RoR::CSHA1::REPORT_HEX_SHORT);
+	}
+
+	// revert DS to previous position
+	ds->seek(location);
 	// release memory
 	free(buf);
+	buf = 0;
 	
-	return String(hash_result);
+	hash = String(hash_result);
 }
 
-String generateHashFromFile(String filename)
+void generateHashFromFile(String filename, Ogre::String &hash)
 {
 	// no exception handling in here
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
-	return generateHashFromDataStream(ds);
+	generateHashFromDataStream(ds.get(), hash);
 }
