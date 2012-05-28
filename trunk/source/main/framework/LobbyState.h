@@ -36,7 +36,7 @@ public:
 	void resume();
 
 	void update(double timeSinceLastFrame);
-	void resized(Ogre::RenderWindow *r);
+	void resized(Ogre::RenderWindow* rw);
 };
 
 #endif // __LobbyState_H_

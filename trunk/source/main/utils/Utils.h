@@ -63,7 +63,7 @@ bool compareCaseInsensitive(std::string strFirst, std::string strSecond);
 
 Ogre::AxisAlignedBox getWorldAABB(Ogre::SceneNode* node);
 
-void fixRenderWindowIcon (Ogre::RenderWindow *rw);
+void fixRenderWindowIcon (Ogre::RenderWindow* rw);
 
 std::wstring ANSI_TO_WCHAR(const Ogre::String source);
 Ogre::UTFString ANSI_TO_UTF(const Ogre::String source);

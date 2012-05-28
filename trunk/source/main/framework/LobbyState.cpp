@@ -72,7 +72,7 @@ void LobbyState::update(double dt)
 #endif //USE_MYGUI
 }
 
-void LobbyState::resized(Ogre::RenderWindow *rw)
+void LobbyState::resized(Ogre::RenderWindow* rw)
 {
-	INPUTENGINE.windowResized();
+	INPUTENGINE.windowResized(rw);
 }

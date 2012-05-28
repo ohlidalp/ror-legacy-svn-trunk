@@ -74,6 +74,6 @@ void BootstrapLoadingState::update(double timeSinceLastFrame)
 {
 }
 
-void BootstrapLoadingState::resized(Ogre::RenderWindow *r)
+void BootstrapLoadingState::resized(Ogre::RenderWindow* rw)
 {
 }

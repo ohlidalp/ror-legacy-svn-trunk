@@ -51,25 +51,26 @@ protected:
 		MyGUI::StaticImagePtr userTruckOKRemoteImg;
 		MyGUI::StaticTextPtr  playername;
 	} player_row_t;
-	Network *net;
-	MyGUI::WindowPtr msgwin;
+
 	MyGUI::EditPtr msgtext;
-	MyGUI::WidgetPtr tooltipPanel, mpPanel;
 	MyGUI::StaticTextPtr tooltipText;
+	MyGUI::WidgetPtr tooltipPanel, mpPanel;
+	MyGUI::WindowPtr msgwin;
+	Network *net;
 
 	player_row_t player_rows[MAX_PEERS + 1];
 
 	void clickInfoIcon(MyGUI::WidgetPtr sender);
-	void openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipInfo &t);
 	void clickUserGoIcon(MyGUI::WidgetPtr sender);
+	void openToolTip(MyGUI::WidgetPtr sender, const MyGUI::ToolTipInfo &t);
 
 	MyGUI::WindowPtr netmsgwin;
 	MyGUI::StaticTextPtr netmsgtext;
 	
 	void updateSlot(player_row_t *row, user_info_t *c, bool self);
 
-	int lineheight;
 	client_t *clients;
+	int lineheight;
 
 	static const int sidebarWidth = 250;
 };

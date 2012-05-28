@@ -44,9 +44,9 @@ public:
 
 private:
 
-	MyGUI::WindowPtr win;
-	MyGUI::WindowPtr msgwin;
 	Collisions *col;
+	MyGUI::WindowPtr msgwin;
+	MyGUI::WindowPtr win;
 	ground_model_t *active_gm;
 	ground_model_t *selected_gm;
 

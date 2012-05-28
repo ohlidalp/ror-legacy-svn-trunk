@@ -466,7 +466,7 @@ public:
 	void prepareShutdown();
 	OIS::MouseState getMouseState();
 	// some custom methods
-	void windowResized();
+	void windowResized(Ogre::RenderWindow* rw);
 
 	bool reloadConfig(std::string outfile=CONFIGFILENAME);
 	bool updateConfigline(event_trigger_t *t);

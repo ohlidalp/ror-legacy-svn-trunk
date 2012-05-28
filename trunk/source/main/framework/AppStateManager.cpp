@@ -81,7 +81,7 @@ void AppStateManager::update(double dt)
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 || OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	RoRWindowEventUtilities::messagePump();
 #endif
-	Ogre::RenderWindow *rw = OgreFramework::getSingletonPtr()->m_pRenderWnd;
+	Ogre::RenderWindow* rw = OgreFramework::getSingletonPtr()->m_pRenderWnd;
 	if (rw->isClosed())
 	{
 		// unlock before shutdown
@@ -263,9 +263,9 @@ void AppStateManager::init(AppState* state)
 	OgreFramework::getSingletonPtr()->m_pRenderWnd->resetStatistics();
 }
 
-void AppStateManager::resized(Ogre::RenderWindow *r)
+void AppStateManager::resized(Ogre::RenderWindow* rw)
 {
-	m_ActiveStateStack.back()->resized(r);
+	m_ActiveStateStack.back()->resized(rw);
 }
 
 //|||||||||||||||||||||||||||||||||||||||||||||||

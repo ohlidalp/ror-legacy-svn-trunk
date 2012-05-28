@@ -53,8 +53,9 @@ protected:
 
 private:
 
-    int mCursorX, mCursorY, width, height;
 	Ogre::Timer *lastMouseMoveTime;
+    int mCursorX, mCursorY, width, height;
+	
 	void activateGUI();
 };
 
