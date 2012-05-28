@@ -14,7 +14,7 @@
 using namespace Ogre;
 
 
-GlobalEnvironment *globalEnvironment = new GlobalEnvironment();
+GlobalEnvironment *gEnv = new GlobalEnvironment();
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
@@ -176,10 +176,10 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 
     m_pViewport = m_pRenderWnd->addViewport(0);
 
-	globalEnvironment->ogreRoot         = m_pRoot;
-	globalEnvironment->ogreViewPort     = m_pViewport;
-	globalEnvironment->ogreRenderWindow = m_pRenderWnd;
-	globalEnvironment->embeddedMode     = embedded;
+	gEnv->ogreRoot         = m_pRoot;
+	gEnv->ogreViewPort     = m_pViewport;
+	gEnv->ogreRenderWindow = m_pRenderWnd;
+	gEnv->embeddedMode     = embedded;
 	
     m_pViewport->setBackgroundColour(ColourValue(0.5f, 0.5f, 0.5f, 1.0f));
 

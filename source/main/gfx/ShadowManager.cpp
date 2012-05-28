@@ -49,26 +49,26 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 {
 	float shadowFarDistance = std::min(200.0f, (FSETTING("SightRange", 2000)* 0.8f));
 	float scoef=0.2;
-	globalEnvironment->ogreSceneManager->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
+	gEnv->ogreSceneManager->setShadowColour(Ogre::ColourValue(0.563+scoef, 0.578+scoef, 0.625+scoef));
 
-	globalEnvironment->ogreSceneManager->setShadowTechnique(tech);
-	globalEnvironment->ogreSceneManager->setShadowFarDistance(shadowFarDistance);
-	globalEnvironment->ogreSceneManager->setShowDebugShadows(false);
+	gEnv->ogreSceneManager->setShadowTechnique(tech);
+	gEnv->ogreSceneManager->setShadowFarDistance(shadowFarDistance);
+	gEnv->ogreSceneManager->setShowDebugShadows(false);
 
 	if (tech == Ogre::SHADOWTYPE_STENCIL_MODULATIVE)
 	{
 		//		globalEnvironment->ogreSceneManager->setShadowIndexBufferSize(2000000);
-		globalEnvironment->ogreSceneManager->setShadowDirectionalLightExtrusionDistance(100);
+		gEnv->ogreSceneManager->setShadowDirectionalLightExtrusionDistance(100);
 
 		//important optimization
-		globalEnvironment->ogreSceneManager->getRenderQueue()->getQueueGroup(Ogre::RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
+		gEnv->ogreSceneManager->getRenderQueue()->getQueueGroup(Ogre::RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
 
 		//		globalEnvironment->ogreSceneManager->setUseCullCamera(false);
 		//		globalEnvironment->ogreSceneManager->setShowBoxes(true);
 		//		globalEnvironment->ogreSceneManager->showBoundingBoxes(true);
 	} else if (tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
-		globalEnvironment->ogreSceneManager->setShadowTextureSettings(2048,2);
+		gEnv->ogreSceneManager->setShadowTextureSettings(2048,2);
 	} else if (tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED)
 	{
 #if OGRE_VERSION>0x010602
@@ -78,14 +78,14 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 		// 3 textures per directional light (PSSM)
 		int num = 3;
 
-		globalEnvironment->ogreSceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, num);
+		gEnv->ogreSceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, num);
 
 		if (mPSSMSetup.isNull())
 		{
 			// shadow camera setup
 			Ogre::PSSMShadowCameraSetup* pssmSetup = new Ogre::PSSMShadowCameraSetup();
-			pssmSetup->setSplitPadding(globalEnvironment->ogreCamera->getNearClipDistance());
-			pssmSetup->calculateSplitPoints(3, globalEnvironment->ogreCamera->getNearClipDistance(), globalEnvironment->ogreSceneManager->getShadowFarDistance());
+			pssmSetup->setSplitPadding(gEnv->ogreCamera->getNearClipDistance());
+			pssmSetup->calculateSplitPoints(3, gEnv->ogreCamera->getNearClipDistance(), gEnv->ogreSceneManager->getShadowFarDistance());
 			for (int i=0; i < num; ++i)
 			{	int size = i==0 ? 2048 : 1024;
 				const Ogre::Real cAdjfA[5] = {2, 1, 0.5, 0.25, 0.125};
@@ -94,19 +94,19 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 			mPSSMSetup.bind(pssmSetup);
 
 		}
-		globalEnvironment->ogreSceneManager->setShadowCameraSetup(mPSSMSetup);
+		gEnv->ogreSceneManager->setShadowCameraSetup(mPSSMSetup);
 		
 		
-		globalEnvironment->ogreSceneManager->setShadowTextureCount(num);
+		gEnv->ogreSceneManager->setShadowTextureCount(num);
 		for (int i=0; i < num; ++i)
 		{	int size = i==0 ? 2048 : 1024;
-			globalEnvironment->ogreSceneManager->setShadowTextureConfig(i, size, size, mDepthShadows ? Ogre::PF_FLOAT32_R : Ogre::PF_X8B8G8R8);
+			gEnv->ogreSceneManager->setShadowTextureConfig(i, size, size, mDepthShadows ? Ogre::PF_FLOAT32_R : Ogre::PF_X8B8G8R8);
 		}
 
-		globalEnvironment->ogreSceneManager->setShadowTextureSelfShadow(mDepthShadows);
-		globalEnvironment->ogreSceneManager->setShadowCasterRenderBackFaces(false);
+		gEnv->ogreSceneManager->setShadowTextureSelfShadow(mDepthShadows);
+		gEnv->ogreSceneManager->setShadowCasterRenderBackFaces(false);
 
-		globalEnvironment->ogreSceneManager->setShadowTextureCasterMaterial(mDepthShadows?"PSSM/shadow_caster":Ogre::StringUtil::BLANK);
+		gEnv->ogreSceneManager->setShadowTextureCasterMaterial(mDepthShadows?"PSSM/shadow_caster":Ogre::StringUtil::BLANK);
 
 		updatePSSM();
 

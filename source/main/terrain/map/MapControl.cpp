@@ -173,7 +173,7 @@ void MapControl::updateEntityPositions()
 
 void MapControl::updateRenderMetrics()
 {
-	globalEnvironment->ogreRenderWindow->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
+	gEnv->ogreRenderWindow->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
 }
 
 #endif // USE_MYGUI

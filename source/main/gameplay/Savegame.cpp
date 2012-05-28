@@ -73,15 +73,15 @@ int Savegame::save(Ogre::String &filename)
 
 		{
 			// and generic things like character and camera
-			if (globalEnvironment->player)
+			if (gEnv->player)
 			{
-				Vector3 pos = globalEnvironment->player->getPosition();
+				Vector3 pos = gEnv->player->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.player_pos, pos.ptr(), sizeof(float) * 3);
 			}
-			if (globalEnvironment->ogreCamera)
+			if (gEnv->ogreCamera)
 			{
-				Vector3 pos = globalEnvironment->ogreCamera->getPosition();
+				Vector3 pos = gEnv->ogreCamera->getPosition();
 				// WARNING: breaks if Real == double!
 				memcpy(&h.cam_pos, pos.ptr(), sizeof(float) * 3);
 			}
@@ -248,9 +248,9 @@ int Savegame::load(Ogre::String &filename)
 	// restore generic things: characer and camera
 	{
 		// and generic things like character and camera
-		if (globalEnvironment->player)
+		if (gEnv->player)
 		{
-			globalEnvironment->player->setPosition(Vector3(h.player_pos));
+			gEnv->player->setPosition(Vector3(h.player_pos));
 		}
 
 		// TODO: FIX savegame camera integration

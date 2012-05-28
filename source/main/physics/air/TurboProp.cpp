@@ -103,8 +103,8 @@ Turboprop::Turboprop(char* propname, node_t *nd, int nr, int nb, int np1, int np
 	{
 		char dename[256];
 		sprintf(dename,"%s-smoke", propname);
-		smokeNode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-		smokePS=globalEnvironment->ogreSceneManager->createParticleSystem(dename, "tracks/TurbopropSmoke");
+		smokeNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		smokePS=gEnv->ogreSceneManager->createParticleSystem(dename, "tracks/TurbopropSmoke");
 		if (smokePS)
 		{
 			smokePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
@@ -116,7 +116,7 @@ Turboprop::Turboprop(char* propname, node_t *nd, int nr, int nb, int np1, int np
 		if (heathaze)
 		{
 			sprintf(dename,"%s-smoke-heat", propname);
-			heathazePS=globalEnvironment->ogreSceneManager->createParticleSystem(dename, "tracks/TurbopropHeatHaze");
+			heathazePS=gEnv->ogreSceneManager->createParticleSystem(dename, "tracks/TurbopropHeatHaze");
 			smokeNode->attachObject(heathazePS);
 			heathazePS->setCastShadows(false);
 			heathazePS->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap

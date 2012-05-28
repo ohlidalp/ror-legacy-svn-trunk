@@ -174,7 +174,7 @@ void Skidmark::addObject(Vector3 start, String texture)
 	skid.points.resize(lenght);
 	skid.faceSizes.resize(lenght);
 	skid.groundTexture.resize(lenght);
-	skid.obj = globalEnvironment->ogreSceneManager->createManualObject("skidmark" + TOSTRING(instanceCounter++));
+	skid.obj = gEnv->ogreSceneManager->createManualObject("skidmark" + TOSTRING(instanceCounter++));
 	skid.obj->setDynamic(true);
 	skid.obj->setRenderingDistance(2000); //2km sight range
 	skid.obj->begin(bname, RenderOperation::OT_TRIANGLE_STRIP);
@@ -202,7 +202,7 @@ void Skidmark::limitObjects()
 		//LOG("deleting first skidmarks section to keep the limits");
 		objects.front().points.clear();
 		objects.front().faceSizes.clear();
-		globalEnvironment->ogreSceneManager->destroyManualObject(objects.front().obj);
+		gEnv->ogreSceneManager->destroyManualObject(objects.front().obj);
 		objects.pop();
 	}
 }

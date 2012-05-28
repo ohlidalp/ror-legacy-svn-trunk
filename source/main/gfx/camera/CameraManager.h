@@ -71,7 +71,7 @@ public:
 
 	int getCameraBehavior();
 
-	bool enableGameControls();
+	bool getGameControlsEnabled();
 
 protected:
 

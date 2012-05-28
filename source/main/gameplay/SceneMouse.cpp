@@ -36,8 +36,8 @@ SceneMouse::SceneMouse()
 	grab_truck     = NULL;
 	
 	// load 3d line for mouse picking
-	pickLine =  globalEnvironment->ogreSceneManager->createManualObject("PickLineObject");
-	pickLineNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode("PickLineNode");
+	pickLine =  gEnv->ogreSceneManager->createManualObject("PickLineObject");
+	pickLineNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode("PickLineNode");
 
 	MaterialPtr pickLineMaterial = MaterialManager::getSingleton().create("PickLineMaterial",ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 	pickLineMaterial->setReceiveShadows(false);
@@ -212,7 +212,7 @@ bool SceneMouse::keyReleased(const OIS::KeyEvent& _arg)
 
 Ray SceneMouse::getMouseRay()
 {
-	Viewport *vp = globalEnvironment->ogreCamera->getViewport();
+	Viewport *vp = gEnv->ogreCamera->getViewport();
 
-	return globalEnvironment->ogreCamera->getCameraToViewportRay((float)lastMouseX / (float)vp->getActualWidth(), (float)lastMouseY / (float)vp->getActualHeight());
+	return gEnv->ogreCamera->getCameraToViewportRay((float)lastMouseX / (float)vp->getActualWidth(), (float)lastMouseY / (float)vp->getActualHeight());
 }

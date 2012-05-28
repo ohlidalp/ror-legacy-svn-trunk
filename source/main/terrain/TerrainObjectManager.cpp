@@ -106,7 +106,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		{
 			long amount = Collisions::MAX_COLLISION_TRIS;
 			sscanf(line, "collision-tris %ld", &amount);
-			globalEnvironment->collisions->resizeMemory(amount);
+			gEnv->collisions->resizeMemory(amount);
 		}
 
 		if (!strncmp(line,"grid", 4))
@@ -162,7 +162,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
-			SceneNode *n = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			SceneNode *n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 			n->setPosition(pos);
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
@@ -194,7 +194,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		}
 		if (!strncmp("landuse-config", line, 14))
 		{
-			globalEnvironment->collisions->setupLandUse(line+15);
+			gEnv->collisions->setupLandUse(line+15);
 			continue;
 		}
 		if (!strncmp("gravity", line, 7))
@@ -272,7 +272,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				treeLoader->setColorMap(ColorMap);
 			}
 
-			curTree = globalEnvironment->ogreSceneManager->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
+			curTree = gEnv->ogreSceneManager->createEntity(String("paged_")+treemesh+TOSTRING(pagedGeometry.size()), treemesh);
 
 			if (gridspacing > 0)
 			{
@@ -291,9 +291,9 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 						treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
 						if (strlen(treeCollmesh))
 						{
-							pos.y = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
+							pos.y = gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 							scale *= 0.1f;
-							globalEnvironment->collisions->addCollisionMesh(String(treeCollmesh), pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+							gEnv->collisions->addCollisionMesh(String(treeCollmesh), pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
 						}
 					}
 				}
@@ -325,8 +325,8 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 							treeLoader->addTree(curTree, pos, Degree(yaw), (Ogre::Real)scale);
 							if (strlen(treeCollmesh))
 							{
-								pos.y = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
-								globalEnvironment->collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
+								pos.y = gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
+								gEnv->collisions->addCollisionMesh(String(treeCollmesh),pos, Quaternion(Degree(yaw), Vector3::UNIT_Y), Vector3(scale, scale, scale));
 							}
 						}
 					}
@@ -612,7 +612,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 
 	// okay, now bake everything
-	bakesg = globalEnvironment->ogreSceneManager->createStaticGeometry("bakeSG");
+	bakesg = gEnv->ogreSceneManager->createStaticGeometry("bakeSG");
 	bakesg->setCastShadows(true);
 	bakesg->addSceneNode(bakeNode);
 	bakesg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
@@ -877,7 +877,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				event_filter=EVENT_NONE;
 				eventname[0]=0;
 				collmesh[0]=0;
-				gm = globalEnvironment->collisions->getGroundModelByString("concrete");
+				gm = gEnv->collisions->getGroundModelByString("concrete");
 				continue;
 			};
 			if (!strncmp("boxcoords", ptline, 9))
@@ -910,13 +910,13 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			if (!strncmp("frictionconfig", ptline, 14) && strlen(ptline) > 15)
 			{
 				// load a custom friction config
-				globalEnvironment->collisions->loadGroundModelsConfigFile(String(ptline + 15));
+				gEnv->collisions->loadGroundModelsConfigFile(String(ptline + 15));
 				continue;
 			}
 			if ((!strncmp("stdfriction", ptline, 11) || !strncmp("usefriction", ptline, 11)) && strlen(ptline) > 12)
 			{
 				String modelName = String(ptline + 12);
-				gm = globalEnvironment->collisions->getGroundModelByString(modelName);
+				gm = gEnv->collisions->getGroundModelByString(modelName);
 				continue;
 			}
 			if (!strcmp("virtual", ptline)) {virt=true;continue;};
@@ -948,14 +948,14 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			{
 				if (enable_collisions)
 				{
-					int boxnum = globalEnvironment->collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
+					int boxnum = gEnv->collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
 					obj->collBoxes.push_back((boxnum));
 				}
 				continue;
 			}
 			if (!strcmp("endmesh", ptline))
 			{
-				globalEnvironment->collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
+				gEnv->collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
 				continue;
 			}
 
@@ -968,11 +968,11 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 				// hacky: prevent duplicates
 				String paname = String(pname);
-				while(globalEnvironment->ogreSceneManager->hasParticleSystem(paname))
+				while(gEnv->ogreSceneManager->hasParticleSystem(paname))
 					paname += "_";
 
 				// create particle system
-				ParticleSystem* pParticleSys = globalEnvironment->ogreSceneManager->createParticleSystem(paname, String(sname));
+				ParticleSystem* pParticleSys = gEnv->ogreSceneManager->createParticleSystem(paname, String(sname));
 				pParticleSys->setCastShadows(false);
 				pParticleSys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 

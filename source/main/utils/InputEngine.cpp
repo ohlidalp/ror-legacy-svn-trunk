@@ -1595,7 +1595,7 @@ bool InputEngine::setup(String hwnd, bool capture, bool capturemouse, int _grabM
 	grabMode = _grabMode;
 
 	// grab mode override in embedded mode
-	if (globalEnvironment->embeddedMode)
+	if (gEnv->embeddedMode)
 	{
 		grabMode = GRAB_DYNAMICALLY;
 #ifndef NOOGRE
@@ -1746,11 +1746,11 @@ bool InputEngine::setup(String hwnd, bool capture, bool capturemouse, int _grabM
 		// set the mouse to the middle of the screen, hackish!
 #if WIN32
 		// under linux, this will not work and the cursor will never reach (0,0)
-		if (mMouse && globalEnvironment->ogreRenderWindow)
+		if (mMouse && gEnv->ogreRenderWindow)
 		{
 			OIS::MouseState &mutableMouseState = const_cast<OIS::MouseState &>(mMouse->getMouseState());
-			mutableMouseState.X.abs = globalEnvironment->ogreRenderWindow->getWidth()  * 0.5f;
-			mutableMouseState.Y.abs = globalEnvironment->ogreRenderWindow->getHeight() * 0.5f;
+			mutableMouseState.X.abs = gEnv->ogreRenderWindow->getWidth()  * 0.5f;
+			mutableMouseState.Y.abs = gEnv->ogreRenderWindow->getHeight() * 0.5f;
 		}
 #endif // WIN32
 	}
@@ -3402,12 +3402,12 @@ void InputEngine::setupDefault(Ogre::String inputhwnd /* = "" */)
 	else if (inputGrabSetting == "None")
 		inputGrabMode = GRAB_NONE;
 
-	if (!globalEnvironment->embeddedMode)
+	if (!gEnv->embeddedMode)
 	{
 
 		// start input engine
 		size_t hWnd = 0;
-		globalEnvironment->ogreRenderWindow->getCustomAttribute("WINDOW", &hWnd);
+		gEnv->ogreRenderWindow->getCustomAttribute("WINDOW", &hWnd);
 
 		INPUTENGINE.setup(TOSTRING(hWnd), true, true, inputGrabMode);
 	} else
@@ -3415,7 +3415,7 @@ void InputEngine::setupDefault(Ogre::String inputhwnd /* = "" */)
 	#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr;
-		globalEnvironment->ogreRenderWindow->getCustomAttribute("GLXWINDOW", &windowHnd );
+		gEnv->ogreRenderWindow->getCustomAttribute("GLXWINDOW", &windowHnd );
 		windowHndStr << windowHnd;
 		printf("#### GLXWINDOW = %s\n", windowHndStr.str().c_str());
 		INPUTENGINE.setup(windowHndStr.str(), true, true, GRAB_NONE);

@@ -60,7 +60,7 @@ Character::Character(int source, unsigned int streamid, int colourNumber, bool r
 	myNumber = characterCounter++;
 	myName   = "Character" + TOSTRING(myNumber);
 
-	Entity *entity = globalEnvironment->ogreSceneManager->createEntity(myName+"_mesh", "character.mesh");
+	Entity *entity = gEnv->ogreSceneManager->createEntity(myName+"_mesh", "character.mesh");
 #if OGRE_VERSION<0x010602
 	entity->setNormaliseNormals(true);
 #endif //OGRE_VERSION
@@ -71,15 +71,15 @@ Character::Character(int source, unsigned int streamid, int colourNumber, bool r
 	entity->getMesh()->_setBounds(aabb);
 
 	// add entity to the scene node
-	mCharacterNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	mCharacterNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	mCharacterNode->attachObject(entity);
 	mCharacterNode->setScale(0.02f, 0.02f, 0.02f);
 	mAnimState = entity->getAllAnimationStates();
 
 #ifdef USE_MYGUI
-	if (globalEnvironment->surveyMap)
+	if (gEnv->surveyMap)
 	{
-		mapEntity = globalEnvironment->surveyMap->createNamedMapEntity(myName, "person");
+		mapEntity = gEnv->surveyMap->createNamedMapEntity(myName, "person");
 		mapEntity->setState(0);
 		mapEntity->setVisibility(true);
 		mapEntity->setPosition(mCharacterNode->getPosition());
@@ -87,7 +87,7 @@ Character::Character(int source, unsigned int streamid, int colourNumber, bool r
 	}
 #endif // USE_MYGUI
 
-	if (globalEnvironment->network)
+	if (gEnv->network)
 	{
 		sendStreamSetup();
 	}
@@ -115,9 +115,9 @@ Character::~Character()
 		mCharacterNode->detachAllObjects();
 	}
 #ifdef USE_MYGUI
-	if (globalEnvironment->surveyMap && mapEntity)
+	if (gEnv->surveyMap && mapEntity)
 	{
-		globalEnvironment->surveyMap->deleteMapEntity(mapEntity);
+		gEnv->surveyMap->deleteMapEntity(mapEntity);
 	}
 #endif // USE_MYGUI
 	// try to unload some materials
@@ -147,10 +147,10 @@ void Character::updateNetLabel()
 {
 #ifdef USE_SOCKETW
 	// label above head
-	if (!globalEnvironment->network) return;
+	if (!gEnv->network) return;
 	if (remote)
 	{
-		client_t *info = globalEnvironment->network->getClientInfo(this->source);
+		client_t *info = gEnv->network->getClientInfo(this->source);
 		if (!info) return;
 		if (tryConvertUTF(info->user.username).empty()) return;
 		this->colourNumber = info->user.colournum;
@@ -158,7 +158,7 @@ void Character::updateNetLabel()
 		networkAuthLevel = info->user.authstatus;
 	} else
 	{
-		user_info_t *info = globalEnvironment->network->getLocalUserData();
+		user_info_t *info = gEnv->network->getLocalUserData();
 		if (!info) return;
 		if (String(info->username).empty()) return;
 		this->colourNumber = info->colournum;
@@ -206,9 +206,9 @@ void Character::setPosition(Vector3 position)
 {
 	mCharacterNode->setPosition(position);
 #ifdef USE_MYGUI
-	if (globalEnvironment->surveyMap)
+	if (gEnv->surveyMap)
 	{
-		globalEnvironment->surveyMap->getEntityByName(myName)->setPosition(position);
+		gEnv->surveyMap->getEntityByName(myName)->setPosition(position);
 	}
 #endif // USE_MYGUI
 }
@@ -217,9 +217,9 @@ void Character::setVisible(bool visible)
 {
 	mCharacterNode->setVisible(visible);
 #ifdef USE_MYGUI
-	if (globalEnvironment->surveyMap)
+	if (gEnv->surveyMap)
 	{
-		globalEnvironment->surveyMap->getEntityByName(myName)->setVisibility(visible);
+		gEnv->surveyMap->getEntityByName(myName)->setVisibility(visible);
 	}	
 #endif // USE_MYGUI
 }
@@ -275,7 +275,7 @@ void Character::update(float dt)
 	if (physicsEnabled && !remote)
 	{
 		// disable character movement when using the free camera mode or when the menu is opened
-		if (CameraManager::singletonExists() && !CameraManager::getSingleton().enableGameControls()) return;
+		if (CameraManager::singletonExists() && !CameraManager::getSingleton().getGameControlsEnabled()) return;
 
 		// small hack: if not visible do not apply physics
 		Vector3 position = mCharacterNode->getPosition();
@@ -288,10 +288,10 @@ void Character::update(float dt)
 		Vector3 position2 = position + Vector3(0.0f, 0.075f, 0.0f);
 		Vector3 position3 = position + Vector3(0.0f, 0.25, 0.0f);
 
-		if (globalEnvironment->collisions->collisionCorrect(&position))
+		if (gEnv->collisions->collisionCorrect(&position))
 		{
 			characterVSpeed = std::max(0.0f, characterVSpeed);
-			if (globalEnvironment->collisions->collisionCorrect(&position2) && !globalEnvironment->collisions->collisionCorrect(&position3))
+			if (gEnv->collisions->collisionCorrect(&position2) && !gEnv->collisions->collisionCorrect(&position3))
 			{
 				characterVSpeed = 2.0f; // autojump
 			} else
@@ -308,7 +308,7 @@ void Character::update(float dt)
 				for (int i=1; i <= numstep; i++)
 				{
 					Vector3 cposition = mLastPosition + dvec * ((float)i / numstep);
-					if (globalEnvironment->collisions->collisionCorrect(&cposition))
+					if (gEnv->collisions->collisionCorrect(&cposition))
 					{
 						position = cposition;
 						characterVSpeed = std::max(0.0f, characterVSpeed);
@@ -323,7 +323,7 @@ void Character::update(float dt)
 		mLastPosition = position;
 
 		// ground contact
-		float pheight = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(position.x,position.z);
+		float pheight = gEnv->terrainManager->getHeightFinder()->getHeightAt(position.x,position.z);
 
 		if (position.y < pheight)
 		{
@@ -336,9 +336,9 @@ void Character::update(float dt)
 		bool isswimming = false;
 		float wheight = -99999;
 
-		if (globalEnvironment->terrainManager->getWater())
+		if (gEnv->terrainManager->getWater())
 		{
-			wheight = globalEnvironment->terrainManager->getWater()->getHeightWaves(position);
+			wheight = gEnv->terrainManager->getWater()->getHeightWaves(position);
 			if (position.y < wheight - 1.8f)
 			{
 				position.y = wheight - 1.8f;
@@ -347,7 +347,7 @@ void Character::update(float dt)
 		}
 
 		// 0.1 due to 'jumping' from waves -> not nice looking
-		if (globalEnvironment->terrainManager->getWater() && (wheight - pheight > 1.8f) && (position.y + 0.1f <= wheight))
+		if (gEnv->terrainManager->getWater() && (wheight - pheight > 1.8f) && (position.y + 0.1f <= wheight))
 		{
 			isswimming = true;
 		}
@@ -512,7 +512,7 @@ void Character::update(float dt)
 	}
 
 #ifdef USE_SOCKETW
-	if (globalEnvironment->network && !remote)
+	if (gEnv->network && !remote)
 	{
 		sendStreamData();
 	}
@@ -522,10 +522,10 @@ void Character::update(float dt)
 void Character::updateMapIcon()
 {
 #ifdef USE_MYGUI
-	if (globalEnvironment->surveyMap)
+	if (gEnv->surveyMap)
 	{
-		globalEnvironment->surveyMap->getEntityByName(myName)->setPosition(mCharacterNode->getPosition());
-		globalEnvironment->surveyMap->getEntityByName(myName)->setRotation(mCharacterNode->getOrientation());
+		gEnv->surveyMap->getEntityByName(myName)->setPosition(mCharacterNode->getPosition());
+		gEnv->surveyMap->getEntityByName(myName)->setRotation(mCharacterNode->getOrientation());
 	}
 #endif // USE_MYGUI
 }
@@ -608,7 +608,7 @@ void Character::receiveStreamData(unsigned int &type, int &source, unsigned int 
 
 void Character::updateNetLabelSize()
 {
-	if (!this || !globalEnvironment->network || !mMoveableText) return;
+	if (!this || !gEnv->network || !mMoveableText) return;
 
 	mMoveableText->setVisible(getVisible());
 
@@ -638,7 +638,7 @@ void Character::setBeamCoupling(bool enabled, Beam *truck /* = 0 */)
 		{
 			mMoveableText->setVisible(false);
 		}
-		if (globalEnvironment->network && !remote)
+		if (gEnv->network && !remote)
 		{
 			attach_netdata_t data;
 			data.command = CHARCMD_ATTACH;
@@ -665,7 +665,7 @@ void Character::setBeamCoupling(bool enabled, Beam *truck /* = 0 */)
 		{
 			mMoveableText->setVisible(true);
 		}
-		if (globalEnvironment->network && !remote)
+		if (gEnv->network && !remote)
 		{
 			attach_netdata_t data;
 			data.command = CHARCMD_ATTACH;

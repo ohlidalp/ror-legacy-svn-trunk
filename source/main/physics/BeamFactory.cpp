@@ -111,7 +111,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 		rot,
 		fname.c_str(),
 		false, // networked
-		globalEnvironment->network!=0, // networking
+		gEnv->network!=0, // networking
 		spawnbox,
 		ismachine,
 		flareMode,
@@ -137,7 +137,7 @@ Beam *BeamFactory::createLocal(Ogre::Vector3 pos, Ogre::Quaternion rot, Ogre::St
 #endif // USE_MYGUI
 
 	// add own username to truck
-	if (globalEnvironment->network)
+	if (gEnv->network)
 	{
 		b->updateNetworkInfo();
 	}
@@ -214,7 +214,7 @@ Beam *BeamFactory::createRemoteInstance(stream_reg_t *reg)
 		Quaternion::ZERO,
 		reg->reg.name,
 		true, // networked
-		globalEnvironment->network!=0, // networking
+		gEnv->network!=0, // networking
 		0,
 		false,
 		3,
@@ -530,16 +530,16 @@ void BeamFactory::setCurrentTruck(int new_truck)
 	int previous_truck = current_truck;
 	current_truck = new_truck;
 
-	if (globalEnvironment->frameListener)
+	if (gEnv->frameListener)
 	{
 		if (previous_truck >= 0 && current_truck >= 0)
-			globalEnvironment->frameListener->changedCurrentTruck(trucks[previous_truck], trucks[current_truck]);
+			gEnv->frameListener->changedCurrentTruck(trucks[previous_truck], trucks[current_truck]);
 		else if (previous_truck >= 0)
-			globalEnvironment->frameListener->changedCurrentTruck(trucks[previous_truck], 0);
+			gEnv->frameListener->changedCurrentTruck(trucks[previous_truck], 0);
 		else if (current_truck >= 0)
-			globalEnvironment->frameListener->changedCurrentTruck(0, trucks[current_truck]);
+			gEnv->frameListener->changedCurrentTruck(0, trucks[current_truck]);
 		else
-			globalEnvironment->frameListener->changedCurrentTruck(0, 0);
+			gEnv->frameListener->changedCurrentTruck(0, 0);
 	}
 }
 

@@ -44,7 +44,7 @@ Screwprop::Screwprop(node_t *nodes, int noderef, int nodeback, int nodeup, float
 void Screwprop::updateForces(int update)
 {
 	if (!water) return;
-	float depth=globalEnvironment->terrainManager->getWater()->getHeightWaves(nodes[noderef].AbsPosition)-nodes[noderef].AbsPosition.y;
+	float depth=gEnv->terrainManager->getWater()->getHeightWaves(nodes[noderef].AbsPosition)-nodes[noderef].AbsPosition.y;
 	if (depth<0) return; //out of water!
 	Vector3 dir=nodes[nodeback].RelPosition-nodes[noderef].RelPosition;
 	Vector3 rudaxis=nodes[noderef].RelPosition-nodes[nodeup].RelPosition;

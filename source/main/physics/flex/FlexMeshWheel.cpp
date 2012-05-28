@@ -39,12 +39,12 @@ FlexMeshWheel::FlexMeshWheel(char* name, node_t *nds, int n1, int n2, int nstart
 	//the rim object
 	char rimname[256];
 	sprintf(rimname, "rim-%s", name);
-	rimEnt = globalEnvironment->ogreSceneManager->createEntity(rimname, meshname);
+	rimEnt = gEnv->ogreSceneManager->createEntity(rimname, meshname);
 	MaterialFunctionMapper::replaceSimpleMeshMaterials(rimEnt, ColourValue(0, 0.5, 0.8));
 	if (mfm) mfm->replaceMeshMaterials(rimEnt);
 	if (mr) mr->replaceMeshMaterials(rimEnt);
 	if (usedSkin) usedSkin->replaceMeshMaterials(rimEnt);
-	rnode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	rnode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	rnode->attachObject(rimEnt);
 
 	/// Create the mesh via the MeshManager
@@ -302,7 +302,7 @@ void FlexMeshWheel::setVisible(bool visible)
 Vector3 FlexMeshWheel::flexit()
 {
 	Vector3 center;
-	if (globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || globalEnvironment->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding

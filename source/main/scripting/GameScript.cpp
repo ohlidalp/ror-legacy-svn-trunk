@@ -74,24 +74,24 @@ void GameScript::log(std::string &msg)
 
 double GameScript::getTime()
 {
-	return globalEnvironment->frameListener->getTime();
+	return gEnv->frameListener->getTime();
 }
 
 void GameScript::setPersonPosition(Vector3 &vec)
 {
-	if (globalEnvironment->frameListener && globalEnvironment->frameListener->person) globalEnvironment->frameListener->person->setPosition(Vector3(vec.x, vec.y, vec.z));
+	if (gEnv->frameListener && gEnv->frameListener->person) gEnv->frameListener->person->setPosition(Vector3(vec.x, vec.y, vec.z));
 }
 
 void GameScript::loadTerrain(std::string &terrain)
 {
-	if (globalEnvironment->frameListener) globalEnvironment->frameListener->loadTerrain(terrain);
+	if (gEnv->frameListener) gEnv->frameListener->loadTerrain(terrain);
 }
 
 Vector3 GameScript::getPersonPosition()
 {
-	if (globalEnvironment->frameListener && globalEnvironment->frameListener->person)
+	if (gEnv->frameListener && gEnv->frameListener->person)
 	{
-		Vector3 ov = globalEnvironment->frameListener->person->getPosition();
+		Vector3 ov = gEnv->frameListener->person->getPosition();
 		return Vector3(ov.x, ov.y, ov.z);
 	}
 	return Vector3::ZERO;
@@ -99,13 +99,13 @@ Vector3 GameScript::getPersonPosition()
 
 void GameScript::movePerson(Vector3 vec)
 {
-	if (globalEnvironment->frameListener && globalEnvironment->frameListener->person) globalEnvironment->frameListener->person->move(Vector3(vec.x, vec.y, vec.z));
+	if (gEnv->frameListener && gEnv->frameListener->person) gEnv->frameListener->person->move(Vector3(vec.x, vec.y, vec.z));
 }
 
 std::string GameScript::getCaelumTime()
 {
 #ifdef USE_CAELUM
-	return globalEnvironment->terrainManager->getSkyManager()->getPrettyTime();
+	return gEnv->terrainManager->getSkyManager()->getPrettyTime();
 #else
 	return "";
 #endif // USE_CAELUM
@@ -114,14 +114,14 @@ std::string GameScript::getCaelumTime()
 void GameScript::setCaelumTime(float value)
 {
 #ifdef USE_CAELUM
-	globalEnvironment->terrainManager->getSkyManager()->setTimeFactor(value);
+	gEnv->terrainManager->getSkyManager()->setTimeFactor(value);
 #endif // USE_CAELUM
 }
 
 bool GameScript::getCaelumAvailable()
 {
 #ifdef USE_CAELUM
-	return globalEnvironment->terrainManager->getSkyManager() != 0;
+	return gEnv->terrainManager->getSkyManager() != 0;
 #else
 	return false;
 #endif // USE_CAELUM
@@ -129,43 +129,43 @@ bool GameScript::getCaelumAvailable()
 
 float GameScript::stopTimer()
 {
-	if (globalEnvironment->frameListener)
+	if (gEnv->frameListener)
 	{
-		return globalEnvironment->frameListener->stopTimer();
+		return gEnv->frameListener->stopTimer();
 	}
 	return 0.0f;
 }
 
 void GameScript::startTimer()
 {
-	if (globalEnvironment->frameListener)
+	if (gEnv->frameListener)
 	{
-		globalEnvironment->frameListener->startTimer();
+		gEnv->frameListener->startTimer();
 	}
 }
 
 void GameScript::setWaterHeight(float value)
 {
-	if (globalEnvironment->frameListener && globalEnvironment->terrainManager->getWater())
+	if (gEnv->frameListener && gEnv->terrainManager->getWater())
 	{
-		globalEnvironment->terrainManager->getWater()->setHeight(value);
+		gEnv->terrainManager->getWater()->setHeight(value);
 	}
 }
 
 float GameScript::getGroundHeight(Vector3 &v)
 {
-	if (globalEnvironment->terrainManager->getHeightFinder())
+	if (gEnv->terrainManager->getHeightFinder())
 	{
-		return globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(v.x, v.z);
+		return gEnv->terrainManager->getHeightFinder()->getHeightAt(v.x, v.z);
 	}
 	return -1;
 }
 
 float GameScript::getWaterHeight()
 {
-	if (globalEnvironment->frameListener && globalEnvironment->terrainManager->getWater())
+	if (gEnv->frameListener && gEnv->terrainManager->getWater())
 	{
-		return globalEnvironment->terrainManager->getWater()->getHeight();
+		return gEnv->terrainManager->getWater()->getHeight();
 	}
 	return 0;
 }
@@ -177,18 +177,18 @@ Beam *GameScript::getCurrentTruck()
 
 float GameScript::getGravity()
 {
-	if (globalEnvironment->frameListener)
+	if (gEnv->frameListener)
 	{
-		return globalEnvironment->terrainManager->getGravity();
+		return gEnv->terrainManager->getGravity();
 	}
 	return 0;
 }
 
 void GameScript::setGravity(float value)
 {
-	if (globalEnvironment->frameListener)
+	if (gEnv->frameListener)
 	{
-		globalEnvironment->terrainManager->setGravity(value);
+		gEnv->terrainManager->setGravity(value);
 	}
 }
 
@@ -219,7 +219,7 @@ int GameScript::getNumTrucksByFlag(int flag)
 
 int GameScript::getCurrentTruckNumber()
 {
-	if (globalEnvironment->frameListener) return BeamFactory::getSingleton().getCurrentTruckNumber();
+	if (gEnv->frameListener) return BeamFactory::getSingleton().getCurrentTruckNumber();
 	return -1;
 }
 
@@ -245,7 +245,7 @@ void GameScript::message(std::string &txt, std::string &icon, float timeMillisec
 
 void GameScript::setDirectionArrow(std::string &text, Vector3 &vec)
 {
-	if (globalEnvironment->frameListener) globalEnvironment->frameListener->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(vec.x, vec.y, vec.z));
+	if (gEnv->frameListener) gEnv->frameListener->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(vec.x, vec.y, vec.z));
 }
 
 int GameScript::getChatFontSize()
@@ -277,19 +277,19 @@ void GameScript::showChooser(std::string &type, std::string &instance, std::stri
 	
 	if (ntype != SelectorWindow::LT_None)
 	{
-		globalEnvironment->frameListener->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+		gEnv->frameListener->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 	}
 #endif //USE_MYGUI
 }
 
 void GameScript::repairVehicle(std::string &instance, std::string &box, bool keepPosition)
 {
-	BeamFactory::getSingleton().repairTruck(globalEnvironment->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
+	BeamFactory::getSingleton().repairTruck(gEnv->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
 }
 
 void GameScript::removeVehicle(std::string &instance, std::string &box)
 {
-	BeamFactory::getSingleton().removeTruck(globalEnvironment->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+	BeamFactory::getSingleton().removeTruck(gEnv->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
 }
 
 
@@ -313,13 +313,13 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 	int functionPtr = mod->GetFunctionIdByName(eventhandler.c_str());
 
 	// trying to create the new object
-	SceneNode *bakeNode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	SceneNode *bakeNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	//globalEnvironment->frameListener->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
 }
 
 void GameScript::hideDirectionArrow()
 {
-	if (globalEnvironment->frameListener) globalEnvironment->frameListener->setDirectionArrow(0, Vector3::ZERO);
+	if (gEnv->frameListener) gEnv->frameListener->setDirectionArrow(0, Vector3::ZERO);
 }
 
 int GameScript::setMaterialAmbient(const std::string &materialName, float red, float green, float blue)
@@ -472,7 +472,7 @@ int GameScript::getLoadedTerrain(std::string &result)
 
 void GameScript::clearEventCache()
 {
-	globalEnvironment->collisions->clearEventCache();
+	gEnv->collisions->clearEventCache();
 }
 
 void GameScript::setCameraPosition(Vector3 &pos)
@@ -657,7 +657,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_Count",     CURLFORM_COPYCONTENTS, TOSTRING(i).c_str(), CURLFORM_END);
 	}
 
-	const RenderTarget::FrameStats& stats = globalEnvironment->ogreRenderWindow->getStatistics();
+	const RenderTarget::FrameStats& stats = gEnv->ogreRenderWindow->getStatistics();
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, TOSTRING(stats.avgFPS).c_str(), CURLFORM_END);
 
 
@@ -831,7 +831,7 @@ int GameScript::deleteScriptVariable(const std::string &arg)
 
 int GameScript::sendGameCmd(const std::string& message)
 {
-	Network *net = globalEnvironment->frameListener->getNetwork();
+	Network *net = gEnv->frameListener->getNetwork();
 	if (!net) return -11;
 	else return net->sendScriptMessage(const_cast<char*>(message.c_str()), (unsigned int)message.size());
 }
