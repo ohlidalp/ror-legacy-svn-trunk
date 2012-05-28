@@ -147,8 +147,6 @@ protected:
 	char screenshotformat[256];
 	char terrainmap[1024];
 	
-	TerrainManager *terrainManager;
-
 	collision_box_t *reload_box;
 	double rtime;
 

@@ -44,7 +44,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 TerrainManager::TerrainManager() :
-	loading_state(NONE_LOADED)
+	  loading_state(NONE_LOADED)
 {
 
 }
@@ -60,7 +60,8 @@ void TerrainManager::loadTerrain(String filename)
 
 	try
 	{
-		ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+		String group = ResourceGroupManager::getSingleton().findGroupContainingResource(filename);
+		ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 	} catch(...)
 	{
 		LOG("Terrain not found: " + String(filename));
