@@ -371,10 +371,6 @@ Real Round(Real value, unsigned short ndigits /* = 0 */)
 
 void generateHashFromDataStream(DataStream *ds, Ogre::String &hash)
 {
-	// TODO: fix memory corruption going on below
-	hash = "nothashed";
-	return;
-
 	size_t location = ds->tell();
 	// copy whole file into a buffer
 	uint8_t *buf = 0;

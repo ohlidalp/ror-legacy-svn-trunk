@@ -724,8 +724,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	surveyMap(0),
 	surveyMapMode(SURVEY_MAP_NONE),
 	terrainUID(""),
-	truck_preload_num(0),
-	terrainManager(0)
+	truck_preload_num(0)
 {
 	// we don't use overlays in embedded mode
 	if (!gEnv->embeddedMode)
@@ -2809,7 +2808,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	}
 
 	gEnv->terrainManager = new TerrainManager();
-	terrainManager->loadTerrain(terrainfile);
+	gEnv->terrainManager->loadTerrain(terrainfile);
 
 	if (gEnv->player) gEnv->player->setVisible(true);
 
