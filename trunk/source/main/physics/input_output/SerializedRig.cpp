@@ -373,7 +373,6 @@ int SerializedRig::loadTruckVirtual(String fname, bool ignorep)
 
 int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogre::Vector3 pos, Ogre::Quaternion rot, collision_box_t *spawnbox)
 {
-
 	// add custom include path now, before scopelog, hides the path ...
 	if (!SSETTING("resourceIncludePath", "").empty())
 	{
@@ -5536,7 +5535,10 @@ void SerializedRig::init_node(int pos, Real x, Real y, Real z, int type, Real m,
 	nodes[pos].buoyanceForce=Vector3::ZERO;
 	nodes[pos].buoyancy=truckmass/15.0;//DEFAULT_BUOYANCY;
 	nodes[pos].lastdrag=Vector3(0,0,0);
-	nodes[pos].gravimass=Vector3(0,gEnv->terrainManager->getGravity()*m,0);
+	float grav = -9.81f;
+	if(gEnv->terrainManager) // trucks can also virtually load, no terrain then
+		grav = gEnv->terrainManager->getGravity();
+	nodes[pos].gravimass=Vector3(0, grav*m,0);
 	nodes[pos].wetstate=DRY;
 	nodes[pos].isHot=false;
 	nodes[pos].overrideMass=false;
