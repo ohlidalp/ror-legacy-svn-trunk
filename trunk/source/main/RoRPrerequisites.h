@@ -40,6 +40,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreUTFString.h>
 
 #include "GlobalEnvironment.h"
+#include "ZeroedMemoryAllocator.h" // this is used quite a lot, so we include it here already
 
 // some config for angelscript, doesnt matter if we compile with angelscript or not as its just a definition
 #ifdef USE_ANGELSCRIPT
