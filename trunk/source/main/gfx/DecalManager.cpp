@@ -30,7 +30,7 @@ using namespace Ogre;
 // DecalManager
 DecalManager::DecalManager()
 {
-	terrain_decals_snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	terrain_decals_snode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	terrain_decal_count = 0;
 }
 
@@ -333,11 +333,11 @@ int DecalSpline::showDebugLine(bool enabled)
 {
 	if (enabled)
 	{
-		mo_spline = gEnv->ogreSceneManager->createManualObject();
+		mo_spline = gEnv->sceneManager->createManualObject();
 		if (snparent)
 			mo_spline_node = snparent->createChildSceneNode();
 		else
-			mo_spline_node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			mo_spline_node = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		mo_spline->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
 		for (float j=0;j<1;j+=0.001)
 		{
@@ -349,13 +349,13 @@ int DecalSpline::showDebugLine(bool enabled)
 	{
 		if (mo_spline)
 		{
-			gEnv->ogreSceneManager->destroyManualObject(mo_spline);
+			gEnv->sceneManager->destroyManualObject(mo_spline);
 			delete(mo_spline);
 			mo_spline=0;
 		}
 		if (mo_spline_node)
 		{
-			gEnv->ogreSceneManager->destroySceneNode(mo_spline_node);
+			gEnv->sceneManager->destroySceneNode(mo_spline_node);
 			delete(mo_spline_node);
 			mo_spline_node=0;
 		}

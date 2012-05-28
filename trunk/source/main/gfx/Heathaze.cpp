@@ -45,7 +45,7 @@ void HeatHazeListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 
 HeatHaze::HeatHaze() : rttTex(0), listener(0)
 {
-	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, gEnv->ogreCamera->getViewport()->getWidth(), gEnv->ogreCamera->getViewport()->getHeight(), 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
+	TexturePtr rttTexPtr = TextureManager::getSingleton().createManual("heathaze_rtt", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, gEnv->mainCamera->getViewport()->getWidth(), gEnv->mainCamera->getViewport()->getHeight(), 0, PF_R8G8B8, TU_RENDERTARGET, new ResourceBuffer());
 	rttTex = rttTexPtr->getBuffer()->getRenderTarget();
 	{
 		/*
@@ -59,7 +59,7 @@ HeatHaze::HeatHaze() : rttTex(0), listener(0)
 		//mHazeCam->setAspectRatio(2.0);
 
 		// setup viewport
-		Viewport *v = rttTex->addViewport(gEnv->ogreCamera);
+		Viewport *v = rttTex->addViewport(gEnv->mainCamera);
 		//v->setClearEveryFrame(true);
 		//v->setBackgroundColour(ColourValue::Black);
 		v->setOverlaysEnabled(false);
@@ -69,7 +69,7 @@ HeatHaze::HeatHaze() : rttTex(0), listener(0)
 		MaterialPtr mat = MaterialManager::getSingleton().getByName("tracks/HeatHazeMat");
 		tex = mat->getTechnique(0)->getPass(0)->getTextureUnitState(1);
 		tex->setTextureName("heathaze_rtt");
-		tex->setProjectiveTexturing(true, gEnv->ogreCamera);
+		tex->setProjectiveTexturing(true, gEnv->mainCamera);
 
 		listener = new HeatHazeListener();
 		rttTex->addListener(listener);

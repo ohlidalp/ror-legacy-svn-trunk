@@ -1488,7 +1488,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 									char wname[256];
 									sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
 									//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-									e.smoker=gEnv->ogreSceneManager->createParticleSystem(wname, "tracks/Smoke");
+									e.smoker=gEnv->sceneManager->createParticleSystem(wname, "tracks/Smoke");
 									if (!e.smoker) continue;
 									e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 									// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -1519,7 +1519,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 									char wname[256];
 									sprintf(wname, "exhaust-%d-%s", (int)exhausts.size(), truckname);
 									//if (pSysM) smoker=pSysM->createSystem(wname, "tracks/Smoke");
-									e.smoker=gEnv->ogreSceneManager->createParticleSystem(wname, "tracks/Smoke");
+									e.smoker=gEnv->sceneManager->createParticleSystem(wname, "tracks/Smoke");
 									if (!e.smoker)  continue;
 									e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 									// ParticleSystem* pSys = ParticleSystemManager::getSingleton().createSystem("exhaust", "tracks/Smoke");
@@ -3207,14 +3207,14 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					sprintf(flarename, "cabinglight-%s", truckname);
 					if (!virtuallyLoaded)
 					{
-						cablight=gEnv->ogreSceneManager->createLight(flarename);
+						cablight=gEnv->sceneManager->createLight(flarename);
 						cablight->setType(Light::LT_POINT);
 						cablight->setDiffuseColour( ColourValue(0.4, 0.4, 0.3));
 						cablight->setSpecularColour( ColourValue(0.4, 0.4, 0.3));
 						cablight->setAttenuation(20, 1, 0, 0);
 						cablight->setCastShadows(false);
 						cablight->setVisible(true);
-						cablightNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+						cablightNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 						deletion_sceneNodes.push_back(cablightNode);
 						if (cablight)
 							cablightNode->attachObject(cablight);
@@ -3315,10 +3315,10 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				f.size=size;
 				if (!virtuallyLoaded)
 				{
-					f.snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+					f.snode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 					char flarename[256];
 					sprintf(flarename, "flare-%s-%i", truckname, free_flare);
-					f.bbs=gEnv->ogreSceneManager->createBillboardSet(flarename,1);
+					f.bbs=gEnv->sceneManager->createBillboardSet(flarename,1);
 					f.bbs->createBillboard(0,0,0);
 					f.bbs->setVisibilityFlags(DEPTHMAP_DISABLED);
 					bool usingDefaultMaterial=true;
@@ -3343,7 +3343,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					if (type == 'f' && usingDefaultMaterial && flaresMode >=2 && size > 0.001)
 					{
 						// front light
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour( ColourValue(1, 1, 1));
 						f.light->setSpecularColour( ColourValue(1, 1, 1));
@@ -3354,7 +3354,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					else if (type == 'f' && !usingDefaultMaterial && flaresMode >=4 && size > 0.001)
 					{
 						// this is a quick fix for the red backlight when frontlight is switched on
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
 						f.light->setSpecularColour( ColourValue(1.0, 0, 0));
@@ -3365,7 +3365,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					else if (type == 'R' && flaresMode >= 4 && size > 0.001)
 					{
 						// brake light
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour(ColourValue(1, 1, 1));
 						f.light->setSpecularColour(ColourValue(1, 1, 1));
@@ -3376,7 +3376,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					else if (type == 'b' && flaresMode >= 4 && size > 0.001)
 					{
 						// brake light
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour( ColourValue(1.0, 0, 0));
 						f.light->setSpecularColour( ColourValue(1.0, 0, 0));
@@ -3387,7 +3387,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					else if ((type == 'l' || type == 'r') && flaresMode >= 4 && size > 0.001)
 					{
 						// blink light
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour( ColourValue(1, 1, 0));
 						f.light->setSpecularColour( ColourValue(1, 1, 0));
@@ -3398,7 +3398,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					else if ((type == 'u') && flaresMode >= 4 && size > 0.001)
 					{
 						// user light always white (TODO: improve this)
-						f.light=gEnv->ogreSceneManager->createLight(flarename);
+						f.light=gEnv->sceneManager->createLight(flarename);
 						f.light->setType(Light::LT_SPOTLIGHT);
 						f.light->setDiffuseColour( ColourValue(1, 1, 1));
 						f.light->setSpecularColour( ColourValue(1, 1, 1));
@@ -3503,7 +3503,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					// create the meshs scenenode
 					if (!virtuallyLoaded)
 					{
-						props[free_prop].wheel = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+						props[free_prop].wheel = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 						// now create the mesh
 						MeshObject *mo = new MeshObject(diwmeshname, "", props[free_prop].wheel, usedSkin, enable_background_loading);
 						mo->setSimpleMaterialColour(ColourValue(0, 0.5, 0.5));
@@ -3514,7 +3514,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				if (!virtuallyLoaded)
 				{
 					// create the meshs scenenode
-					props[free_prop].snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+					props[free_prop].snode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 					// now create the mesh
 					props[free_prop].mo = new MeshObject(meshname, "", props[free_prop].snode, usedSkin, enable_background_loading);
 					props[free_prop].mo->setSimpleMaterialColour(ColourValue(1, 1, 0));
@@ -3567,7 +3567,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 						props[free_prop].beacontype='b';
 						props[free_prop].bbs[0]=0;
 						//the light
-						props[free_prop].light[0]=gEnv->ogreSceneManager->createLight(); //propname);
+						props[free_prop].light[0]=gEnv->sceneManager->createLight(); //propname);
 						props[free_prop].light[0]->setType(Light::LT_SPOTLIGHT);
 						props[free_prop].light[0]->setDiffuseColour(color);
 						props[free_prop].light[0]->setSpecularColour(color);
@@ -3576,8 +3576,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 						props[free_prop].light[0]->setCastShadows(false);
 						props[free_prop].light[0]->setVisible(false);
 						//the flare billboard
-						props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-						props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(1); //(propname,1);
+						props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+						props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(1); //(propname,1);
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if (props[free_prop].bbs[0])
 						{
@@ -3595,7 +3595,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 						props[free_prop].beacontype='r';
 						props[free_prop].bbs[0]=0;
 						//the light
-						props[free_prop].light[0]=gEnv->ogreSceneManager->createLight();//propname);
+						props[free_prop].light[0]=gEnv->sceneManager->createLight();//propname);
 						props[free_prop].light[0]->setType(Light::LT_POINT);
 						props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 0.0, 0.0));
 						props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 0.0, 0.0));
@@ -3603,8 +3603,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 						props[free_prop].light[0]->setCastShadows(false);
 						props[free_prop].light[0]->setVisible(false);
 						//the flare billboard
-						props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-						props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(1); //propname,1);
+						props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+						props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(1); //propname,1);
 						props[free_prop].bbs[0]->createBillboard(0,0,0);
 						if (props[free_prop].bbs[0])
 						{
@@ -3629,7 +3629,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 							//the light
 							//char rpname[256];
 							//sprintf(rpname,"%s-%i", propname, k);
-							props[free_prop].light[k]=gEnv->ogreSceneManager->createLight(); //rpname);
+							props[free_prop].light[k]=gEnv->sceneManager->createLight(); //rpname);
 							props[free_prop].light[k]->setType(Light::LT_SPOTLIGHT);
 							if (k>1)
 							{
@@ -3646,8 +3646,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 							props[free_prop].light[k]->setCastShadows(false);
 							props[free_prop].light[k]->setVisible(false);
 							//the flare billboard
-							props[free_prop].bbsnode[k] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-							props[free_prop].bbs[k]=gEnv->ogreSceneManager->createBillboardSet(1); //rpname,1);
+							props[free_prop].bbsnode[k] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+							props[free_prop].bbs[k]=gEnv->sceneManager->createBillboardSet(1); //rpname,1);
 							props[free_prop].bbs[k]->createBillboard(0,0,0);
 							if (props[free_prop].bbs[k])
 							{
@@ -3721,7 +3721,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					Entity *ec=0;
 					try
 					{
-						ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
+						ec = gEnv->sceneManager->createEntity(wnamei, wname);
 					} catch(...)
 					{
 						parser_warning(c, "error loading mesh: "+String(wname), PARSER_ERROR);
@@ -3731,7 +3731,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					if (materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 					if (materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 					if (usedSkin) usedSkin->replaceMeshMaterials(ec);
-					wings[free_wing].cnode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+					wings[free_wing].cnode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 					if (ec)
 						wings[free_wing].cnode->attachObject(ec);
 					//induced drag
@@ -3782,8 +3782,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								//the flare billboard
 								char propname[256];
 								sprintf(propname, "prop-%s-%i", truckname, free_prop);
-								props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-								props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(propname,1);
+								props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(propname,1);
 								props[free_prop].bbs[0]->createBillboard(0,0,0);
 								if (props[free_prop].bbs[0])
 								{
@@ -3815,7 +3815,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								props[free_prop].beacontype='w';
 								//light
 								sprintf(propname, "prop-%s-%i", truckname, free_prop);
-								props[free_prop].light[0]=gEnv->ogreSceneManager->createLight(propname);
+								props[free_prop].light[0]=gEnv->sceneManager->createLight(propname);
 								props[free_prop].light[0]->setType(Light::LT_POINT);
 								props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
 								props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
@@ -3823,8 +3823,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								props[free_prop].light[0]->setCastShadows(false);
 								props[free_prop].light[0]->setVisible(false);
 								//the flare billboard
-								props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-								props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(propname,1);
+								props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(propname,1);
 								props[free_prop].bbs[0]->createBillboard(0,0,0);
 								if (props[free_prop].bbs[0])
 								{
@@ -3857,8 +3857,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								props[free_prop].light[0]=0;
 								//the flare billboard
 								sprintf(propname, "prop-%s-%i", truckname, free_prop);
-								props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-								props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(propname,1);
+								props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(propname,1);
 								props[free_prop].bbs[0]->createBillboard(0,0,0);
 								if (props[free_prop].bbs[0])
 								{
@@ -3890,7 +3890,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								props[free_prop].beacontype='w';
 								//light
 								sprintf(propname, "prop-%s-%i", truckname, free_prop);
-								props[free_prop].light[0]=gEnv->ogreSceneManager->createLight(propname);
+								props[free_prop].light[0]=gEnv->sceneManager->createLight(propname);
 								props[free_prop].light[0]->setType(Light::LT_POINT);
 								props[free_prop].light[0]->setDiffuseColour( ColourValue(1.0, 1.0, 1.0));
 								props[free_prop].light[0]->setSpecularColour( ColourValue(1.0, 1.0, 1.0));
@@ -3898,8 +3898,8 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 								props[free_prop].light[0]->setCastShadows(false);
 								props[free_prop].light[0]->setVisible(false);
 								//the flare billboard
-								props[free_prop].bbsnode[0] = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-								props[free_prop].bbs[0]=gEnv->ogreSceneManager->createBillboardSet(propname,1);
+								props[free_prop].bbsnode[0] = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+								props[free_prop].bbs[0]=gEnv->sceneManager->createBillboardSet(propname,1);
 								props[free_prop].bbs[0]->createBillboard(0,0,0);
 								if (props[free_prop].bbs[0])
 								{
@@ -4280,7 +4280,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 							strncpy(material, newMat.c_str(), 50);
 					}
 
-					e.smoker = gEnv->ogreSceneManager->createParticleSystem(wname, material);
+					e.smoker = gEnv->sceneManager->createParticleSystem(wname, material);
 					if (!e.smoker) continue;
 					e.smoker->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 					e.smokeNode->attachObject(e.smoker);
@@ -4319,7 +4319,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					cparticles[free_cparticle].snode = parent->createChildSceneNode();
 					char wname[256];
 					sprintf(wname, "cparticle-%i-%s", free_cparticle, truckname);
-					cparticles[free_cparticle].psys = gEnv->ogreSceneManager->createParticleSystem(wname, psystem);
+					cparticles[free_cparticle].psys = gEnv->sceneManager->createParticleSystem(wname, psystem);
 					if (!cparticles[free_cparticle].psys) continue;
 					cparticles[free_cparticle].psys->setVisibilityFlags(DEPTHMAP_DISABLED); // disable particles in depthmap
 					cparticles[free_cparticle].snode->attachObject(cparticles[free_cparticle].psys);
@@ -5312,12 +5312,12 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 		if (!virtuallyLoaded)
 		{
 			parser_warning(c, "creating cabnode", PARSER_INFO);
-			cabNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			cabNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			Entity *ec = 0;
 			try
 			{
 				parser_warning(c, "loading cab", PARSER_INFO);
-				ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
+				ec = gEnv->sceneManager->createEntity(wnamei, wname);
 				//		ec->setRenderQueueGroup(RENDER_QUEUE_6);
 				parser_warning(c, "attaching cab", PARSER_INFO);
 				if (ec)
@@ -5625,7 +5625,7 @@ int SerializedRig::add_beam(Ogre::SceneNode* parent, node_t *p1 , node_t *p2 , i
 		sprintf(bname, "beam-%s-%i", truckname, pos);
 		try
 		{
-			beams[pos].mEntity = gEnv->ogreSceneManager->createEntity(bname, "beam.mesh");
+			beams[pos].mEntity = gEnv->sceneManager->createEntity(bname, "beam.mesh");
 		} catch(...)
 		{
 			parser_warning(c, "error loading mesh: beam.mesh", PARSER_ERROR);
@@ -5845,8 +5845,8 @@ void SerializedRig::addWheel(Ogre::SceneNode* parent, float radius , float width
 			vwheels[free_wheel].fm=new FlexMeshWheel(wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
 			try
 			{
-				Entity *ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
-				vwheels[free_wheel].cnode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+				Entity *ec = gEnv->sceneManager->createEntity(wnamei, wname);
+				vwheels[free_wheel].cnode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 				if (ec)
 					vwheels[free_wheel].cnode->attachObject(ec);
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
@@ -5863,12 +5863,12 @@ void SerializedRig::addWheel(Ogre::SceneNode* parent, float radius , float width
 			vwheels[free_wheel].fm=new FlexMesh(wname, nodes, node1, node2, nodebase, rays, texf, texb);
 			try
 			{
-				Entity *ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
+				Entity *ec = gEnv->sceneManager->createEntity(wnamei, wname);
 				MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 				if (materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 				if (materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 				if (usedSkin) usedSkin->replaceMeshMaterials(ec);
-				vwheels[free_wheel].cnode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+				vwheels[free_wheel].cnode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 				if (ec)
 					vwheels[free_wheel].cnode->attachObject(ec);
 			} catch(...)
@@ -6065,14 +6065,14 @@ void SerializedRig::addWheel2(Ogre::SceneNode* parent, float radius , float radi
 		vwheels[free_wheel].fm=new FlexMesh(wname, nodes, node1, node2, nodebase, rays, texf, texb, true, radius/radius2);
 		try
 		{
-			Entity *ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
+			Entity *ec = gEnv->sceneManager->createEntity(wnamei, wname);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));
 			if (materialFunctionMapper) materialFunctionMapper->replaceMeshMaterials(ec);
 			if (materialReplacer) materialReplacer->replaceMeshMaterials(ec);
 			if (usedSkin) usedSkin->replaceMeshMaterials(ec);
 			//	ec->setMaterialName("tracks/wheel");
 			//ec->setMaterialName("Test/ColourTest");
-			vwheels[free_wheel].cnode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			vwheels[free_wheel].cnode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			if (ec)
 				vwheels[free_wheel].cnode->attachObject(ec);
 			//	cnode->setPosition(1000,2,940);
@@ -6297,8 +6297,8 @@ void SerializedRig::addWheel3(Ogre::SceneNode* parent, float radius , float radi
 		vwheels[free_wheel].fm=new FlexMeshWheel(wname, nodes, node1, node2, nodebase, rays, texf, texb, rimradius, rimreverse, materialFunctionMapper, usedSkin, materialReplacer);
 		try
 		{
-			Entity *ec = gEnv->ogreSceneManager->createEntity(wnamei, wname);
-			vwheels[free_wheel].cnode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			Entity *ec = gEnv->sceneManager->createEntity(wnamei, wname);
+			vwheels[free_wheel].cnode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			if (ec)
 				vwheels[free_wheel].cnode->attachObject(ec);
 			MaterialFunctionMapper::replaceSimpleMeshMaterials(ec, ColourValue(0, 0.5, 0.5));

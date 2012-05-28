@@ -16,13 +16,13 @@ void GameState::enter()
     LOG("Entering GameState...");
 
 	m_pSceneMgr = OgreFramework::getSingletonPtr()->m_pRoot->createSceneManager(ST_EXTERIOR_CLOSE);
-	gEnv->ogreSceneManager = m_pSceneMgr;
+	gEnv->sceneManager = m_pSceneMgr;
 
 	//CREATE CAMERA
 	LOG("Creating camera");
 	// Create the camera
 	m_pCamera = m_pSceneMgr->createCamera("PlayerCam");
-	gEnv->ogreCamera = m_pCamera;
+	gEnv->mainCamera = m_pCamera;
 
 	// Position it at 500 in Z direction
 	m_pCamera->setPosition(Vector3(128,25,128));

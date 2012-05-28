@@ -318,10 +318,10 @@ Beam::Beam(int tnum , Ogre::Vector3 pos , Ogre::Quaternion rot , const char* fna
 	
 	strcpy(uniquetruckid,"-1");
 
-	simpleSkeletonNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	simpleSkeletonNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(simpleSkeletonNode);
 	
-	beamsRoot=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	beamsRoot=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	deletion_sceneNodes.push_back(netLabelNode);
 	// skidmark stuff
 	useSkidmarks = BSETTING("Skidmarks", false);
@@ -513,7 +513,7 @@ Beam::~Beam()
 		{
 			if (!deletion_sceneNodes[i]) continue;
 			deletion_sceneNodes[i]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(deletion_sceneNodes[i]);
+			gEnv->sceneManager->destroySceneNode(deletion_sceneNodes[i]);
 
 			deletion_sceneNodes[i]=0;
 		}
@@ -528,7 +528,7 @@ Beam::~Beam()
 		if (wings[i].cnode)
 		{
 			wings[i].cnode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(wings[i].cnode);
+			gEnv->sceneManager->destroySceneNode(wings[i].cnode);
 		}
 	}
 
@@ -565,7 +565,7 @@ Beam::~Beam()
 		if (vwheels[i].cnode)
 		{
 			vwheels[i].cnode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(vwheels[i].cnode);
+			gEnv->sceneManager->destroySceneNode(vwheels[i].cnode);
 		}
 	}
 
@@ -575,37 +575,37 @@ Beam::~Beam()
 		if (props[i].bbsnode[0])
 		{
 			props[i].bbsnode[0]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[0]);
+			gEnv->sceneManager->destroySceneNode(props[i].bbsnode[0]);
 		}
 		if (props[i].bbsnode[1])
 		{
 			props[i].bbsnode[1]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[1]);
+			gEnv->sceneManager->destroySceneNode(props[i].bbsnode[1]);
 		}
 		if (props[i].bbsnode[2])
 		{
 			props[i].bbsnode[2]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[2]);
+			gEnv->sceneManager->destroySceneNode(props[i].bbsnode[2]);
 		}
 		if (props[i].bbsnode[3])
 		{
 			props[i].bbsnode[3]->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].bbsnode[3]);
+			gEnv->sceneManager->destroySceneNode(props[i].bbsnode[3]);
 		}
 		if (props[i].snode)
 		{
 			props[i].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].snode);
+			gEnv->sceneManager->destroySceneNode(props[i].snode);
 		}
 		if (props[i].wheel)
 		{
 			props[i].wheel->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(props[i].wheel);
+			gEnv->sceneManager->destroySceneNode(props[i].wheel);
 		}
-		if (props[i].light[0]) gEnv->ogreSceneManager->destroyLight(props[i].light[0]);
-		if (props[i].light[1]) gEnv->ogreSceneManager->destroyLight(props[i].light[1]);
-		if (props[i].light[2]) gEnv->ogreSceneManager->destroyLight(props[i].light[2]);
-		if (props[i].light[3]) gEnv->ogreSceneManager->destroyLight(props[i].light[3]);
+		if (props[i].light[0]) gEnv->sceneManager->destroyLight(props[i].light[0]);
+		if (props[i].light[1]) gEnv->sceneManager->destroyLight(props[i].light[1]);
+		if (props[i].light[2]) gEnv->sceneManager->destroyLight(props[i].light[2]);
+		if (props[i].light[3]) gEnv->sceneManager->destroyLight(props[i].light[3]);
 	}
 
 	// delete flares
@@ -614,9 +614,9 @@ Beam::~Beam()
 		if (flares[i].snode)
 		{
 			flares[i].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(flares[i].snode);
+			gEnv->sceneManager->destroySceneNode(flares[i].snode);
 		}
-		if (flares[i].light) gEnv->ogreSceneManager->destroyLight(flares[i].light);
+		if (flares[i].light) gEnv->sceneManager->destroyLight(flares[i].light);
 
 	}
 
@@ -626,13 +626,13 @@ Beam::~Beam()
 		if (it->smokeNode)
 		{
 			it->smokeNode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(it->smokeNode);
+			gEnv->sceneManager->destroySceneNode(it->smokeNode);
 		}
 		if (it->smoker)
 		{
 			it->smoker->removeAllAffectors();
 			it->smoker->removeAllEmitters();
-			gEnv->ogreSceneManager->destroyParticleSystem(it->smoker);
+			gEnv->sceneManager->destroyParticleSystem(it->smoker);
 		}
 	}
 
@@ -642,13 +642,13 @@ Beam::~Beam()
 		if (cparticles[free_cparticle].snode)
 		{
 			cparticles[free_cparticle].snode->removeAndDestroyAllChildren();
-			gEnv->ogreSceneManager->destroySceneNode(cparticles[free_cparticle].snode);
+			gEnv->sceneManager->destroySceneNode(cparticles[free_cparticle].snode);
 		}
 		if (cparticles[free_cparticle].psys)
 		{
 			cparticles[free_cparticle].psys->removeAllAffectors();
 			cparticles[free_cparticle].psys->removeAllEmitters();
-			gEnv->ogreSceneManager->destroyParticleSystem(cparticles[free_cparticle].psys);
+			gEnv->sceneManager->destroyParticleSystem(cparticles[free_cparticle].psys);
 		}
 
 	}
@@ -761,7 +761,7 @@ void Beam::scaleTruck(float value)
 void Beam::initSimpleSkeleton()
 {
 	// create
-	simpleSkeletonManualObject =  gEnv->ogreSceneManager->createManualObject();
+	simpleSkeletonManualObject =  gEnv->sceneManager->createManualObject();
 
 	simpleSkeletonManualObject->estimateIndexCount(free_beam*2);
 	simpleSkeletonManualObject->setCastShadows(false);
@@ -4247,12 +4247,12 @@ void Beam::setDetailLevel(int v)
 		if (detailLevel == 0 && v == 1)
 		{
 			// detach
-			gEnv->ogreSceneManager->getRootSceneNode()->removeChild(beamsRoot);
+			gEnv->sceneManager->getRootSceneNode()->removeChild(beamsRoot);
 		}
 		if (detailLevel == 1 && v == 0)
 		{
 			// attach
-			gEnv->ogreSceneManager->getRootSceneNode()->addChild(beamsRoot);
+			gEnv->sceneManager->getRootSceneNode()->addChild(beamsRoot);
 		}
 		detailLevel = v;
 	}
@@ -5128,14 +5128,14 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::White);
 			t.txt->setRenderingDistance(2);
 
-			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			t.node = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 			t.node->setPosition(nodes[i].smoothpos);
 			t.node->setScale(Vector3(0.5,0.5,0.5));
 
 			// collision nodes debug, also mimics as node visual
 			SceneNode *s = t.node->createChildSceneNode();
-			Entity *b = gEnv->ogreSceneManager->createEntity(entName, "sphere.mesh");
+			Entity *b = gEnv->sceneManager->createEntity(entName, "sphere.mesh");
 			b->setMaterialName("tracks/transgreen");
 			s->attachObject(b);
 			float f = 0.005f;
@@ -5172,7 +5172,7 @@ void Beam::setDebugOverlayState(int mode)
 			t.txt->setColor(ColourValue::Black);
 			t.txt->setRenderingDistance(2);
 
-			t.node = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+			t.node = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			t.node->attachObject(t.txt);
 
 			Vector3 pos = beams[i].p1->smoothpos - (beams[i].p1->smoothpos - beams[i].p2->smoothpos)/2;
@@ -5361,7 +5361,7 @@ void Beam::updateNetworkInfo()
 		}
 		*/
 
-		netLabelNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		netLabelNode=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		netLabelNode->attachObject(netMT);
 		netLabelNode->setPosition(position);
 		netLabelNode->setVisible(true);

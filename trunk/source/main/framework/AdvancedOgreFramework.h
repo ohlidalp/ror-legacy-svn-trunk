@@ -32,7 +32,7 @@ public:
 	bool initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String mainhwnd, bool embedded=false);
 	void resized(Ogre::Vector2 size);
 
-	Ogre::Root*		m_pRoot;
+	Ogre::Root*		    m_pRoot;
 	Ogre::RenderWindow*	m_pRenderWnd;
 	Ogre::Viewport*		m_pViewport;
 	Ogre::Timer*		m_pTimer;

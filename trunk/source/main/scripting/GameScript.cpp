@@ -313,7 +313,7 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 	int functionPtr = mod->GetFunctionIdByName(eventhandler.c_str());
 
 	// trying to create the new object
-	SceneNode *bakeNode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	SceneNode *bakeNode=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 	//globalEnvironment->frameListener->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
 }
 
@@ -657,7 +657,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 		curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "Trailer_Count",     CURLFORM_COPYCONTENTS, TOSTRING(i).c_str(), CURLFORM_END);
 	}
 
-	const RenderTarget::FrameStats& stats = gEnv->ogreRenderWindow->getStatistics();
+	const RenderTarget::FrameStats& stats = gEnv->renderWindow->getStatistics();
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "AVG_FPS", CURLFORM_COPYCONTENTS, TOSTRING(stats.avgFPS).c_str(), CURLFORM_END);
 
 

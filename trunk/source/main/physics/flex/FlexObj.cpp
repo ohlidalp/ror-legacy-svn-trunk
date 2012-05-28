@@ -80,7 +80,7 @@ FlexObj::FlexObj(node_t *nds, int numtexcoords, Vector3* texcoords, int numtrian
 	}
 */
 	//finished munching
-	gEnv->ogreSceneManager=gEnv->ogreSceneManager;
+	gEnv->sceneManager=gEnv->sceneManager;
 	nodes=nds;
 	/// Create the mesh via the MeshManager
     msh = MeshManager::getSingleton().createManual(name, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,new ResourceBuffer());
@@ -348,7 +348,7 @@ Vector3 FlexObj::updateShadowVertices()
 Vector3 FlexObj::flexit()
 {
 	Vector3 center;
-	if (gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->ogreSceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
+	if (gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_MODULATIVE || gEnv->sceneManager->getShadowTechnique()==SHADOWTYPE_STENCIL_ADDITIVE)
 	{
 		center=updateShadowVertices();
 		//find the binding
