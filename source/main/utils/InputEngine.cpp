@@ -1595,7 +1595,7 @@ bool InputEngine::setup(String hwnd, bool capture, bool capturemouse, int _grabM
 	grabMode = _grabMode;
 
 	// grab mode override in embedded mode
-	if (OgreFramework::getSingleton().isEmbedded())
+	if (globalEnvironment->embeddedMode)
 	{
 		grabMode = GRAB_DYNAMICALLY;
 #ifndef NOOGRE
@@ -1877,19 +1877,19 @@ void InputEngine::Capture()
 	}
 }
 
-void InputEngine::windowResized()
+void InputEngine::windowResized(Ogre::RenderWindow* rw)
 {
 	if (!mMouse)
 		return;
 	//update mouse area
 	unsigned int width, height, depth;
 	int left, top;
-	globalEnvironment->ogreRenderWindow->getMetrics(width, height, depth, left, top);
+	rw->getMetrics(width, height, depth, left, top);
 	const OIS::MouseState &ms = mMouse->getMouseState();
 	ms.width = width;
 	ms.height = height;
 #ifdef USE_MYGUI
-	GUIManager::getSingleton().windowResized();
+	GUIManager::getSingleton().windowResized(rw);
 #endif //MYGUI
 }
 
@@ -3402,7 +3402,7 @@ void InputEngine::setupDefault(Ogre::String inputhwnd /* = "" */)
 	else if (inputGrabSetting == "None")
 		inputGrabMode = GRAB_NONE;
 
-	if (!OgreFramework::getSingleton().isEmbedded())
+	if (!globalEnvironment->embeddedMode)
 	{
 
 		// start input engine

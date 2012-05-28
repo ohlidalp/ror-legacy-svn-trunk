@@ -175,6 +175,12 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 	configure();
 
     m_pViewport = m_pRenderWnd->addViewport(0);
+
+	globalEnvironment->ogreRoot         = m_pRoot;
+	globalEnvironment->ogreViewPort     = m_pViewport;
+	globalEnvironment->ogreRenderWindow = m_pRenderWnd;
+	globalEnvironment->embeddedMode     = embedded;
+	
     m_pViewport->setBackgroundColour(ColourValue(0.5f, 0.5f, 0.5f, 1.0f));
 
     m_pViewport->setCamera(0);
@@ -186,7 +192,6 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
 
 	// init inputsystem
 
-
     Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
     //Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
@@ -196,12 +201,6 @@ bool OgreFramework::initOgre(Ogre::String name, Ogre::String hwnd, Ogre::String 
     m_pTimer->reset();
 
     m_pRenderWnd->setActive(true);
-
-
-	globalEnvironment->ogreRoot     = m_pRoot;
-	globalEnvironment->ogreViewPort = m_pViewport;
-	globalEnvironment->ogreRenderWindow = m_pRenderWnd;
-	globalEnvironment->embeddedMode = embedded;
 
     return true;
 }

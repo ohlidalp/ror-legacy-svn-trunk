@@ -38,7 +38,7 @@ public:
 	void shutdown();
 	void tryShutdown(); // used upon errors and such where the state (and thus locking) is not clear
 	void pauseRendering();
-	void resized(Ogre::RenderWindow *r);
+	void resized(Ogre::RenderWindow* rw);
     void popAllAndPushAppState(AppState* state);
 
 protected:

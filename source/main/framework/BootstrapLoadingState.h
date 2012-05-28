@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef DUMMY_STATE_HPP
 #define DUMMY_STATE_HPP
 
@@ -28,6 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class BootstrapLoadingState : public AppState
 {
 public:
+
 	BootstrapLoadingState();
 	DECLARE_APPSTATE_CLASS(BootstrapLoadingState)
 
@@ -38,8 +38,10 @@ public:
 	void resume();
 
 	void update(double timeSinceLastFrame);
-	void resized(Ogre::RenderWindow *r);
+	void resized(Ogre::RenderWindow* rw);
+
 protected:
+
 	ExampleLoadingBar *mLoadingBar;
 };
 

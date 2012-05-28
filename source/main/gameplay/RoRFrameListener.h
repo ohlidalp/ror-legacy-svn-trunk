@@ -140,7 +140,6 @@ protected:
 	bool flipflop;
 	bool hidegui;
 	bool initialized;
-	bool isEmbedded;
 	bool mTruckInfoOn;
 	bool netmode;
 	bool pressure_pressed;
@@ -197,9 +196,9 @@ protected:
 	void updateStats(void);
 
 	// WindowEventListener
-	void windowMoved();
-	void windowClosed();
-	void windowFocusChange();
+	void windowMoved(Ogre::RenderWindow* rw);
+	void windowClosed(Ogre::RenderWindow* rw);
+	void windowFocusChange(Ogre::RenderWindow* rw);
 
 public: // public methods
 
@@ -241,9 +240,7 @@ public: // public methods
 	void startTimer();
 	void updateCruiseControl(Beam* curr_truck, float dt);
 	void updateRacingGUI();
-	void windowResized(); // this needs to be public so we can call it manually in embedded mode
-
-
+	void windowResized(Ogre::RenderWindow* rw); // this needs to be public so we can call it manually in embedded mode
 };
 
 #endif // __RoRFrameListener_H_

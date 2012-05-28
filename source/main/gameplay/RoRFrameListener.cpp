@@ -700,7 +700,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	hidegui(false),
 	initialized(false),
 	inputhwnd(inputhwnd),
-	isEmbedded(isEmbedded),
 	joyshiftlock(0),
 	loading_state(NONE_LOADED),
 	mStatsOn(0),
@@ -729,9 +728,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	terrainManager(0)
 {
 	// we don't use overlays in embedded mode
-	if (!isEmbedded)
+	if (!globalEnvironment->embeddedMode)
 	{
-		ow = new OverlayWrapper();
+		//ow = new OverlayWrapper();
 	}
 
 	enablePosStor = BSETTING("Position Storage", false);
@@ -746,7 +745,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	LoadingWindow::getSingleton();
 	SelectorWindow::getSingleton();
 	// create main menu :D
-	if (!isEmbedded)
+	if (!globalEnvironment->embeddedMode)
 	{
 		new GUI_MainMenu();
 		GUI_Friction::getSingleton();
@@ -835,7 +834,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	screenWidth=globalEnvironment->ogreRenderWindow->getWidth();
 	screenHeight=globalEnvironment->ogreRenderWindow->getHeight();
 
-	windowResized();
+	windowResized(globalEnvironment->ogreRenderWindow);
 	RoRWindowEventUtilities::addWindowEventListener(globalEnvironment->ogreRenderWindow, this);
 
 	debugCollisions = BSETTING("Debug Collisions", false);
@@ -2552,7 +2551,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		// in embedded mode we wont show that loading stuff
 		/*
-		if (isEmbedded)
+		if (globalEnvironment->embeddedMode)
 		{
 			loading_state=ALL_LOADED;
 #ifdef USE_MYGUI
@@ -3442,15 +3441,15 @@ void RoRFrameListener::netDisconnectTruck(int number)
 
 
 /* --- Window Events ------------------------------------------ */
-void RoRFrameListener::windowResized()
+void RoRFrameListener::windowResized(Ogre::RenderWindow* rw)
 {
-	if (!globalEnvironment->ogreRenderWindow) return;
+	if (!rw) return;
 	LOG("*** windowResized");
 
 	// Update mouse screen width/height
 	unsigned int width, height, depth;
 	int left, top;
-	globalEnvironment->ogreRenderWindow->getMetrics(width, height, depth, left, top);
+	rw->getMetrics(width, height, depth, left, top);
 	screenWidth = width;
 	screenHeight = height;
 
@@ -3458,21 +3457,21 @@ void RoRFrameListener::windowResized()
 	if (surveyMap) surveyMap->windowResized();
 
 	//update mouse area
-	INPUTENGINE.windowResized();
+	INPUTENGINE.windowResized(rw);
 }
 
 //Unattach OIS before window shutdown (very important under Linux)
-void RoRFrameListener::windowClosed()
+void RoRFrameListener::windowClosed(Ogre::RenderWindow* rw)
 {
 	LOG("*** windowClosed");
 }
 
-void RoRFrameListener::windowMoved()
+void RoRFrameListener::windowMoved(Ogre::RenderWindow* rw)
 {
 	LOG("*** windowMoved");
 }
 
-void RoRFrameListener::windowFocusChange()
+void RoRFrameListener::windowFocusChange(Ogre::RenderWindow* rw)
 {
 	LOG("*** windowFocusChange");
 	INPUTENGINE.resetKeys();

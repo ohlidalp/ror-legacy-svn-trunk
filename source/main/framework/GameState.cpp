@@ -22,6 +22,8 @@ void GameState::enter()
 	LOG("Creating camera");
 	// Create the camera
 	m_pCamera = m_pSceneMgr->createCamera("PlayerCam");
+	globalEnvironment->ogreCamera = m_pCamera;
+
 	// Position it at 500 in Z direction
 	m_pCamera->setPosition(Vector3(128,25,128));
 	// Look back along -Z
@@ -31,20 +33,16 @@ void GameState::enter()
 	m_pCamera->setFOVy(Degree(60));
 	m_pCamera->setAutoAspectRatio(true);
 	OgreFramework::getSingletonPtr()->m_pViewport->setCamera(m_pCamera);
-
-	globalEnvironment->ogreCamera = m_pCamera;
-
+	
 	// TO BE DONE:
 	//m_pSceneMgr->setCameraRelativeRendering(true);
 
 	LOG("Adding Frame Listener");
 
 	mFrameListener = new RoRFrameListener(this,	OgreFramework::getSingleton().getMainHWND());
-	
-	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
-
 	globalEnvironment->frameListener = mFrameListener;
-	
+
+	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
 }
 
 bool GameState::pause()
@@ -89,8 +87,7 @@ void GameState::update(double timeSinceLastFrame)
 {
 }
 
-
-void GameState::resized(Ogre::RenderWindow *r)
+void GameState::resized(Ogre::RenderWindow* rw)
 {
-	mFrameListener->windowResized();
+	mFrameListener->windowResized(rw);
 }

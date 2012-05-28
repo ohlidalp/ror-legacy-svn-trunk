@@ -53,7 +53,7 @@ bool GUIManager::create()
 	globalEnvironment->ogreRoot->addFrameListener(this);
 	RoRWindowEventUtilities::addWindowEventListener(globalEnvironment->ogreRenderWindow, this);
 
-	windowResized();
+	windowResized(globalEnvironment->ogreRenderWindow);
 	createGui();
 #ifdef WIN32
 	MyGUI::LanguageManager::getInstance().eventRequestTag = MyGUI::newDelegate(this, &GUIManager::eventRequestTag);
@@ -154,10 +154,10 @@ bool GUIManager::frameEnded(const FrameEvent& evt)
 	return true;
 };
 
-void GUIManager::windowResized()
+void GUIManager::windowResized(Ogre::RenderWindow* rw)
 {
-	int width = (int)globalEnvironment->ogreRenderWindow->getWidth();
-	int height = (int)globalEnvironment->ogreRenderWindow->getHeight();
+	int width = (int)rw->getWidth();
+	int height = (int)rw->getHeight();
 	setInputViewSize(width, height);
 
 	BeamFactory *bf = BeamFactory::getSingletonPtr();
@@ -167,7 +167,7 @@ void GUIManager::windowResized()
 	if (c) c->resized();
 }
 
-void GUIManager::windowClosed()
+void GUIManager::windowClosed(Ogre::RenderWindow* rw)
 {
 	mExit = true;
 }

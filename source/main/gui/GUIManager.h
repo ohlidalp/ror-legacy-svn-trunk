@@ -52,7 +52,7 @@ public:
 
 	static Ogre::String getRandomWallpaperImage();
 
-	void windowResized();
+	void windowResized(Ogre::RenderWindow* rw);
 
 private:
 
@@ -62,7 +62,7 @@ private:
 
 	virtual bool frameStarted(const Ogre::FrameEvent& _evt);
 	virtual bool frameEnded(const Ogre::FrameEvent& _evt);
-	virtual void windowClosed();
+	virtual void windowClosed(Ogre::RenderWindow* rw);
 
 	void eventRequestTag(const MyGUI::UString& _tag, MyGUI::UString& _result);
 
