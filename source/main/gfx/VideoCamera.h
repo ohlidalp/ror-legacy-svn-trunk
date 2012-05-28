@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SerializedRig.h"
 #include <OgreMaterial.h>
 
-class VideoCamera
+class VideoCamera : public ZeroedMemoryAllocator
 {
 public:
 	VideoCamera(rig_t *truck);

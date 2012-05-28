@@ -33,7 +33,7 @@ CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 
 void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
 {
-	CameraBehavior::update(ctx);
+	CameraBehaviorOrbit::update(ctx);
 
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[ctx.mCurrTruck->currentcamera]].smoothpos
 				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[ctx.mCurrTruck->currentcamera]].smoothpos).normalisedCopy();
@@ -112,7 +112,7 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 
 void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &ctx)
 {
-	CameraBehavior::reset(ctx);
+	CameraBehaviorOrbit::reset(ctx);
 	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
 	gEnv->mainCamera->setFOVy(ctx.fovInternal);
 }

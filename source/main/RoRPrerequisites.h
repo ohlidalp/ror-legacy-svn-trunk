@@ -138,6 +138,8 @@ class FlexBody;
 class FlexMesh;
 class FlexObj;
 class HDRListener;
+class ICameraBehavior;
+class IWater;
 class HeatHaze;
 class HeightFinder;
 class MapControl;

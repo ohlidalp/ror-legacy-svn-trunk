@@ -63,7 +63,7 @@ typedef struct			// struct is used for motion platforms
 	float	avg_friction;
 } mstat_t;
 
-class MPlatform_Base
+class MPlatform_Base : public ZeroedMemoryAllocator
 {
 	public:
 		MPlatform_Base();

@@ -47,7 +47,7 @@ using namespace Ogre;
 	added to a resource group called 'Bootstrap' - this provides the basic
 	resources required for the progress bar and will be loaded automatically.
 */
-class ExampleLoadingBar : public ResourceGroupListener
+class ExampleLoadingBar : public ResourceGroupListener, public ZeroedMemoryAllocator
 {
 protected:
 	RenderWindow* mWindow;

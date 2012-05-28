@@ -31,7 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <pthread.h>
 
-class BeamFactory : public StreamableFactory < BeamFactory, Beam >
+class BeamFactory : public StreamableFactory < BeamFactory, Beam >, public ZeroedMemoryAllocator
 {
 	friend class Network;
 	friend class RoRFrameListener;

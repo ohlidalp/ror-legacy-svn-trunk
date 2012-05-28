@@ -32,7 +32,7 @@ typedef struct
 	int type;
 } materialmapping_t;
 
-class MaterialFunctionMapper
+class MaterialFunctionMapper : public ZeroedMemoryAllocator
 {
 public:
 

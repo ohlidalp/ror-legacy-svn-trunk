@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreConfigFile.h>
 
 // this class handles all interactions with the Ogre Terrain system
-class TerrainGeometryManager : public IHeightFinder
+class TerrainGeometryManager : public IHeightFinder, public ZeroedMemoryAllocator
 {
 public:
 	TerrainGeometryManager(TerrainManager *terrainManager);

@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 #include "Ogre.h"
 
-class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener
+class MeshObject : public Ogre::ResourceBackgroundQueue::Listener, public Ogre::Resource::Listener, public ZeroedMemoryAllocator
 {
 public:
 	MeshObject(Ogre::String meshName, Ogre::String entityName, Ogre::SceneNode *sceneNode=0, Skin *s=0, bool backgroundLoading=false);

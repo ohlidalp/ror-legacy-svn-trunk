@@ -32,7 +32,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 class Beam :
 	public SerializedRig,
-	public Streamable
+	public Streamable,
+	public ZeroedMemoryAllocator
 {
 friend class PreviewRenderer;
 public:

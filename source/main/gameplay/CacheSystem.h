@@ -184,7 +184,7 @@ public:
 	}
 };
 
-class CacheSystem : public RoRSingleton<CacheSystem>
+class CacheSystem : public RoRSingleton<CacheSystem>, public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<CacheSystem>;
 public:	

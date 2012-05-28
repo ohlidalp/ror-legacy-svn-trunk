@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 ATTRIBUTE_CLASS_LAYOUT(TextureToolWindow, "TextureTool.layout");
 
-class TextureToolWindow : public wraps::BaseLayout, public RoRSingleton<TextureToolWindow>
+class TextureToolWindow : public wraps::BaseLayout, public RoRSingleton<TextureToolWindow>, public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<TextureToolWindow>;
 

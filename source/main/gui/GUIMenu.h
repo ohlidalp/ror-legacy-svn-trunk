@@ -30,7 +30,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <MyGUI.h>
 #include <pthread.h>
 
-class GUI_MainMenu : public RoRSingletonNoCreation< GUI_MainMenu >
+class GUI_MainMenu : public RoRSingletonNoCreation< GUI_MainMenu >, public ZeroedMemoryAllocator
 {
 public:
 

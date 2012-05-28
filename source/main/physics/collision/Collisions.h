@@ -40,7 +40,7 @@ typedef std::vector<int> cell_t;
 
 class Landusemap;
 
-class Collisions
+class Collisions : public ZeroedMemoryAllocator
 {
 public:
 

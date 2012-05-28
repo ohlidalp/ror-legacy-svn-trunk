@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Character.h"
 #include "StreamableFactory.h"
 
-class CharacterFactory : public StreamableFactory < CharacterFactory, Character >
+class CharacterFactory : public StreamableFactory < CharacterFactory, Character >, public ZeroedMemoryAllocator
 {
 	friend class Network;
 

@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-CameraBehavior::CameraBehavior() :
+CameraBehaviorOrbit::CameraBehaviorOrbit() :
 	  camDist(5.0f)
 	, camDistMax(0.0f)
 	, camDistMin(0.0f)
@@ -40,7 +40,7 @@ CameraBehavior::CameraBehavior() :
 {
 }
 
-void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 {
 	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK) )
 	{
@@ -127,7 +127,7 @@ void CameraBehavior::update(const CameraManager::cameraContext_t &ctx)
 	gEnv->mainCamera->lookAt(camLookAt);
 }
 
-bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+bool CameraBehaviorOrbit::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
@@ -142,7 +142,7 @@ bool CameraBehavior::mouseMoved(const CameraManager::cameraContext_t &ctx, const
 	return false;
 }
 
-void CameraBehavior::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::reset(const CameraManager::cameraContext_t &ctx)
 {
 	camRotX = 0.0f;
 	gEnv->mainCamera->setFOVy(ctx.fovExternal);

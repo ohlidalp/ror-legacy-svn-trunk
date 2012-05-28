@@ -13,7 +13,7 @@
 #include <windows.h>
 #endif
 
-class PrecisionTimer
+class PrecisionTimer : public ZeroedMemoryAllocator
 {
 protected:
 #ifdef WIN32

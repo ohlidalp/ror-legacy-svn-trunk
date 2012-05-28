@@ -23,7 +23,7 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-class OgreFramework : public RoRSingleton<OgreFramework>
+class OgreFramework : public RoRSingleton<OgreFramework>, public ZeroedMemoryAllocator
 {
 public:
 	OgreFramework();

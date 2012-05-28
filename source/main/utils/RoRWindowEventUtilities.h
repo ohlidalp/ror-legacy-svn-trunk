@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreWindowEventUtilities.h>
 
 // same as original but with user triggerable events
-class RoRWindowEventUtilities : public Ogre::WindowEventUtilities
+class RoRWindowEventUtilities : public Ogre::WindowEventUtilities, public ZeroedMemoryAllocator
 {
 public:
 	static void triggerResize(Ogre::RenderWindow* window);

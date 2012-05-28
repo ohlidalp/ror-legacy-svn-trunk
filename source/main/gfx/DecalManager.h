@@ -27,7 +27,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include <math.h>
 //#include <OgrePrerequisites.h>
 
-class DecalSpline
+class DecalSpline : public ZeroedMemoryAllocator
 {
 public:
 
@@ -44,7 +44,7 @@ private:
 	Ogre::SimpleSpline *spline;
 };
 
-class DecalManager
+class DecalManager : public ZeroedMemoryAllocator
 {
 public:
 

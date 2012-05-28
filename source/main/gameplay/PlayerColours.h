@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 
 
-class PlayerColours : public RoRSingleton < PlayerColours >
+class PlayerColours : public RoRSingleton < PlayerColours >, public ZeroedMemoryAllocator
 {
 public:
 	PlayerColours();

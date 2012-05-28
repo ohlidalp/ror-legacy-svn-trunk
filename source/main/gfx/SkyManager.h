@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-class SkyManager
+class SkyManager : public ZeroedMemoryAllocator
 {
 public:
 

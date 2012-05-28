@@ -413,7 +413,8 @@ class InputEngine :
 	public RoRSingleton<InputEngine>,
 	public OIS::MouseListener,
 	public OIS::KeyListener,
-	public OIS::JoyStickListener
+	public OIS::JoyStickListener,
+	public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<InputEngine>;
 public:

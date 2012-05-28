@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Ogre;
 
 CameraBehaviorCharacter::CameraBehaviorCharacter() :
-	  CameraBehavior()
+	  CameraBehaviorOrbit()
 	, camMode(CHARACTER_THIRD_PERSON)
 {
 	camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
@@ -36,7 +36,7 @@ void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 	targetDirection = -gEnv->player->getRotation() - Radian(Math::HALF_PI);
 	camLookAt       =  gEnv->player->getPosition() + camPositionOffset;
 
-	CameraBehavior::update(ctx);
+	CameraBehaviorOrbit::update(ctx);
 }
 
 bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
@@ -61,7 +61,7 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 		return true;
 	}
 
-	return CameraBehavior::mouseMoved(ctx, _arg);
+	return CameraBehaviorOrbit::mouseMoved(ctx, _arg);
 }
 
 void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
@@ -78,7 +78,7 @@ void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx
 
 void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 {
-	CameraBehavior::reset(ctx);
+	CameraBehaviorOrbit::reset(ctx);
 
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{

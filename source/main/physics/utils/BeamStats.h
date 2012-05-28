@@ -108,7 +108,7 @@ enum {
 
 
 #define BES BeamEngineStats::getInstance()
-class BeamThreadStats
+class BeamThreadStats : public ZeroedMemoryAllocator
 {
 public:
 	BeamThreadStats(int type);
@@ -132,7 +132,7 @@ private:
 	int stype;
 };
 
-class BeamEngineStats
+class BeamEngineStats : public ZeroedMemoryAllocator
 {
 public:
 	bool updateGUI(float dt);

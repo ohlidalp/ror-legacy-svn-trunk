@@ -35,7 +35,7 @@ struct loadedOverlay_t
 	Ogre::Overlay *o;
 };
 
-class OverlayWrapper : public RoRSingletonNoCreation<OverlayWrapper>
+class OverlayWrapper : public RoRSingletonNoCreation<OverlayWrapper>, public ZeroedMemoryAllocator
 {
 	friend class RoRFrameListener;
 

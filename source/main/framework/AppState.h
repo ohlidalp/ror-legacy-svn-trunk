@@ -12,7 +12,7 @@
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-class AppStateListener
+class AppStateListener : public ZeroedMemoryAllocator
 {
 public:
 	AppStateListener(){};
@@ -32,7 +32,7 @@ public:
 
 //|||||||||||||||||||||||||||||||||||||||||||||||
 
-class AppState
+class AppState : public ZeroedMemoryAllocator
 {
 public:
 	static void create(AppStateListener* parent, const Ogre::String name){};

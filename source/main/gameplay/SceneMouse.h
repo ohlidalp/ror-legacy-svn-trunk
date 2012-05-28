@@ -26,7 +26,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Singleton.h"
 #include <OIS.h>
 
-class SceneMouse : public RoRSingletonNoCreation < SceneMouse >
+class SceneMouse : public RoRSingletonNoCreation < SceneMouse >, public ZeroedMemoryAllocator
 {
 public:
 

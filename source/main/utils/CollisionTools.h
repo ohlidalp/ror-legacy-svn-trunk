@@ -67,7 +67,8 @@ typedef struct mesh_info_
 	bool store;
 } mesh_info_t;
 
-class CollisionTools {
+class CollisionTools  : public ZeroedMemoryAllocator
+{
 public:
 	Ogre::RaySceneQuery *mRaySceneQuery;
 	Ogre::RaySceneQuery *mTSMRaySceneQuery;

@@ -46,7 +46,7 @@ typedef void (*diff_callback)( differential_data_t& diff_data);
 
 //! class created from a struct will be ugly for a while.
 // ugly code is not merged. fixed that up -- thomas
-class Axle
+class Axle : public ZeroedMemoryAllocator
 {
 public:
     Axle();

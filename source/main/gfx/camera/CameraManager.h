@@ -25,9 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OIS.h"
 #include "Singleton.h"
 
-class ICameraBehavior;
-
-class CameraManager : public RoRSingletonNoCreation < CameraManager >
+class CameraManager : public RoRSingletonNoCreation < CameraManager >, public ZeroedMemoryAllocator
 {
 	friend class SceneMouse;
 

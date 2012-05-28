@@ -35,7 +35,7 @@ struct curlMemoryStruct {
 /**
  *  @brief Proxy class that can be called by script functions
  */
-class GameScript
+class GameScript : public ZeroedMemoryAllocator
 {
 protected:
 	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly

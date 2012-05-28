@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "OgrePrerequisites.h"
 
 
-class PositionStorage
+class PositionStorage : public ZeroedMemoryAllocator
 {
 protected:
 	Ogre::Vector3 *nodes;

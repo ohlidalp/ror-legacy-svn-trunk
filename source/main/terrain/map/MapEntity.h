@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 ATTRIBUTE_CLASS_LAYOUT(MapEntity, "MapEntity.layout");
 
-class MapEntity : public wraps::BaseLayout
+class MapEntity : public wraps::BaseLayout, public ZeroedMemoryAllocator
 {
 public:
 

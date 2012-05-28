@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "AeroEngine.h"
 
-class Turboprop: public AeroEngine
+class Turboprop: public AeroEngine, public ZeroedMemoryAllocator
 {
 public:
 

@@ -33,7 +33,7 @@ public:
 
 };
 
-class FlexMesh: public Flexable
+class FlexMesh: public Flexable, public ZeroedMemoryAllocator
 {
 private:
 typedef struct

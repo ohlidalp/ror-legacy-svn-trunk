@@ -33,7 +33,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 // this only works with lossless image compression (png)
 
-class AdvancedScreen
+class AdvancedScreen : public ZeroedMemoryAllocator
 {
 public:
 

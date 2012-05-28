@@ -126,7 +126,7 @@ static inline Ogre::Vector3 nearestPointOnLine(const Ogre::Vector3& pt1,
 /**
  *
  */
-class Rail
+class Rail : public ZeroedMemoryAllocator
 {
 // Members /////////////////////////////////////////////////////////////////////
 private:
@@ -149,7 +149,7 @@ public:
 /**
  *
  */
-class RailGroup
+class RailGroup : public ZeroedMemoryAllocator
 {
 // Members /////////////////////////////////////////////////////////////////////
 public:
@@ -199,7 +199,7 @@ private:
  * Rail builder is a utility used for created linked lists effectively and
  * painlessly.
  */
-class RailBuilder
+class RailBuilder : public ZeroedMemoryAllocator
 {
 // Members /////////////////////////////////////////////////////////////////////
 public:
@@ -249,7 +249,7 @@ private:
 /**
  *
  */
-class SlideNode
+class SlideNode : public ZeroedMemoryAllocator
 {
 
 // Members /////////////////////////////////////////////////////////////////////

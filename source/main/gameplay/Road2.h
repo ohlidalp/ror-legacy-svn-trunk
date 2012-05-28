@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 
 // dynamic roads
-class Road2
+class Road2 : public ZeroedMemoryAllocator
 {
 public:
 

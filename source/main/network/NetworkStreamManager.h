@@ -37,7 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class Streamable;
 class StreamableFactoryInterface;
 
-class NetworkStreamManager : public RoRSingleton< NetworkStreamManager >
+class NetworkStreamManager : public RoRSingleton< NetworkStreamManager >, public ZeroedMemoryAllocator
 {
 	friend class Network;
 

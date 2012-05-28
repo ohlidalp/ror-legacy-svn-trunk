@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "MovableText.h"
 #include "Streamable.h"
 
-class Character : public Streamable
+class Character : public Streamable, public ZeroedMemoryAllocator
 {
 	friend class CharacterFactory;
 	friend class Network;

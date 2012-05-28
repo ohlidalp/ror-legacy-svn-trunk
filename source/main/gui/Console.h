@@ -50,7 +50,8 @@ typedef struct msg_t {
 class Console :
 	public RoRSingletonNoCreation<Console>,
 	public Ogre::LogListener,
-	public InterThreadStoreVector<msg_t>
+	public InterThreadStoreVector<msg_t>,
+	public ZeroedMemoryAllocator
 {
 	friend class RoRSingleton<Console>;
 public:

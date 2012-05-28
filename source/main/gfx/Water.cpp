@@ -34,7 +34,7 @@ Plane reflectionPlane;
 Plane refractionPlane;
 SceneManager *waterSceneMgr;
 
-class RefractionTextureListener : public RenderTargetListener
+class RefractionTextureListener : public RenderTargetListener, public ZeroedMemoryAllocator
 {
 public:
 
@@ -57,7 +57,7 @@ public:
 	}
 };
 
-class ReflectionTextureListener : public RenderTargetListener
+class ReflectionTextureListener : public RenderTargetListener, public ZeroedMemoryAllocator
 {
 public:
 	void preRenderTargetUpdate(const RenderTargetEvent& evt)

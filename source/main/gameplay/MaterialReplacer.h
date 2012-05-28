@@ -23,7 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-class MaterialReplacer
+class MaterialReplacer : public ZeroedMemoryAllocator
 {
 public:
 	MaterialReplacer() {};

@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 
 
-class ProceduralPoint
+class ProceduralPoint : public ZeroedMemoryAllocator
 {
 public:
 	Ogre::Vector3 position;
@@ -41,7 +41,7 @@ public:
 	int pillartype;
 };
 
-class ProceduralObject
+class ProceduralObject : public ZeroedMemoryAllocator
 {
 public:
 	ProceduralObject() : loadingState(-1), name(std::string("")), road(0)
@@ -55,7 +55,7 @@ public:
 	Road2 *road;
 };
 
-class ProceduralManager
+class ProceduralManager : public ZeroedMemoryAllocator
 {
 protected:
 	std::vector<ProceduralObject> pObjects;

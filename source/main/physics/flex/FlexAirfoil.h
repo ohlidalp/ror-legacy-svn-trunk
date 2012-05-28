@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamData.h"
 #include "Ogre.h"
 
-class FlexAirfoil
+class FlexAirfoil : public ZeroedMemoryAllocator
 {
 private:
 	float airfoilpos[90];

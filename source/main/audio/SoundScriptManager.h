@@ -154,7 +154,7 @@ enum SoundLinkTypes {
 class Sound;
 class SoundManager;
 
-class SoundScriptTemplate
+class SoundScriptTemplate : public ZeroedMemoryAllocator
 {
 	friend class SoundScriptManager;
 	friend class SoundScriptInstance;
@@ -198,7 +198,7 @@ private:
 	int          free_sound;
 };
 
-class SoundScriptInstance
+class SoundScriptInstance : public ZeroedMemoryAllocator
 {
 	friend class SoundScriptManager;
 
@@ -235,7 +235,7 @@ private:
 	int sound_link_item_id; // holds the item number this is for
 };
 
-class SoundScriptManager : public Ogre::ScriptLoader, public RoRSingleton<SoundScriptManager>
+class SoundScriptManager : public Ogre::ScriptLoader, public RoRSingleton<SoundScriptManager>, public ZeroedMemoryAllocator
 {
 public:
 
