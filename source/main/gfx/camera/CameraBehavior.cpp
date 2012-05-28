@@ -20,8 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehavior.h"
 
 #include "Beam.h"
-#include "InputEngine.h"
+#include "Collisions.h"
 #include "IHeightFinder.h"
+#include "InputEngine.h"
 #include "Ogre.h"
 #include "TerrainManager.h"
 
@@ -123,7 +124,15 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 
 	Vector3 camPosition = (1.0f / (camRatio + 1.0f)) * desiredPosition + (camRatio / (camRatio + 1.0f)) * precedingPosition;
 
-	gEnv->mainCamera->setPosition(camPosition);
+	if ( gEnv->collisions && gEnv->collisions->forcecam )
+	{
+		gEnv->mainCamera->setPosition(gEnv->collisions->forcecampos);
+		gEnv->collisions->forcecam = false;
+	} else
+	{
+		gEnv->mainCamera->setPosition(camPosition);
+	}
+
 	gEnv->mainCamera->lookAt(camLookAt);
 }
 
