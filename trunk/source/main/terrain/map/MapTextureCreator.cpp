@@ -53,7 +53,7 @@ bool MapTextureCreator::init()
 
 	mRttTex->setAutoUpdated(false);
 
-	mCamera = gEnv->ogreSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
+	mCamera = globalEnvironment->ogreSceneManager->createCamera("MapRenderCam" + TOSTRING(mCounter));
 
 	mViewport = mRttTex->addViewport(mCamera);
 	mViewport->setBackgroundColour(ColourValue::Black);
@@ -100,7 +100,7 @@ void MapTextureCreator::update()
 {
 	if ( !mRttTex ) return;
 
-	Vector3 mapSize = gEnv->terrainManager->getMax();
+	Vector3 mapSize = globalEnvironment->terrainManager->getMax();
 	float orthoWindowWidth  = mapSize.x - (mapSize.x - 20.0f) * mMapZoom;
 	float orthoWindowHeight = mapSize.z - (mapSize.z - 20.0f) * mMapZoom;
 
