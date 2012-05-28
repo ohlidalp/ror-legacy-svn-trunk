@@ -48,11 +48,11 @@ public:
 	void setAlpha(float value);
 	void setEntitiesVisibility(bool value);
 	void setMapTexture(Ogre::String name);
-	void setPosition(int x, int y, float size, Ogre::RenderWindow *rw);
+	void setPosition(int x, int y, float size);
 	void setVisibility(bool value);
 	void setWorldSize(float width, float length, float height);
 
-	void windowResized(Ogre::RenderWindow *rw);
+	void windowResized();
 
 	static Ogre::String getTypeByDriveable(int driveable);
 
@@ -74,7 +74,7 @@ protected:
 	int rWinLeft, rWinTop;
 	unsigned int rWinWidth, rWinHeight, rWinDepth;
 
-	void updateRenderMetrics(Ogre::RenderWindow* win);
+	void updateRenderMetrics();
 };
 
 #endif // __MAP_CONTROL_H_
