@@ -46,7 +46,7 @@ public:
 	 */
 	inline void *operator new(size_t size)
 	{
-		return calloc(size, sizeof(char));
+		return calloc(size, sizeof(unsigned char));
 	}
 
 	/**
@@ -56,7 +56,7 @@ public:
 	 */
 	inline void *operator new[](size_t size)
 	{
-		return calloc(size, sizeof(char));
+		return calloc(size, sizeof(unsigned char));
 	}
 
 	/**
