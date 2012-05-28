@@ -48,7 +48,7 @@ CacheSystem::CacheSystem() :
 	// register the extensions
 	known_extensions.push_back("machine");
 	known_extensions.push_back("fixed");
-	known_extensions.push_back("terrn");
+	known_extensions.push_back("terrn2");
 	known_extensions.push_back("truck");
 	known_extensions.push_back("car");
 	known_extensions.push_back("boat");
@@ -1179,7 +1179,7 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 			DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
 			entry.dname = ds->getLine();
 
-			if (ext == "terrn")
+			if (ext == "terrn2")
 				fillTerrainDetailInfo(entry, ds, filename);
 			else
 				fillTruckDetailInfo(entry, ds, filename);

@@ -313,7 +313,7 @@ void SelectorWindow::getData()
 
 		//printf("category: %d\n", it->categoryid);
 		bool add = false;
-		if (it->fext=="terrn")
+		if (it->fext=="terrn2")
 			add = (mLoaderType == LT_Terrain);
 		else if (it->fext=="truck")
 			add = (mLoaderType == LT_AllBeam || mLoaderType == LT_Vehicle || mLoaderType == LT_Truck	|| mLoaderType == LT_Network	|| mLoaderType == LT_NetworkWithBoat);
