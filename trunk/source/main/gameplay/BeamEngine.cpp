@@ -440,6 +440,11 @@ void BeamEngine::setAcc(float val)
 	curAcc = val * 0.94f + 0.06f;
 }
 
+void BeamEngine::setBrake(float val)
+{
+	curBrake = val;
+}
+
 float BeamEngine::getTurboPSI()
 {
 	return curTurboRPM / 10000.0f;

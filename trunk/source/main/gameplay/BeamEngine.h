@@ -45,6 +45,7 @@ public:
 
 	void setAcc(float val);
 	void setAutoMode(int mode);
+	void setBrake(float val);
 	void setClutch(float clutch);
 	void setOptions(float einertia, char etype, float eclutch, float ctime, float stime, float pstime);
 	void setRPM(float rpm);
@@ -117,6 +118,7 @@ protected:
 	char type;
 	float brakingTorque;
 	float curAcc;
+	float curBrake;
 	float curEngineRPM;
 	float engineTorque;
 	float hydropump;
