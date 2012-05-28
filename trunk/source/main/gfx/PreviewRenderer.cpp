@@ -48,8 +48,8 @@ void PreviewRenderer::render()
 
 	LOG("starting previewRenderer...");
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();
-	SceneManager *sceneMgr = globalEnvironment->ogreSceneManager;
-	Viewport *vp = globalEnvironment->ogreViewPort;
+	SceneManager *sceneMgr = gEnv->ogreSceneManager;
+	Viewport *vp = gEnv->ogreViewPort;
 
 	// disable skybox
 	//sceneMgr->setSkyBox(false, "");
@@ -116,7 +116,7 @@ void PreviewRenderer::render()
 
 	SceneNode *camNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
 
-	Camera *cam = globalEnvironment->ogreCamera;
+	Camera *cam = gEnv->ogreCamera;
 	cam->setLodBias(1000.0f);
 	cam->setAspectRatio(1.0f);
 
@@ -253,9 +253,9 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	//renderViewport->setBackgroundColour(ColourValue(1, 1, 1, 0));
 
 #ifdef USE_CAELUM
-	if (globalEnvironment->sky)
+	if (gEnv->sky)
 	{
-		globalEnvironment->sky->notifyCameraChanged(renderCamera);
+		gEnv->sky->notifyCameraChanged(renderCamera);
 //		globalEnvironment->terrainManager->getSkyManager()->forceUpdate(0.01f);
 	}
 #endif // USE_CAELUM
@@ -311,9 +311,9 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 				Root::getSingleton().renderOneFrame();
 				renderTarget->update();
 #ifdef USE_CAELUM
-				if (globalEnvironment->sky)
+				if (gEnv->sky)
 				{
-					globalEnvironment->sky->forceUpdate(0.01f);
+					gEnv->sky->forceUpdate(0.01f);
 				}
 #endif //USE_CAELUM
 

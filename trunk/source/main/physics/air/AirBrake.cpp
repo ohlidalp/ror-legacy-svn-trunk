@@ -140,8 +140,8 @@ Airbrake::Airbrake(char* basename, int num, node_t *ndref, node_t *ndx, node_t *
 	// create the entity and scene node
 	char entname[256];
 	sprintf(entname, "airbrakenode-%s-%i", basename, num);
-	Entity *ec = globalEnvironment->ogreSceneManager->createEntity(entname, meshname);
-	snode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	Entity *ec = gEnv->ogreSceneManager->createEntity(entname, meshname);
+	snode=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ec);
 
 	updatePosition(0.0);

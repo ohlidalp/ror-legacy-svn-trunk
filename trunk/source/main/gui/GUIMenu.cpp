@@ -240,7 +240,7 @@ void GUI_MainMenu::vehiclesListUpdate()
 {
 	vehiclesMenu->removeAllItems();
 	
-	bool netmode = (globalEnvironment->network != 0);
+	bool netmode = (gEnv->network != 0);
 
 	if (!netmode)
 	{
@@ -265,12 +265,12 @@ void GUI_MainMenu::vehiclesListUpdate()
 		// sort the list according to the network users
 
 		// add self first
-		user_info_t *local_user = globalEnvironment->network->getLocalUserData();
+		user_info_t *local_user = gEnv->network->getLocalUserData();
 		addUserToMenu(*local_user);
 
 		// get network clients
 		client_t c[MAX_PEERS];
-		globalEnvironment->network->getClientInfos(c);
+		gEnv->network->getClientInfos(c);
 		// iterate over them
 		for (int i = 0; i < MAX_PEERS; i++)
 		{
@@ -306,27 +306,27 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		int user_uid = PARSEINT(id.substr(5));
 
 		// cannot whisper with self...
-		if (user_uid == globalEnvironment->network->getUID()) return;
+		if (user_uid == gEnv->network->getUID()) return;
 
 		Console::getSingleton().startPrivateChat(user_uid);
 	}
 
 
-	if (miname == _L("get new Vehicle") && globalEnvironment->frameListener->person)
+	if (miname == _L("get new Vehicle") && gEnv->frameListener->person)
 	{
-		if (globalEnvironment->frameListener->loading_state == NONE_LOADED)
+		if (gEnv->frameListener->loading_state == NONE_LOADED)
 			return;
 		// get out first
 		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
 		//globalEnvironment->frameListener->reload_pos = globalEnvironment->frameListener->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
-		globalEnvironment->frameListener->freeTruckPosition=true;
-		globalEnvironment->frameListener->loading_state=RELOADING;
+		gEnv->frameListener->freeTruckPosition=true;
+		gEnv->frameListener->loading_state=RELOADING;
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_AllBeam);
 
 	} else if (miname == _L("Save Scenery") || miname == _L("Load Scenery"))
 	{
-		if (globalEnvironment->frameListener->loading_state != ALL_LOADED)
+		if (gEnv->frameListener->loading_state != ALL_LOADED)
 		{
 			LOG("you need to open a map before trying to save or load its scenery.");
 			return;
@@ -344,7 +344,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 
 	} else if (miname == _L("Terrain Editor Mode"))
 	{
-		globalEnvironment->frameListener->loading_state = RoRFrameListener::TERRAIN_EDITOR;
+		gEnv->frameListener->loading_state = RoRFrameListener::TERRAIN_EDITOR;
 		CameraManager::getSingleton().switchBehavior(CameraManager::CAMERA_BEHAVIOR_ISOMETRIC, true);
 		
 
@@ -367,7 +367,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	{
 		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 		{
-			globalEnvironment->frameListener->reloadCurrentTruck();
+			gEnv->frameListener->reloadCurrentTruck();
 			GUIManager::getSingleton().unfocus();
 		}
 
@@ -377,7 +377,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 
 	} else if (miname == _L("Exit"))
 	{
-		globalEnvironment->frameListener->shutdown_final();
+		gEnv->frameListener->shutdown_final();
 	} else if (miname == _L("Show Console"))
 	{
 		Console *c = Console::getSingletonPtrNoCreation();

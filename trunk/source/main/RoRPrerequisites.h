@@ -233,6 +233,6 @@ enum VisibilityMasks {
 	HIDE_MIRROR       = BITMASK(3),
 };
 
-extern GlobalEnvironment *globalEnvironment;
+extern GlobalEnvironment *gEnv;
 
 #endif // __RoRPrerequisites_H_

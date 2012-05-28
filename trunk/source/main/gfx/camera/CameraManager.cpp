@@ -229,7 +229,8 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 	return currentBehavior->mouseReleased(ctx, _arg, _id);
 }
 
-bool CameraManager::enableGameControls()
+bool CameraManager::getGameControlsEnabled()
 {
-	return (!hasActiveBehavior() || (getCameraBehavior() != CAMERA_BEHAVIOR_FREE));
+	// game controls are only disabled in free camera mode for now
+	return (getCameraBehavior() != CAMERA_BEHAVIOR_FREE);
 }

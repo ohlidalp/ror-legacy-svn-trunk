@@ -117,7 +117,7 @@ ChatSystem::ChatSystem(int source, unsigned int streamid, int colourNumber, bool
 #ifdef USE_SOCKETW
 	if (remote)
 	{
-		client_t *c = globalEnvironment->network->getClientInfo(source);
+		client_t *c = gEnv->network->getClientInfo(source);
 		if (c)
 		{
 			username = getColouredName(*c);
@@ -173,10 +173,10 @@ void ChatSystem::receiveStreamData(unsigned int &type, int &source, unsigned int
 		{
 			UTFString msg = username + normalColour + ": " + tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
-		} else if (source == (int)globalEnvironment->network->getUID())
+		} else if (source == (int)gEnv->network->getUID())
 		{
 			// our message bounced back :D
-			UTFString msg = globalEnvironment->network->getNickname(true) + normalColour + ": " + tryConvertUTF(buffer);
+			UTFString msg = gEnv->network->getNickname(true) + normalColour + ": " + tryConvertUTF(buffer);
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_CHAT, msg, "user_comment.png");
 		}
 	}
@@ -207,7 +207,7 @@ int ChatSystem::getChatUserNames(std::vector<UTFString> &names)
 {
 #ifdef USE_SOCKETW
 	client_t c[MAX_PEERS];
-	if (globalEnvironment->network->getClientInfos(c)) return 0;
+	if (gEnv->network->getClientInfos(c)) return 0;
 
 	for (int i = 0; i < MAX_PEERS; i++)
 	{
@@ -224,7 +224,7 @@ void ChatSystem::sendPrivateChat(UTFString targetUsername, UTFString chatline)
 #ifdef USE_SOCKETW
 	// first: find id to username:
 	client_t c[MAX_PEERS];
-	if (globalEnvironment->network->getClientInfos(c))
+	if (gEnv->network->getClientInfos(c))
 		return;
 	int target_uid = -1, target_index = -1;
 	for (int i = 0; i < MAX_PEERS; i++)
@@ -270,13 +270,13 @@ void ChatSystem::sendPrivateChat(int target_uid, UTFString chatline, UTFString u
 
 	if (username.empty())
 	{
-		client_t *c = globalEnvironment->network->getClientInfo(target_uid);
+		client_t *c = gEnv->network->getClientInfo(target_uid);
 		if (c) username = getColouredName(*c);
 	}
 
 	// add local visual
 #ifdef USE_MYGUI
-	UTFString nmsg = globalEnvironment->network->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
+	UTFString nmsg = gEnv->network->getNickname(true) + normalColour + whisperColour + _L(" [whispered to ") + normalColour + username + whisperColour + "]" + normalColour + ": " + chatline;
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_NETWORK, Console::CONSOLE_LOCAL_CHAT, nmsg, "script_key.png");
 #endif // USE_MYGUI
 #endif // USE_SOCKETW

@@ -84,7 +84,7 @@ void TerrainGeometryManager::initTerrain()
 
 	Vector3 mTerrainPos(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
 
-	mTerrainGroup = OGRE_NEW TerrainGroup(globalEnvironment->ogreSceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
+	mTerrainGroup = OGRE_NEW TerrainGroup(gEnv->ogreSceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
 	mTerrainGroup->setFilenameConvention(baseName, filenameSuffix);
 	mTerrainGroup->setOrigin(mTerrainPos);
 	mTerrainGroup->setResourceGroup("cache");
@@ -126,7 +126,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 {
 	OGRE_NEW TerrainGlobalOptions();
 
-	Light *light = globalEnvironment->terrainManager->getSkyManager()->getMainLight();
+	Light *light = gEnv->terrainManager->getSkyManager()->getMainLight();
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
 	// Configure global
 	terrainOptions->setMaxPixelError(PARSEINT(terrainConfig.getSetting("MaxPixelError")));
@@ -137,7 +137,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 		terrainOptions->setLightMapDirection(light->getDerivedDirection());
 		terrainOptions->setCompositeMapDiffuse(light->getDiffuseColour());
 	}
-	terrainOptions->setCompositeMapAmbient(globalEnvironment->ogreSceneManager->getAmbientLight());
+	terrainOptions->setCompositeMapAmbient(gEnv->ogreSceneManager->getAmbientLight());
 
 	// Configure default import settings for if we use imported image
 	Ogre::Terrain::ImportData& defaultimp = mTerrainGroup->getDefaultImportSettings();

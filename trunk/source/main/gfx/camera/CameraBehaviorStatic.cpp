@@ -38,16 +38,16 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 		lookAt = ctx.mCurrTruck->getPosition();
 	} else
 	{
-		lookAt = globalEnvironment->player->getPosition();
+		lookAt = gEnv->player->getPosition();
 	}
 
 	camPosition.x = ((int)(lookAt.x) / 100) * 100 + 50;
 	camPosition.z = ((int)(lookAt.z) / 100) * 100 + 50;
 	camPosition.y =        lookAt.y;
 
-	if ( globalEnvironment->terrainManager->getHeightFinder() )
+	if ( gEnv->terrainManager->getHeightFinder() )
 	{
-		float h = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z);
+		float h = gEnv->terrainManager->getHeightFinder()->getHeightAt(camPosition.x, camPosition.z);
 
 		camPosition.y = std::max(h, camPosition.y);
 	}
@@ -57,9 +57,9 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	float camDist = camPosition.distance(lookAt);
 	float fov = atan2(20.0f, camDist);
 
-	globalEnvironment->ogreCamera->setPosition(camPosition);
-	globalEnvironment->ogreCamera->lookAt(lookAt);
-	globalEnvironment->ogreCamera->setFOVy(Radian(fov));
+	gEnv->ogreCamera->setPosition(camPosition);
+	gEnv->ogreCamera->lookAt(lookAt);
+	gEnv->ogreCamera->setFOVy(Radian(fov));
 
 	if ( ctx.mDof )
 	{
@@ -71,12 +71,12 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 
 void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
 {
-	fovPreviously = globalEnvironment->ogreCamera->getFOVy();
+	fovPreviously = gEnv->ogreCamera->getFOVy();
 }
 
 void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
 {
-	globalEnvironment->ogreCamera->setFOVy(fovPreviously);
+	gEnv->ogreCamera->setFOVy(fovPreviously);
 
 	if ( ctx.mDof )
 	{

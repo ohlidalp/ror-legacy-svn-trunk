@@ -54,7 +54,7 @@ Road2::~Road2()
 		for (std::vector<int>::iterator it = registeredCollTris.begin(); it != registeredCollTris.end(); it++)
 		{
 			//coll->enableCollisionTri(*it, false);
-			globalEnvironment->collisions->removeCollisionTri(*it);
+			gEnv->collisions->removeCollisionTri(*it);
 		}
 	}
 }
@@ -80,8 +80,8 @@ void Road2::finish()
 	createMesh();
 	String entity_name = String("RoadSystem_Instance-").append(StringConverter::toString(mid));
 	String mesh_name = String("RoadSystem-").append(StringConverter::toString(mid));
-	Entity *ec = globalEnvironment->ogreSceneManager->createEntity(entity_name, mesh_name);
-	snode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+	Entity *ec = gEnv->ogreSceneManager->createEntity(entity_name, mesh_name);
+	snode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 	snode->attachObject(ec);
 }
 
@@ -93,8 +93,8 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 		//define type
 		Vector3 leftv=pos+rot*Vector3(0,0,bwidth+width/2.0);
 		Vector3 rightv=pos+rot*Vector3(0,0,-bwidth-width/2.0);
-		float dleft=leftv.y-globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(leftv.x, leftv.z);
-		float dright=rightv.y-globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(rightv.x, rightv.z);
+		float dleft=leftv.y-gEnv->terrainManager->getHeightFinder()->getHeightAt(leftv.x, leftv.z);
+		float dright=rightv.y-gEnv->terrainManager->getHeightFinder()->getHeightAt(rightv.x, rightv.z);
 		if (dleft<bheight+0.1 && dright<bheight+0.1) type=ROAD_FLAT;
 		if (dleft<bheight+0.1 && dright>=bheight+0.1 && dright<4.0) type=ROAD_LEFT;
 		if (dleft>=bheight+0.1 && dleft<4.0 && dright<bheight+0.1) type=ROAD_RIGHT;
@@ -161,9 +161,9 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			Vector3 rightv=pos+rot*Vector3(0,0,-bwidth-width/2.0);
 			Vector3 middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * 0.5;
-			float heightleft = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(leftv.x, leftv.z);
-			float heightright = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(rightv.x, rightv.z);
-			float heightmiddle = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(middle.x, middle.z);
+			float heightleft = gEnv->terrainManager->getHeightFinder()->getHeightAt(leftv.x, leftv.z);
+			float heightright = gEnv->terrainManager->getHeightFinder()->getHeightAt(rightv.x, rightv.z);
+			float heightmiddle = gEnv->terrainManager->getHeightFinder()->getHeightAt(middle.x, middle.z);
 
 			bool builtpillars = true;
 
@@ -191,7 +191,7 @@ void Road2::addBlock(Vector3 pos, Quaternion rot, int type, float width, float b
 			
 			middle = lpts[0] - ((lpts[0] + (pts[1] - lpts[0]) / 2) -
 							 (lpts[7] + (pts[6] - lpts[7]) / 2)) * sidefactor;
-			float len = middle.y - globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(middle.x, middle.z) + 5;
+			float len = middle.y - gEnv->terrainManager->getHeightFinder()->getHeightAt(middle.x, middle.z) + 5;
 			float width2 = len / 30;
 
 			if (pillartype == 2 && len > 20)
@@ -330,7 +330,7 @@ void Road2::computePoints(Vector3 *pts, Vector3 pos, Quaternion rot, int type, f
 
 inline Vector3 Road2::baseOf(Vector3 p)
 {
-	float y = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(p.x, p.z) - 0.01;
+	float y = gEnv->terrainManager->getHeightFinder()->getHeightAt(p.x, p.z) - 0.01;
 
 	if (y > p.y)
 	{
@@ -375,9 +375,9 @@ void Road2::addQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int texfit, 
 	}
 	if (collision)
 	{
-		ground_model_t *gm = globalEnvironment->collisions->getGroundModelByString("concrete");
+		ground_model_t *gm = gEnv->collisions->getGroundModelByString("concrete");
 		if (texfit==TEXFIT_ROAD || texfit==TEXFIT_ROADS1 || texfit==TEXFIT_ROADS2 || texfit==TEXFIT_ROADS3 || texfit==TEXFIT_ROADS4)
-			gm = globalEnvironment->collisions->getGroundModelByString("asphalt");
+			gm = gEnv->collisions->getGroundModelByString("asphalt");
 		addCollisionQuad(p1, p2, p3, p4, gm, flip);
 	}
 	tricount+=2;
@@ -521,18 +521,18 @@ void Road2::addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, gro
 	int triID=0;
 	if (flip)
 	{
-		triID = globalEnvironment->collisions->addCollisionTri(p1, p2, p4, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p2, p4, gm);
 		if (triID>=0) registeredCollTris.push_back(triID);
 
-		triID = globalEnvironment->collisions->addCollisionTri(p4, p2, p3, gm);
+		triID = gEnv->collisions->addCollisionTri(p4, p2, p3, gm);
 		if (triID>=0) registeredCollTris.push_back(triID);
 	}
 	else
 	{
-		triID = globalEnvironment->collisions->addCollisionTri(p1, p2, p3, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p2, p3, gm);
 		if (triID>=0) registeredCollTris.push_back(triID);
 
-		triID = globalEnvironment->collisions->addCollisionTri(p1, p3, p4, gm);
+		triID = gEnv->collisions->addCollisionTri(p1, p3, p4, gm);
 		if (triID>=0) registeredCollTris.push_back(triID);
 	}
 

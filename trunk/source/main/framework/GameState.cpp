@@ -16,13 +16,13 @@ void GameState::enter()
     LOG("Entering GameState...");
 
 	m_pSceneMgr = OgreFramework::getSingletonPtr()->m_pRoot->createSceneManager(ST_EXTERIOR_CLOSE);
-	globalEnvironment->ogreSceneManager = m_pSceneMgr;
+	gEnv->ogreSceneManager = m_pSceneMgr;
 
 	//CREATE CAMERA
 	LOG("Creating camera");
 	// Create the camera
 	m_pCamera = m_pSceneMgr->createCamera("PlayerCam");
-	globalEnvironment->ogreCamera = m_pCamera;
+	gEnv->ogreCamera = m_pCamera;
 
 	// Position it at 500 in Z direction
 	m_pCamera->setPosition(Vector3(128,25,128));
@@ -40,7 +40,7 @@ void GameState::enter()
 	LOG("Adding Frame Listener");
 
 	mFrameListener = new RoRFrameListener(this,	OgreFramework::getSingleton().getMainHWND());
-	globalEnvironment->frameListener = mFrameListener;
+	gEnv->frameListener = mFrameListener;
 
 	OgreFramework::getSingleton().m_pRoot->addFrameListener(mFrameListener);
 }

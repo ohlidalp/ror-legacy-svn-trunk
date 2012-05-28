@@ -33,8 +33,8 @@ DustPool::DustPool(const char* dname, int dsize) :
 	{
 		char dename[256];
 		sprintf(dename,"Dust %s %i", dname, i);
-		sns[i]=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
-		pss[i]=globalEnvironment->ogreSceneManager->createParticleSystem(dename, dname);
+		sns[i]=gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		pss[i]=gEnv->ogreSceneManager->createParticleSystem(dename, dname);
 		if (pss[i])
 		{
 			sns[i]->attachObject(pss[i]);
@@ -292,7 +292,7 @@ void DustPool::update(float gspeed)
 			ParticleEmitter *emit=pss[i]->getEmitter(0);
 			Real vel=velocities[i].length();
 			emit->setEnabled(true);
-			positions[i].y=globalEnvironment->terrainManager->getWater()->getHeight()-0.02;
+			positions[i].y=gEnv->terrainManager->getWater()->getHeight()-0.02;
 			sns[i]->setPosition(positions[i]);
 			emit->setColour(ColourValue(0.9, 0.9, 0.9,vel*0.04));
 			emit->setTimeToLive(vel*0.04/0.1);

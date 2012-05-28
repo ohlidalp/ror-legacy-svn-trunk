@@ -144,9 +144,9 @@ bool shutdownall=false;
 //workaround for pagedgeometry
 inline float getTerrainHeight(Real x, Real z, void *unused=0)
 {
-	if (!globalEnvironment->terrainManager->getHeightFinder())
+	if (!gEnv->terrainManager->getHeightFinder())
 		return 1;
-	return globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(x, z);
+	return gEnv->terrainManager->getHeightFinder()->getHeightAt(x, z);
 }
 
 void RoRFrameListener::startTimer()
@@ -664,7 +664,7 @@ void RoRFrameListener::updateGUI(float dt)
 		if (curr_truck->getLowestNode() != -1)
 		{
 			Vector3 pos = curr_truck->nodes[curr_truck->getLowestNode()].AbsPosition;
-			float height =  pos.y - globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
+			float height =  pos.y - gEnv->terrainManager->getHeightFinder()->getHeightAt(pos.x, pos.z);
 			if (height>0.1 && height < 99.9)
 			{
 				sprintf(tmp, "%2.1f", height);
@@ -728,7 +728,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	terrainManager(0)
 {
 	// we don't use overlays in embedded mode
-	if (!globalEnvironment->embeddedMode)
+	if (!gEnv->embeddedMode)
 	{
 		//ow = new OverlayWrapper();
 	}
@@ -745,7 +745,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	LoadingWindow::getSingleton();
 	SelectorWindow::getSingleton();
 	// create main menu :D
-	if (!globalEnvironment->embeddedMode)
+	if (!gEnv->embeddedMode)
 	{
 		new GUI_MainMenu();
 		GUI_Friction::getSingleton();
@@ -795,12 +795,12 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	if (ow)
 	{
 		// setup direction arrow
-		Entity *arrent = globalEnvironment->ogreSceneManager->createEntity("dirArrowEntity", "arrow2.mesh");
+		Entity *arrent = gEnv->ogreSceneManager->createEntity("dirArrowEntity", "arrow2.mesh");
 	#if OGRE_VERSION<0x010602
 		arrent->setNormaliseNormals(true);
 	#endif //OGRE_VERSION
 		// Add entity to the scene node
-		dirArrowNode= new SceneNode(globalEnvironment->ogreSceneManager);
+		dirArrowNode= new SceneNode(gEnv->ogreSceneManager);
 		dirArrowNode->attachObject(arrent);
 		dirArrowNode->setVisible(false);
 		dirArrowNode->setScale(0.1, 0.1, 0.1);
@@ -831,11 +831,11 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 
 	CACHE.startup();
 
-	screenWidth=globalEnvironment->ogreRenderWindow->getWidth();
-	screenHeight=globalEnvironment->ogreRenderWindow->getHeight();
+	screenWidth=gEnv->ogreRenderWindow->getWidth();
+	screenHeight=gEnv->ogreRenderWindow->getHeight();
 
-	windowResized(globalEnvironment->ogreRenderWindow);
-	RoRWindowEventUtilities::addWindowEventListener(globalEnvironment->ogreRenderWindow, this);
+	windowResized(gEnv->ogreRenderWindow);
+	RoRWindowEventUtilities::addWindowEventListener(gEnv->ogreRenderWindow, this);
 
 	debugCollisions = BSETTING("Debug Collisions", false);
 
@@ -1027,7 +1027,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 		int colourNum = 0;
 		if (net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
 		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
-		globalEnvironment->player = person;
+		gEnv->player = person;
 
 		// network chat stuff
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
@@ -1098,7 +1098,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 			{
 #ifdef USE_MYGUI
 				// show truck selector
-				if (globalEnvironment->terrainManager->getWater())
+				if (gEnv->terrainManager->getWater())
 				{
 					hideMap();
 					SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
@@ -1341,7 +1341,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 
 			// add some more data into the image
-			AdvancedScreen *as = new AdvancedScreen(globalEnvironment->ogreRenderWindow, tmpfn);
+			AdvancedScreen *as = new AdvancedScreen(gEnv->ogreRenderWindow, tmpfn);
 			//as->addData("terrain_Name", loadedTerrain);
 			//as->addData("terrain_ModHash", terrainModHash);
 			//as->addData("terrain_FileHash", terrainFileHash);
@@ -1364,17 +1364,17 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
 			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
-			as->addData("Camera_Position", TOSTRING(globalEnvironment->ogreCamera->getPosition()));
+			as->addData("Camera_Position", TOSTRING(gEnv->ogreCamera->getPosition()));
 
-			const RenderTarget::FrameStats& stats = globalEnvironment->ogreRenderWindow->getStatistics();
+			const RenderTarget::FrameStats& stats = gEnv->ogreRenderWindow->getStatistics();
 			as->addData("AVGFPS", TOSTRING(stats.avgFPS));
 
 			as->write();
 			delete(as);
 		} else
 		{
-			globalEnvironment->ogreRenderWindow->update();
-			globalEnvironment->ogreRenderWindow->writeContentsToFile(tmpfn);
+			gEnv->ogreRenderWindow->update();
+			gEnv->ogreRenderWindow->writeContentsToFile(tmpfn);
 		}
 
 #ifdef USE_MYGUI
@@ -1459,7 +1459,7 @@ bool RoRFrameListener::updateEvents(float dt)
 	// camera FOV settings
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_LESS, 0.1f) || INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FOV_MORE, 0.1f))
 	{
-		int fov = globalEnvironment->ogreCamera->getFOVy().valueDegrees();
+		int fov = gEnv->ogreCamera->getFOVy().valueDegrees();
 
 		if (INPUTENGINE.getEventBoolValue(EV_COMMON_FOV_LESS))
 			fov--;
@@ -1468,7 +1468,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (fov >= 10 && fov <= 160)
 		{
-			globalEnvironment->ogreCamera->setFOVy(Degree(fov));
+			gEnv->ogreCamera->setFOVy(Degree(fov));
 
 	#ifdef USE_MYGUI
 			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("FOV: ") + TOSTRING(fov), "camera_edit.png", 2000);
@@ -1496,21 +1496,21 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_FULLSCREEN_TOGGLE, 2.0f))
 	{
 		static int org_width = -1, org_height = -1;
-		int width = globalEnvironment->ogreRenderWindow->getWidth();
-		int height = globalEnvironment->ogreRenderWindow->getHeight();
+		int width = gEnv->ogreRenderWindow->getWidth();
+		int height = gEnv->ogreRenderWindow->getHeight();
 		if (org_width == -1)
 			org_width = width;
 		if (org_height == -1)
 			org_height = height;
-		bool mode = globalEnvironment->ogreRenderWindow->isFullScreen();
+		bool mode = gEnv->ogreRenderWindow->isFullScreen();
 		if (!mode)
 		{
-			globalEnvironment->ogreRenderWindow->setFullscreen(true, org_width, org_height);
+			gEnv->ogreRenderWindow->setFullscreen(true, org_width, org_height);
 			LOG(" ** switched to fullscreen: "+TOSTRING(width)+"x"+TOSTRING(height));
 		} else
 		{
-			globalEnvironment->ogreRenderWindow->setFullscreen(false, 640, 480);
-			globalEnvironment->ogreRenderWindow->setFullscreen(false, org_width, org_height);
+			gEnv->ogreRenderWindow->setFullscreen(false, 640, 480);
+			gEnv->ogreRenderWindow->setFullscreen(false, org_width, org_height);
 			LOG(" ** switched to windowed mode: ");
 		}
 	}
@@ -1518,7 +1518,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-		if (CameraManager::getSingleton().enableGameControls())
+		if (CameraManager::getSingleton().getGameControlsEnabled())
 		{
 			if (!curr_truck)
 			{
@@ -2377,21 +2377,21 @@ bool RoRFrameListener::updateEvents(float dt)
 			Real multiplier = 10;
 			bool update_time = false;
 
-			if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && globalEnvironment->terrainManager->getSkyManager())
+			if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME) && gEnv->terrainManager->getSkyManager())
 			{
 				update_time = true;
 			}
-			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && globalEnvironment->terrainManager->getSkyManager())
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_INCREASE_TIME_FAST) && gEnv->terrainManager->getSkyManager())
 			{
 				time_factor *= multiplier;
 				update_time = true;
 			}
-			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && globalEnvironment->terrainManager->getSkyManager())
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME) && gEnv->terrainManager->getSkyManager())
 			{
 				time_factor = -time_factor;
 				update_time = true;
 			}
-			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && globalEnvironment->terrainManager->getSkyManager())
+			else if (INPUTENGINE.getEventBoolValue(EV_CAELUM_DECREASE_TIME_FAST) && gEnv->terrainManager->getSkyManager())
 			{
 				time_factor *= -multiplier;
 				update_time = true;
@@ -2399,14 +2399,14 @@ bool RoRFrameListener::updateEvents(float dt)
 			else
 			{
 				time_factor = 1.0f;
-				update_time = globalEnvironment->terrainManager->getSkyManager()->getTimeFactor() != 1.0f;
+				update_time = gEnv->terrainManager->getSkyManager()->getTimeFactor() != 1.0f;
 			}
 
 			if ( update_time )
 			{
-				globalEnvironment->terrainManager->getSkyManager()->setTimeFactor(time_factor);
+				gEnv->terrainManager->getSkyManager()->setTimeFactor(time_factor);
 #ifdef USE_MYGUI
-				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Time set to ") + globalEnvironment->terrainManager->getSkyManager()->getPrettyTime(), "weather_sun.png", 1000);
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Time set to ") + gEnv->terrainManager->getSkyManager()->getPrettyTime(), "weather_sun.png", 1000);
 #endif // USE_MYGUI
 			}
 		}
@@ -2419,13 +2419,13 @@ bool RoRFrameListener::updateEvents(float dt)
 			switch (mSceneDetailIndex)
 			{
 			case 0:
-				globalEnvironment->ogreCamera->setPolygonMode(PM_SOLID);
+				gEnv->ogreCamera->setPolygonMode(PM_SOLID);
 				break;
 			case 1:
-				globalEnvironment->ogreCamera->setPolygonMode(PM_WIREFRAME);
+				gEnv->ogreCamera->setPolygonMode(PM_WIREFRAME);
 				break;
 			case 2:
-				globalEnvironment->ogreCamera->setPolygonMode(PM_POINTS);
+				gEnv->ogreCamera->setPolygonMode(PM_POINTS);
 				break;
 			}
 		}
@@ -2487,7 +2487,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				surveyMapMode == SURVEY_MAP_BIG &&
 				CameraManager::singletonExists() &&
 				CameraManager::getSingleton().hasActiveBehavior() &&
-				CameraManager::getSingleton().enableGameControls())
+				CameraManager::getSingleton().getGameControlsEnabled())
 			{
 				if (velocity > 7.5f || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{
@@ -2578,7 +2578,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (truck_preload_num == 0)
 					{
 						// show truck selector
-						if (globalEnvironment->terrainManager->getWater())
+						if (gEnv->terrainManager->getWater())
 						{
 							hideMap();
 							SelectorWindow::getSingleton().show(SelectorWindow::LT_NetworkWithBoat);
@@ -2721,10 +2721,10 @@ bool RoRFrameListener::updateEvents(float dt)
 	}
 
 	//update window
-	if (!globalEnvironment->ogreRenderWindow->isAutoUpdated())
+	if (!gEnv->ogreRenderWindow->isAutoUpdated())
 	{
 		if (dirty)
-			globalEnvironment->ogreRenderWindow->update();
+			gEnv->ogreRenderWindow->update();
 		else
 			sleepMilliSeconds(10);
 	}
@@ -2752,9 +2752,9 @@ void RoRFrameListener::shutdown_final()
 #endif //OIS_G27
 
 	LOG(" ** Shutdown final");
-	if (globalEnvironment->terrainManager->getWater()) globalEnvironment->terrainManager->getWater()->prepareShutdown();
+	if (gEnv->terrainManager->getWater()) gEnv->terrainManager->getWater()->prepareShutdown();
 	if (dashboard) dashboard->prepareShutdown();
-	if (globalEnvironment->terrainManager->getEnvmap()) globalEnvironment->terrainManager->getEnvmap()->prepareShutdown();
+	if (gEnv->terrainManager->getEnvmap()) gEnv->terrainManager->getEnvmap()->prepareShutdown();
 	if (heathaze) heathaze->prepareShutdown();
 
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
@@ -2802,16 +2802,16 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 
 	LOG("Loading new terrain format: " + terrainfile);
 
-	if (globalEnvironment->terrainManager)
+	if (gEnv->terrainManager)
 	{
 		// remove old terrain
-		delete(globalEnvironment->terrainManager);
+		delete(gEnv->terrainManager);
 	}
 
-	globalEnvironment->terrainManager = new TerrainManager();
+	gEnv->terrainManager = new TerrainManager();
 	terrainManager->loadTerrain(terrainfile);
 
-	if (globalEnvironment->player) globalEnvironment->player->setVisible(true);
+	if (gEnv->player) gEnv->player->setVisible(true);
 
 #ifdef USE_MYGUI
 	LoadingWindow::getSingleton().hide();
@@ -2946,7 +2946,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	
 	if (mtc)
 	{
-		Vector3 mapsize = globalEnvironment->terrainManager->getMax();
+		Vector3 mapsize = gEnv->terrainManager->getMax();
 		Vector3 position = Vector3(mapsize.x / 2.0f, 0.0f, mapsize.z / 2.0f);
 		mtc->setMapCenter(position);
 		mtc->update();
@@ -3142,7 +3142,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	if (dt==0) return true;
 	if (dt>1.0/20.0) dt=1.0/20.0;
 	rtime+=dt; //real time
-	if (globalEnvironment->ogreRenderWindow->isClosed())
+	if (gEnv->ogreRenderWindow->isClosed())
 	{
 		return false;
 	}
@@ -3176,7 +3176,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	//	BeamFactory::getSingleton().setCurrentTruck(-1);
 
 	// update animated objects
-	globalEnvironment->terrainManager->update(dt);
+	gEnv->terrainManager->update(dt);
 
 	// update network gui if required, at most every 2 seconds
 	if (net)
@@ -3191,7 +3191,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_SOCKETW
 #ifdef USE_MYGUI
 		// update net quality icon
-		if (globalEnvironment->network->getNetQualityChanged())
+		if (gEnv->network->getNetQualityChanged())
 		{
 			GUI_Multiplayer::getSingleton().update();
 		}
@@ -3200,7 +3200,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 		// now update mumble 3d audio things
 #ifdef USE_MUMBLE
-		MumbleIntegration::getSingleton().update(globalEnvironment->ogreCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
+		MumbleIntegration::getSingleton().update(gEnv->ogreCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
 #endif // USE_MUMBLE
 	}
 
@@ -3215,49 +3215,49 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #ifdef USE_OPENAL
 	// update audio listener position
 	static Vector3 lastCameraPosition;
-	Vector3 cameraSpeed = (globalEnvironment->ogreCamera->getPosition() - lastCameraPosition) / dt;
-	lastCameraPosition = globalEnvironment->ogreCamera->getPosition();
+	Vector3 cameraSpeed = (gEnv->ogreCamera->getPosition() - lastCameraPosition) / dt;
+	lastCameraPosition = gEnv->ogreCamera->getPosition();
 
-	SoundScriptManager::getSingleton().setCamera(globalEnvironment->ogreCamera->getPosition(), globalEnvironment->ogreCamera->getDirection(), globalEnvironment->ogreCamera->getUp(), cameraSpeed);
+	SoundScriptManager::getSingleton().setCamera(gEnv->ogreCamera->getPosition(), gEnv->ogreCamera->getDirection(), gEnv->ogreCamera->getUp(), cameraSpeed);
 #endif // USE_OPENAL
 	
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
 	// environment map
-	if (globalEnvironment->terrainManager)
+	if (gEnv->terrainManager)
 	{
-		if (globalEnvironment->terrainManager->getEnvmap())
+		if (gEnv->terrainManager->getEnvmap())
 		{
 			if (curr_truck)
 			{
-				globalEnvironment->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
+				gEnv->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
 			} else
 			{
-				float height = globalEnvironment->terrainManager->getMax().y;
-				if (globalEnvironment->terrainManager->getHeightFinder())
+				float height = gEnv->terrainManager->getMax().y;
+				if (gEnv->terrainManager->getHeightFinder())
 				{
-					height = globalEnvironment->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );
+					height = gEnv->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );
 				}
-				globalEnvironment->terrainManager->getEnvmap()->update(Vector3(terrainxsize / 2.0f, height + 50.0f, terrainzsize / 2.0f));
+				gEnv->terrainManager->getEnvmap()->update(Vector3(terrainxsize / 2.0f, height + 50.0f, terrainzsize / 2.0f));
 			}
 		}
 
 		// water
-		if (globalEnvironment->terrainManager->getWater())
+		if (gEnv->terrainManager->getWater())
 		{
 			if (curr_truck)
 			{
-				globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
+				gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
 			} else
 			{
-				globalEnvironment->terrainManager->getWater()->moveTo(globalEnvironment->ogreCamera, globalEnvironment->terrainManager->getWater()->getHeight());
+				gEnv->terrainManager->getWater()->moveTo(gEnv->ogreCamera, gEnv->terrainManager->getWater()->getHeight());
 			}
 		}
 
 		// update water after the camera!
-		if ((loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR) && globalEnvironment->terrainManager->getWater())
+		if ((loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR) && gEnv->terrainManager->getWater())
 		{
-			globalEnvironment->terrainManager->getWater()->framestep(dt);
+			gEnv->terrainManager->getWater()->framestep(dt);
 		}
 	}
 
@@ -3374,26 +3374,26 @@ void RoRFrameListener::showLoad(int type, char* instance, char* box)
 	// first, test if the place if clear, BUT NOT IN MULTIPLAYER
 	if (!net)
 	{
-		collision_box_t *spawnbox = globalEnvironment->collisions->getBox(instance, box);
+		collision_box_t *spawnbox = gEnv->collisions->getBox(instance, box);
 		for (int t=0; t < free_truck; t++)
 		{
 			if (!trucks[t]) continue;
 			for (int i=0; i < trucks[t]->free_node; i++)
 			{
-				if (globalEnvironment->collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
+				if (gEnv->collisions->isInside(trucks[t]->nodes[i].AbsPosition, spawnbox))
 				{
 #ifdef USE_MYGUI
 					Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("Please clear the place first"), "error.png");
 #endif // USE_MYGUI
-					globalEnvironment->collisions->clearEventCache();
+					gEnv->collisions->clearEventCache();
 					return;
 				}
 			}
 		}
 	}
-	reload_pos = globalEnvironment->collisions->getPosition(instance, box);
-	reload_dir = globalEnvironment->collisions->getDirection(instance, box);
-	reload_box = globalEnvironment->collisions->getBox(instance, box);
+	reload_pos = gEnv->collisions->getPosition(instance, box);
+	reload_dir = gEnv->collisions->getDirection(instance, box);
+	reload_box = gEnv->collisions->getBox(instance, box);
 	loading_state = RELOADING;
 	hideMap();
 #ifdef USE_MYGUI

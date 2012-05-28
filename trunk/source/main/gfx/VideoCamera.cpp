@@ -45,7 +45,7 @@ void VideoCamera::init()
 {
 	mat = Ogre::MaterialManager::getSingleton().getByName(materialName);
 
-	mVidCam = globalEnvironment->ogreSceneManager->createCamera(materialName + "_camera");
+	mVidCam = gEnv->ogreSceneManager->createCamera(materialName + "_camera");
 
 	bool useExternalMirrorWindow = BSETTING("UseVideocameraWindows", false);
 	bool fullscreenRW = BSETTING("VideoCameraFullscreen", false);
@@ -125,7 +125,7 @@ void VideoCamera::init()
 	{
 		Ogre::Viewport *vp = rttTex->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
-		vp->setBackgroundColour(globalEnvironment->ogreCamera->getViewport()->getBackgroundColour());
+		vp->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
 		vp->setVisibilityMask(~HIDE_MIRROR);
 		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
 		vp->setOverlaysEnabled(false);
@@ -141,7 +141,7 @@ void VideoCamera::init()
 	{
 		Ogre::Viewport *vp = rwMirror->addViewport(mVidCam);
 		vp->setClearEveryFrame(true);
-		vp->setBackgroundColour(globalEnvironment->ogreCamera->getViewport()->getBackgroundColour());
+		vp->setBackgroundColour(gEnv->ogreCamera->getViewport()->getBackgroundColour());
 		vp->setVisibilityMask(~HIDE_MIRROR);
 		vp->setVisibilityMask(~DEPTHMAP_DISABLED);
 		vp->setOverlaysEnabled(false);
@@ -150,8 +150,8 @@ void VideoCamera::init()
 	
 	if (debugMode)
 	{
-		Entity *ent = globalEnvironment->ogreSceneManager->createEntity("debug-camera.mesh");
-		debugNode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		Entity *ent = gEnv->ogreSceneManager->createEntity("debug-camera.mesh");
+		debugNode = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		ent->setMaterialName("ror-camera");
 		debugNode->attachObject(ent);
 		debugNode->setScale(0.1,0.1,0.1);
@@ -176,8 +176,8 @@ void VideoCamera::update(float dt)
 {
 #ifdef USE_CAELUM
 	// caelum needs to know that we changed the cameras
-	if (globalEnvironment->sky)
-		globalEnvironment->sky->notifyCameraChanged(mVidCam);
+	if (gEnv->sky)
+		gEnv->sky->notifyCameraChanged(mVidCam);
 #endif // USE_CAELUM
 
 	// update the texture now, otherwise shuttering
@@ -208,7 +208,7 @@ void VideoCamera::update(float dt)
 		//rotate the normal of the mirror by user rotation setting so it reflects correct
 		normal = rotation * normal;
 		// merge camera direction and reflect it on our plane
-		mVidCam->setDirection((pos - globalEnvironment->ogreCamera->getPosition()).reflect(normal));
+		mVidCam->setDirection((pos - gEnv->ogreCamera->getPosition()).reflect(normal));
 	} else
 	{
 		// this is a videocamera
