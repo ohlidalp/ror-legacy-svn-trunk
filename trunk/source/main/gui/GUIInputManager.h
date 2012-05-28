@@ -39,7 +39,7 @@ public:
 
     void setMousePosition(int _x, int _y);
 
-	float getLastMouseMoveTime();
+	float getLastMouseMoveTime() { return lastMouseMoveTime->getMilliseconds(); };
 
 protected:
 

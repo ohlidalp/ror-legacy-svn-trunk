@@ -98,16 +98,6 @@ GUIInputManager::~GUIInputManager()
 {
 }
 
-float GUIInputManager::getLastMouseMoveTime()
-{
-	if (lastMouseMoveTime)
-	{
-		return lastMouseMoveTime->getMilliseconds();
-	}
-
-	return 0.0f;
-}
-
 bool GUIInputManager::mouseMoved(const OIS::MouseEvent& _arg)
 {
 	activateGUI();
