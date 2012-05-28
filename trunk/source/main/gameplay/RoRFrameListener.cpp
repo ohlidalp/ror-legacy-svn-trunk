@@ -1075,7 +1075,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	{
 		if (!CACHE.checkResourceLoaded(preselected_map))
 		{
-			preselected_map  = preselected_map + ".terrn";
+			preselected_map  = preselected_map + ".terrn2";
 			// fallback to old terrain name with .terrn
 			if (!CACHE.checkResourceLoaded(preselected_map))
 			{
@@ -2786,7 +2786,7 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	if (!CACHE.checkResourceLoaded(terrainfile))
 	{
 		// fallback for terrains, add .terrn if not found and retry
-		terrainfile  = terrainfile + ".terrn";
+		terrainfile  = terrainfile + ".terrn2";
 		if (!CACHE.checkResourceLoaded(terrainfile))
 		{
 			LOG("Terrain not found: " + terrainfile);
@@ -3266,7 +3266,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		BeamFactory::getSingleton().updateVisual(dt);
 
 		// add some example AI
-		//if (loadedTerrain == "simple.terrn")
+		//if (loadedTerrain == "simple.terrn2")
 			//BeamFactory::getSingleton().updateAI(dt);
 	}
 
