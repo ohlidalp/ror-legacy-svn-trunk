@@ -369,7 +369,7 @@ Real Round(Real value, unsigned short ndigits /* = 0 */)
 	return value;
 }
 
-void generateHashFromDataStream(DataStream *ds, Ogre::String &hash)
+void generateHashFromDataStream(DataStreamPtr &ds, Ogre::String &hash)
 {
 	size_t location = ds->tell();
 	// copy whole file into a buffer
@@ -405,5 +405,5 @@ void generateHashFromFile(String filename, Ogre::String &hash)
 {
 	// no exception handling in here
 	DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
-	generateHashFromDataStream(ds.get(), hash);
+	generateHashFromDataStream(ds, hash);
 }
