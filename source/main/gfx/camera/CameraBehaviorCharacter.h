@@ -22,7 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehavior.h"
+#include "CameraBehaviorOrbit.h"
 
 class CameraBehaviorCharacter : public CameraBehaviorOrbit
 {

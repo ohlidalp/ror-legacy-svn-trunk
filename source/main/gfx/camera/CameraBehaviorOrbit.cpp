@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "CameraBehavior.h"
+#include "CameraBehaviorOrbit.h"
 
 #include "Beam.h"
 #include "Collisions.h"

@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ICameraBehavior.h"
 
-class CameraBehaviorStatic : public ICameraBehavior, public ZeroedMemoryAllocator
+class CameraBehaviorStatic : public ICameraBehavior
 {
 public:
 

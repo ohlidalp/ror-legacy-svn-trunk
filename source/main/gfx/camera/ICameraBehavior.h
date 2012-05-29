@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraManager.h"
 #include <OIS.h>
 
-class ICameraBehavior
+class ICameraBehavior : public ZeroedMemoryAllocator 
 {
 public:
 

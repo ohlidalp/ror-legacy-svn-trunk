@@ -1517,7 +1517,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-		if (CameraManager::getSingleton().getGameControlsEnabled())
+		if (CameraManager::singletonExists() && CameraManager::getSingleton().gameControlsEnabled())
 		{
 			if (!curr_truck)
 			{
@@ -2497,7 +2497,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				surveyMapMode == SURVEY_MAP_BIG &&
 				CameraManager::singletonExists() &&
 				CameraManager::getSingleton().hasActiveBehavior() &&
-				CameraManager::getSingleton().getGameControlsEnabled())
+				CameraManager::getSingleton().gameControlsEnabled())
 			{
 				if (velocity > 7.5f || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{
