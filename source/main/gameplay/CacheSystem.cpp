@@ -31,6 +31,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SHA1.h"
 #include "SoundScriptManager.h"
 #include "Utils.h"
+#include "TerrainManager.h"
 
 #ifdef USE_MYGUI
 #include "LoadingWindow.h"
@@ -1177,12 +1178,15 @@ void CacheSystem::addFile(String filename, String archiveType, String archiveDir
 		{
 			//LOG("Read to add "+String(entry.dname)+" filename "+String(filename));
 			DataStreamPtr ds = ResourceGroupManager::getSingleton().openResource(filename, group);
-			entry.dname = ds->getLine();
 
 			if (ext == "terrn2")
+			{
 				fillTerrainDetailInfo(entry, ds, filename);
-			else
+			} else
+			{
+				entry.dname = ds->getLine();
 				fillTruckDetailInfo(entry, ds, filename);
+			}
 
 			// ds closes automatically, so do _not_ close it explicitly below
 			entry.fname = filename;
@@ -1660,83 +1664,15 @@ String CacheSystem::filenamesSHA1()
 
 void CacheSystem::fillTerrainDetailInfo(CacheEntry &entry, Ogre::DataStreamPtr ds, Ogre::String fname)
 {
-	char authorformat[256] = "//author %s %i %s %s";
-	char authortag[256] = "//author";
-
-	char categoryformat[256] = "//fileinfo %s %i, %i";
-	char categorytag[256] = "//fileinfo";
+	TerrainManager tm;
+	tm.loadTerrainConfigBasics(ds);
 
 	//parsing the current file
 	entry.authors.clear();
-	LOG("Parsing terrain for detail information: '"+String(fname)+"'");
-	//LOG("Parsing for authors: '"+String(d.fname)+"'");
-	char line[1024];
-	int linecounter = 0;
-	int categoryid=-1, version=-1;
-
-	// try to get unique ID from the filename!
-	String uniqueid = "no-uid";
-	String fileuid = getUIDfromString(fname);
-	if (fileuid != "") uniqueid = fileuid;
-
-	while (!ds->eof())
-	{
-		size_t ll=ds->readLine(line, 1023);
-		if (ll <= 1)
-			// ignore empty lines
-			continue;
-		linecounter++;
-		if (!strncmp(authortag, line, strnlen(authortag, 254))) {
-			int authorid;
-			char authorname[256], authoremail[256], authortype[256];
-			memset(authorname, 0, 255);
-			memset(authoremail, 0, 255);
-			memset(authortype, 0, 255);
-			int result = sscanf(line, authorformat, &authortype, &authorid, &authorname, &authoremail);
-			if (result < 1 || result == EOF)
-			{
-				LOG("Error parsing File (author) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-				continue;
-			}
-			//replace '_' with ' '
-			authorinfo_t author;
-			//char *tmp = authorname;
-			//while (*tmp!=0) {if (*tmp=='_') *tmp=' ';tmp++;};
-			
-			//fill the struct now
-			author.id = authorid;
-			author.type = String(authortype);
-			author.name = String(authorname);
-			author.email = String(authoremail);
-			entry.authors.push_back(author);
-
-		} else if (!strncmp(categorytag, line, strnlen(categorytag, 254)))
-		{
-			char uidtmp[256] = "";
-			int result = sscanf(line, categoryformat, uidtmp, &categoryid, &version);
-			if (result < 3 || result == EOF)
-			{
-				LOG("Error parsing File (fileinfo) " + String(fname) +" line " + TOSTRING(linecounter) + ". trying to continue ...");
-				continue;
-			}
-
-			if (uniqueid != "")
-			{
-				// remove trailing comma
-				size_t slen = strnlen(uidtmp, 250);
-				if (slen > 0 && uidtmp[slen-1] == ',')
-					uidtmp[slen-1] = 0;
-
-				// fix the -1 from the old format
-				if (strnlen(uidtmp, 5) > 0 && strncmp(uidtmp, "-1", 2))
-					uniqueid = String(uidtmp);
-			}
-
-		}
-	}
-	entry.categoryid = categoryid;
-	entry.uniqueid = uniqueid;
-	entry.version = version;
+	entry.dname      = tm.terrain_name;
+	entry.categoryid = tm.categoryID;
+	entry.uniqueid   = tm.guid;
+	entry.version    = tm.version;
 }
 
 int CacheSystem::getCategoryUsage(int category)

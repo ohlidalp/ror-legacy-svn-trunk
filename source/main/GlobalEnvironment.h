@@ -47,7 +47,7 @@ public:
 		, sky(0)
 		, surveyMap(0)
 		, terrainManager(0)
-	    , ogreRoot(0)
+		, ogreRoot(0)
 	{
 	}
 
