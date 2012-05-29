@@ -155,7 +155,7 @@ protected:
 	float mouseGrabForce;
 	float terrainxsize;
 	float terrainzsize;
-	float truckx, trucky, truckz;
+	//float truckx, trucky, truckz;
 
 	int flaresMode;
 	int free_localizer;

@@ -46,7 +46,7 @@ using namespace Ogre;
 TerrainManager::TerrainManager() :
 	  loading_state(NONE_LOADED)
 {
-
+	gravity = DEFAULT_GRAVITY;
 }
 
 TerrainManager::~TerrainManager()

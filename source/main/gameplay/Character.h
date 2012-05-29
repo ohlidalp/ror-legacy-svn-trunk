@@ -45,7 +45,6 @@ public:
 
 	void setBeamCoupling(bool enabled, Beam *truck = 0);
 	void setColour(int color) { this->colourNumber = color; };
-	void setHFinder(HeightFinder *hFinder);
 	void setPhysicsEnabled(bool enabled) { physicsEnabled = enabled; };
 	void setPosition(Ogre::Vector3 position);
 	void setRotation(Ogre::Radian rotation);

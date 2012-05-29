@@ -51,6 +51,7 @@ public:
 	SkyManager *getSkyManager() { return sky_manager; };
 	Water *getWater() { return water; };
 	Ogre::Light *getMainLight() { return main_light; };
+	Ogre::Vector3 getSpawnPos() { return start_position; };
 
 protected:
 	// members

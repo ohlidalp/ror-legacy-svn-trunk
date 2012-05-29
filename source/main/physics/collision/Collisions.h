@@ -152,8 +152,6 @@ public:
 	Ogre::Quaternion getDirection(char* instance, char* box);
 	collision_box_t *getBox(char* instance, char* box);
 
-	void setHfinder(IHeightFinder *hf);
-
 	eventsource_t *isTruckInEventBox(Beam *truck);
 
 	bool collisionCorrect(Ogre::Vector3 *refpos);

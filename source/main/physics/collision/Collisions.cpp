@@ -116,13 +116,14 @@ Collisions::Collisions() :
 	, free_collision_tri(0)
 	, free_eventsource(0)
 	, hashmask(0)
-	, hFinder(0)
 	, landuse(0)
 	, largest_cellcount(0)
 	, last_called_cbox(0)
 	, last_used_ground_model(0)
 	, max_col_tris(MAX_COLLISION_TRIS)
 {
+	hFinder = gEnv->terrainManager->getHeightFinder();
+
 	debugMode = BSETTING("Collision Debug Mode", false);
 	for (int i=0; i < HASH_POWER; i++)
 	{
@@ -368,11 +369,6 @@ ground_model_t *Collisions::getGroundModelByString(const String name)
 		return 0;
 
 	return &ground_models[name];
-}
-
-void Collisions::setHfinder(IHeightFinder *hFinder)
-{
-	hFinder = hFinder;
 }
 
 unsigned int Collisions::hashfunc(unsigned int cellid)
