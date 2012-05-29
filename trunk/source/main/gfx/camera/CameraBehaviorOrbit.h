@@ -24,7 +24,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ICameraBehavior.h"
 
-class CameraBehaviorOrbit : public ICameraBehavior, public ZeroedMemoryAllocator
+class CameraBehaviorOrbit : public ICameraBehavior
 {
 public:
 

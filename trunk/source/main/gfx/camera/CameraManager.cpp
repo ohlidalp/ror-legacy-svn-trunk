@@ -25,7 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "Settings.h"
 
-#include "CameraBehavior.h"
+#include "CameraBehaviorOrbit.h"
 #include "CameraBehaviorCharacter.h"
 #include "CameraBehaviorFixed.h"
 #include "CameraBehaviorFree.h"
@@ -235,8 +235,8 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 	return currentBehavior->mouseReleased(ctx, _arg, _id);
 }
 
-bool CameraManager::getGameControlsEnabled()
+bool CameraManager::gameControlsEnabled()
 {
 	// game controls are only disabled in free camera mode for now
-	return (getCameraBehavior() != CAMERA_BEHAVIOR_FREE);
+	return (currentBehaviorID != CAMERA_BEHAVIOR_FREE);
 }

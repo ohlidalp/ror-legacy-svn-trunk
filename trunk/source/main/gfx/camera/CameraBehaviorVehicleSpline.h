@@ -37,19 +37,20 @@ public:
 	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
 	void reset(const CameraManager::cameraContext_t &ctx);
 
+	void createSpline(const CameraManager::cameraContext_t &ctx);
 	void updateSpline();
 	void updateSplineDisplay();
 
 protected:
 
-	Ogre::ManualObject* myManualObject;
-	Ogre::SceneNode* mySceneNode;
+	Ogre::ManualObject* splineObject;
 	Ogre::SimpleSpline* spline;
 	Ogre::Real splineLength;
 	Ogre::Real splinePos;
 	bool splineClosed;
 
 	std::vector<node*> splineNodes;
+	int numLinkedBeams;
 
 	static const int splineDrawResolution = 200;
 };

@@ -275,7 +275,8 @@ void Character::update(float dt)
 	if (physicsEnabled && !remote)
 	{
 		// disable character movement when using the free camera mode or when the menu is opened
-		if (CameraManager::singletonExists() && !CameraManager::getSingleton().getGameControlsEnabled()) return;
+		// TODO: check for menu being opened
+		if (CameraManager::singletonExists() && !CameraManager::getSingleton().gameControlsEnabled()) return;
 
 		// small hack: if not visible do not apply physics
 		Vector3 position = mCharacterNode->getPosition();

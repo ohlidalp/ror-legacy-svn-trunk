@@ -22,17 +22,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Beam.h"
 #include "InputEngine.h"
 #include "Ogre.h"
-#include "Settings.h"
 
 using namespace Ogre;
 
 CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 	  CameraBehaviorVehicle()
-	, myManualObject(0)
-	, mySceneNode(0)
+	, numLinkedBeams(0)
 	, spline(new SimpleSpline())
 	, splineClosed(false)
 	, splineLength(1.0f)
+	, splineObject(0)
 	, splinePos(0.5f)
 {
 }
@@ -51,6 +50,10 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
+		if ( ctx.mCurrTruck->getAllLinkedBeams().size() != numLinkedBeams )
+		{
+			createSpline(ctx);
+		}
 		updateSpline();
 		updateSplineDisplay();
 
@@ -130,6 +133,7 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 	} else if ( reset )
 	{
 		this->reset(ctx);
+		createSpline(ctx);
 	}
 }
 
@@ -139,9 +143,13 @@ void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ct
 
 	camDist = std::min(ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f, 20.0f);
 	
+	splinePos = 0.5f;
+}
+
+void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContext_t &ctx)
+{
 	splineClosed = false;
 	splineLength = 1.0f;
-	splinePos = 0.5f;
 
 	spline->clear();
 	splineNodes.clear();
@@ -154,7 +162,9 @@ void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ct
 
 	std::list<Beam*> linkedBeams = ctx.mCurrTruck->getAllLinkedBeams();
 
-	if (linkedBeams.size() > 0)
+	numLinkedBeams = linkedBeams.size();
+
+	if ( numLinkedBeams > 0 )
 	{
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
 		{
@@ -189,19 +199,19 @@ void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ct
 
 	splineLength /= 2.0f;
 
-	if ( !myManualObject )
+	if ( !splineObject )
 	{
-		myManualObject = gEnv->sceneManager->createManualObject();
-		mySceneNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+		splineObject = gEnv->sceneManager->createManualObject();
+		SceneNode* splineNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 
-		myManualObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
+		splineObject->begin("tracks/transred", Ogre::RenderOperation::OT_LINE_STRIP);
 		for (int i = 0; i < splineDrawResolution; i++)
 		{
-			myManualObject->position(0, 0, 0);
+			splineObject->position(0, 0, 0);
 		}
-		myManualObject->end();
+		splineObject->end();
 
-		mySceneNode->attachObject(myManualObject);
+		splineNode->attachObject(splineObject);
 	}
 }
 
@@ -215,12 +225,12 @@ void CameraBehaviorVehicleSpline::updateSpline()
 
 void CameraBehaviorVehicleSpline::updateSplineDisplay()
 {
-	myManualObject->beginUpdate(0);
+	splineObject->beginUpdate(0);
 	for (int i = 0; i < splineDrawResolution; i++)
 	{
-		float pos1d = i / (float)splineDrawResolution;
-		Vector3 pos3d = spline->interpolate(pos1d);
-		myManualObject->position(pos3d);
+		Real parametricDist = i / (float)splineDrawResolution;
+		Vector3 position = spline->interpolate(parametricDist);
+		splineObject->position(position);
 	}
-	myManualObject->end();
+	splineObject->end();
 }

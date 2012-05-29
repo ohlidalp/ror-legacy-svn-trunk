@@ -5633,7 +5633,7 @@ void Beam::updateAI(float dt)
 	if (driveable != TRUCK ||
 		!CameraManager::singletonExists() ||
 		!CameraManager::getSingleton().hasActiveBehavior() ||
-		CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_FREE)
+		 CameraManager::getSingleton().gameControlsEnabled())
 	{
 		return;
 	}

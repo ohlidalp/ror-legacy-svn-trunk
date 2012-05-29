@@ -63,13 +63,12 @@ public:
 	void switchToNextBehavior(bool force = true);
 	void toggleBehavior(int behavior);
 
+	bool gameControlsEnabled();
 	bool hasActiveBehavior();
 	bool hasActiveCharacterBehavior();
 	bool hasActiveVehicleBehavior();
 
 	int getCameraBehavior();
-
-	bool getGameControlsEnabled();
 
 protected:
 
