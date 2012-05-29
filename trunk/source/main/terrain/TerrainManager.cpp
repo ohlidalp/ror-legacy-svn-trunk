@@ -116,6 +116,7 @@ void TerrainManager::loadTerrain(String filename)
 
 	collisions->printStats();
 
+	// rorframelistener still has its own var, need to fix this
 	loading_state = TERRAIN_LOADED;
 
 

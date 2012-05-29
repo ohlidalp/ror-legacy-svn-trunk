@@ -87,7 +87,7 @@ DashboardListener::DashboardListener() :
 void DashboardListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// hide everything
-	mScene->setFindVisibleObjects(false);
+	gEnv->sceneManager->setFindVisibleObjects(false);
 
 	// hide fps stats
 	if (fpsOverlay)
@@ -119,7 +119,7 @@ void DashboardListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 void DashboardListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// show everything
-	mScene->setFindVisibleObjects(true);
+	gEnv->sceneManager->setFindVisibleObjects(true);
 
 	// show everything again, if it was displayed before hiding it...
 	if (fpsOverlay && fpsDisplayed)

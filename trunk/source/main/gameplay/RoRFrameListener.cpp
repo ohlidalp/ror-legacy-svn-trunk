@@ -2821,10 +2821,19 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	gEnv->terrainManager = new TerrainManager();
 	gEnv->terrainManager->loadTerrain(terrainfile);
 
+	loading_state=TERRAIN_LOADED;
+
 	if (gEnv->player) gEnv->player->setVisible(true);
 
 #ifdef USE_MYGUI
-	LoadingWindow::getSingleton().hide();
+	if (!BSETTING("REPO_MODE", false))
+	{
+			// hide loading window
+			LoadingWindow::getSingleton().hide();
+			// hide wallpaper
+			MyGUI::Window *w = MyGUI::Gui::getInstance().findWidget<MyGUI::Window>("wallpaper");
+			if (w) w->setVisibleSmooth(false);
+	}
 #endif //USE_MYGUI
 }
 

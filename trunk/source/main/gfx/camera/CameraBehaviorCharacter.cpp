@@ -33,6 +33,7 @@ CameraBehaviorCharacter::CameraBehaviorCharacter() :
 
 void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 {
+	if(!gEnv->player) return;
 	targetDirection = -gEnv->player->getRotation() - Radian(Math::HALF_PI);
 	camLookAt       =  gEnv->player->getPosition() + camPositionOffset;
 
@@ -41,6 +42,7 @@ void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 
 bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
 {
+	if(!gEnv->player) return false;
 	if ( camMode == CHARACTER_FIRST_PERSON )
 	{
 		const OIS::MouseState ms = _arg.state;

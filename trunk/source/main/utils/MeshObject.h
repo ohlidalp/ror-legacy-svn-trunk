@@ -43,7 +43,6 @@ public:
 
 protected:
 	MaterialReplacer *mr;
-	Ogre::SceneManager *smgr;
 	Ogre::String meshName;
 	Ogre::String entityName;
 	Ogre::SceneNode *sceneNode;
