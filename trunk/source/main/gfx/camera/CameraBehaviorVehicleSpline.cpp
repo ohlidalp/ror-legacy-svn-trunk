@@ -182,14 +182,14 @@ void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContex
 				splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
 			}
 		}
+	}
 
-		Vector3 firstPoint = spline->getPoint(0);
-		Vector3 lastPoint  = spline->getPoint(spline->getNumPoints() - 1);
+	Vector3 firstPoint = spline->getPoint(0);
+	Vector3 lastPoint  = spline->getPoint(spline->getNumPoints() - 1);
 
-		if ( firstPoint.distance(lastPoint) < 1.0f )
-		{
-			splineClosed = true;
-		}
+	if ( firstPoint.distance(lastPoint) < 1.0f )
+	{
+		splineClosed = true;
 	}
 
 	for (int i = 1; i < spline->getNumPoints(); i++)
