@@ -35,17 +35,23 @@ public:
 	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg);
 
 	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
+	void reset(const CameraManager::cameraContext_t &ctx);
 
-
+	void updateSpline();
 	void updateSplineDisplay();
 
 protected:
 
-	Ogre::ManualObject *myManualObject;
+	Ogre::ManualObject* myManualObject;
 	Ogre::SceneNode* mySceneNode;
-	Ogre::SimpleSpline *spline;
-	float splinePos;
-	static const int splineDrawResolution = 20;
+	Ogre::SimpleSpline* spline;
+	Ogre::Real splineLength;
+	Ogre::Real splinePos;
+	bool splineClosed;
+
+	std::vector<node*> splineNodes;
+
+	static const int splineDrawResolution = 200;
 };
 
 #endif // __CAMERA_BEHAVIOR_VEHICLE_SPLINE_H_

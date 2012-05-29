@@ -42,6 +42,7 @@ protected:
 
 	Beam *currTruck;
 	int lastCineCam;
+
 	static const int DEFAULT_INTERNAL_CAM_PITCH = -15;
 };
 

@@ -31,6 +31,8 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 	, myManualObject(0)
 	, mySceneNode(0)
 	, spline(new SimpleSpline())
+	, splineClosed(false)
+	, splineLength(1.0f)
 	, splinePos(0.5f)
 {
 }
@@ -38,31 +40,85 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
 {
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos
-				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
+		- ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
 
-	targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
-	targetPitch     = 0.0f;
+	targetPitch = 0.0f;
 
-	camRatio = 1.0f / (ctx.mCurrTruck->tdt * 4.0f);
+	if ( camPitching )
+	{
+		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
+	}
 
 	if ( ctx.mCurrTruck->free_camerarail > 0 )
 	{
-		spline->clear();
-		for (int i = 0; i < ctx.mCurrTruck->free_camerarail; i++)
-		{
-			spline->addPoint(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]].AbsPosition);
-		}
-
+		updateSpline();
 		updateSplineDisplay();
 
 		camLookAt = spline->interpolate(splinePos);
-	} else
-	{
-		// fallback :-/
-		camLookAt = ctx.mCurrTruck->getPosition();
+
+		if ( !INPUTENGINE.isKeyDown(OIS::KC_SPACE) )
+		{
+			Vector3 centerDir = ctx.mCurrTruck->getPosition() - camLookAt;
+			if ( centerDir.length() > 1.0f )
+			{
+				centerDir.normalise();
+				targetDirection = -atan2(centerDir.dotProduct(Vector3::UNIT_X), centerDir.dotProduct(-Vector3::UNIT_Z));
+			} else
+			{
+				targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+			}
+		}
 	}
 
 	CameraBehaviorOrbit::update(ctx);
+}
+
+bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+{
+	const OIS::MouseState ms = _arg.state;
+
+	if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right) )
+	{
+		if ( INPUTENGINE.isKeyDown(OIS::KC_LMENU) )
+		{
+			splinePos += ms.X.rel * std::max(0.0001f, splineLength * 0.0000001f);
+		} else
+		{
+			splinePos += ms.X.rel * std::max(0.00005f, splineLength * 0.0000005f);
+		}
+		
+		if ( ms.X.rel > 0 && splinePos > 0.99f )
+		{
+			if ( splineClosed )
+			{
+				splinePos -= 1.0f;
+			} else
+			{
+				// u - turn
+			}
+		} else if ( ms.X.rel < 0 && splinePos < 0.01f )
+		{
+			if ( splineClosed )
+			{
+				splinePos += 1.0f;
+			} else
+			{
+				// u - turn
+			}
+		}
+
+		splinePos  = std::max(0.0f, splinePos);
+		splinePos  = std::min(splinePos, 1.0f);
+
+		camRatio = 0.0f;
+
+		return true;
+	} else
+	{
+		camRatio = 5.0f;
+
+		return CameraBehaviorOrbit::mouseMoved(ctx, _arg);
+	}
 }
 
 void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
@@ -71,7 +127,67 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 	{
 		CameraManager::getSingleton().switchToNextBehavior();
 		return;
+	} else if ( reset )
+	{
+		this->reset(ctx);
 	}
+}
+
+void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ctx)
+{
+	CameraBehaviorOrbit::reset(ctx);
+
+	camDist = std::min(ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f, 20.0f);
+	
+	splineClosed = false;
+	splineLength = 1.0f;
+	splinePos = 0.5f;
+
+	spline->clear();
+	splineNodes.clear();
+
+	for (int i = 0; i < ctx.mCurrTruck->free_camerarail; i++)
+	{
+		spline->addPoint(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]].AbsPosition);
+		splineNodes.push_back(&ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]]);
+	}
+
+	std::list<Beam*> linkedBeams = ctx.mCurrTruck->getAllLinkedBeams();
+
+	if (linkedBeams.size() > 0)
+	{
+		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		{
+			if ( (*it)->free_camerarail <= 0 ) break;
+
+			Vector3 lastPoint = spline->getPoint(spline->getNumPoints() - 1);
+			Vector3 firstPoint = (*it)->nodes[(*it)->cameraRail[0]].AbsPosition;
+			Vector3 secondPoint = (*it)->nodes[(*it)->cameraRail[1]].AbsPosition;
+
+			if ( firstPoint.distance(lastPoint) > 5.0f ) break;
+
+			for (int i = 1; i < (*it)->free_camerarail; i++)
+			{
+				spline->addPoint((*it)->nodes[(*it)->cameraRail[i]].AbsPosition);
+				splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
+			}
+		}
+
+		Vector3 firstPoint = spline->getPoint(0);
+		Vector3 lastPoint  = spline->getPoint(spline->getNumPoints() - 1);
+
+		if ( firstPoint.distance(lastPoint) < 1.0f )
+		{
+			splineClosed = true;
+		}
+	}
+
+	for (int i = 1; i < spline->getNumPoints(); i++)
+	{
+		splineLength += spline->getPoint(i - 1).distance(spline->getPoint(i));
+	}
+
+	splineLength /= 2.0f;
 
 	if ( !myManualObject )
 	{
@@ -89,19 +205,11 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 	}
 }
 
-bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+void CameraBehaviorVehicleSpline::updateSpline()
 {
-	const OIS::MouseState ms = _arg.state;
-
-	if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right) )
+	for (int i = 0; i < spline->getNumPoints(); i++)
 	{
-		splinePos += ms.X.rel * 0.001f;
-		splinePos  = std::max(0.0f, splinePos);
-		splinePos  = std::min(splinePos, 1.0f);
-		return true;
-	} else
-	{
-		return CameraBehaviorOrbit::mouseMoved(ctx, _arg);
+		spline->updatePoint(i, splineNodes[i]->AbsPosition);
 	}
 }
 
