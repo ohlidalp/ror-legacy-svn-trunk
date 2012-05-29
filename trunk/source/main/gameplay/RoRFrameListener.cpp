@@ -2845,39 +2845,10 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	if (loadmanual)
 	{
 		Beam *b = 0;
-		Vector3 spawnpos = Vector3(truckx, trucky, truckz);
+		Vector3 spawnpos = gEnv->terrainManager->getSpawnPos();
 		Quaternion spawnrot = Quaternion::ZERO;
 
-		if (net)
-		{
-			if (selectedExtension.size() > 0)
-			{
-				String nsp = SSETTING("net spawn location", "");
-				if (!nsp.empty())
-				{
-					// override-able by cmd line
-					spawnpos = StringConverter::parseVector3(nsp);
-					spawnrot = Quaternion::ZERO;
-				} else
-				{
-					// classical, search start points
-					try
-					{
-						//spawnpos = netSpawnPos[selectedExtension].pos;
-						//spawnrot = netSpawnPos[selectedExtension].rot;
-					} catch(...)
-					{
-						spawnpos = Vector3(truckx, trucky, truckz);
-						spawnrot = Quaternion::ZERO;
-					}
-				}
-			}
-		}
-
-		if (net)
-			b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig, skin);
-		else
-			b = BeamFactory::getSingleton().createLocal(Vector3(truckx, trucky, truckz), Quaternion::ZERO, selectedchr, 0, false, flaresMode, truckconfig, skin);
+		b = BeamFactory::getSingleton().createLocal(spawnpos, spawnrot, selectedchr, 0, false, flaresMode, truckconfig, skin);
 
 		if (enterTruck)
 		{
@@ -2890,6 +2861,8 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 #ifdef USE_MYGUI
 		if (b && surveyMap)
 		{
+			/*
+			// TODO: FIX
 			MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
 			if (e)
 			{
@@ -2898,6 +2871,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 				e->setPosition(truckx, truckz);
 				e->setRotation(-Radian(b->getHeadingDirectionAngle()));
 			}
+			*/
 		}
 #endif //USE_MYGUI
 
