@@ -109,6 +109,9 @@ void TerrainManager::loadTerrain(String filename)
 
 	fixCompositorClearColor();
 
+	// load the terrain geometry
+	geometry_manager->loadOgreTerrainConfig(ogre_terrain_config_filename);
+
 	loadTerrainObjects();
 
 	collisions->printStats();
@@ -128,11 +131,11 @@ void TerrainManager::loadTerrain(String filename)
 
 void TerrainManager::initSubSystems()
 {
-	// objects  - .odef support
-	object_manager   = new TerrainObjectManager(this);
-	
 	// geometry - ogre terrain things
-	geometry_manager = new TerrainGeometryManager(this);
+	initGeometry();
+
+	// objects  - .odef support
+	initObjects();
 	
 	// collisions
 	initCollisions();
@@ -512,4 +515,14 @@ void TerrainManager::setGravity(float value)
 void TerrainManager::initSurveyMap()
 {
 	//survey_map = new MapControl(mapsizex, mapsizey, mapsizez);
+}
+
+void TerrainManager::initGeometry()
+{
+	geometry_manager = new TerrainGeometryManager(this);
+}
+
+void TerrainManager::initObjects()
+{
+	object_manager = new TerrainObjectManager(this);
 }

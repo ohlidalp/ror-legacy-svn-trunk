@@ -126,7 +126,7 @@ void TerrainGeometryManager::configureTerrainDefaults()
 {
 	OGRE_NEW TerrainGlobalOptions();
 
-	Light *light = gEnv->terrainManager->getSkyManager()->getMainLight();
+	Light *light = gEnv->terrainManager->getMainLight();
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
 	// Configure global
 	terrainOptions->setMaxPixelError(PARSEINT(terrainConfig.getSetting("MaxPixelError")));
