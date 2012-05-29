@@ -22,16 +22,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+#include "CacheSystem.h"
+
 #include <OgreConfigFile.h>
 
 class TerrainManager : public ZeroedMemoryAllocator
 {
+	friend class CacheSystem;
 public:
 
 	TerrainManager();
 	~TerrainManager();
 
 	void loadTerrain(Ogre::String filename);
+	void loadTerrainConfigBasics(Ogre::DataStreamPtr &ds);
 	
 	void update(float dt) {};
 
@@ -70,7 +74,10 @@ protected:
 	Ogre::String fileHash;
 	Ogre::String ogre_terrain_config_filename;
 	Ogre::String terrain_name;
+	Ogre::String guid;
 	Ogre::Vector3 start_position;
+	int categoryID;
+	int version;
 	bool use_caelum;
 	float gravity;
 	float water_line;

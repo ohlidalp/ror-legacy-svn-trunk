@@ -54,6 +54,38 @@ TerrainManager::~TerrainManager()
 
 }
 
+void TerrainManager::loadTerrainConfigBasics(Ogre::DataStreamPtr &ds)
+{
+	// now generate the hash of it
+	generateHashFromDataStream(ds, fileHash);
+
+	mTerrainConfig.load(ds, "\t:=", true);
+
+	// read in the settings
+	terrain_name = mTerrainConfig.getSetting("Name", "General");
+	if (terrain_name.empty())
+	{
+		showError(_L("Terrain loading error"), _L("the terrain name cannot be empty"));
+		exit(125);
+	}
+
+	ogre_terrain_config_filename = mTerrainConfig.getSetting("GeometryConfig", "General");
+	// otc = ogre terrain config
+	if (ogre_terrain_config_filename.find(".otc") == String::npos)
+	{
+		showError(_L("Terrain loading error"), _L("the new terrain mode only supports .otc configurations"));
+		exit(125);
+	}
+
+	ambient_color = StringConverter::parseColourValue(mTerrainConfig.getSetting("AmbientColor", "General"));
+	start_position = StringConverter::parseVector3(mTerrainConfig.getSetting("StartPosition", "General"));
+
+	guid = mTerrainConfig.getSetting("GUID", "General");
+	categoryID = StringConverter::parseInt(mTerrainConfig.getSetting("CategoryID", "General"));
+	version = StringConverter::parseInt(mTerrainConfig.getSetting("Version", "General"));
+
+}
+
 void TerrainManager::loadTerrain(String filename)
 {
 	DataStreamPtr ds;
@@ -69,24 +101,8 @@ void TerrainManager::loadTerrain(String filename)
 		exit(125);
 	}
 
-	// now generate the hash of it
-	generateHashFromDataStream(ds, fileHash);
+	loadTerrainConfigBasics(ds);
 
-	mTerrainConfig.load(ds, "\t:=", false);
-
-	// read in the settings
-	terrain_name = mTerrainConfig.getSetting("Name");
-
-	ogre_terrain_config_filename = mTerrainConfig.getSetting("GeometryConfig");
-	// otc = ogre terrain config
-	if (ogre_terrain_config_filename.find(".otc") == String::npos)
-	{
-		showError(_L("Terrain loading error"), _L("the new terrain mode only supports .otc configurations"));
-		exit(125);
-	}
-
-	ambient_color = StringConverter::parseColourValue(mTerrainConfig.getSetting("AmbientColor"));
-	start_position = StringConverter::parseVector3(mTerrainConfig.getSetting("StartPosition"));
 
 	// then, init the subsystems, order is important :)
 	initSubSystems();
@@ -118,6 +134,9 @@ void TerrainManager::initSubSystems()
 	// geometry - ogre terrain things
 	geometry_manager = new TerrainGeometryManager(this);
 	
+	// collisions
+	initCollisions();
+
 	// shadows
 	initShadows();
 
@@ -184,7 +203,7 @@ void TerrainManager::initSkySubSystem()
 		gEnv->sky = sky_manager;
 
 		// try to load caelum config
-		String caelumConfig = mTerrainConfig.getSetting("CaelumConfigFile");
+		String caelumConfig = mTerrainConfig.getSetting("CaelumConfigFile", "General");
 
 		if (!caelumConfig.empty() && ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(caelumConfig))
 		{
@@ -199,7 +218,7 @@ void TerrainManager::initSkySubSystem()
 	} else
 #endif //USE_CAELUM
 	{
-		String sandStormConfig = mTerrainConfig.getSetting("SandStormCubeMap");
+		String sandStormConfig = mTerrainConfig.getSetting("SandStormCubeMap", "General");
 
 		if (!sandStormConfig.empty())
 		{
