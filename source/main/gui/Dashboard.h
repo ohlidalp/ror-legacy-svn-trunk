@@ -62,7 +62,6 @@ private:
 	Ogre::Overlay *fpsOverlay;
 	Ogre::Overlay *needlesOverlay;
 	Ogre::Overlay *truckHUDOverlay;
-	Ogre::SceneManager *mScene;
 	bool consolevisible;
 	bool fpsDisplayed;
 	bool truckHUD;

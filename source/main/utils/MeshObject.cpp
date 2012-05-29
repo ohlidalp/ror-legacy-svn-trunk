@@ -47,7 +47,7 @@ MeshObject::MeshObject(Ogre::String meshName, Ogre::String entityName, Ogre::Sce
 {
 	// create a new sceneNode if not existing
 	if (!sceneNode)
-		sceneNode = smgr->getRootSceneNode()->createChildSceneNode();
+		sceneNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 
 	loadMesh();
 }
@@ -183,9 +183,9 @@ void MeshObject::postProcess()
 	try
 	{
 		if (entityName.empty())
-			ent = smgr->createEntity(meshName);
+			ent = gEnv->sceneManager->createEntity(meshName);
 		else
-			ent = smgr->createEntity(entityName, meshName);
+			ent = gEnv->sceneManager->createEntity(entityName, meshName);
 		if (ent)
 			sceneNode->attachObject(ent);
 	} catch(Ogre::Exception& e)

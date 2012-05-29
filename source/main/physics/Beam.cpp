@@ -182,7 +182,7 @@ Beam::Beam(int tnum , Ogre::Vector3 pos , Ogre::Quaternion rot , const char* fna
 	, pointCD(0)
 	, GUIFeaturesChanged(false)
 {
-
+	mCamera = gEnv->mainCamera;
 	airbrakeval = 0;
 	alb_minspeed = 0.0f;
 	alb_mode = 0;
