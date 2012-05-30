@@ -1353,17 +1353,17 @@ float Beam::getTotalMass(bool withLocked)
 
 	float mass = totalmass;
 	
-	std::list<Beam*> linkedBeams = getAllLinkedBeams();
-
 	for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+	{
 		mass += (*it)->totalmass;
+	}
 
 	return mass;
 }
 
-std::list<Beam*> Beam::getAllLinkedBeams()
+void Beam::determineLinkedBeams()
 {
-	std::list<Beam*> result;
+	linkedBeams.clear();
 
 	bool found = true;
 	std::map< Beam*, bool> lookup_table;
@@ -1386,7 +1386,7 @@ std::list<Beam*> Beam::getAllLinkedBeams()
 						ret = lookup_table.insert(std::pair< Beam*, bool>(it_hook->lockTruck, false));
 						if (ret.second)
 						{
-							result.push_back(it_hook->lockTruck);
+							linkedBeams.push_back(it_hook->lockTruck);
 							found = true;
 						}
 					}
@@ -1395,8 +1395,6 @@ std::list<Beam*> Beam::getAllLinkedBeams()
 			}
 		}
 	}
-
-	return result;
 }
 
 int Beam::getWheelNodeCount()
@@ -1939,6 +1937,15 @@ void Beam::SyncReset()
 	//this is a hook assistance beam and needs to be disabled after reset
 	for (std::vector <hook_t>::iterator it = hooks.begin(); it!=hooks.end(); it++)
 	{
+		if (it->lockTruck)
+		{
+			it->lockTruck->determineLinkedBeams();
+
+			for (std::list<Beam*>::iterator it_truck = it->lockTruck->linkedBeams.begin(); it_truck != it->lockTruck->linkedBeams.end(); ++it)
+			{
+				(*it_truck)->determineLinkedBeams();
+			}
+		}
 		it->beam->mSceneNode->detachAllObjects();
 		it->beam->disabled = true;
 		it->locked        = UNLOCKED;
@@ -4360,10 +4367,10 @@ void Beam::showSkeleton(bool meshes, bool newMode, bool linked)
 	if (linked)
 	{
 		// apply to the locked truck
-		std::list<Beam*> linkedBeams = getAllLinkedBeams();
-
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		{
 			(*it)->showSkeleton(meshes, newMode, false);
+		}
 	}
 
 	lockSkeletonchange=false;
@@ -4449,10 +4456,10 @@ void Beam::hideSkeleton(bool newMode, bool linked)
 	if (linked)
 	{
 		// apply to the locked truck
-		std::list<Beam*> linkedBeams = getAllLinkedBeams();
-
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		{
 			(*it)->hideSkeleton(newMode, false);
+		}
 	}
 
 	lockSkeletonchange=false;
@@ -4551,10 +4558,10 @@ void Beam::setBeamVisibility(bool visible, bool linked)
 	if (linked)
 	{
 		// apply to the locked truck
-		std::list<Beam*> linkedBeams = getAllLinkedBeams();
-
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		{
 			(*it)->setBeamVisibility(visible, false);
+		}
 	}
 }
 
@@ -4594,10 +4601,10 @@ void Beam::setMeshVisibility(bool visible, bool linked)
 	if (linked)
 	{
 		// apply to the locked truck
-		std::list<Beam*> linkedBeams = getAllLinkedBeams();
-
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+		{
 			(*it)->setMeshVisibility(visible, false);
+		}
 	}
 }
 
@@ -4864,6 +4871,8 @@ void Beam::hookToggle(int group, int mode, int node_number)
 			continue;
 		}
 
+		Beam* lastLockTruck = it->lockTruck; // memorize current value
+
 		//this is a locked or prelocked hook and its not a locking attempt
 		if ((it->locked == LOCKED || it->locked == PRELOCK) && mode != HOOK_LOCK)
 		{
@@ -4976,6 +4985,22 @@ void Beam::hookToggle(int group, int mode, int node_number)
 				//if (found)
 					// if we found some lock, we wont check all other trucks
 					//break;
+			}
+		}
+
+		if (it->lockTruck != lastLockTruck)
+		{
+			std::list<Beam*> linkedBeams (linkedBeams);
+
+			linkedBeams.push_back(this);
+			linkedBeams.push_back(std::max(lastLockTruck, it->lockTruck));
+			linkedBeams.splice(linkedBeams.end(), linkedBeams.front()->linkedBeams);
+			linkedBeams.sort();
+			linkedBeams.unique();
+
+			for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
+			{
+				(*it)->determineLinkedBeams();
 			}
 		}
 	}
