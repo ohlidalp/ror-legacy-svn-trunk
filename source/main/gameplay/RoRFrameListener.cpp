@@ -1115,8 +1115,9 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 		} else if (!preselected_truck.empty() && preselected_truck != "none")
 		{
 			// load preselected truck
+			const std::vector<String> truckConfig = std::vector<String>(1, preselected_truckConfig);
 			loading_state = TERRAIN_LOADED;
-			initTrucks(true, preselected_truck, "", &std::vector<String>(1, preselected_truckConfig), enterTruck);
+			initTrucks(true, preselected_truck, "", &truckConfig, enterTruck);
 		}
 	} else
 	{
