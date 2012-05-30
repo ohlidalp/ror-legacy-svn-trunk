@@ -4994,7 +4994,7 @@ void Beam::hookToggle(int group, int mode, int node_number)
 
 			linkedBeams.push_back(this);
 			linkedBeams.push_back(std::max(lastLockTruck, it->lockTruck));
-			linkedBeams.splice(linkedBeams.end(), linkedBeams.front()->linkedBeams);
+			linkedBeams.splice(linkedBeams.end(), linkedBeams.back()->linkedBeams);
 			linkedBeams.sort();
 			linkedBeams.unique();
 
