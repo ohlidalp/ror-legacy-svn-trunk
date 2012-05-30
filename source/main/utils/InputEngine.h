@@ -432,6 +432,7 @@ public:
 	bool setup(Ogre::String hwnd, bool capture=false, bool capturemouse=false, int grabMode=0, bool captureKbd=true);
 	Ogre::String getKeyForCommand(int eventID);
 	bool isKeyDown(OIS::KeyCode mod);
+	bool isKeyDownValueBounce(OIS::KeyCode mod, float time=0.2f);
 
 	std::map<int, std::vector<event_trigger_t> > &getEvents() { return events; };
 
