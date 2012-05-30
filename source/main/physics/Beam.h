@@ -280,7 +280,9 @@ public:
 	/*
 	 *@return Returns a list of all connected (hooked) beams 
 	 */
-	std::list<Beam*> getAllLinkedBeams();
+	std::list<Beam*> getAllLinkedBeams() { return linkedBeams; };
+	std::list<Beam*> linkedBeams;
+	void determineLinkedBeams();
 
 	// this must be in the header as the network stuff is using it...
 	bool getBrakeLightVisible();
