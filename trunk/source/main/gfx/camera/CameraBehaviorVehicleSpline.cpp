@@ -20,7 +20,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicleSpline.h"
 
 #include "Beam.h"
+#include "Console.h"
 #include "InputEngine.h"
+#include "Language.h"
 #include "Ogre.h"
 
 using namespace Ogre;
@@ -59,16 +61,32 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 		camLookAt = spline->interpolate(splinePos);
 
-		if ( !INPUTENGINE.isKeyDown(OIS::KC_SPACE) )
+		if ( INPUTENGINE.isKeyDownValueBounce(OIS::KC_SPACE) )
+		{
+			autoTracking = !autoTracking;
+#ifdef USE_MYGUI
+			if ( autoTracking )
+			{
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("enabled"), "camera_go.png", 3000);
+			} else
+			{
+				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("disabled"), "camera_go.png", 3000);
+			}
+#endif // USE_MYGUI
+		}
+
+		if ( autoTracking )
 		{
 			Vector3 centerDir = ctx.mCurrTruck->getPosition() - camLookAt;
 			if ( centerDir.length() > 1.0f )
 			{
 				centerDir.normalise();
+				Radian oldTargetDirection = targetDirection;
 				targetDirection = -atan2(centerDir.dotProduct(Vector3::UNIT_X), centerDir.dotProduct(-Vector3::UNIT_Z));
-			} else
-			{
-				targetDirection = -atan2(dir.dotProduct(Vector3::UNIT_X), dir.dotProduct(-Vector3::UNIT_Z));
+				if ( (targetDirection * oldTargetDirection).valueRadians() < 0.0f )
+				{
+					camRotX = -camRotX;
+				}
 			}
 		}
 	}
@@ -82,13 +100,19 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 
 	if ( INPUTENGINE.isKeyDown(OIS::KC_LCONTROL) && ms.buttonDown(OIS::MB_Right) )
 	{
+		Real splinePosDiff = ms.X.rel * std::max(0.00005f, splineLength * 0.0000001f);
+
+		if ( INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) || INPUTENGINE.isKeyDown(OIS::KC_RSHIFT) )
+		{
+			splinePosDiff *= 3.0f;
+		}
+
 		if ( INPUTENGINE.isKeyDown(OIS::KC_LMENU) )
 		{
-			splinePos += ms.X.rel * std::max(0.0001f, splineLength * 0.0000001f);
-		} else
-		{
-			splinePos += ms.X.rel * std::max(0.00005f, splineLength * 0.0000005f);
+			splinePosDiff *= 0.1f;
 		}
+
+		splinePos += splinePosDiff;
 		
 		if ( ms.X.rel > 0 && splinePos > 0.99f )
 		{
@@ -141,7 +165,7 @@ void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ct
 {
 	CameraBehaviorOrbit::reset(ctx);
 
-	camDist = std::min(ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f, 20.0f);
+	camDist = std::min(ctx.mCurrTruck->getMinimalCameraRadius() * 2.0f, 33.0f);
 	
 	splinePos = 0.5f;
 }
