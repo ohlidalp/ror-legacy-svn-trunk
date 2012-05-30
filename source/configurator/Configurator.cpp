@@ -1470,8 +1470,8 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 		// missing header fr this:
 		//ALCdevice *device = alcOpenDevice(devices);
 		//wxLogStatus(wxString(device->szDeviceName));
-		sound->AppendValueItem(wxString(devices));
-		wxLogStatus(wxT(" *") + wxString(devices));
+		sound->AppendValueItem(wxString(conv(devices)));
+		wxLogStatus(wxT(" *") + wxString(conv(devices)));
 		devices += strlen(devices) + 1; //next device
 	}
 	y+=35;
@@ -1479,7 +1479,7 @@ MyDialog::MyDialog(const wxString& title, MyApp *_app) : wxDialog(NULL, wxID_ANY
 	wxLogStatus(wxT("Sound Extensions: "));
 	char *extensions = (char *)alcGetString(NULL, ALC_ENUMERATE_ALL_EXT);
 
-	wxStringTokenizer tkz(wxString(extensions), wxT(" "));
+	wxStringTokenizer tkz(wxString(conv(extensions)), wxT(" "));
 	while ( tkz.HasMoreTokens() )
 	{
 		wxString token = tkz.GetNextToken();
