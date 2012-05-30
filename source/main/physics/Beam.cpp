@@ -1940,10 +1940,12 @@ void Beam::SyncReset()
 		if (it->lockTruck)
 		{
 			it->lockTruck->determineLinkedBeams();
+			it->lockTruck->hideSkeleton(it->lockTruck->skeleton==2, false);
 
 			for (std::list<Beam*>::iterator it_truck = it->lockTruck->linkedBeams.begin(); it_truck != it->lockTruck->linkedBeams.end(); ++it)
 			{
 				(*it_truck)->determineLinkedBeams();
+				(*it_truck)->hideSkeleton((*it_truck)->skeleton==2, false);
 			}
 		}
 		it->beam->mSceneNode->detachAllObjects();
@@ -5001,6 +5003,14 @@ void Beam::hookToggle(int group, int mode, int node_number)
 			for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
 			{
 				(*it)->determineLinkedBeams();
+
+				if (skeleton && this != (*it) && !(*it)->skeleton)
+				{
+					(*it)->showSkeleton(true, skeleton==2, false);
+				} else if (skeleton && this != (*it) && (*it)->skeleton)
+				{
+					(*it)->hideSkeleton(skeleton==2, false);
+				}
 			}
 		}
 	}
