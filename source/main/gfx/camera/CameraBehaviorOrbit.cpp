@@ -154,5 +154,6 @@ bool CameraBehaviorOrbit::mouseMoved(const CameraManager::cameraContext_t &ctx, 
 void CameraBehaviorOrbit::reset(const CameraManager::cameraContext_t &ctx)
 {
 	camRotX = 0.0f;
+	camRotY = 0.3f;
 	gEnv->mainCamera->setFOVy(ctx.fovExternal);
 }

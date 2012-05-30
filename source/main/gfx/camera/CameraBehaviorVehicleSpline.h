@@ -48,6 +48,7 @@ protected:
 	Ogre::Real splineLength;
 	Ogre::Real splinePos;
 	bool splineClosed;
+	bool autoTracking;
 
 	std::vector<node*> splineNodes;
 	int numLinkedBeams;
