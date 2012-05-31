@@ -61,7 +61,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 
 		camLookAt = spline->interpolate(splinePos);
 
-		if ( INPUTENGINE.isKeyDownValueBounce(OIS::KC_SPACE) )
+		if ( INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) && INPUTENGINE.isKeyDownValueBounce(OIS::KC_SPACE) )
 		{
 			autoTracking = !autoTracking;
 #ifdef USE_MYGUI
@@ -83,7 +83,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 				centerDir.normalise();
 				Radian oldTargetDirection = targetDirection;
 				targetDirection = -atan2(centerDir.dotProduct(Vector3::UNIT_X), centerDir.dotProduct(-Vector3::UNIT_Z));
-				if ( (targetDirection * oldTargetDirection).valueRadians() < 0.0f )
+				if ( targetDirection.valueRadians() * oldTargetDirection.valueRadians() < 0.0f && centerDir.length() < camDistMin)
 				{
 					camRotX = -camRotX;
 				}
@@ -180,7 +180,6 @@ void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContex
 
 	for (int i = 0; i < ctx.mCurrTruck->free_camerarail; i++)
 	{
-		spline->addPoint(ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]].AbsPosition);
 		splineNodes.push_back(&ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameraRail[i]]);
 	}
 
@@ -192,20 +191,45 @@ void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContex
 	{
 		for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
 		{
-			if ( (*it)->free_camerarail <= 0 ) break;
+			if ( (*it)->free_camerarail <= 0 ) continue;
 
-			Vector3 lastPoint = spline->getPoint(spline->getNumPoints() - 1);
-			Vector3 firstPoint = (*it)->nodes[(*it)->cameraRail[0]].AbsPosition;
-			Vector3 secondPoint = (*it)->nodes[(*it)->cameraRail[1]].AbsPosition;
+			Vector3 curSplineFront = splineNodes.front()->AbsPosition;
+			Vector3 curSplineBack  = splineNodes.back() ->AbsPosition;
 
-			if ( firstPoint.distance(lastPoint) > 5.0f ) break;
+			Vector3 linkedSplineFront = (*it)->nodes[(*it)->cameraRail[0]].AbsPosition;
+			Vector3 linkedSplineBack  = (*it)->nodes[(*it)->cameraRail[(*it)->free_camerarail - 1]].AbsPosition;
 
-			for (int i = 1; i < (*it)->free_camerarail; i++)
+			if        ( curSplineBack.distance(linkedSplineFront) < 5.0f )
 			{
-				spline->addPoint((*it)->nodes[(*it)->cameraRail[i]].AbsPosition);
-				splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
+				for (int i = 1; i < (*it)->free_camerarail; i++)
+				{
+					splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
+				}
+			} else if ( curSplineFront.distance(linkedSplineFront) < 5.0f )
+			{
+				for (int i = 1; i < (*it)->free_camerarail; i++)
+				{
+					splineNodes.push_front(&(*it)->nodes[(*it)->cameraRail[i]]);
+				}
+			} else if ( curSplineBack.distance(linkedSplineBack) < 5.0f )
+			{
+				for (int i = (*it)->free_camerarail - 2; i >= 0; i++)
+				{
+					splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
+				}
+			} else if ( curSplineFront.distance(linkedSplineBack) < 5.0f )
+			{
+				for (int i = (*it)->free_camerarail - 2; i >= 0; i++)
+				{
+					splineNodes.push_front(&(*it)->nodes[(*it)->cameraRail[i]]);
+				}
 			}
 		}
+	}
+
+	for (unsigned int i = 0; i < splineNodes.size(); i++)
+	{
+		spline->addPoint(splineNodes[i]->AbsPosition);
 	}
 
 	Vector3 firstPoint = spline->getPoint(0);
