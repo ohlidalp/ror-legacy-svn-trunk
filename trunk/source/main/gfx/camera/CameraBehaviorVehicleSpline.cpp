@@ -213,13 +213,13 @@ void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContex
 				}
 			} else if ( curSplineBack.distance(linkedSplineBack) < 5.0f )
 			{
-				for (int i = (*it)->free_camerarail - 2; i >= 0; i++)
+				for (int i = (*it)->free_camerarail - 2; i >= 0; i--)
 				{
 					splineNodes.push_back(&(*it)->nodes[(*it)->cameraRail[i]]);
 				}
 			} else if ( curSplineFront.distance(linkedSplineBack) < 5.0f )
 			{
-				for (int i = (*it)->free_camerarail - 2; i >= 0; i++)
+				for (int i = (*it)->free_camerarail - 2; i >= 0; i--)
 				{
 					splineNodes.push_front(&(*it)->nodes[(*it)->cameraRail[i]]);
 				}
