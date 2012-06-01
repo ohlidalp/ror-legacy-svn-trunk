@@ -58,6 +58,8 @@ bool MapTextureCreator::init()
 	mViewport = mRttTex->addViewport(mCamera);
 	mViewport->setBackgroundColour(ColourValue::Black);
 	mViewport->setOverlaysEnabled(false);
+	mViewport->setShadowsEnabled(false);
+	mViewport->setSkiesEnabled(false);
 
 	mMaterial = MaterialManager::getSingleton().create("MapRttMat" + TOSTRING(mCounter), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
@@ -76,13 +78,14 @@ bool MapTextureCreator::init()
 
 void MapTextureCreator::setMapZoom(Real zoomValue)
 {
-	mMapZoom = std::max(0.0f, zoomValue);
-	mMapZoom = std::min(zoomValue, 1.0f);
+	mMapZoom = zoomValue;
+	mMapZoom = std::max(0.0f, mMapZoom);
+	mMapZoom = std::min(mMapZoom, 1.0f);
 }
 
 void MapTextureCreator::setMapZoomRelative(Real zoomDelta)
 {
-	setMapZoom(mMapZoom + zoomDelta * mMapZoom / 100.0f);
+	setMapZoom(mMapZoom + zoomDelta * std::max(0.1f, 1.0f - mMapZoom) / 100.0f);
 }
 
 void MapTextureCreator::setMapCenter(Vector3 position)
