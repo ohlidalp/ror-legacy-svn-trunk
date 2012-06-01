@@ -899,27 +899,27 @@ eventInfo_t eventInfo[] = {
 		_L("select previous element in current category")
 	},
 	{
-		"SURVEY_MAP_TOGGLE_ALPHA",
-		EV_SURVEY_MAP_ALPHA,
-		"Keyboard EXPL+CTRL+TAB",
-		_L("toggle translucency of overview-map")
-	},
-	{
 		"SURVEY_MAP_TOGGLE_VIEW",
 		EV_SURVEY_MAP_TOGGLE_VIEW,
 		"Keyboard EXPL+TAB",
 		_L("toggle map modes")
 	},
 	{
+		"SURVEY_MAP_TOGGLE_ALPHA",
+		EV_SURVEY_MAP_ALPHA,
+		"Keyboard EXPL+CTRL+TAB",
+		_L("toggle translucency of overview-map")
+	},
+	{
 		"SURVEY_MAP_ZOOM_IN",
 		EV_SURVEY_MAP_ZOOM_IN,
-		"Keyboard EXPL+TAB",
+		"Keyboard EXPL+SHIFT+CTRL+TAB",
 		_L("zoom in")
 	},
 	{
 		"SURVEY_MAP_ZOOM_OUT",
 		EV_SURVEY_MAP_ZOOM_OUT,
-		"Keyboard EXPL+TAB",
+		"Keyboard EXPL+SHIFT+TAB",
 		_L("zoom out")
 	},
 	{
