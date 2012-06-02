@@ -42,13 +42,6 @@ namespace Ogre
 	class TerrainGroup;
 }
 
-#ifdef USE_PAGED
-namespace Forests
-{
-	class PagedGeometry;
-	class TreeLoader2D;
-}
-#endif //USE_PAGED
 
 class RoRFrameListener: public Ogre::FrameListener, public Ogre::WindowEventListener, public ZeroedMemoryAllocator
 {
@@ -72,36 +65,6 @@ public:
 
 protected:
 
-	typedef struct
-	{
-		float px;
-		float py;
-		float pz;
-		//float ry;
-		Ogre::Quaternion rotation;
-		char name[256];
-		bool ismachine;
-		bool freePosition;
-	} truck_prepare_t;
-
-	typedef struct
-	{
-		Ogre::Vector3 pos;
-		Ogre::Quaternion rot;
-	} spawn_location_t;
-
-
-#ifdef USE_PAGED
-	typedef struct
-	{
-		Forests::PagedGeometry *geom;
-		void *loader;
-	} paged_geometry_t;
-
-	std::vector<paged_geometry_t> pagedGeometry;
-	Forests::TreeLoader2D *treeLoader;
-#endif //USE_PAGED
-
 #ifdef USE_MPLATFORM
 	MPlatform_Base *mplatform;
 #endif //USE_MPLATFORM
@@ -124,7 +87,6 @@ protected:
 	Ogre::Real mTimeUntilNextToggle; // just to stop toggles flipping too fast
 	Ogre::SceneNode *dirArrowNode;
 	Ogre::SceneNode *pointerDestination;
-	Ogre::String grassdensityTextureFilename;
 	Ogre::String inputhwnd;
 	Ogre::String terrainUID;
 	Ogre::Vector3 dirArrowPointed;
@@ -151,14 +113,12 @@ protected:
 	double rtime;
 
 	float clutch;
-	float farclip;
 	float mouseGrabForce;
 	float terrainxsize;
 	float terrainzsize;
 	//float truckx, trucky, truckz;
 
 	int flaresMode;
-	int free_localizer;
 	int gameStartTime;
 	int inputGrabMode;
 	int joyshiftlock;
@@ -167,17 +127,14 @@ protected:
 	int mouseGrabState;
 	int netPointToUID;
 	int nodegrabbed;
-	int objcounter;
 	int objectCounter;
 	int raceStartTime;
 	int screenHeight;
 	int screenWidth;
 	int shaderSchemeMode;
-	int truck_preload_num;
 	int truckgrabbed;
 	
 
-	truck_prepare_t truck_preload[100];
 
 	unsigned int mNumScreenShots;
 	

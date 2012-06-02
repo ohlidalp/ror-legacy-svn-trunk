@@ -54,6 +54,15 @@ TerrainManager::~TerrainManager()
 
 }
 
+
+// some shortcut to remove ugly code
+#ifdef USE_MYGUI
+#include "LoadingWindow.h"
+#define PROGRESS_WINDOW(x, y) LoadingWindow::getSingleton().setProgress(x, y);
+#else
+#define PROGRESS_WINDOW(x, y)
+#endif //USE_MYGUI
+
 void TerrainManager::loadTerrainConfigBasics(Ogre::DataStreamPtr &ds)
 {
 	// now generate the hash of it
@@ -101,6 +110,8 @@ void TerrainManager::loadTerrain(String filename)
 		exit(125);
 	}
 
+	PROGRESS_WINDOW(10, _L("Loading Terrain Configuration"));
+
 	loadTerrainConfigBasics(ds);
 
 
@@ -110,8 +121,10 @@ void TerrainManager::loadTerrain(String filename)
 	fixCompositorClearColor();
 
 	// load the terrain geometry
+	PROGRESS_WINDOW(80, _L("Loading Terrain Geometry"));
 	geometry_manager->loadOgreTerrainConfig(ogre_terrain_config_filename);
 
+	PROGRESS_WINDOW(90, _L("Loading Terrain Objects"));
 	loadTerrainObjects();
 
 	collisions->printStats();
@@ -133,56 +146,74 @@ void TerrainManager::loadTerrain(String filename)
 void TerrainManager::initSubSystems()
 {
 	// geometry - ogre terrain things
+	PROGRESS_WINDOW(15, _L("Initializing Geometry Subsystem"));
 	initGeometry();
 
 	// objects  - .odef support
+	PROGRESS_WINDOW(17, _L("Initializing Object Subsystem"));
 	initObjects();
 	
 	// collisions
+	PROGRESS_WINDOW(19, _L("Initializing Collision Subsystem"));
 	initCollisions();
 
 	// shadows
+	PROGRESS_WINDOW(21, _L("Initializing Shadow Subsystem"));
 	initShadows();
 
 	// sky
+	PROGRESS_WINDOW(23, _L("Initializing Sky Subsystem"));
 	initSkySubSystem();
 
+	PROGRESS_WINDOW(25, _L("Initializing Camera Subsystem"));
 	initCamera();
 
+	PROGRESS_WINDOW(27, _L("Initializing Light Subsystem"));
 	initLight();
 
+	PROGRESS_WINDOW(29, _L("Initializing Fog Subsystem"));
 	initFog();
 
+	PROGRESS_WINDOW(31, _L("Initializing Vegetation Subsystem"));
 	initVegetation();
 
+	PROGRESS_WINDOW(33, _L("Initializing Water Subsystem"));
 	initWater();
 
 	if (BSETTING("HDR", false))
 	{
+		PROGRESS_WINDOW(35, _L("Initializing HDR Subsystem"));
 		initHDR();
 	}
 	if (BSETTING("Glow", false))
 	{
+		PROGRESS_WINDOW(37, _L("Initializing Glow Subsystem"));
 		initGlow();
 	}
 	if (BSETTING("Motion blur", false))
 	{
+		PROGRESS_WINDOW(39, _L("Initializing Motion Blur Subsystem"));
 		initMotionBlur();
 	}
 	if (BSETTING("Sunburn", false))
 	{
+		PROGRESS_WINDOW(41, _L("Initializing Sunburn Subsystem"));
 		initSunburn();
 	}
 	// environment map
 	if (!BSETTING("Envmapdisable", false))
 	{
+		PROGRESS_WINDOW(43, _L("Initializing Environment Map Subsystem"));
 		initEnvironmentMap();
 	}
 	// init the map
 	if (!BSETTING("disableOverViewMap", false))
 	{
+		PROGRESS_WINDOW(45, _L("Initializing Overview Map Subsystem"));
 		initSurveyMap();
 	}
+
+	PROGRESS_WINDOW(47, _L("Initializing Dashboards Subsystem"));
 	initDashboards();
 }
 
@@ -264,8 +295,8 @@ void TerrainManager::initFog()
 void TerrainManager::initVegetation()
 {
 	// get vegetation mode
-	int pagedMode = 0; //None
-	float pagedDetailFactor = 0;
+	pagedMode = 0; //None
+	pagedDetailFactor = 0;
 	String vegetationMode = SSETTING("Vegetation", "None (fastest)");
 	if     (vegetationMode == "None (fastest)")
 	{
@@ -466,12 +497,21 @@ void TerrainManager::loadTerrainObjects()
 
 		object_manager->loadObjectConfigFile(sname);
 	}
+
+	// bakes the geometry and things
+	object_manager->postLoad();
 }
 
 void TerrainManager::initCollisions()
 {
 	collisions = new Collisions();
 	gEnv->collisions = collisions;
+
+	String tractionMapConfig = mTerrainConfig.getSetting("TractionMap", "General");
+	if (!tractionMapConfig.empty())
+	{
+		gEnv->collisions->setupLandUse(tractionMapConfig.c_str());
+	}
 }
 
 void TerrainManager::initScripting()

@@ -29,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 class TerrainManager : public ZeroedMemoryAllocator
 {
 	friend class CacheSystem;
+	friend class TerrainObjectManager;
 public:
 
 	TerrainManager();
@@ -52,6 +53,7 @@ public:
 	Water *getWater() { return water; };
 	Ogre::Light *getMainLight() { return main_light; };
 	Ogre::Vector3 getSpawnPos() { return start_position; };
+	bool getTrucksLoaded() { return trucksLoaded; };
 
 protected:
 	// members
@@ -86,7 +88,9 @@ protected:
 	float water_line;
 	int farclip;
 	int loading_state;
-
+	int pagedMode;
+	float pagedDetailFactor;
+	bool trucksLoaded;
 	// internal methods
 	void initCamera();
 	void initCollisions();

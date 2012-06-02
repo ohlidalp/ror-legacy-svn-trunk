@@ -45,7 +45,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "DustManager.h"
 #include "EnvironmentMap.h"
 #include "ErrorUtils.h"
-#include "ExtinguishableFireAffector.h"
 #include "FlexAirfoil.h"
 #include "ForceFeedback.h"
 #include "GlowMaterialListener.h"
@@ -124,30 +123,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 //#include <CFUserNotification.h>
 #endif
 
-#ifdef USE_PAGED
-#include "BatchPage.h"
-#include "GrassLoader.h"
-#include "ImpostorPage.h"
-#include "PagedGeometry.h"
-#include "TreeLoader2D.h"
-#include "TreeLoader3D.h"
-#endif //USE_PAGED
-
-#ifdef USE_PAGED
-using namespace Forests;
-#endif //USE_PAGED
-
 using namespace Ogre;
 
 bool shutdownall=false;
-
-//workaround for pagedgeometry
-inline float getTerrainHeight(Real x, Real z, void *unused=0)
-{
-	if (!gEnv->terrainManager->getHeightFinder())
-		return 1;
-	return gEnv->terrainManager->getHeightFinder()->getHeightAt(x, z);
-}
 
 void RoRFrameListener::startTimer()
 {
@@ -695,7 +673,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	flaresMode(3), // on by default
 	forcefeedback(0),
 	freeTruckPosition(false),
-	free_localizer(0),
 	heathaze(0),
 	hidegui(false),
 	initialized(false),
@@ -710,7 +687,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	netChat(0),
 	netPointToUID(-1),
 	netcheckGUITimer(0),
-	objcounter(0),
 	objectCounter(0),
 	ow(0),
 	parentState(parentState),
@@ -723,8 +699,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	shaderSchemeMode(1),
 	surveyMap(0),
 	surveyMapMode(SURVEY_MAP_NONE),
-	terrainUID(""),
-	truck_preload_num(0)
+	terrainUID("")
 {
 	// we don't use overlays in embedded mode
 	if (!gEnv->embeddedMode)
@@ -1093,7 +1068,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 
 		if (preselected_truck.empty())
 		{
-			if (truck_preload_num == 0 && (!netmode || false/*!terrainHasTruckShop*/))
+			if (!gEnv->terrainManager->getTrucksLoaded() && (!netmode || false/*!terrainHasTruckShop*/))
 			{
 #ifdef USE_MYGUI
 				// show truck selector
@@ -1139,21 +1114,7 @@ RoRFrameListener::~RoRFrameListener()
 #endif //MYGUI
 
 //	if (joy) delete (joy);
-#ifdef USE_PAGED
-	for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
-	{
-		if (it->geom)
-		{
-			delete(it->geom);
-			it->geom=0;
-		}
-		if (it->loader)
-		{
-			delete((TreeLoader2D *)it->loader);
-			it->loader=0;
-		}
-	}
-#endif
+
 #ifdef USE_SOCKETW
 	if (net) delete (net);
 #endif //SOCKETW
@@ -2586,7 +2547,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					loadTerrain(sel->fname);
 
 					// no trucks loaded?
-					if (truck_preload_num == 0)
+					if (!gEnv->terrainManager->getTrucksLoaded())
 					{
 						// show truck selector
 						if (gEnv->terrainManager->getWater())
@@ -2882,29 +2843,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 		}
 	}
 	
-	// load the rest in SP
-	// in netmode, don't load other trucks!
-	if (!netmode)
-	{
-		for (int i=0; i<truck_preload_num; i++)
-		{
-			Beam *b = BeamFactory::getSingleton().createLocal(Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz), truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, truckconfig, 0, truck_preload[i].freePosition);
-#ifdef USE_MYGUI
-			if (b && surveyMap)
-			{
-				MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
-				if (e)
-				{
-					e->setState(DESACTIVATED);
-					e->setVisibility(true);
-					e->setPosition(truck_preload[i].px, truck_preload[i].pz);
-					e->setRotation(-Radian(b->getHeadingDirectionAngle()));
-				}
-			}
-#endif //USE_MYGUI
-		}
-
-	}
 	LOG("EFL: beam instanciated");
 
 	if (!enterTruck)
@@ -3297,13 +3235,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// one of the input modes is immediate, so update the movement vector
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-#ifdef USE_PAGED
-		// paged geometry
-		for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
-		{
-			if (it->geom) it->geom->update();
-		}
-#endif //USE_PAGED
+
 		
 		BeamFactory::getSingleton().checkSleepingState();
 
