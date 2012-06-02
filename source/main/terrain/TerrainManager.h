@@ -54,6 +54,7 @@ public:
 	Ogre::Light *getMainLight() { return main_light; };
 	Ogre::Vector3 getSpawnPos() { return start_position; };
 	bool getTrucksLoaded() { return trucksLoaded; };
+	TerrainGeometryManager *getGeometryManager() { return geometry_manager; };
 
 protected:
 	// members

@@ -22,13 +22,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SkyManager.h"
 
 #include "Settings.h"
+#include "TerrainManager.h"
+#include "TerrainGeometryManager.h"
 
 #include <Caelum.h>
 
 using namespace Ogre;
 
 //---------------------------------------------------------------------
-SkyManager::SkyManager() : mCaelumSystem(0)
+SkyManager::SkyManager() : mCaelumSystem(0), lc(0)
 {
 	// Initialise CaelumSystem.
 	mCaelumSystem = new Caelum::CaelumSystem (gEnv->ogreRoot, gEnv->sceneManager, Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
@@ -61,6 +63,19 @@ void SkyManager::forceUpdate(float dt)
 {
 	if (mCaelumSystem)
 		mCaelumSystem->updateSubcomponents(dt);
+}
+
+void SkyManager::detectUpdate()
+{
+	if (!mCaelumSystem || !gEnv->terrainManager) return;
+	Caelum::LongReal c = mCaelumSystem->getUniversalClock()->getJulianDay();
+
+	if(c - lc > 0.001f)
+	{
+		gEnv->terrainManager->getGeometryManager()->updateLightMap();
+	}
+
+	lc = c;
 }
 
 void SkyManager::loadScript(String script)
