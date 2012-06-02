@@ -121,6 +121,34 @@ void TerrainGeometryManager::initTerrain()
 	mTerrainGroup->freeTemporaryResources();
 }
 
+void TerrainGeometryManager::updateLightMap()
+{
+	TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+	while(ti.hasMoreElements())
+	{
+		Terrain *terrain = ti.getNext()->instance;
+		//ShadowManager::getSingleton().updatePSSM(terrain);
+		if(!terrain->isDerivedDataUpdateInProgress())
+		{
+			terrain->dirtyLightmap();
+			terrain->updateDerivedData();
+		}
+	}
+}
+
+void TerrainGeometryManager::update(float dt)
+{
+	Light *light = gEnv->terrainManager->getMainLight();
+	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
+	if (light)
+	{
+		terrainOptions->setLightMapDirection(light->getDerivedDirection());
+		terrainOptions->setCompositeMapDiffuse(light->getDiffuseColour());
+	}
+	terrainOptions->setCompositeMapAmbient(gEnv->sceneManager->getAmbientLight());
+
+	mTerrainGroup->update();
+}
 
 void TerrainGeometryManager::configureTerrainDefaults()
 {

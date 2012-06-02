@@ -3193,6 +3193,12 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		{
 			gEnv->terrainManager->getWater()->framestep(dt);
 		}
+
+		// trigger updating of shadows etc
+		SkyManager *sky = gEnv->terrainManager->getSkyManager();
+		if(sky) sky->detectUpdate();
+		
+		gEnv->terrainManager->update(dt);
 	}
 
 	//update visual - antishaking
@@ -3204,6 +3210,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		//if (loadedTerrain == "simple.terrn2")
 			//BeamFactory::getSingleton().updateAI(dt);
 	}
+
 
 	if (!updateEvents(dt))
 	{

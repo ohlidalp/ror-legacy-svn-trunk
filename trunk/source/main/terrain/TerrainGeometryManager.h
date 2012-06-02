@@ -60,6 +60,9 @@ public:
 	}
 
 	Ogre::Vector3 getMaxTerrainSize();
+
+	void update(float dt);
+	void updateLightMap();
 protected:
 
 	Ogre::ConfigFile terrainConfig;
