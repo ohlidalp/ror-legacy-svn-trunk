@@ -533,8 +533,8 @@ void TerrainManager::initScripting()
 				String svalue = objectsIterator.getNext();
 				StringUtil::trim(svalue);
 
-				ScriptEngine::getSingleton().loadScript(sname);
-				loaded = true;
+				if(!ScriptEngine::getSingleton().loadScript(sname))
+					loaded = true;
 			}
 		} catch(Exception &e)
 		{
