@@ -538,7 +538,7 @@ void TerrainManager::initScripting()
 			}
 		} catch(Exception &e)
 		{
-			LOG("Exception while trying load script");
+			LOG("Exception while trying load script: " + e.getFullDescription());
 		}
 	}
 	
@@ -571,4 +571,11 @@ void TerrainManager::initGeometry()
 void TerrainManager::initObjects()
 {
 	object_manager = new TerrainObjectManager(this);
+}
+
+Ogre::Vector3 TerrainManager::getMaxTerrainSize()
+{
+	if(!geometry_manager)
+		return Vector3::ZERO;
+	return geometry_manager->getMaxTerrainSize();
 }

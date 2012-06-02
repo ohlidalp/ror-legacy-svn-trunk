@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#if 0
 #include "Landusemap.h"
 #include "Collisions.h"
 #include <Ogre.h>
@@ -26,8 +25,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreStringConverter.h>
 #include "Language.h"
 #include "ErrorUtils.h"
-#include ""
-
+#include "TerrainManager.h"
 
 #ifdef USE_PAGED
 #include "PropertyMaps.h"
@@ -42,7 +40,7 @@ Landusemap::Landusemap(String configFilename) :
 	  data(0)
 	, mapsize(Vector3::ZERO)
 {
-	mapsize = gEnv->terrainManager->getMax();
+	mapsize = gEnv->terrainManager->getMaxTerrainSize();
 	loadConfig(configFilename);
 #ifndef USE_PAGED
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
@@ -57,12 +55,13 @@ Landusemap::~Landusemap()
 ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 {
 	if (!data) return 0;
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
 #ifdef USE_PAGED
 	// we return the default ground model if we are not anymore in this map
-	if (x < 0 || x >= mapsizex || z < 0 || z >= mapsizez)
+	if (x < 0 || x >= mapsize.x || z < 0 || z >= mapsize.z)
 		return default_ground_model;
 
-	return data[x + z * mapsizex];
+	return data[x + z * (int)mapsize.x];
 #else
 	return 0;
 #endif // USE_PAGED
@@ -71,6 +70,7 @@ ground_model_t *Landusemap::getGroundModelAt(int x, int z)
 
 int Landusemap::loadConfig(Ogre::String filename)
 {
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
 	std::map<unsigned int, String> usemap;
 	int version = 1;
 	String textureFilename = "";
@@ -118,9 +118,9 @@ int Landusemap::loadConfig(Ogre::String filename)
 				if (kname == "texture")
 					textureFilename = kvalue;
 				else if (kname == "frictionconfig" || kname == "loadGroundModelsConfig")
-					coll->loadGroundModelsConfigFile(kvalue);
+					gEnv->collisions->loadGroundModelsConfigFile(kvalue);
 				else if (kname == "defaultuse")
-					default_ground_model = coll->getGroundModelByString(kvalue);
+					default_ground_model = gEnv->collisions->getGroundModelByString(kvalue);
 				else if (kname == "version")
 					version = StringConverter::parseInt(kvalue);
 
@@ -142,7 +142,7 @@ int Landusemap::loadConfig(Ogre::String filename)
 	// process the config data and load the buffers finally
 	Forests::ColorMap *colourMap = Forests::ColorMap::load(textureFilename, Forests::CHANNEL_COLOR);
 	colourMap->setFilter(Forests::MAPFILTER_NONE);
-	Ogre::TRect<Ogre::Real> bounds = Forests::TBounds(0, 0, mapsizex, mapsizez);
+	Ogre::TRect<Ogre::Real> bounds = Forests::TBounds(0, 0, mapsize.x, mapsize.z);
 
 	/*
 	// debug things below
@@ -156,12 +156,12 @@ int Landusemap::loadConfig(Ogre::String filename)
 	bool bgr = colourMap->getPixelBox().format == PF_A8B8G8R8;
 
 	// now allocate the data buffer to hold pointers to ground models
-	data = new ground_model_t*[mapsizex * mapsizez];
+	data = new ground_model_t*[(int)(mapsize.x * mapsize.z)];
 	ground_model_t **ptr = data;
 	//std::map < String, int > counters;
-	for (int z=0; z<mapsizez; z++)
+	for (int z=0; z<mapsize.z; z++)
 	{
-		for (int x=0; x<mapsizex; x++)
+		for (int x=0; x<mapsize.x; x++)
 		{
 			unsigned int col = colourMap->getColorAt(x, z, bounds);
 			if (bgr)
@@ -177,11 +177,10 @@ int Landusemap::loadConfig(Ogre::String filename)
 			//	counters[use]++;
 
 			// store the pointer to the ground model in the data slot
-			*ptr = coll->getGroundModelByString(use);
+			*ptr = gEnv->collisions->getGroundModelByString(use);
 			ptr++;
 		}
 	}
 #endif // USE_PAGED
 	return 0;
 }
-#endif

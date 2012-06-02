@@ -59,6 +59,7 @@ public:
 		return down;
 	}
 
+	Ogre::Vector3 getMaxTerrainSize();
 protected:
 
 	Ogre::ConfigFile terrainConfig;
@@ -67,6 +68,7 @@ protected:
 	TerrainObjectManager *objectManager;
 	bool disableCaching;
 	bool mTerrainsImported;
+
 	int mapsizex, mapsizey, mapsizez, pageSize, terrainSize, worldSize;
 	int pageMinX, pageMaxX, pageMinY, pageMaxY;
 	int terrainLayers;

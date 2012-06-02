@@ -892,7 +892,8 @@ bool Collisions::collisionCorrect(Vector3 *refpos)
 	int refx, refz;
 	unsigned int k;
 
-	if (!(refpos->x>0 && refpos->x<gEnv->terrainManager->getMax().x && refpos->z>0 && refpos->z<gEnv->terrainManager->getMax().z)) return false;
+	Vector3 mapSize = gEnv->terrainManager->getMaxTerrainSize();
+	if (!(refpos->x>0 && refpos->x<mapSize.x && refpos->z>0 && refpos->z<mapSize.z)) return false;
 
 	refx=(int)(refpos->x/(float)CELL_SIZE);
 	refz=(int)(refpos->z/(float)CELL_SIZE);
@@ -1501,9 +1502,10 @@ int Collisions::createCollisionDebugVisualization()
 		mat->setReceiveShadows(false);
 	}
 
-	for (int x=0; x<(int)(gEnv->terrainManager->getMax().x); x+=(int)CELL_SIZE)
+	Vector3 mapSize = gEnv->terrainManager->getMaxTerrainSize();
+	for (int x=0; x<(int)(mapSize.x); x+=(int)CELL_SIZE)
 	{
-		for (int z=0; z<(int)(gEnv->terrainManager->getMax().z); z+=(int)CELL_SIZE)
+		for (int z=0; z<(int)(mapSize.z); z+=(int)CELL_SIZE)
 		{
 			int cellx = (int)(x/(float)CELL_SIZE);
 			int cellz = (int)(z/(float)CELL_SIZE);
