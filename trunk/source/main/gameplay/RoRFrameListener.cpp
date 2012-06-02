@@ -668,7 +668,6 @@ void RoRFrameListener::updateGUI(float dt)
 RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	clutch(0),
 	dashboard(0),
-	debugCollisions(false),
 	dof(0),
 	flaresMode(3), // on by default
 	forcefeedback(0),
@@ -810,8 +809,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 
 	windowResized(gEnv->renderWindow);
 	RoRWindowEventUtilities::addWindowEventListener(gEnv->renderWindow, this);
-
-	debugCollisions = BSETTING("Debug Collisions", false);
 
 	// get lights mode
 	String lightsMode = SSETTING("Lights", "Only current vehicle, main lights");
