@@ -103,7 +103,7 @@ void MapTextureCreator::update()
 {
 	if ( !mRttTex ) return;
 
-	Vector3 mapSize = gEnv->terrainManager->getMax();
+	Vector3 mapSize = gEnv->terrainManager->getMaxTerrainSize();
 	float orthoWindowWidth  = mapSize.x - (mapSize.x - 20.0f) * mMapZoom;
 	float orthoWindowHeight = mapSize.z - (mapSize.z - 20.0f) * mMapZoom;
 

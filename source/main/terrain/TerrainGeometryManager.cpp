@@ -316,3 +316,8 @@ void TerrainGeometryManager::defineTerrain( int x, int y, bool flat )
 	}
 }
 
+Ogre::Vector3 TerrainGeometryManager::getMaxTerrainSize()
+{
+	return Vector3(mapsizex, mapsizey, mapsizez);
+}
+

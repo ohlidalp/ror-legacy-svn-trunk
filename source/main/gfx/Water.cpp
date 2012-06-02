@@ -80,9 +80,10 @@ ReflectionTextureListener mReflectionListener;
 
 Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 {
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
 	vRtt1 = vRtt2 = 0;
 	mScale = 1.0f;
-	if (gEnv->terrainManager->getMax().x < 1500)
+	if (mapsize.x < 1500)
 		mScale = 1.5f;
 	//reading wavefield
 	visible=true;
@@ -233,7 +234,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		mprt=MeshManager::getSingleton().createPlane("ReflectPlane",
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
-			gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+			mapsize.x * mScale,mapsize.z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 		pPlaneEnt = gEnv->sceneManager->createEntity( "plane", "ReflectPlane" );
 		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED) pPlaneEnt->setMaterialName("Examples/FresnelReflectionRefraction");
 		else pPlaneEnt->setMaterialName("Examples/FresnelReflection");
@@ -241,7 +242,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		//position
 		pTestNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
-		pTestNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
+		pTestNode->setPosition( Vector3((mapsize.x * mScale)/2,0,(mapsize.z * mScale)/2) );
 	}
 	else
 	{
@@ -251,13 +252,13 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		mprt=MeshManager::getSingleton().createPlane("WaterPlane",
 			ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			waterPlane,
-			gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+			mapsize.x * mScale,mapsize.z * mScale,WAVEREZ,WAVEREZ,true,1,50,50,Vector3::UNIT_Z, HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
 		pPlaneEnt = gEnv->sceneManager->createEntity( "plane", "WaterPlane" );
 		pPlaneEnt->setMaterialName("tracks/basicwater");
 		//position
 		pTestNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
-		pTestNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
+		pTestNode->setPosition( Vector3((mapsize.x * mScale)/2,0,(mapsize.z * mScale)/2) );
 	}
 	//bottom
 	bottomPlane.normal = Vector3::UNIT_Y;
@@ -265,13 +266,13 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 	MeshManager::getSingleton().createPlane("BottomPlane",
 		ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		bottomPlane,
-		gEnv->terrainManager->getMax().x * mScale,gEnv->terrainManager->getMax().z * mScale,1,1,true,1,1,1,Vector3::UNIT_Z);
+		mapsize.x * mScale,mapsize.z * mScale,1,1,true,1,1,1,Vector3::UNIT_Z);
 	Entity *pE = gEnv->sceneManager->createEntity( "bplane", "BottomPlane" );
 	pE->setMaterialName("tracks/seabottom");
 	//position
 	pBottomNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("BottomWaterPlane");
 	pBottomNode->attachObject(pE);
-	pBottomNode->setPosition( Vector3((gEnv->terrainManager->getMax().x * mScale)/2,0,(gEnv->terrainManager->getMax().z * mScale)/2) );
+	pBottomNode->setPosition( Vector3((mapsize.x * mScale)/2,0,(mapsize.z * mScale)/2) );
 	//setup for waves
 	wbuf=mprt->sharedVertexData->vertexBufferBinding->getBuffer(0);
 	if (wbuf->getSizeInBytes()==(WAVEREZ+1)*(WAVEREZ+1)*32)
@@ -308,13 +309,14 @@ void Water::setFadeColour(ColourValue ambient)
 
 void Water::moveTo(Camera *cam, float centerheight)
 {
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
 	if (pTestNode)
 	{
 		Vector3 pos=cam->getPosition();
 		Vector3 offset=cam->getDirection();
 		offset.y=0;
 		offset.normalise();
-		pos = pos + offset * gEnv->terrainManager->getMax().x * mScale * 0.46666;
+		pos = pos + offset * mapsize.x * mScale * 0.46666;
 		pos.y=orgheight - height;
 		pos.x=((int)pos.x/60)*60;
 		pos.z=((int)pos.z/60)*60;
@@ -333,7 +335,8 @@ void Water::showWave(Vector3 refpos)
 	{
 		for (pz=0; pz<WAVEREZ+1; pz++)
 		{
-			wbuffer[(pz*(WAVEREZ+1)+px)*8+1]=getHeightWaves(refpos+Vector3((gEnv->terrainManager->getMax().x * mScale)/2-(float)px*(gEnv->terrainManager->getMax().x * mScale)/WAVEREZ, 0, (float)pz*(gEnv->terrainManager->getMax().z * mScale)/WAVEREZ-(gEnv->terrainManager->getMax().z * mScale)/2));
+			Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
+			wbuffer[(pz*(WAVEREZ+1)+px)*8+1]=getHeightWaves(refpos+Vector3((mapsize.x * mScale)/2-(float)px*(mapsize.x * mScale)/WAVEREZ, 0, (float)pz*(mapsize.z * mScale)/WAVEREZ-(mapsize.z * mScale)/2));
 		}
 	}
 	//normals
@@ -427,10 +430,11 @@ float Water::getHeightWaves(Vector3 pos)
 		return height;
 
 	// calculate how high the waves should be at this point
-	//  (gEnv->terrainManager->getMax().x * mScale) / 2 = terrain width / 2
-	//  (gEnv->terrainManager->getMax().z * mScale) / 2 = terrain height / 2
+	//  (mapsize.x * mScale) / 2 = terrain width / 2
+	//  (mapsize.z * mScale) / 2 = terrain height / 2
 	// calculates the distance to the center of the terrain and dives it through 3.000.000
-	float waveheight = (pos - Vector3((gEnv->terrainManager->getMax().x * mScale) / 2, height, (gEnv->terrainManager->getMax().z * mScale) / 2)).squaredLength() / 3000000.0;
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
+	float waveheight = (pos - Vector3((mapsize.x * mScale) / 2, height, (mapsize.z * mScale) / 2)).squaredLength() / 3000000.0;
 	// we will store the result in this variable, init it with the default height
 	float result = height;
 	// now walk through all the wave trains. One 'train' is one sin/cos set that will generate once wave. All the trains together will sum up, so that they generate a 'rough' sea
@@ -461,7 +465,8 @@ Vector3 Water::getVelocity(Vector3 pos)
 
 	if (pos.y>height+maxampl) return Vector3::ZERO;
 	int i;
-	float waveheight=(pos-Vector3((gEnv->terrainManager->getMax().x * mScale)/2, height, (gEnv->terrainManager->getMax().z * mScale)/2)).squaredLength()/3000000.0;
+	Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
+	float waveheight=(pos-Vector3((mapsize.x * mScale)/2, height, (mapsize.z * mScale)/2)).squaredLength()/3000000.0;
 	Vector3 result=Vector3::ZERO;
 	for (i=0; i<free_wavetrain; i++)
 	{

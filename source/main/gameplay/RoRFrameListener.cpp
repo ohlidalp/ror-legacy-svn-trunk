@@ -2880,7 +2880,7 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	
 	if (mtc)
 	{
-		Vector3 mapsize = gEnv->terrainManager->getMax();
+		Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
 		Vector3 position = Vector3(mapsize.x / 2.0f, 0.0f, mapsize.z / 2.0f);
 		mtc->setMapCenter(position);
 		mtc->update();
@@ -3167,7 +3167,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 				gEnv->terrainManager->getEnvmap()->update(curr_truck->getPosition(), curr_truck);
 			} else
 			{
-				float height = gEnv->terrainManager->getMax().y;
+				float height = gEnv->terrainManager->getMaxTerrainSize().y;
 				if (gEnv->terrainManager->getHeightFinder())
 				{
 					height = gEnv->terrainManager->getHeightFinder()->getHeightAt(terrainxsize / 2.0f, terrainzsize / 2.0f );

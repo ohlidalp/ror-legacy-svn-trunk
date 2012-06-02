@@ -43,7 +43,7 @@ public:
 	void setGravity(float value);
 	float getGravity() { return gravity; };
 
-	Ogre::Vector3 getMax() { return Ogre::Vector3::ZERO; };
+	Ogre::Vector3 getMaxTerrainSize();
 
 	// some getters
 	Collisions *getCollisions() { return collisions; };
