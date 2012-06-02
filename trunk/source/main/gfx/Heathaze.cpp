@@ -31,7 +31,7 @@ HeatHazeListener::HeatHazeListener() :
 void HeatHazeListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// Hide everything
-	//globalEnvironment->ogreSceneManager->setFindVisibleObjects(false);
+	//gEnv->ogreSceneManager->setFindVisibleObjects(false);
 
 	// TODO: hide objects between the heathaze and the viewer, so no heathaze is visible on them
 
@@ -39,7 +39,7 @@ void HeatHazeListener::preRenderTargetUpdate(const RenderTargetEvent& evt)
 void HeatHazeListener::postRenderTargetUpdate(const RenderTargetEvent& evt)
 {
 	// Show everything
-	//globalEnvironment->ogreSceneManager->setFindVisibleObjects(true);
+	//gEnv->ogreSceneManager->setFindVisibleObjects(true);
 }
 
 
@@ -50,7 +50,7 @@ HeatHaze::HeatHaze() : rttTex(0), listener(0)
 	{
 		/*
 		// we use the main camera now
-		mHazeCam = globalEnvironment->ogreSceneManager->createCamera("Hazecam");
+		mHazeCam = gEnv->ogreSceneManager->createCamera("Hazecam");
 		mHazeCam->setNearClipDistance(1.0);
 		mHazeCam->setFarClipDistance(1000.0);
 		mHazeCam->setPosition(Vector3(0, 0, 0));

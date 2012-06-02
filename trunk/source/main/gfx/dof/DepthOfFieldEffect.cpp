@@ -162,8 +162,8 @@ void DepthOfFieldEffect::notifyMaterialSetup(uint32 passId, MaterialPtr& materia
 	case BlurPass:
 		{
 			//float pixelSize[2] = {
-			//	1.0f / (globalEnvironment->ogreViewPort->getActualWidth() / BLUR_DIVISOR),
-			//	1.0f / (globalEnvironment->ogreViewPort->getActualHeight() / BLUR_DIVISOR)};
+			//	1.0f / (gEnv->ogreViewPort->getActualWidth() / BLUR_DIVISOR),
+			//	1.0f / (gEnv->ogreViewPort->getActualHeight() / BLUR_DIVISOR)};
 
 			// Adjust fragment program parameters
 			Ogre::Vector3 ps = Ogre::Vector3(1.0f / (mWidth / BLUR_DIVISOR),1.0f / (mHeight / BLUR_DIVISOR), 1.0f);
@@ -297,12 +297,12 @@ void DOFManager::setEnabled(bool enabled)
 	{
 		// turn on
 		mDepthOfFieldEffect->setEnabled(true);
-		globalEnvironment->ogreRoot->addFrameListener(this);
+		gEnv->ogreRoot->addFrameListener(this);
 	} else if (!enabled && mDepthOfFieldEffect->getEnabled())
 	{
 		// turn off
 		mDepthOfFieldEffect->setEnabled(false);
-		globalEnvironment->ogreRoot->removeFrameListener(this);
+		gEnv->ogreRoot->removeFrameListener(this);
 	}
 	*/
 }

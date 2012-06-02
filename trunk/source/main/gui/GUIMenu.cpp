@@ -319,7 +319,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 		// get out first
 		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
 			BeamFactory::getSingleton().setCurrentTruck(-1);
-		//globalEnvironment->frameListener->reload_pos = globalEnvironment->frameListener->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
+		gEnv->frameListener->reload_pos = gEnv->frameListener->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
 		gEnv->frameListener->freeTruckPosition=true;
 		gEnv->frameListener->loading_state=RELOADING;
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_AllBeam);
@@ -331,7 +331,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 			LOG("you need to open a map before trying to save or load its scenery.");
 			return;
 		}
-		//String fname = SSETTING("Cache Path", "") + globalEnvironment->frameListener->loadedTerrain + ".rorscene";
+		//String fname = SSETTING("Cache Path", "") + gEnv->frameListener->loadedTerrain + ".rorscene";
 
 		//Savegame s;
 		if (miname == _L("Save Scenery"))

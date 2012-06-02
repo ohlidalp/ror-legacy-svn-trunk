@@ -62,6 +62,8 @@ public:
 
 	enum LoadingStatuses { NONE_LOADED, TERRAIN_LOADED, ALL_LOADED, EXITING, EDITING, RELOADING, PAUSE, TERRAIN_EDITOR };
 	enum SurveyMapTypes { SURVEY_MAP_NONE, SURVEY_MAP_SMALL, SURVEY_MAP_BIG, SURVEY_MAP_END};
+	
+	Ogre::Vector3 reload_pos;
 
 protected:
 
@@ -91,7 +93,6 @@ protected:
 	Ogre::String terrainUID;
 	Ogre::Vector3 dirArrowPointed;
 	Ogre::Vector3 persostart;
-	Ogre::Vector3 reload_pos;
 
 	OverlayWrapper *ow;
 	bool benchmarking;

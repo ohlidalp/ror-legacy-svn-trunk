@@ -57,15 +57,15 @@ int ShadowManager::changeShadowTechnique(Ogre::ShadowTechnique tech)
 
 	if (tech == Ogre::SHADOWTYPE_STENCIL_MODULATIVE)
 	{
-		//		globalEnvironment->ogreSceneManager->setShadowIndexBufferSize(2000000);
+		//		gEnv->ogreSceneManager->setShadowIndexBufferSize(2000000);
 		gEnv->sceneManager->setShadowDirectionalLightExtrusionDistance(100);
 
 		//important optimization
 		gEnv->sceneManager->getRenderQueue()->getQueueGroup(Ogre::RENDER_QUEUE_WORLD_GEOMETRY_1)->setShadowsEnabled(false);
 
-		//		globalEnvironment->ogreSceneManager->setUseCullCamera(false);
-		//		globalEnvironment->ogreSceneManager->setShowBoxes(true);
-		//		globalEnvironment->ogreSceneManager->showBoundingBoxes(true);
+		//		gEnv->ogreSceneManager->setUseCullCamera(false);
+		//		gEnv->ogreSceneManager->setShowBoxes(true);
+		//		gEnv->ogreSceneManager->showBoundingBoxes(true);
 	} else if (tech == Ogre::SHADOWTYPE_TEXTURE_MODULATIVE)
 	{
 		gEnv->sceneManager->setShadowTextureSettings(2048,2);
