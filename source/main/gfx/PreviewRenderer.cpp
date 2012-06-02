@@ -256,7 +256,7 @@ void PreviewRenderer::render3dpreview(Beam *truck, Camera *renderCamera, float m
 	if (gEnv->sky)
 	{
 		gEnv->sky->notifyCameraChanged(renderCamera);
-//		globalEnvironment->terrainManager->getSkyManager()->forceUpdate(0.01f);
+//		gEnv->terrainManager->getSkyManager()->forceUpdate(0.01f);
 	}
 #endif // USE_CAELUM
 

@@ -221,7 +221,7 @@ void TerrainManager::initCamera()
 {
 	gEnv->mainCamera->getViewport()->setBackgroundColour(ambient_color);
 
-	//globalEnvironment->ogreCamera->setFarClipDistance(0);
+	//gEnv->ogreCamera->setFarClipDistance(0);
 
 	gEnv->mainCamera->setPosition(start_position);
 }
@@ -442,7 +442,7 @@ void TerrainManager::fixCompositorClearColor()
 	// now with extensive error checking
 	if (CompositorManager::getSingleton().hasCompositorChain(gEnv->mainCamera->getViewport()))
 	{
-		//	//CompositorManager::getSingleton().getCompositorChain(globalEnvironment->ogreCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fade_color);
+		//	//CompositorManager::getSingleton().getCompositorChain(gEnv->ogreCamera->getViewport())->getCompositor(0)->getTechnique()->getOutputTargetPass()->getPass(0)->setClearColour(fade_color);
 		CompositorInstance *co = CompositorManager::getSingleton().getCompositorChain(gEnv->mainCamera->getViewport())->_getOriginalSceneCompositor();
 		if (co)
 		{

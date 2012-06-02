@@ -295,7 +295,7 @@ void GameScript::removeVehicle(std::string &instance, std::string &box)
 
 void GameScript::destroyObject(const std::string &instanceName)
 {
-	//globalEnvironment->frameListener->unloadObject(const_cast<char*>(instanceName.c_str()));
+	//gEnv->frameListener->unloadObject(const_cast<char*>(instanceName.c_str()));
 }
 
 void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Vector3 &pos, Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials)
@@ -314,7 +314,7 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 
 	// trying to create the new object
 	SceneNode *bakeNode=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
-	//globalEnvironment->frameListener->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
+	//gEnv->frameListener->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
 }
 
 void GameScript::hideDirectionArrow()
@@ -466,7 +466,7 @@ float GameScript::rangeRandom(float from, float to)
 
 int GameScript::getLoadedTerrain(std::string &result)
 {
-	//result = globalEnvironment->frameListener->loadedTerrain;
+	//result = gEnv->frameListener->loadedTerrain;
 	return 0;
 }
 
@@ -478,51 +478,51 @@ void GameScript::clearEventCache()
 void GameScript::setCameraPosition(Vector3 &pos)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->setPosition(Vector3(pos.x, pos.y, pos.z));
+	//gEnv->frameListener->getCamera()->setPosition(Vector3(pos.x, pos.y, pos.z));
 }
 
 void GameScript::setCameraDirection(Vector3 &rot)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->setDirection(Vector3(rot.x, rot.y, rot.z));
+	//gEnv->frameListener->getCamera()->setDirection(Vector3(rot.x, rot.y, rot.z));
 }
 
 void GameScript::setCameraYaw(float rotX)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->yaw(Degree(rotX));
+	//gEnv->frameListener->getCamera()->yaw(Degree(rotX));
 }
 
 void GameScript::setCameraPitch(float rotY)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->pitch(Degree(rotY));
+	//gEnv->frameListener->getCamera()->pitch(Degree(rotY));
 }
 
 void GameScript::setCameraRoll(float rotZ)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->roll(Degree(rotZ));
+	//gEnv->frameListener->getCamera()->roll(Degree(rotZ));
 }
 
 Vector3 GameScript::getCameraPosition()
 {
 	// TODO: TOFIX
-	//Vector3 pos = globalEnvironment->frameListener->getCamera()->getPosition();
+	//Vector3 pos = gEnv->frameListener->getCamera()->getPosition();
 	return Vector3::ZERO; //Vector3(pos.x, pos.y, pos.z);
 }
 
 Vector3 GameScript::getCameraDirection()
 {
 	// TODO: TOFIX
-	//Vector3 rot = globalEnvironment->frameListener->getCamera()->getDirection();
+	//Vector3 rot = gEnv->frameListener->getCamera()->getDirection();
 	return Vector3::ZERO; //(rot.x, rot.y, rot.z);
 }
 
 void GameScript::cameraLookAt(Vector3 &pos)
 {
 	// TODO: TOFIX
-	//globalEnvironment->frameListener->getCamera()->lookAt(Vector3(pos.x, pos.y, pos.z));
+	//gEnv->frameListener->getCamera()->lookAt(Vector3(pos.x, pos.y, pos.z));
 }
 
 #ifdef USE_CURL
@@ -612,10 +612,10 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	}
 
 	// add some hard coded values
-	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, globalEnvironment->frameListener->terrainName.c_str(), CURLFORM_END);
-	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileName", CURLFORM_COPYCONTENTS, globalEnvironment->frameListener->terrainFileName.c_str(), CURLFORM_END);
-	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileHash", CURLFORM_COPYCONTENTS, globalEnvironment->frameListener->terrainFileHash.c_str(), CURLFORM_END);
-	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ModHash", CURLFORM_COPYCONTENTS, globalEnvironment->frameListener->terrainModHash.c_str(), CURLFORM_END);
+	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_Name", CURLFORM_COPYCONTENTS, gEnv->frameListener->terrainName.c_str(), CURLFORM_END);
+	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileName", CURLFORM_COPYCONTENTS, gEnv->frameListener->terrainFileName.c_str(), CURLFORM_END);
+	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_FileHash", CURLFORM_COPYCONTENTS, gEnv->frameListener->terrainFileHash.c_str(), CURLFORM_END);
+	//curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ModHash", CURLFORM_COPYCONTENTS, gEnv->frameListener->terrainModHash.c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptName", CURLFORM_COPYCONTENTS, mse->getScriptName().c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "terrain_ScriptHash", CURLFORM_COPYCONTENTS, mse->getScriptHash().c_str(), CURLFORM_END);
 	curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, "User_NickName", CURLFORM_COPYCONTENTS, SSETTING("Nickname", "Anonymous").c_str(), CURLFORM_END);

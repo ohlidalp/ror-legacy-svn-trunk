@@ -237,7 +237,7 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 		pPlaneEnt = gEnv->sceneManager->createEntity( "plane", "ReflectPlane" );
 		if (mType==WATER_FULL_QUALITY || mType==WATER_FULL_SPEED) pPlaneEnt->setMaterialName("Examples/FresnelReflectionRefraction");
 		else pPlaneEnt->setMaterialName("Examples/FresnelReflection");
-		//        globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode()->attachObject(pPlaneEnt);
+		//        gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode()->attachObject(pPlaneEnt);
 		//position
 		pTestNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode("WaterPlane");
 		pTestNode->attachObject(pPlaneEnt);
@@ -427,8 +427,8 @@ float Water::getHeightWaves(Vector3 pos)
 		return height;
 
 	// calculate how high the waves should be at this point
-	//  (globalEnvironment->terrainManager->getMax().x * mScale) / 2 = terrain width / 2
-	//  (globalEnvironment->terrainManager->getMax().z * mScale) / 2 = terrain height / 2
+	//  (gEnv->terrainManager->getMax().x * mScale) / 2 = terrain width / 2
+	//  (gEnv->terrainManager->getMax().z * mScale) / 2 = terrain height / 2
 	// calculates the distance to the center of the terrain and dives it through 3.000.000
 	float waveheight = (pos - Vector3((gEnv->terrainManager->getMax().x * mScale) / 2, height, (gEnv->terrainManager->getMax().z * mScale) / 2)).squaredLength() / 3000000.0;
 	// we will store the result in this variable, init it with the default height
@@ -478,7 +478,7 @@ Vector3 Water::getVelocity(Vector3 pos)
 
 void Water::updateReflectionPlane(float h)
 {
-	//Ray ra=globalEnvironment->ogreCamera->getCameraToViewportRay(0.5,0.5);
+	//Ray ra=gEnv->ogreCamera->getCameraToViewportRay(0.5,0.5);
 	//std::pair<bool, Real> mpair=ra.intersects(Plane(Vector3::UNIT_Y, -height));
 	//if (mpair.first) h=ra.getPoint(mpair.second).y;
 	reflectionPlane.d = -h+0.15;

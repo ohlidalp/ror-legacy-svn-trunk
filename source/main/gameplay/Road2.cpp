@@ -536,8 +536,8 @@ void Road2::addCollisionQuad(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, gro
 		if (triID>=0) registeredCollTris.push_back(triID);
 	}
 
-//		globalEnvironment->collisions->addCollisionTri(p1, p4, p3);
-//		globalEnvironment->collisions->addCollisionTri(p1, p3, p2);
+//		gEnv->collisions->addCollisionTri(p1, p4, p3);
+//		gEnv->collisions->addCollisionTri(p1, p3, p2);
 }
 
 

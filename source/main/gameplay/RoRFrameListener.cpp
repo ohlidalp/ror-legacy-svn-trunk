@@ -1028,7 +1028,8 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	
 	// no network
 	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
-	
+	gEnv->player = person;
+
 	// init camera manager after mygui and after we have a character
 	new CameraManager(ow, dof);
 
@@ -2523,7 +2524,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		// in embedded mode we wont show that loading stuff
 		/*
-		if (globalEnvironment->embeddedMode)
+		if (gEnv->embeddedMode)
 		{
 			loading_state=ALL_LOADED;
 #ifdef USE_MYGUI
@@ -2784,8 +2785,12 @@ void RoRFrameListener::loadTerrain(String terrainfile)
 	gEnv->terrainManager->loadTerrain(terrainfile);
 
 	loading_state=TERRAIN_LOADED;
-
-	if (gEnv->player) gEnv->player->setVisible(true);
+	
+	if (gEnv->player)
+	{
+		gEnv->player->setVisible(true);
+		gEnv->player->setPosition(gEnv->terrainManager->getSpawnPos());
+	}
 
 #ifdef USE_MYGUI
 	if (!BSETTING("REPO_MODE", false))
@@ -3082,7 +3087,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	// update GUI
 	INPUTENGINE.Capture();
 
-	//if (globalEnvironment->collisions) 	printf("> ground model used: %s\n", globalEnvironment->collisions->last_used_ground_model->name);
+	//if (gEnv->collisions) 	printf("> ground model used: %s\n", gEnv->collisions->last_used_ground_model->name);
 
 	// exit frame started method when just displaying the GUI
 #ifdef USE_MYGUI

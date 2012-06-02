@@ -660,7 +660,7 @@ Beam::~Beam()
 		if (beams[i].mSceneNode)
 		{
 			beams[i].mSceneNode->removeAndDestroyAllChildren();
-			//globalEnvironment->ogreSceneManager->destroySceneNode(beams[i].mSceneNode);
+			//gEnv->ogreSceneManager->destroySceneNode(beams[i].mSceneNode);
 		}
 	}
 
@@ -5690,8 +5690,8 @@ void Beam::updateAI(float dt)
 	static SceneNode *n = 0;
 	if (!n)
 	{
-		Entity *e = globalEnvironment->ogreSceneManager->createEntity("axes.mesh");
-		n = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		Entity *e = gEnv->ogreSceneManager->createEntity("axes.mesh");
+		n = gEnv->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
 		n->attachObject(e);
 	}
 	n->setPosition(mAgentPosition);
@@ -5721,7 +5721,7 @@ void Beam::updateAI(float dt)
 
 	/*
 	String txt = "AI:"+TOSTRING(mSteeringForce);
-	globalEnvironment->frameListener->getOverlayWrapper()->flashMessage(txt, 1, -1);
+	gEnv->frameListener->getOverlayWrapper()->flashMessage(txt, 1, -1);
 	*/
 
 	// actually steer
