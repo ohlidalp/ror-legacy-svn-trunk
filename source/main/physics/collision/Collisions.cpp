@@ -124,7 +124,7 @@ Collisions::Collisions() :
 {
 	hFinder = gEnv->terrainManager->getHeightFinder();
 
-	debugMode = BSETTING("Collision Debug Mode", false);
+	debugMode = BSETTING("Debug Collisions", false);
 	for (int i=0; i < HASH_POWER; i++)
 	{
 		hashmask = hashmask << 1;
@@ -1769,5 +1769,7 @@ void Collisions::finishLoadingTerrain()
 		debugmo->end();
 		debugsn->setPosition(Vector3::ZERO);
 		debugsn->attachObject(debugmo);
+
+		createCollisionDebugVisualization();
 	}
 }

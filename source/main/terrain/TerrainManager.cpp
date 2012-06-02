@@ -134,9 +134,6 @@ void TerrainManager::loadTerrain(String filename)
 
 
 
-	//if (debugCollisions)
-		//collisions->createCollisionDebugVisualization();
-
 	// bake the decals
 	//finishTerrainDecal();
 
@@ -156,6 +153,10 @@ void TerrainManager::initSubSystems()
 	// collisions
 	PROGRESS_WINDOW(19, _L("Initializing Collision Subsystem"));
 	initCollisions();
+
+	// scripting
+	PROGRESS_WINDOW(19, _L("Initializing Script Subsystem"));
+	initScripting();
 
 	// shadows
 	PROGRESS_WINDOW(21, _L("Initializing Shadow Subsystem"));
@@ -517,34 +518,38 @@ void TerrainManager::initCollisions()
 void TerrainManager::initScripting()
 {
 #ifdef USE_ANGELSCRIPT
-	if (!BSETTING("netmode", false))
-	{
-		ConfigFile::SettingsIterator objectsIterator = mTerrainConfig.getSettingsIterator("scripts");
-		bool loaded = false;
-		while (objectsIterator.hasMoreElements())
-		{
-			String sname = objectsIterator.peekNextKey();
-			StringUtil::trim(sname);
-			String svalue = objectsIterator.getNext();
-			StringUtil::trim(svalue);
+	bool loaded = false;
 
-			ScriptEngine::getSingleton().loadScript(sname);
-			loaded = true;
-		}
-		if (loaded)
-		{
-			// load a default script that does the most basic things
-			ScriptEngine::getSingleton().loadScript("default.as");
-		}
-	} else
+	// only load terrain scripts while not in multiplayer
+	if (!gEnv->network)
 	{
-		// load the default stscriptuff so spawners will work in multiplayer
+		try
+		{
+			ConfigFile::SettingsIterator objectsIterator = mTerrainConfig.getSettingsIterator("Scripts");
+			while (objectsIterator.hasMoreElements())
+			{
+				String sname = objectsIterator.peekNextKey();
+				StringUtil::trim(sname);
+				String svalue = objectsIterator.getNext();
+				StringUtil::trim(svalue);
+
+				ScriptEngine::getSingleton().loadScript(sname);
+				loaded = true;
+			}
+		} catch(Exception &e)
+		{
+			LOG("Exception while trying load script");
+		}
+	}
+	
+	if (!loaded)
+	{
+		// load a default script that does the most basic things
 		ScriptEngine::getSingleton().loadScript("default.as");
 	}
-
 	// finally activate AS logging, so we dont spam the users screen with initialization messages
 	ScriptEngine::getSingleton().activateLogging();
-#endif
+#endif //USE_ANGELSCRIPT
 }
 
 void TerrainManager::setGravity(float value)

@@ -97,7 +97,6 @@ protected:
 	OverlayWrapper *ow;
 	bool benchmarking;
 	bool chatlock;
-	bool debugCollisions;
 	bool dirvisible;
 	bool enablePosStor;
 	bool flipflop;
