@@ -22,8 +22,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+
+#ifdef USE_PAGED
+#include "BatchPage.h"
+#include "GrassLoader.h"
+#include "ImpostorPage.h"
+#include "PagedGeometry.h"
+#include "TreeLoader2D.h"
+#include "TreeLoader3D.h"
+#endif //USE_PAGED
+
+
 class TerrainObjectManager : public ZeroedMemoryAllocator
 {
+	friend class TerrainManager;
 public:
 
 	TerrainObjectManager(TerrainManager *terrainManager);
@@ -31,7 +43,6 @@ public:
 
 	void loadObjectConfigFile(Ogre::String filename);
 
-	bool updateAnimatedObjects(float dt);
 
 	typedef struct localizer_t
 	{
@@ -40,18 +51,11 @@ public:
 		Ogre::Quaternion rotation;
 	} localizer_t;
 
+	bool update(float dt);
+
 protected:
 
 	TerrainManager *terrainManager;
-
-	typedef struct {
-		bool enabled;
-		int loadType;
-		Ogre::String instanceName;
-		Ogre::SceneNode *sceneNode;
-		std::vector <int> collTris;
-		std::vector <int> collBoxes;
-	} loaded_object_t;
 
 	typedef struct
 	{
@@ -65,13 +69,60 @@ protected:
 	ProceduralManager *proceduralManager;
 
 	Road *road;
+	Ogre::SceneNode *bakeNode;
+
+	typedef struct
+	{
+		float px;
+		float py;
+		float pz;
+		//float ry;
+		Ogre::Quaternion rotation;
+		char name[256];
+		bool ismachine;
+		bool freePosition;
+	} truck_prepare_t;
 
 
+	int truck_preload_num;
+	truck_prepare_t truck_preload[100];
+
+
+#ifdef USE_PAGED
+	typedef struct
+	{
+		Forests::PagedGeometry *geom;
+		void *loader;
+	} paged_geometry_t;
+
+	std::vector<paged_geometry_t> pagedGeometry;
+	Forests::TreeLoader2D *treeLoader;
+#endif //USE_PAGED
 
 	localizer_t localizers[64];
 
+	int objcounter;
+	int free_localizer;
+
+	std::vector<animated_object_t> animatedObjects;
+
+	typedef struct loadedObject_t
+	{
+		bool enabled;
+		int loadType;
+		Ogre::String instanceName;
+		Ogre::SceneNode *sceneNode;
+		std::vector <int> collTris;
+		std::vector <int> collBoxes;
+	} loadedObject_t;
+	std::map< std::string, loadedObject_t> loadedObjects;
+
 	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
 	void unloadObject(const char* name);
+
+	void loadPreloadedTrucks();
+	bool updateAnimatedObjects(float dt);
+	void postLoad();
 };
 
 #endif // __TerrainObjectManager_H_

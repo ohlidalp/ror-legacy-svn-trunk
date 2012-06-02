@@ -28,57 +28,113 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRFrameListener.h"
 #include "SkyManager.h"
 
-#ifdef USE_PAGED
-#include "BatchPage.h"
-#include "GrassLoader.h"
-#include "ImpostorPage.h"
-#include "PagedGeometry.h"
-#include "TreeLoader2D.h"
-#include "TreeLoader3D.h"
-#endif //USE_PAGED
+#include "Collisions.h"
 
-#ifdef USE_PAGED
-namespace Forests
-{
-	class PagedGeometry;
-	class TreeLoader2D;
-}
-#endif //USE_PAGED
+#include "MeshObject.h"
+
+#include "SoundScriptManager.h"
+#include "TerrainManager.h"
+#include "TerrainGeometryManager.h"
+#include "Settings.h"
+
+#include "ExtinguishableFireAffector.h"
+
+#include "ScopeLog.h"
+
+#include "AutoPilot.h"
+
+#include "Road2.h"
+
+#include <OgreRTShaderSystem.h>
+#include <OgreFontManager.h>
+
+#include "WriteTextToTexture.h"
+
+#include "ResourceBuffer.h"
+
+#include "MapControl.h"
+#include "MapEntity.h"
+
 
 using namespace Ogre;
+
+#ifdef USE_PAGED
+using namespace Forests;
+#endif //USE_PAGED
+
+
+//workaround for pagedgeometry
+inline float getTerrainHeight(Real x, Real z, void *unused=0)
+{
+	if (!gEnv->terrainManager->getHeightFinder())
+		return 1;
+	return gEnv->terrainManager->getHeightFinder()->getHeightAt(x, z);
+}
+
 
 TerrainObjectManager::TerrainObjectManager(TerrainManager *terrainManager) :
 	terrainManager(terrainManager)
 {
+	//prepare for baking
+	bakeNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 }
 
 TerrainObjectManager::~TerrainObjectManager()
 {
-
+#ifdef USE_PAGED
+	for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin(); it!=pagedGeometry.end(); it++)
+	{
+		if (it->geom)
+		{
+			delete(it->geom);
+			it->geom=0;
+		}
+		if (it->loader)
+		{
+			delete((TreeLoader2D *)it->loader);
+			it->loader=0;
+		}
+	}
+#endif //USE_PAGED
 }
 
 void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 {
-#if 0
-	//prepare for baking
-	SceneNode *bakeNode=globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+
+	objcounter = 0;
+	free_localizer = 0;
 
 #ifdef USE_PAGED
-	  Forests::TreeLoader2D *treeLoader = 0;
+	Forests::TreeLoader2D *treeLoader = 0;
 	Entity *curTree = 0;
 	String treename = "";
-#endif
+#endif // USE_PAGED
 
 	ProceduralObject po;
 	po.loadingState = -1;
 	int r2oldmode = 0;
 	int lastprogress = -1;
 	bool proroad = false;
-	
-	String odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
-	DataStreamPtr ds=ResourceGroupManager::getSingleton().openResource(odefname, odefgroup);
 
-	long line = 0;
+	DataStreamPtr ds;
+	try
+	{
+		ds = ResourceGroupManager::getSingleton().openResource(odefname, Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+	}
+	catch(...)
+	{
+		LOG("Error openeing object configuration: " + odefname);
+	}
+
+	int &mapsizex = terrainManager->geometry_manager->mapsizex;
+	int &mapsizez = terrainManager->geometry_manager->mapsizex;
+
+	Vector3 r2lastpos=Vector3::ZERO;
+	Quaternion r2lastrot=Quaternion::IDENTITY;
+	int r2counter=0;
+
+	//long line = 0;
+	char line[4096] = "";
 
 	while (!ds->eof())
 	{
@@ -86,7 +142,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		if (progress-lastprogress > 20)
 		{
 #ifdef USE_MYGUI
-			LoadingWindow::getSingleton().setProgress(progress, _L("Loading Terrain"));
+			LoadingWindow::getSingleton().setProgress(progress, _L("Loading Terrain Objects"));
 #endif //MYGUI
 			lastprogress = progress;
 		}
@@ -167,57 +223,11 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			n->attachObject(mReferenceObject);
 			n->setVisible(true);
 		}
-
-		if (!strncmp("mpspawn", line, 7))
-		{
-			spawn_location_t spl;
-			memset(&spl, 0, sizeof(spawn_location_t));
-
-			char tmp[256]="";
-			float x=0,y=0,z=0, rx=0, ry=0, rz=0;
-			int res = sscanf(line, "mpspawn %s %f %f %f %f %f %f", tmp, &x, &y, &z, &rx, &ry, &rz);
-			if (res < 7)
-			{
-				LOG("error reading mpspawn command!");
-				continue;
-			}
-			spl.pos = Vector3(x, y, z);
-			spl.rot = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-			netSpawnPos[String(tmp)] = spl;
-			continue;
-		}
-
-		//sandstorm cube texture
-		if (!strncmp(line,"sandstormcubemap", 16))
-		{
-			sscanf(line, "sandstormcubemap %s", sandstormcubemap);
-		}
-		if (!strncmp("landuse-config", line, 14))
-		{
-			gEnv->collisions->setupLandUse(line+15);
-			continue;
-		}
-		if (!strncmp("gravity", line, 7))
-		{
-			int res = sscanf(line, "gravity %f", &gravity);
-			if (res < 1)
-			{
-				LOG("error reading gravity command!");
-			}
-			continue;
-		}
-		//ugly stuff to parse map size
-		if (!strncmp("mapsize", line, 7))
-		{
-			// this is deprecated!!! (replaced by direct .cfg reads)
-			//sscanf(line, "mapsize %f, %f", &mapsizex, &mapsizez);
-			continue;
-		}
 #ifdef USE_PAGED
 		//ugly stuff to parse trees :)
 		if (!strncmp("trees", line, 5))
 		{
-			if (pagedMode == 0) continue;
+			if (terrainManager->pagedMode == 0) continue;
 			char ColorMap[256] = {};
 			char DensityMap[256] = {};
 			char treemesh[256] = {};
@@ -238,7 +248,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				LOG("tree DensityMap zero!");
 				continue;
 			}
-			Forests::DensityMap *densityMap = Forests::DensityMap::load(DensityMap, CHANNEL_COLOR);
+			Forests::DensityMap *densityMap = Forests::DensityMap::load(DensityMap, Forests::CHANNEL_COLOR);
 			if (!densityMap)
 			{
 				LOG("could not load densityMap: "+String(DensityMap));
@@ -250,7 +260,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			paged_geometry_t paged;
 			paged.geom = new PagedGeometry();
 			paged.geom->setTempDir(SSETTING("User Path", "") + "cache" + SSETTING("dirsep", "\\"));
-			paged.geom->setCamera(mCamera);
+			paged.geom->setCamera(gEnv->mainCamera);
 			paged.geom->setPageSize(50);
 			paged.geom->setInfinite();
 			Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
@@ -258,10 +268,10 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 			//Set up LODs
 			//trees->addDetailLevel<EntityPage>(50);
-			float min = minDist * pagedDetailFactor;
+			float min = minDist * terrainManager->pagedDetailFactor;
 			if (min<10) min = 10;
 			paged.geom->addDetailLevel<BatchPage>(min, min/2);
-			float max = maxDist * pagedDetailFactor;
+			float max = maxDist * terrainManager->pagedDetailFactor;
 			if (max<10) max = 10;
 			paged.geom->addDetailLevel<ImpostorPage>(max, max/10);
 			TreeLoader2D *treeLoader = new TreeLoader2D(paged.geom, TBounds(0, 0, mapsizex, mapsizez));
@@ -313,7 +323,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 					{
 						if (highdens < 0) hd = Math::RangeRandom(0, -highdens);
 						float density = densityMap->_getDensityAt_Unfiltered(x, z, bounds);
-						int numTreesToPlace = (int)((float)(hd) * density * pagedDetailFactor);
+						int numTreesToPlace = (int)((float)(hd) * density * terrainManager->pagedDetailFactor);
 						float nx=0, nz=0;
 						while(numTreesToPlace-->0)
 						{
@@ -340,27 +350,27 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		if (!strncmp("grass", line, 5) || !strncmp("grass2", line, 6))
 		{
 			// is paged geometry disabled by configuration?
-			if (pagedMode == 0) continue;
+			if (terrainManager->pagedMode == 0) continue;
 			int range = 80;
 			float SwaySpeed=0.5, SwayLength=0.05, SwayDistribution=10.0, minx=0.2, miny=0.2, maxx=1, maxy=0.6, Density=0.6, minH=-9999, maxH=9999;
 			char grassmat[256]="";
-			char ColorMap[256]="";
-			char DensityMap[256]="";
+			char colorMapFilename[256]="";
+			char densityMapFilename[256]="";
 			int growtechnique = 0;
 			int techn = GRASSTECH_CROSSQUADS;
 			if (!strncmp("grass2", line, 6))
-				sscanf(line, "grass2 %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %d, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, &techn, grassmat, ColorMap, DensityMap);
+				sscanf(line, "grass2 %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %d, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, &techn, grassmat, colorMapFilename, densityMapFilename);
 			else if (!strncmp("grass", line, 5))
-				sscanf(line, "grass %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, grassmat, ColorMap, DensityMap);
+				sscanf(line, "grass %d, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %s %s %s", &range, &SwaySpeed, &SwayLength, &SwayDistribution, &Density, &minx, &miny, &maxx, &maxy, &growtechnique, &minH, &maxH, grassmat, colorMapFilename, densityMapFilename);
 
 			//Initialize the PagedGeometry engine
 			try
 			{
 				paged_geometry_t paged;
-				PagedGeometry *grass = new PagedGeometry(mCamera, 30);
+				PagedGeometry *grass = new PagedGeometry(gEnv->mainCamera, 30);
 				//Set up LODs
 
-				grass->addDetailLevel<GrassPage>(range * pagedDetailFactor); // original value: 80
+				grass->addDetailLevel<GrassPage>(range * terrainManager->pagedDetailFactor); // original value: 80
 
 				//Set up a GrassLoader for easy use
 				GrassLoader *grassLoader = new GrassLoader(grass);
@@ -379,9 +389,9 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				grassLayer->setSwayLength(SwayLength);
 				grassLayer->setSwayDistribution(SwayDistribution);
 
-				grassdensityTextureFilename = String(DensityMap);
+				//String grassdensityTextureFilename = String(DensityMap);
 
-				grassLayer->setDensity(Density * pagedDetailFactor);
+				grassLayer->setDensity(Density * terrainManager->pagedDetailFactor);
 				if (techn>10)
 					grassLayer->setRenderTechnique(static_cast<GrassTechnique>(techn-10), true);
 				else
@@ -389,15 +399,15 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 				grassLayer->setMapBounds(TBounds(0, 0, mapsizex, mapsizez));
 
-				if (strcmp(ColorMap,"none") != 0)
+				if (strcmp(colorMapFilename,"none") != 0)
 				{
-					grassLayer->setColorMap(ColorMap);
+					grassLayer->setColorMap(colorMapFilename);
 					grassLayer->setColorMapFilter(MAPFILTER_BILINEAR);
 				}
 
-				if (strcmp(DensityMap,"none") != 0)
+				if (strcmp(densityMapFilename,"none") != 0)
 				{
-					grassLayer->setDensityMap(DensityMap);
+					grassLayer->setDensityMap(densityMapFilename);
 					grassLayer->setDensityMapFilter(MAPFILTER_BILINEAR);
 				}
 
@@ -493,7 +503,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		{
 			bool newFormat = (!strcmp(oname, "truck2"));
 
-			if (!strcmp(oname, "boat") && !w)
+			if (!strcmp(oname, "boat") && !terrainManager->water)
 				// no water so do not load boats!
 				continue;
 			String group="";
@@ -513,6 +523,8 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			//truck_preload[truck_preload_num].ry=ry;
 			strcpy(truck_preload[truck_preload_num].name, truckname.c_str());
 			truck_preload_num++;
+
+			terrainManager->trucksLoaded = true;
 			continue;
 		}
 		if (   !strcmp(oname, "road")
@@ -609,14 +621,16 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		if (proceduralManager)
 			proceduralManager->addObject(po);
 	}
+}
 
-
+void TerrainObjectManager::postLoad()
+{
 	// okay, now bake everything
 	bakesg = gEnv->sceneManager->createStaticGeometry("bakeSG");
 	bakesg->setCastShadows(true);
 	bakesg->addSceneNode(bakeNode);
-	bakesg->setRegionDimensions(Vector3(farclip/2.0, 10000.0, farclip/2.0));
-	bakesg->setRenderingDistance(farclip);
+	bakesg->setRegionDimensions(Vector3(terrainManager->farclip/2.0, 10000.0, terrainManager->farclip/2.0));
+	bakesg->setRenderingDistance(terrainManager->farclip);
 	try
 	{
 		bakesg->build();
@@ -628,19 +642,17 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		LOG("error while baking roads. ignoring.");
 
 	}
-#endif
 }
 
 void TerrainObjectManager::unloadObject(const char* instancename)
 {
-#if 0
 	if (loadedObjects.find(std::string(instancename)) == loadedObjects.end())
 	{
 		LOG("unable to unload object: " + std::string(instancename));
 		return;
 	}
 
-	loaded_object_t obj = loadedObjects[std::string(instancename)];
+	loadedObject_t obj = loadedObjects[std::string(instancename)];
 
 	// check if it was already deleted
 	if (!obj.enabled)
@@ -651,7 +663,7 @@ void TerrainObjectManager::unloadObject(const char* instancename)
 	{
 		for (std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
 		{
-			globalEnvironment->collisions->removeCollisionTri(*it);
+			gEnv->collisions->removeCollisionTri(*it);
 		}
 	}
 
@@ -660,19 +672,17 @@ void TerrainObjectManager::unloadObject(const char* instancename)
 	{
 		for (std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
 		{
-			globalEnvironment->collisions->removeCollisionBox(*it);
+			gEnv->collisions->removeCollisionBox(*it);
 		}
 	}
 
 	obj.sceneNode->detachAllObjects();
 	obj.sceneNode->setVisible(false);
 	obj.enabled = false;
-#endif
 }
 
 void TerrainObjectManager::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int scripthandler, const char *type, bool uniquifyMaterial)
 {
-#if 0
 	ScopeLog log("object_"+String(name));
 	if (type && !strcmp(type, "grid"))
 	{
@@ -711,20 +721,9 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 	// try to load with UID first!
 	String odefgroup = "";
 	String odefname = "";
-	bool odefFound = false;
-	if (terrainUID != "" && !CACHE.stringHasUID(name))
-	{
-		sprintf(fname,"%s-%s.odef", terrainUID.c_str(), name);
-		odefname = String(fname);
-		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
-		if (exists)
-		{	
-			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
-			odefFound = true;
-		}
-	}
 
-	if (!odefFound)
+	bool odefFound = false;
+
 	{
 		sprintf(fname,"%s.odef", name);
 		odefname = String(fname);
@@ -760,12 +759,12 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		objcounter++;
 
 
-		SceneNode *tenode = globalEnvironment->ogreSceneManager->getRootSceneNode()->createChildSceneNode();
+		SceneNode *tenode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		bool background_loading = BSETTING("Background Loading", false);
 
 		MeshObject *mo = NULL;
 		if (String(mesh) != "none")
-			mo = new MeshObject(globalEnvironment->ogreSceneManager, mesh, oname, tenode, NULL, background_loading);
+			mo = new MeshObject(mesh, oname, tenode, NULL, background_loading);
 
 		//mo->setQueryFlags(OBJECTS_MASK);
 		//tenode->attachObject(te);
@@ -776,7 +775,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		tenode->setVisible(true);
 
 		// register in map
-		loaded_object_t *obj = &loadedObjects[std::string(instancename)];
+		loadedObject_t *obj = &loadedObjects[std::string(instancename)];
 		obj->instanceName = std::string(instancename);
 		obj->loadType     = 0;
 		obj->enabled      = true;
@@ -805,7 +804,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		bool rotating=false;
 		bool classic_ref=true;
 		// everything is of concrete by default
-		ground_model_t *gm = globalEnvironment->collisions->getGroundModelByString("concrete");
+		ground_model_t *gm = gEnv->collisions->getGroundModelByString("concrete");
 		char eventname[256];
 		eventname[0]=0;
 		while (!ds->eof())
@@ -934,8 +933,8 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				else if (!strncmp(ts, "delete", 8))
 					event_filter=EVENT_DELETE;
 
-				if (!strncmp(ts, "shoptruck", 9))
-					terrainHasTruckShop=true;
+				//if (!strncmp(ts, "shoptruck", 9))
+				//	terrainManager->terrainHasTruckShop=true;
 
 				// fallback
 				if (strlen(ts) == 0)
@@ -1142,7 +1141,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		//add icons if type is set
 #ifdef USE_MYGUI
 		String typestr = "";
-		if (type && surveyMap)
+		if (type && gEnv->surveyMap)
 		{
 			typestr = String(type);
 			// hack for raceways
@@ -1155,7 +1154,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 			if (typestr != String("") && typestr != String("road") && typestr != String("sign"))
 			{
-				MapEntity *e = surveyMap->createMapEntity(typestr);
+				MapEntity *e = gEnv->surveyMap->createMapEntity(typestr);
 				if (e)
 				{
 					e->setVisibility(true);
@@ -1168,12 +1167,10 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 		}
 #endif //USE_MYGUI
-#endif
 }
 
 bool TerrainObjectManager::updateAnimatedObjects(float dt)
 {
-#if 0
 	if (animatedObjects.size() == 0) return true;
 
 	std::vector<animated_object_t>::iterator it;
@@ -1186,6 +1183,62 @@ bool TerrainObjectManager::updateAnimatedObjects(float dt)
 			it->anim->addTime(time);
 		}
 	}
-#endif
+	return true;
+}
+
+void TerrainObjectManager::loadPreloadedTrucks()
+{
+	// get lights mode
+	int flaresMode = 0;
+	String lightsMode = SSETTING("Lights", "Only current vehicle, main lights");
+	if (lightsMode == "None (fastest)")
+		flaresMode = 0;
+	else if (lightsMode == "No light sources")
+		flaresMode = 1;
+	else if (lightsMode == "Only current vehicle, main lights")
+		flaresMode = 2;
+	else if (lightsMode == "All vehicles, main lights")
+		flaresMode = 3;
+	else if (lightsMode == "All vehicles, all lights")
+		flaresMode = 4;
+
+	// load the rest in SP
+	// in netmode, don't load other trucks!
+	if (!gEnv->network)
+	{
+		for (int i=0; i<truck_preload_num; i++)
+		{
+			Vector3 pos = Vector3(truck_preload[i].px, truck_preload[i].py, truck_preload[i].pz);
+			Beam *b = BeamFactory::getSingleton().createLocal(pos, truck_preload[i].rotation, truck_preload[i].name, 0, truck_preload[i].ismachine, flaresMode, 0, 0, truck_preload[i].freePosition);
+#ifdef USE_MYGUI
+			if (b && gEnv->surveyMap)
+			{
+				MapEntity *e = gEnv->surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+				if (e)
+				{
+					e->setState(DESACTIVATED);
+					e->setVisibility(true);
+					e->setPosition(truck_preload[i].px, truck_preload[i].pz);
+					e->setRotation(-Radian(b->getHeadingDirectionAngle()));
+				}
+			}
+#endif //USE_MYGUI
+		}
+	}
+
+}
+
+bool TerrainObjectManager::update( float dt )
+{
+#ifdef USE_PAGED
+	// paged geometry
+	for (std::vector<paged_geometry_t>::iterator it=pagedGeometry.begin();it!=pagedGeometry.end();it++)
+	{
+		if (it->geom) it->geom->update();
+	}
+#endif //USE_PAGED
+
+	updateAnimatedObjects(dt);
+	
 	return true;
 }
