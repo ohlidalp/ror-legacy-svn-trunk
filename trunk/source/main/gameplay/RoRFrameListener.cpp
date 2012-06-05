@@ -703,7 +703,7 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	// we don't use overlays in embedded mode
 	if (!gEnv->embeddedMode)
 	{
-		//ow = new OverlayWrapper();
+		ow = new OverlayWrapper();
 	}
 
 	enablePosStor = BSETTING("Position Storage", false);
@@ -3109,9 +3109,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	//if (current_truck != -1 && trucks[current_truck] == 0)
 	//	BeamFactory::getSingleton().setCurrentTruck(-1);
 
-	// update animated objects
-	gEnv->terrainManager->update(dt);
-
 	// update network gui if required, at most every 2 seconds
 	if (net)
 	{
@@ -3157,9 +3154,13 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	
 	Beam *curr_truck = BeamFactory::getSingleton().getCurrentTruck();
 
-	// environment map
+	// terrain updates
 	if (gEnv->terrainManager)
 	{
+		// update animated objects
+		gEnv->terrainManager->update(dt);
+
+		// env map update
 		if (gEnv->terrainManager->getEnvmap())
 		{
 			if (curr_truck)
@@ -3177,14 +3178,15 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 		}
 
 		// water
-		if (gEnv->terrainManager->getWater())
+		Water *water = gEnv->terrainManager->getWater();
+		if (water)
 		{
 			if (curr_truck)
 			{
-				gEnv->terrainManager->getWater()->moveTo(gEnv->mainCamera, gEnv->terrainManager->getWater()->getHeightWaves(curr_truck->getPosition()));
+				water->moveTo(gEnv->mainCamera, water->getHeightWaves(curr_truck->getPosition()));
 			} else
 			{
-				gEnv->terrainManager->getWater()->moveTo(gEnv->mainCamera, gEnv->terrainManager->getWater()->getHeight());
+				water->moveTo(gEnv->mainCamera, water->getHeight());
 			}
 		}
 

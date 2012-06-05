@@ -90,6 +90,27 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 	free_wavetrain=0;
 	maxampl=0;
 
+	haswaves = BSETTING("Waves", false);
+
+	// disable waves in multiplayer
+	if(gEnv->network)
+		haswaves = false;
+
+	// parse height
+	float wheight = PARSEREAL(mTerrainConfig.getSetting("WaterLine", "General"));
+
+	// and the type
+	String waterSettingsString = SSETTING("Water effects", "Reflection + refraction (speed optimized)");
+	if (waterSettingsString == "Basic (fastest)")
+		mType = WATER_BASIC;
+	if (waterSettingsString == "Reflection")
+		mType = WATER_REFLECT;
+	else if (waterSettingsString == "Reflection + refraction (speed optimized)")
+		mType = WATER_FULL_SPEED;
+	else if (waterSettingsString == "Reflection + refraction (quality optimized)")
+		mType = WATER_FULL_QUALITY;
+
+
 	if (haswaves)
 	{
 		char line[1024] = {};
@@ -121,9 +142,8 @@ Water::Water(const Ogre::ConfigFile &mTerrainConfig)
 	pTestNode=0;
 	waterSceneMgr=gEnv->sceneManager;
 	framecounter=0;
-	//height=wheight;
+	height=wheight;
 	orgheight=wheight;
-	//mType=type;
 	rttTex1=0;
 	rttTex2=0;
 	MeshPtr mprt;

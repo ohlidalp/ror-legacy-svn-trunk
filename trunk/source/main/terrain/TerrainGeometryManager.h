@@ -60,6 +60,7 @@ public:
 	}
 
 	Ogre::Vector3 getMaxTerrainSize();
+	Ogre::Vector3 getTerrainPosition();
 
 	void update(float dt);
 	void updateLightMap();
@@ -75,6 +76,8 @@ protected:
 	int mapsizex, mapsizey, mapsizez, pageSize, terrainSize, worldSize;
 	int pageMinX, pageMaxX, pageMinY, pageMaxY;
 	int terrainLayers;
+
+	Ogre::Vector3 terrainPos;
 
 	// terrain engine specific
 	Ogre::TerrainGroup *mTerrainGroup;

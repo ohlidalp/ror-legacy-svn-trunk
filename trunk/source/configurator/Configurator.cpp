@@ -732,7 +732,7 @@ bool MyApp::checkUserPath()
 		extractZipFiles(skeletonZipFile, UserPath);
 
 		// tell the user
-		wxLogError(wxT("User directory created as it was not existing: ") + UserPath);
+		wxLogInfo(wxT("User directory created as it was not existing: ") + UserPath);
 		/*
 		wxString warning = wxString::Format(_("Rigs of Rods User directory recreated, as it was missing:\n%s"), UserPath.c_str());
 		wxString caption = _("error upon loading RoR user directory");

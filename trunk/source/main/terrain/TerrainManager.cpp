@@ -124,6 +124,9 @@ void TerrainManager::loadTerrain(String filename)
 	PROGRESS_WINDOW(80, _L("Loading Terrain Geometry"));
 	geometry_manager->loadOgreTerrainConfig(ogre_terrain_config_filename);
 
+	// must happen here
+	initWater();
+
 	PROGRESS_WINDOW(90, _L("Loading Terrain Objects"));
 	loadTerrainObjects();
 
@@ -178,8 +181,9 @@ void TerrainManager::initSubSystems()
 	PROGRESS_WINDOW(31, _L("Initializing Vegetation Subsystem"));
 	initVegetation();
 
-	PROGRESS_WINDOW(33, _L("Initializing Water Subsystem"));
-	initWater();
+	// water must be done later on
+	//PROGRESS_WINDOW(33, _L("Initializing Water Subsystem"));
+	//initWater();
 
 	if (BSETTING("HDR", false))
 	{
@@ -466,7 +470,9 @@ void TerrainManager::fixCompositorClearColor()
 
 void TerrainManager::initWater()
 {
-	water = new Water(mTerrainConfig);
+	String waterSettingsString = SSETTING("Water effects", "Reflection + refraction (speed optimized)");
+	if (waterSettingsString != "None")
+		water = new Water(mTerrainConfig);
 }
 
 void TerrainManager::initEnvironmentMap()
@@ -514,6 +520,16 @@ void TerrainManager::initCollisions()
 		gEnv->collisions->setupLandUse(tractionMapConfig.c_str());
 	}
 }
+
+void TerrainManager::update(float dt)
+{
+	if(object_manager)
+		object_manager->update(dt);
+
+	if(geometry_manager)
+		geometry_manager->update(dt);
+}
+
 
 void TerrainManager::initScripting()
 {
