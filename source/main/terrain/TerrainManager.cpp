@@ -595,3 +595,8 @@ Ogre::Vector3 TerrainManager::getMaxTerrainSize()
 		return Vector3::ZERO;
 	return geometry_manager->getMaxTerrainSize();
 }
+
+IHeightFinder* TerrainManager::getHeightFinder()
+{
+	return geometry_manager;
+}

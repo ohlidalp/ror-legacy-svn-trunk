@@ -30,6 +30,7 @@ class TerrainManager : public ZeroedMemoryAllocator
 {
 	friend class CacheSystem;
 	friend class TerrainObjectManager;
+
 public:
 
 	TerrainManager();
@@ -49,7 +50,7 @@ public:
 	// some getters
 	Collisions *getCollisions() { return collisions; };
 	Envmap *getEnvmap() { return envmap; };
-	IHeightFinder *getHeightFinder() { return reinterpret_cast<IHeightFinder *>(geometry_manager); };
+	IHeightFinder *getHeightFinder();
 	SkyManager *getSkyManager() { return sky_manager; };
 	Water *getWater() { return water; };
 	Ogre::Light *getMainLight() { return main_light; };
@@ -93,6 +94,7 @@ protected:
 	int pagedMode;
 	float pagedDetailFactor;
 	bool trucksLoaded;
+
 	// internal methods
 	void initCamera();
 	void initCollisions();
