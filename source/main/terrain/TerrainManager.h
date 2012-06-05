@@ -38,7 +38,8 @@ public:
 	void loadTerrain(Ogre::String filename);
 	void loadTerrainConfigBasics(Ogre::DataStreamPtr &ds);
 	
-	void update(float dt) {};
+
+	void update(float dt);
 
 	void setGravity(float value);
 	float getGravity() { return gravity; };

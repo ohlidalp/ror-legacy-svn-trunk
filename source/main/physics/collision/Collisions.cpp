@@ -353,14 +353,12 @@ Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vecto
 
 void Collisions::setupLandUse(const char *configfile)
 {
-#if 0
 #ifdef USE_PAGED
 	if (landuse) return;
 	landuse = new Landusemap(configfile);
 #else
 	LOG("RoR was not compiled with PagedGeometry support. You cannot use Landuse maps with it.");
 #endif //USE_PAGED
-#endif
 }
 
 ground_model_t *Collisions::getGroundModelByString(const String name)

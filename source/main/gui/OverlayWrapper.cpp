@@ -36,8 +36,10 @@ using namespace Ogre;
 OverlayWrapper::OverlayWrapper()
 {
 	setSingleton(this);
+	win = gEnv->renderWindow;
 	init();
 	mTimeUntilNextToggle=0;
+
 }
 
 OverlayWrapper::~OverlayWrapper()

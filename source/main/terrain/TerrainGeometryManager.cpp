@@ -82,11 +82,11 @@ void TerrainGeometryManager::initTerrain()
 	pageMaxY = PARSEINT(terrainConfig.getSetting("Pages_Y"));
 
 
-	Vector3 mTerrainPos(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
+	terrainPos = Vector3(mapsizex / 2.0f, 0.0f, mapsizez / 2.0f);
 
 	mTerrainGroup = OGRE_NEW TerrainGroup(gEnv->sceneManager, Terrain::ALIGN_X_Z, terrainSize, worldSize);
 	mTerrainGroup->setFilenameConvention(baseName, filenameSuffix);
-	mTerrainGroup->setOrigin(mTerrainPos);
+	mTerrainGroup->setOrigin(terrainPos);
 	mTerrainGroup->setResourceGroup("cache");
 
 	configureTerrainDefaults();
@@ -347,5 +347,10 @@ void TerrainGeometryManager::defineTerrain( int x, int y, bool flat )
 Ogre::Vector3 TerrainGeometryManager::getMaxTerrainSize()
 {
 	return Vector3(mapsizex, mapsizey, mapsizez);
+}
+
+Ogre::Vector3 TerrainGeometryManager::getTerrainPosition()
+{
+	return terrainPos;
 }
 

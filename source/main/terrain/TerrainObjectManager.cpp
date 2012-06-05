@@ -264,7 +264,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			paged.geom->setPageSize(50);
 			paged.geom->setInfinite();
 			Ogre::TRect<Ogre::Real> bounds = TBounds(0, 0, mapsizex, mapsizez);
-			//trees->setBounds(bounds);
+			paged.geom->setBounds(bounds);
 
 			//Set up LODs
 			//trees->addDetailLevel<EntityPage>(50);
