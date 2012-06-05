@@ -719,8 +719,18 @@ bool MyApp::checkUserPath()
 
 		if(!wxFileName::FileExists(skeletonZipFile))
 		{
+			// try the dev dir as well
+			skeletonZip = wxFileName(ProgramPath, wxEmptyString);
+			skeletonZip.RemoveLastDir();
+			skeletonZip.AppendDir(wxT("resources"));
+			skeletonZip.SetFullName(wxT("skeleton.zip"));
+			skeletonZipFile = skeletonZip.GetFullPath();
+		}
+
+		if(!wxFileName::FileExists(skeletonZipFile))
+		{
 			// tell the user
-			wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nit could not be created since skeleton.zip was not found"), UserPath.c_str());
+			wxString warning = wxString::Format(_("Rigs of Rods User directory missing:\n%s\n\nit could not be created since skeleton.zip was not found in\n %s"), UserPath.c_str(), skeletonZipFile.c_str());
 			wxString caption = _("error upon loading RoR user directory");
 			wxMessageDialog *w = new wxMessageDialog(NULL, warning, caption, wxOK|wxICON_ERROR|wxSTAY_ON_TOP, wxDefaultPosition);
 			w->ShowModal();
