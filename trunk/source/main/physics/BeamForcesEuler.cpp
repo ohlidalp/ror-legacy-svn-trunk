@@ -17,6 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "RoRPrerequisites.h"
 #include "AeroEngine.h"
 #include "AirBrake.h"
 #include "Airfoil.h"
@@ -36,6 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "ScrewProp.h"
 #include "SoundScriptManager.h"
 #include "Water.h"
+#include "TerrainManager.h"
 
 extern float mrtime;
 
@@ -45,6 +47,9 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 {
 	Beam** trucks = BeamFactory::getSingleton().getTrucks();
 	int numtrucks = BeamFactory::getSingleton().getTruckCount();
+	Water *water = 0;
+	if(gEnv->terrainManager)
+		water = gEnv->terrainManager->getWater();
 
 	// do not calculate anything if we are going to get deleted
 	if (deleting) return;
