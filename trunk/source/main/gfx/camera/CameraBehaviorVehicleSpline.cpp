@@ -40,6 +40,12 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 
 void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
 {
+	if ( ctx.mCurrTruck->free_camerarail <= 0 )
+	{
+		CameraManager::getSingleton().switchToNextBehavior();
+		return;
+	}
+
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos
 		- ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
 
@@ -50,43 +56,40 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 		targetPitch = -asin(dir.dotProduct(Vector3::UNIT_Y));
 	}
 
-	if ( ctx.mCurrTruck->free_camerarail > 0 )
+	if ( ctx.mCurrTruck->getAllLinkedBeams().size() != numLinkedBeams )
 	{
-		if ( ctx.mCurrTruck->getAllLinkedBeams().size() != numLinkedBeams )
-		{
-			createSpline(ctx);
-		}
-		updateSpline();
-		updateSplineDisplay();
+		createSpline(ctx);
+	}
+	updateSpline();
+	updateSplineDisplay();
 
-		camLookAt = spline->interpolate(splinePos);
+	camLookAt = spline->interpolate(splinePos);
 
-		if ( INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) && INPUTENGINE.isKeyDownValueBounce(OIS::KC_SPACE) )
-		{
-			autoTracking = !autoTracking;
+	if ( INPUTENGINE.isKeyDown(OIS::KC_LSHIFT) && INPUTENGINE.isKeyDownValueBounce(OIS::KC_SPACE) )
+	{
+		autoTracking = !autoTracking;
 #ifdef USE_MYGUI
-			if ( autoTracking )
-			{
-				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("enabled"), "camera_go.png", 3000);
-			} else
-			{
-				Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("disabled"), "camera_go.png", 3000);
-			}
-#endif // USE_MYGUI
-		}
-
 		if ( autoTracking )
 		{
-			Vector3 centerDir = ctx.mCurrTruck->getPosition() - camLookAt;
-			if ( centerDir.length() > 1.0f )
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("enabled"), "camera_go.png", 3000);
+		} else
+		{
+			Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("auto tracking") + U(" ") + _L("disabled"), "camera_go.png", 3000);
+		}
+#endif // USE_MYGUI
+	}
+
+	if ( autoTracking )
+	{
+		Vector3 centerDir = ctx.mCurrTruck->getPosition() - camLookAt;
+		if ( centerDir.length() > 1.0f )
+		{
+			centerDir.normalise();
+			Radian oldTargetDirection = targetDirection;
+			targetDirection = -atan2(centerDir.dotProduct(Vector3::UNIT_X), centerDir.dotProduct(-Vector3::UNIT_Z));
+			if ( targetDirection.valueRadians() * oldTargetDirection.valueRadians() < 0.0f && centerDir.length() < camDistMin)
 			{
-				centerDir.normalise();
-				Radian oldTargetDirection = targetDirection;
-				targetDirection = -atan2(centerDir.dotProduct(Vector3::UNIT_X), centerDir.dotProduct(-Vector3::UNIT_Z));
-				if ( targetDirection.valueRadians() * oldTargetDirection.valueRadians() < 0.0f && centerDir.length() < camDistMin)
-				{
-					camRotX = -camRotX;
-				}
+				camRotX = -camRotX;
 			}
 		}
 	}

@@ -1937,7 +1937,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				beams[pos].bounded=SHOCK2;
 
 				if (triggerdebug)
-					parser_warning(c, "Trigger added. BeamID " + TOSTRING(pos), PARSER_ERROR);
+					parser_warning(c, "Trigger added. BeamID " + TOSTRING(pos), PARSER_INFO);
 				beams[pos].shock = &shocks[free_shock];
 				shocks[free_shock].beamid = pos;
 				shocks[free_shock].trigger_switch_state = 0.0f;   // used as bool and countdowntimer, dont touch!
