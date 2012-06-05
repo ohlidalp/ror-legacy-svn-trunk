@@ -271,7 +271,6 @@ SerializedRig::SerializedRig()
 	enable_wheel2=true; //BSETTING("Enhanced wheels");
 
 	engine=0;
-	water=0;
 	hascommands=0;
 	hashelp=0;
 	cinecameranodepos[0]=-1;
