@@ -17,68 +17,51 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "CmdKeyInertia.h"
+
 #include "Ogre.h"
 
 using namespace Ogre;
-using namespace std;
 
-CmdKeyInertia::CmdKeyInertia(int maxCmdKeys) : maxCmdKeys(maxCmdKeys)
+CmdKeyInertia::CmdKeyInertia()
 {
 	loadDefaultInertiaModels();
-
-	cmdKeyInertia = new cmdKeyInertia_s[maxCmdKeys];
-	for (int i=0;i<maxCmdKeys;i++)
-	{
-		cmdKeyInertia[i].lastOutput=0.0f;
-		cmdKeyInertia[i].time=0.0f;
-		cmdKeyInertia[i].startSpline=0;
-		cmdKeyInertia[i].stopSpline=0;
-		cmdKeyInertia[i].startDelay=0;
-		cmdKeyInertia[i].stopDelay=0;
-	}
-}
-CmdKeyInertia::~CmdKeyInertia()
-{
-	splines.clear();
-	delete cmdKeyInertia;
 }
 
 Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 {
-	if (cmdKey >= maxCmdKeys) return cmdInput;
-
-	if (cmdKeyInertia[cmdKey].startSpline==0 || cmdKeyInertia[cmdKey].stopSpline==0)
+	if (!cmdKeyInertia[cmdKey].startSpline || !cmdKeyInertia[cmdKey].stopSpline)
+	{
 		return cmdInput;
+	}
 
 	Real calculatedOutput=cmdKeyInertia[cmdKey].lastOutput;
 	Real lastOutput=cmdKeyInertia[cmdKey].lastOutput;
-	//rel difference to calculate if we have to use start values(accelerating) or stop values
+	// rel difference to calculate if we have to use start values(accelerating) or stop values
 	Real relDiff=fabs(cmdInput)-fabs(lastOutput);
 	// difference to calculate if were are on the negative side
 	Real absDiff=cmdInput-lastOutput;
-	//if the value is close to our input, reset the timer
+	// if the value is close to our input, reset the timer
 	if (fabs(absDiff)<0.002)
 		cmdKeyInertia[cmdKey].time=0;
-	//+dt after the timer had been set to zero prevents the motion to stop at 0.002
+	// +dt after the timer had been set to zero prevents the motion to stop at 0.002
 	cmdKeyInertia[cmdKey].time+=dt;
 
 	Real startFactor=cmdKeyInertia[cmdKey].startDelay*cmdKeyInertia[cmdKey].time;
 	Real stopFactor=cmdKeyInertia[cmdKey].stopDelay*cmdKeyInertia[cmdKey].time;
-	//positive values between 0 and 1
+	// positive values between 0 and 1
 	if (absDiff>0)
-	{	//we have to accelerate our last outout to the new commanded input
+	{	// we have to accelerate our last outout to the new commanded input
 		if (relDiff>0)
 			calculatedOutput=lastOutput+calculateCmdOutput(startFactor,cmdKeyInertia[cmdKey].startSpline);
 		if (relDiff<0)
-			//we have to deccelerate our last outout to the new commanded input
+			// we have to deccelerate our last outout to the new commanded input
 			calculatedOutput=lastOutput+calculateCmdOutput(stopFactor,cmdKeyInertia[cmdKey].stopSpline);
 		if (calculatedOutput>cmdInput)
-			//if the calculated value is bigger than input set to input to avoid overshooting
+			// if the calculated value is bigger than input set to input to avoid overshooting
 			calculatedOutput=cmdInput;
 	}
-	//negative values, mainly needed for hydros, between 0 and -1
+	// negative values, mainly needed for hydros, between 0 and -1
 	if (absDiff<0)
 	{
 		if (relDiff>0)
@@ -94,9 +77,7 @@ Real CmdKeyInertia::calcCmdKeyDelay(Real cmdInput,int cmdKey,Real dt)
 
 int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, String startFunction, String stopFunction)
 {
-	if (cmdKey >= maxCmdKeys) return 0;
-
-	//Delay values should always be greater than 0
+	// Delay values should always be greater than 0
 	if (startDelay>0)
 		cmdKeyInertia[cmdKey].startDelay=startDelay;
 	else
@@ -107,7 +88,7 @@ int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, Str
 	else
 		LOG("Inertia| Stop Delay should be >0");
 
-	//if we don't find the spline, we use the "constant" one
+	// if we don't find the spline, we use the "constant" one
 	if (splines.find(startFunction) != splines.end())
 		cmdKeyInertia[cmdKey].startSpline=&splines.find(startFunction)->second;
 	else
@@ -121,14 +102,17 @@ int CmdKeyInertia::setCmdKeyDelay(int cmdKey,Real startDelay,Real stopDelay, Str
 	return 0;
 }
 
-Real CmdKeyInertia::calculateCmdOutput(Real time,SimpleSpline *spline)
+Real CmdKeyInertia::calculateCmdOutput(Real time, SimpleSpline *spline)
 {
-	if (time>1.0)
-		time=1.0;
-	if (!spline)
-		return 0;
-	Vector3 output=spline->interpolate(time);
-	return output.y*0.001;
+	time = std::min(time, 1.0f);
+
+	if (spline)
+	{
+		Vector3 output = spline->interpolate(time);
+		return output.y * 0.001f;
+	}
+
+	return 0;
 }
 
 int CmdKeyInertia::loadDefaultInertiaModels()
@@ -184,23 +168,25 @@ int CmdKeyInertia::processLine(Ogre::StringVector args,  String model)
 	// parse the data
 	float pointx = StringConverter::parseReal(args[0]);
 	float pointy = StringConverter::parseReal(args[1]);
-	Vector3 point = Vector3(pointx,pointy,0);
+	Vector3 point = Vector3(pointx, pointy, 0.0f);
 
 	// find the spline to attach the points
 	if (splines.find(model) == splines.end())
+	{
 		splines[model] = SimpleSpline();
+	}
 
 	// attach the points to the spline
 	splines[model].addPoint(point);
 
 	return 0;
 }
-void CmdKeyInertia::resetCmdKeyDelay(int maxCmdKeys)
+void CmdKeyInertia::resetCmdKeyDelay()
 {
-	//reset lastOutput and time, if we reset the truck
-	for (int i=0;i<maxCmdKeys;i++)
+	// reset lastOutput and time, if we reset the truck
+	for (std::map <int, cmdKeyInertia_s>::iterator it = cmdKeyInertia.begin(); it != cmdKeyInertia.end(); ++it)
 	{
-		cmdKeyInertia[i].lastOutput=0.0;
-		cmdKeyInertia[i].time=0.0;
+		it->second.lastOutput=0.0;
+		it->second.time=0.0;
 	}
 }
