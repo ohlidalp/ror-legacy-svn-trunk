@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 ATTRIBUTE_CLASS_LAYOUT(SurveyMapManager, "MapControl.layout");
 
-class SurveyMapManager : public wraps::BaseLayout, public ZeroedMemoryAllocator
+class SurveyMapManager : public wraps::BaseLayout // TODO: public IManager ...
 {
 public:
 
@@ -36,30 +36,38 @@ public:
 
 	SurveyMapEntity *createMapEntity(Ogre::String type);
 	SurveyMapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
-	
-	void deleteMapEntity(SurveyMapEntity *ent);
-
+	void deleteMapEntity(SurveyMapEntity *entity);
 	SurveyMapEntity *getEntityByName(Ogre::String name);
-	Ogre::Vector3 getMapSize() { return mMapSize; };
-	bool getVisibility();
-	float getAlpha() { return mAlpha; }
-	float getWindowScale() { return mScale; }
 
-	void setAlpha(float value);
-	void setEntitiesVisibility(bool value);
-	void setMapTexture(Ogre::String name);
-	void setPosition(int x, int y, float size);
+	void setAlpha(float alpha);
+	float getAlpha() { return mAlpha; }
+
 	void setVisibility(bool value);
+	bool getVisibility();
+
+	void setMapZoom(Ogre::Real zoomValue);
+	void setMapZoomRelative(Ogre::Real zoomDelta);
+	Ogre::Real getMapZoom() { return mMapZoom; }
+
+	void setMapCenter(Ogre::Vector3 position);
+
+	void setEntitiesVisibility(bool visibility);
+	void setMapTexture(Ogre::String name);
+
+	Ogre::Vector3 getMapSize() { return mMapSize; };
+	Ogre::Vector3 getWorldSize() { return mWorldSize; };
 
 	void windowResized();
+
+	void update(Ogre::Real dt);
 
 	static Ogre::String getTypeByDriveable(int driveable);
 
 protected:
 
-	float mAlpha, mScale;
-	int mX, mY;
+	Ogre::Real mAlpha, mMapZoom;
 
+	Ogre::Vector3 mMapCenter;
 	Ogre::Vector3 mMapSize;
 	Ogre::Vector3 mWorldSize;
 
@@ -74,7 +82,7 @@ protected:
 	int rWinLeft, rWinTop;
 	unsigned int rWinWidth, rWinHeight, rWinDepth;
 
-	void updateRenderMetrics();
+	void updateRenderMetrics(Ogre::RenderWindow* win);
 };
 
 #endif // __MAP_CONTROL_H_

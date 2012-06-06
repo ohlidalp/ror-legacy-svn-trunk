@@ -2392,6 +2392,8 @@ bool RoRFrameListener::updateEvents(float dt)
 #ifdef USE_MYGUI
 		if (surveyMap)
 		{
+			// TODO: Create Survey Map Behaviors. Implement SurveyMapManager : public IManager ...
+#if 0
 			static float alphaValue = 1.0f;
 			float velocity = 0.0f;
 			if (curr_truck)
@@ -2458,6 +2460,7 @@ bool RoRFrameListener::updateEvents(float dt)
 					surveyMap->setAlpha(1.0f / sqrt(std::max(1.0f, velocity - 1.0f)));
 				}
 			}
+#endif
 		}
 #endif //USE_MYGUI
 		
