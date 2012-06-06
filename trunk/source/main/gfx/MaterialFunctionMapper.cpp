@@ -24,6 +24,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
+int MaterialFunctionMapper::simpleMaterialCounter = 0;
+
 void MaterialFunctionMapper::addMaterial(int flareid, materialmapping_t t)
 {
 	MaterialPtr m = Ogre::MaterialManager::getSingleton().getByName(t.material);
@@ -100,7 +102,6 @@ void MaterialFunctionMapper::toggleFunction(int flareid, bool isvisible)
 	}
 }
 
-
 void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 {
 	if (!e)
@@ -109,14 +110,14 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 		return;
 	}
 	// this is not nice, but required (its not so much performance relevant ...
-	for (std::map <int, std::vector<materialmapping_t> >::iterator mfb=materialBindings.begin();mfb!=materialBindings.end();mfb++)
+	for (std::map <int, std::vector<materialmapping_t> >::iterator mfb = materialBindings.begin(); mfb!=materialBindings.end(); mfb++)
 	{
-		for (std::vector<materialmapping_t>::iterator mm=mfb->second.begin();mm!=mfb->second.end();mm++)
+		for (std::vector<materialmapping_t>::iterator mm = mfb->second.begin(); mm != mfb->second.end(); mm++)
 		{
 			MeshPtr m = e->getMesh();
 			if (!m.isNull())
 			{
-				for (int n=0; n<(int)m->getNumSubMeshes();n++)
+				for (int n=0; n < (int)m->getNumSubMeshes(); n++)
 				{
 					SubMesh *sm = m->getSubMesh(n);
 					if (sm->getMaterialName() ==  mm->originalmaterial)
@@ -127,7 +128,7 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 				}
 			}
 
-			for (int n=0; n<(int)e->getNumSubEntities();n++)
+			for (int n=0; n < (int)e->getNumSubEntities(); n++)
 			{
 				SubEntity *subent = e->getSubEntity(n);
 				if (subent->getMaterialName() ==  mm->originalmaterial)
@@ -140,7 +141,6 @@ void MaterialFunctionMapper::replaceMeshMaterials(Ogre::Entity *e)
 	}
 }
 
-int MaterialFunctionMapper::simpleMaterialCounter = 0;
 void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c)
 {
 	if (!e)
@@ -163,14 +163,14 @@ void MaterialFunctionMapper::replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::C
 	MeshPtr m = e->getMesh();
 	if (!m.isNull())
 	{
-		for (int n=0; n<(int)m->getNumSubMeshes();n++)
+		for (int n=0; n < (int)m->getNumSubMeshes(); n++)
 		{
 			SubMesh *sm = m->getSubMesh(n);
 			sm->setMaterialName(newMatName);
 		}
 	}
 
-	for (int n=0; n<(int)e->getNumSubEntities();n++)
+	for (int n=0; n < (int)e->getNumSubEntities(); n++)
 	{
 		SubEntity *subent = e->getSubEntity(n);
 		subent->setMaterialName(newMatName);

@@ -37,6 +37,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "InputEngine.h"
 #include "JSON.h"
 #include "MaterialReplacer.h"
+#include "MaterialFunctionMapper.h"
 #include "MeshObject.h"
 #include "RoRFrameListener.h"
 #include "RoRVersion.h"
@@ -1918,7 +1919,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				if (!triggerblocker && !triggerblocker_inverted && !hooktoggle)
 				{
 					// this is no Trigger-Blocker, make the full check
-					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong !=-1 && triggerlong !=0))
+					if ((triggershort < 1 || triggershort > MAX_COMMANDS) || ((triggerlong < 1 || triggerlong > MAX_COMMANDS) && triggerlong != -1 && triggerlong != 0))
 					{
 						parser_warning(c, "Error: Wrong command-eventnumber (Triggers). Trigger deactivated.", PARSER_ERROR);
 						continue;
@@ -2891,11 +2892,11 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 					if (n > 14) commandCoupling = PARSEREAL(args[14]);
 				}
 
-				//verify array limits so we dont overflow
+				//verify array limits so we don't overflow
 				if (keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
 				{
-						parser_warning(c, "Command key invalid", PARSER_ERROR);
-						continue;
+					parser_warning(c, "Command key invalid", PARSER_ERROR);
+					continue;
 				}
 
 				int htype=BEAM_HYDRO;
@@ -4526,7 +4527,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				//clone the material
 				MaterialPtr newmat = mat->clone(newMaterialName);
 				//create structes and add
-				materialmapping_t t;
+				MaterialFunctionMapper::materialmapping_t t;
 				t.originalmaterial = materialName;
 				t.material = newMaterialName;
 				t.type=0;
