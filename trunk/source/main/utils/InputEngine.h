@@ -287,6 +287,14 @@ enum events
 	EV_TRUCK_RIGHT_MIRROR_RIGHT,
 	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
 	EV_TRUCK_SHIFT_GEAR1,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR2,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR3,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR4,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR5,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR6,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR7,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR8,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR9,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR10,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR11,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR12,//!< shift directly into this gear
@@ -296,14 +304,6 @@ enum events
 	EV_TRUCK_SHIFT_GEAR16,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR17,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR18,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR2,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR3,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR4,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR5,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR6,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR7,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR8,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR9,//!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR_REVERSE, //!< shift directly into this gear
 	EV_TRUCK_SHIFT_HIGHRANGE, //!< select high range (13-18) for H-shaft
 	EV_TRUCK_SHIFT_LOWRANGE, //!< select low range (1-6) for H-shaft
