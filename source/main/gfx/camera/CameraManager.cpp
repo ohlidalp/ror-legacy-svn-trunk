@@ -63,7 +63,10 @@ CameraManager::CameraManager(OverlayWrapper *ow, DOFManager *dof) :
 
 CameraManager::~CameraManager()
 {
-	std::for_each(globalBehaviors.begin(), globalBehaviors.end(), [&](std::pair <int, IBehavior<CameraContext> *> p) { delete p.second; });
+	for (std::map <int , IBehavior<CameraContext> *>::iterator it = globalBehaviors.begin(); it != globalBehaviors.end(); ++it)
+	{
+		delete it->second;
+	}
 
 	globalBehaviors.clear();
 }
