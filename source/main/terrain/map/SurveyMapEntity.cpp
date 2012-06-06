@@ -154,7 +154,7 @@ int SurveyMapEntity::getState()
 
 void SurveyMapEntity::update()
 {
-	float wscale = mMapControl->getWindowScale();
+	float wscale = 1.0f - mMapControl->getMapSize().length() / mMapControl->getWorldSize().length();
 
 	mCaption->setVisible(wscale > 0.5f);
 

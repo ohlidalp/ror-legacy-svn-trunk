@@ -22,17 +22,17 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SurveyMapManager.h"
 
 #include "BeamData.h"
-#include "SurveyMapEntity.h"
 #include "Ogre.h"
+#include "SurveyMapEntity.h"
 
 using namespace Ogre;
 
 SurveyMapManager::SurveyMapManager(Vector3 worldSize) :
 	  mWorldSize(worldSize)
 	, mAlpha(1.0f)
-	, mScale(1.0f)
-	, mX(0)
-	, mY(0)
+	, mMapCenter(Vector3::ZERO)
+	, mMapSize(Vector3::ZERO)
+	, mMapZoom(0.0f)
 {
 	initialiseByAttributes(this);
 	setVisibility(false);
@@ -90,45 +90,6 @@ void SurveyMapManager::setMapTexture(String name)
 	mMapTexture->setImageTexture(name);
 }
 
-void SurveyMapManager::setPosition(int x, int y, float size)
-{
-	int realx, realy, realw, realh;
-
-	mScale = size;
-	mX = x;
-	mY = y;
-
-	updateRenderMetrics();
-	
-	realw = realh = size * std::min(rWinWidth, rWinHeight);
-
-	if (x == -1)
-	{
-		realx = 0;
-	} else if (x == 0)
-	{
-		realx = (rWinWidth - realw) / 2;
-	} else if (x == 1)
-	{
-		realx = rWinWidth - realw;
-	}
-
-	if (y == -1)
-	{
-		realy = 0;
-	} else if (y == 0)
-	{
-		realy = (rWinHeight - realh) / 2;
-	} else if (y == 1)
-	{
-		realy = rWinHeight - realh;
-	}
-
-	mMainWidget->setCoord(realx, realy, realw, realh);
-
-	updateEntityPositions();
-}
-
 void SurveyMapManager::setVisibility(bool value)
 {
 	mMainWidget->setVisible(value);
@@ -136,10 +97,41 @@ void SurveyMapManager::setVisibility(bool value)
 
 void SurveyMapManager::windowResized()
 {
-	setPosition(mX, mY, mScale);
+	// TODO
 }
 
-String SurveyMapManager::getTypeByDriveable(int driveable)
+void SurveyMapManager::updateEntityPositions()
+{
+	for (std::set<SurveyMapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
+	{
+		(*it)->update();
+	}
+}
+
+void SurveyMapManager::updateRenderMetrics(RenderWindow* win)
+{
+	win->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
+}
+
+void SurveyMapManager::setMapZoom(Real zoomValue)
+{
+	mMapZoom = zoomValue;
+	mMapZoom = std::max(0.0f, mMapZoom);
+	mMapZoom = std::min(mMapZoom, 1.0f);
+}
+
+void SurveyMapManager::setMapZoomRelative(Real zoomDelta)
+{
+	setMapZoom(mMapZoom + zoomDelta * std::max(0.1f, 1.0f - mMapZoom) / 100.0f);
+}
+
+void SurveyMapManager::setMapCenter(Vector3 position)
+{
+	mMapCenter = position;
+	mMapCenter.y = 0.0f;
+}
+
+Ogre::String SurveyMapManager::getTypeByDriveable( int driveable )
 {
 	switch (driveable)
 	{
@@ -156,19 +148,6 @@ String SurveyMapManager::getTypeByDriveable(int driveable)
 	default:
 		return "unknown";
 	}
-}
-
-void SurveyMapManager::updateEntityPositions()
-{
-	for (std::set<SurveyMapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
-	{
-		(*it)->update();
-	}
-}
-
-void SurveyMapManager::updateRenderMetrics()
-{
-	gEnv->renderWindow->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
 }
 
 #endif // USE_MYGUI
