@@ -307,9 +307,9 @@ Beam::Beam(int tnum , Ogre::Vector3 pos , Ogre::Quaternion rot , const char* fna
 	}
 
 	materialFunctionMapper = new MaterialFunctionMapper();
-	cmdInertia   = new CmdKeyInertia(MAX_COMMANDS);
-	hydroInertia = new CmdKeyInertia(MAX_HYDROS);
-	rotaInertia  = new CmdKeyInertia(MAX_COMMANDS); // NOT MAX_ROTATORS
+	cmdInertia   = new CmdKeyInertia();
+	hydroInertia = new CmdKeyInertia();
+	rotaInertia  = new CmdKeyInertia();
 
 	submesh_ground_model = gEnv->collisions->defaultgm;
 
@@ -1884,7 +1884,7 @@ void Beam::SyncReset()
 	hydrorudderstate=0.0;
 	hydroelevatorstate=0.0;
 	hydrodirwheeldisplay=0.0;
-	if (hydroInertia) hydroInertia->resetCmdKeyDelay(MAX_HYDROS);
+	if (hydroInertia) hydroInertia->resetCmdKeyDelay();
 	parkingbrake=0;
 	fusedrag=Vector3::ZERO;
 	origin=Vector3::ZERO;

@@ -21,37 +21,35 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #define __CmdKeyInertia_H_
 
 #include "RoRPrerequisites.h"
-#include "OgrePrerequisites.h"
 
 class CmdKeyInertia : public ZeroedMemoryAllocator
 {
 public:
-	CmdKeyInertia(int maxCmdKeys);
-	~CmdKeyInertia();
+
+	CmdKeyInertia();
 
 	Ogre::Real calcCmdKeyDelay(Ogre::Real cmdInput,int cmdKey, Ogre::Real dt);
-	int setCmdKeyDelay(int number,Ogre::Real startDelay,Ogre::Real stopDelay,Ogre::String startFunction, Ogre::String stopFunction);
-	void resetCmdKeyDelay(int maxCmdKeys);
+	int setCmdKeyDelay(int number, Ogre::Real startDelay, Ogre::Real stopDelay, Ogre::String startFunction, Ogre::String stopFunction);
+	void resetCmdKeyDelay();
+
 protected:
-	int maxCmdKeys;
 
 	struct cmdKeyInertia_s
 	{
+		Ogre::Real lastOutput;
 		Ogre::Real startDelay;
 		Ogre::Real stopDelay;
-		Ogre::Real lastOutput;
+		Ogre::Real time;
 		Ogre::SimpleSpline *startSpline;
 		Ogre::SimpleSpline *stopSpline;
-		Ogre::Real time;
 	};
 
 	Ogre::Real calculateCmdOutput(Ogre::Real time,Ogre::SimpleSpline *spline);
 	int processLine(Ogre::StringVector args,  Ogre::String model);
 
-	cmdKeyInertia_s *cmdKeyInertia;
-	std::map < Ogre::String, Ogre::SimpleSpline > splines;
+	std::map <int, cmdKeyInertia_s> cmdKeyInertia;
+	std::map <Ogre::String, Ogre::SimpleSpline> splines;
 	int loadDefaultInertiaModels();
-
 };
 
 #endif // __CmdKeyInertia_H_
