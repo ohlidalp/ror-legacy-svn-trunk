@@ -345,7 +345,7 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	} else if (miname == _L("Terrain Editor Mode"))
 	{
 		gEnv->frameListener->loading_state = RoRFrameListener::TERRAIN_EDITOR;
-		CameraManager::getSingleton().switchBehavior(CameraManager::CAMERA_BEHAVIOR_ISOMETRIC, true);
+		gEnv->cameraManager->switchBehavior(CameraManager::CAMERA_BEHAVIOR_ISOMETRIC, true);
 		
 
 	} else if (miname == _L("remove current Vehicle"))

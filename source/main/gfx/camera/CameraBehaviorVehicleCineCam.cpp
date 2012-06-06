@@ -31,7 +31,7 @@ CameraBehaviorVehicleCineCam::CameraBehaviorVehicleCineCam() :
 {
 }
 
-void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::update(const CameraManager::CameraContext &ctx)
 {
 	CameraBehaviorOrbit::update(ctx);
 
@@ -56,11 +56,11 @@ void CameraBehaviorVehicleCineCam::update(const CameraManager::cameraContext_t &
 	gEnv->mainCamera->setOrientation(orientation);
 }
 
-void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorVehicleCineCam::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck || ctx.mCurrTruck->freecinecamera <= 0 )
 	{
-		CameraManager::getSingleton().switchToNextBehavior();
+		gEnv->cameraManager->switchToNextBehavior();
 		return;
 	} else if ( reset )
 	{
@@ -86,7 +86,7 @@ void CameraBehaviorVehicleCineCam::activate(const CameraManager::cameraContext_t
 	ctx.mCurrTruck->changedCamera();
 }
 
-void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::CameraContext &ctx)
 {
 	// Do not use ctx.mCurrTruck in here (could be null)
 	if ( !currTruck )
@@ -110,14 +110,14 @@ void CameraBehaviorVehicleCineCam::deactivate(const CameraManager::cameraContext
 	currTruck = 0;
 }
 
-void CameraBehaviorVehicleCineCam::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleCineCam::reset(const CameraManager::CameraContext &ctx)
 {
 	CameraBehaviorOrbit::reset(ctx);
 	camRotY = Degree(DEFAULT_INTERNAL_CAM_PITCH);
 	gEnv->mainCamera->setFOVy(ctx.fovInternal);
 }
 
-bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::cameraContext_t &ctx)
+bool CameraBehaviorVehicleCineCam::switchBehavior(const CameraManager::CameraContext &ctx)
 {
 	if ( ctx.mCurrTruck && ctx.mCurrTruck->currentcamera < ctx.mCurrTruck->freecinecamera-1 )
 	{

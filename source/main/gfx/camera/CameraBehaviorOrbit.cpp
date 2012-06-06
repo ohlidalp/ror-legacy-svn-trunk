@@ -41,7 +41,7 @@ CameraBehaviorOrbit::CameraBehaviorOrbit() :
 {
 }
 
-void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::update(const CameraManager::CameraContext &ctx)
 {
 	if ( INPUTENGINE.getEventBoolValueBounce(EV_CAMERA_LOOKBACK) )
 	{
@@ -136,7 +136,7 @@ void CameraBehaviorOrbit::update(const CameraManager::cameraContext_t &ctx)
 	gEnv->mainCamera->lookAt(camLookAt);
 }
 
-bool CameraBehaviorOrbit::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+bool CameraBehaviorOrbit::mouseMoved(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
@@ -151,7 +151,7 @@ bool CameraBehaviorOrbit::mouseMoved(const CameraManager::cameraContext_t &ctx, 
 	return false;
 }
 
-void CameraBehaviorOrbit::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorOrbit::reset(const CameraManager::CameraContext &ctx)
 {
 	camRotX = 0.0f;
 	camRotY = 0.3f;

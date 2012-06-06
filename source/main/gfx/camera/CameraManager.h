@@ -22,10 +22,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "OIS.h"
-#include "Singleton.h"
+#include "IBehavior.h"
+#include "IManager.h"
 
-class CameraManager : public RoRSingletonNoCreation < CameraManager >, public ZeroedMemoryAllocator
+#include <OIS.h>
+
+class CameraManager : public IManager
 {
 	friend class SceneMouse;
 
@@ -34,7 +36,10 @@ public:
 	CameraManager(OverlayWrapper *ow, DOFManager *dof);
 	~CameraManager();
 
-	typedef struct cameraContext {
+	class CameraContext
+	{
+	public:
+
 		Beam *mCurrTruck;
 		DOFManager *mDof;
 		Ogre::Degree mRotScale;
@@ -43,7 +48,7 @@ public:
 		Ogre::Real mTransScale;
 		Ogre::Radian fovInternal;
 		Ogre::Radian fovExternal;
-	} cameraContext_t;
+	};
 
 	enum CameraBehaviors {
 		CAMERA_BEHAVIOR_CHARACTER=0,
@@ -68,19 +73,19 @@ public:
 	bool hasActiveCharacterBehavior();
 	bool hasActiveVehicleBehavior();
 
-	int getCameraBehavior();
+	int getCurrentBehavior();
 
 protected:
 
-	cameraContext_t ctx;
+	CameraContext ctx;
 
 	float mTransScale, mTransSpeed;
 	float mRotScale, mRotateSpeed;
 
 	int currentBehaviorID;
-	ICameraBehavior *currentBehavior;
+	IBehavior<CameraContext> *currentBehavior;
 
-	std::map <int , ICameraBehavior *> globalBehaviors;
+	std::map <int , IBehavior<CameraContext> *> globalBehaviors;
 
 	void createGlobalBehaviors();
 

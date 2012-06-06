@@ -29,7 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorFree::update(const CameraManager::CameraContext &ctx)
 {
 	Degree mRotX(0.0f);
 	Degree mRotY(0.0f);
@@ -110,7 +110,7 @@ void CameraBehaviorFree::update(const CameraManager::cameraContext_t &ctx)
 	gEnv->mainCamera->setPosition(camPosition);
 }
 
-bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+bool CameraBehaviorFree::mouseMoved(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
@@ -124,7 +124,7 @@ bool CameraBehaviorFree::mouseMoved(const CameraManager::cameraContext_t &ctx, c
 	return true;
 }
 
-void CameraBehaviorFree::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorFree::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 #ifdef USE_MYGUI
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("free camera"), "camera_go.png", 3000);

@@ -1322,7 +1322,7 @@ bool RoRFrameListener::updateEvents(float dt)
 			as->addData("MP_ServerName", SSETTING("Server name", ""));
 			as->addData("MP_ServerPort", SSETTING("Server port", ""));
 			as->addData("MP_NetworkEnabled", SSETTING("Network enable", "No"));
-			as->addData("Camera_Mode", CameraManager::singletonExists() ? TOSTRING(CameraManager::getSingleton().getCameraBehavior()) : "None");
+			as->addData("Camera_Mode", gEnv->cameraManager ? TOSTRING(gEnv->cameraManager->getCurrentBehavior()) : "None");
 			as->addData("Camera_Position", TOSTRING(gEnv->mainCamera->getPosition()));
 
 			const RenderTarget::FrameStats& stats = gEnv->renderWindow->getStatistics();
@@ -1434,9 +1434,9 @@ bool RoRFrameListener::updateEvents(float dt)
 	#endif // USE_MYGUI
 
 			// save the settings
-			if (CameraManager::singletonExists() &&
-				CameraManager::getSingleton().hasActiveBehavior() &&
-				CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+			if (gEnv->cameraManager &&
+				gEnv->cameraManager->hasActiveBehavior() &&
+				gEnv->cameraManager->getCurrentBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 			{
 				SETTINGS.setSetting("FOV Internal", TOSTRING(fov));
 			} else
@@ -1477,7 +1477,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-		if (CameraManager::singletonExists() && CameraManager::getSingleton().gameControlsEnabled())
+		if (gEnv->cameraManager && gEnv->cameraManager->gameControlsEnabled())
 		{
 			if (!curr_truck)
 			{
@@ -2414,9 +2414,9 @@ bool RoRFrameListener::updateEvents(float dt)
 				surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 
 				if (surveyMapMode == SURVEY_MAP_BIG && (velocity > 5.0f ||
-					(CameraManager::singletonExists() &&
-					CameraManager::getSingleton().hasActiveBehavior() &&
-					CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)))
+					(gEnv->cameraManager &&
+					gEnv->cameraManager->hasActiveBehavior() &&
+					gEnv->cameraManager->getCurrentBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)))
 				{
 					surveyMapMode = (surveyMapMode + 1) % SURVEY_MAP_END;
 				}
@@ -2455,11 +2455,11 @@ bool RoRFrameListener::updateEvents(float dt)
 			}
 			if (curr_truck &&
 				surveyMapMode == SURVEY_MAP_BIG &&
-				CameraManager::singletonExists() &&
-				CameraManager::getSingleton().hasActiveBehavior() &&
-				CameraManager::getSingleton().gameControlsEnabled())
+				gEnv->cameraManager &&
+				gEnv->cameraManager->hasActiveBehavior() &&
+				gEnv->cameraManager->gameControlsEnabled())
 			{
-				if (velocity > 7.5f || CameraManager::getSingleton().getCameraBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+				if (velocity > 7.5f || gEnv->cameraManager->getCurrentBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{
 					surveyMap->setPosition(-1, 1, 0.3f);
 					surveyMap->setAlpha(alphaValue);
@@ -3135,9 +3135,9 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 #endif // USE_MUMBLE
 	}
 
-	if (CameraManager::singletonExists() && (loading_state == ALL_LOADED || loading_state == TERRAIN_EDITOR))
+	if (gEnv->cameraManager && (loading_state == ALL_LOADED || loading_state == TERRAIN_EDITOR))
 	{
-		CameraManager::getSingleton().update(dt);
+		gEnv->cameraManager->update(dt);
 	}
 
 	// update mirrors after moving the camera as we use the camera position in mirrors
@@ -3456,9 +3456,9 @@ void RoRFrameListener::hideGUI(bool visible)
 	else
 	{
 		if (curr_truck
-			&& CameraManager::singletonExists()
-			&& CameraManager::getSingleton().hasActiveBehavior()
-			&& CameraManager::getSingleton().getCameraBehavior() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
+			&& gEnv->cameraManager
+			&& gEnv->cameraManager->hasActiveBehavior()
+			&& gEnv->cameraManager->getCurrentBehavior() != CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 		{
 			if (ow) ow->showDashboardOverlays(true, curr_truck);
 			//if (bigMap) bigMap->setVisibility(true);

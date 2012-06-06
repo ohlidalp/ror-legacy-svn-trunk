@@ -20,34 +20,36 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __GlobalEnvironment_H_
 #define __GlobalEnvironment_H_
 
-class RoRFrameListener;
-class TerrainManager;
+class CameraManager;
+class Character;
 class Collisions;
 class IHeightFinder;
-class Water;
-class Network;
 class MapControl;
-class Character;
+class Network;
+class RoRFrameListener;
 class SkyManager;
+class TerrainManager;
+class Water;
 
 class GlobalEnvironment
 {
 public:
 
 	GlobalEnvironment() :
-		  collisions(0)
+		  cameraManager(0)
 		, embeddedMode(false)
 		, frameListener(0)
-		, network(0)
 		, mainCamera(0)
+		, network(0)
+		, ogreRoot(0)
+		, player(0)
 		, renderWindow(0)
 		, sceneManager(0)
-		, viewPort(0)
-		, player(0)
 		, sky(0)
 		, surveyMap(0)
 		, terrainManager(0)
-		, ogreRoot(0)
+		, viewPort(0)
+	    , collisions(0)
 	{
 	}
 
@@ -57,6 +59,7 @@ public:
 	Ogre::SceneManager *sceneManager;
 	Ogre::Viewport *viewPort;
 
+	CameraManager *cameraManager;
 	Character *player;
 	Collisions *collisions;
 	MapControl *surveyMap;

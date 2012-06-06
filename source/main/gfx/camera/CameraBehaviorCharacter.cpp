@@ -31,7 +31,7 @@ CameraBehaviorCharacter::CameraBehaviorCharacter() :
 	camPositionOffset = Vector3(0.0f, 1.1f, 0.0f);
 }
 
-void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorCharacter::update(const CameraManager::CameraContext &ctx)
 {
 	if(!gEnv->player) return;
 	targetDirection = -gEnv->player->getRotation() - Radian(Math::HALF_PI);
@@ -40,7 +40,7 @@ void CameraBehaviorCharacter::update(const CameraManager::cameraContext_t &ctx)
 	CameraBehaviorOrbit::update(ctx);
 }
 
-bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+bool CameraBehaviorCharacter::mouseMoved(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg)
 {
 	if(!gEnv->player) return false;
 	if ( camMode == CHARACTER_FIRST_PERSON )
@@ -66,11 +66,11 @@ bool CameraBehaviorCharacter::mouseMoved(const CameraManager::cameraContext_t &c
 	return CameraBehaviorOrbit::mouseMoved(ctx, _arg);
 }
 
-void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorCharacter::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 	if ( ctx.mCurrTruck )
 	{
-		CameraManager::getSingleton().switchToNextBehavior();
+		gEnv->cameraManager->switchToNextBehavior();
 		return;
 	} else if ( reset )
 	{
@@ -78,7 +78,7 @@ void CameraBehaviorCharacter::activate(const CameraManager::cameraContext_t &ctx
 	}
 }
 
-void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorCharacter::reset(const CameraManager::CameraContext &ctx)
 {
 	CameraBehaviorOrbit::reset(ctx);
 
@@ -97,7 +97,7 @@ void CameraBehaviorCharacter::reset(const CameraManager::cameraContext_t &ctx)
 	}
 }
 
-bool CameraBehaviorCharacter::switchBehavior(const CameraManager::cameraContext_t &ctx)
+bool CameraBehaviorCharacter::switchBehavior(const CameraManager::CameraContext &ctx)
 {
 	if (++camMode < CHARACTER_END)
 	{
