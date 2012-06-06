@@ -17,29 +17,29 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef __MATERIALTRUCKMAPPING_H_
-#define __MATERIALTRUCKMAPPING_H_
+#ifndef __MaterialFunctionMapper_H_
+#define __MaterialFunctionMapper_H_
 
 #include "RoRPrerequisites.h"
-
-typedef struct
-{
-	Ogre::ColourValue emissiveColour;
-	Ogre::String material;
-	Ogre::String originalmaterial;
-	bool laststate;
-	int type;
-} materialmapping_t;
 
 class MaterialFunctionMapper : public ZeroedMemoryAllocator
 {
 public:
 
+	typedef struct materialmapping_t
+	{
+		Ogre::ColourValue emissiveColour;
+		Ogre::String material;
+		Ogre::String originalmaterial;
+		bool laststate;
+		int type;
+	} materialmapping_t;
+
 	void addMaterial(int flareid, materialmapping_t t);
 	void toggleFunction(int flareid, bool enabled);
 	// this function searches and replaces materials in meshes
 	void replaceMeshMaterials(Ogre::Entity *e);
+
 	static void replaceSimpleMeshMaterials(Ogre::Entity *e, Ogre::ColourValue c = Ogre::ColourValue::White);
 
 private:
@@ -48,4 +48,4 @@ private:
 	std::map <int, std::vector<materialmapping_t> > materialBindings;
 };
 
-#endif // __MATERIALTRUCKMAPPING_H_
+#endif // __MaterialFunctionMapper_H_
