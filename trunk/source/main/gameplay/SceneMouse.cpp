@@ -88,7 +88,7 @@ bool SceneMouse::mouseMoved(const OIS::MouseEvent& _arg)
 	const OIS::MouseState ms = _arg.state;
 
 	// check if handled by the camera
-	if (!CameraManager::singletonExists() || CameraManager::getSingleton().mouseMoved(_arg))
+	if (!gEnv->cameraManager || gEnv->cameraManager->mouseMoved(_arg))
 		return true;
 
 	// experimental mouse hack

@@ -17,29 +17,28 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
-#define __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#ifndef __I_Manager_H_
+#define __I_Manager_H_
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehaviorOrbit.h"
-
-class CameraBehaviorVehicle : public CameraBehaviorOrbit
+class IManager : public ZeroedMemoryAllocator
 {
 public:
 
-	CameraBehaviorVehicle();
+	virtual ~IManager() {}
 
-	void update(const CameraManager::CameraContext &ctx);
+	virtual void update(float dt) = 0;
 
-	void activate(const CameraManager::CameraContext &ctx, bool reset = true);
-	void reset(const CameraManager::CameraContext &ctx);
+	virtual void switchBehavior(int newBehavior, bool reset = true) = 0;
+	virtual void switchToNextBehavior(bool force = true) = 0;
+	virtual void toggleBehavior(int behavior) = 0;
 
-	bool switchBehavior(const CameraManager::CameraContext &ctx) { return true; };
+	virtual bool hasActiveBehavior() = 0;
+	virtual bool hasActiveCharacterBehavior() = 0;
+	virtual bool hasActiveVehicleBehavior() = 0;
 
-protected:
-
-	bool camPitching;
+	virtual int getCurrentBehavior() = 0;
 };
 
-#endif // __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#endif // __I_Manager_H_

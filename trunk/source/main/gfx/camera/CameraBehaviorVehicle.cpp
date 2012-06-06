@@ -34,7 +34,7 @@ CameraBehaviorVehicle::CameraBehaviorVehicle() :
 	}
 }
 
-void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicle::update(const CameraManager::CameraContext &ctx)
 {
 	Vector3 dir = (ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodepos[0]].smoothpos
 				 - ctx.mCurrTruck->nodes[ctx.mCurrTruck->cameranodedir[0]].smoothpos).normalisedCopy();
@@ -56,11 +56,11 @@ void CameraBehaviorVehicle::update(const CameraManager::cameraContext_t &ctx)
 	CameraBehaviorOrbit::update(ctx);
 }
 
-void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorVehicle::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck )
 	{
-		CameraManager::getSingleton().switchToNextBehavior();
+		gEnv->cameraManager->switchToNextBehavior();
 		return;
 	} else if ( reset )
 	{
@@ -68,7 +68,7 @@ void CameraBehaviorVehicle::activate(const CameraManager::cameraContext_t &ctx, 
 	}
 }
 
-void CameraBehaviorVehicle::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicle::reset(const CameraManager::CameraContext &ctx)
 {
 	CameraBehaviorOrbit::reset(ctx);
 	camRotY = 0.35f;

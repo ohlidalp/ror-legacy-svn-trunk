@@ -44,7 +44,7 @@ PreviewRenderer::~PreviewRenderer()
 
 void PreviewRenderer::render()
 {
-	if (!CameraManager::singletonExists()) return;
+	if (!gEnv->cameraManager) return;
 
 	LOG("starting previewRenderer...");
 	Beam *truck = BeamFactory::getSingleton().getCurrentTruck();

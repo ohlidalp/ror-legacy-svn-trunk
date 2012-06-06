@@ -23,6 +23,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "CameraBehaviorVehicle.h"
+#include "CameraManager.h"
 
 class CameraBehaviorVehicleCineCam : public CameraBehaviorVehicle
 {
@@ -30,13 +31,13 @@ public:
 
 	CameraBehaviorVehicleCineCam();
 	
-	void update(const CameraManager::cameraContext_t &ctx);
+	void update(const CameraManager::CameraContext &ctx);
 
-	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
-	void deactivate(const CameraManager::cameraContext_t &ctx);
-	void reset(const CameraManager::cameraContext_t &ctx);
+	void activate(const CameraManager::CameraContext &ctx, bool reset = true);
+	void deactivate(const CameraManager::CameraContext &ctx);
+	void reset(const CameraManager::CameraContext &ctx);
 
-	bool switchBehavior(const CameraManager::cameraContext_t &ctx);
+	bool switchBehavior(const CameraManager::CameraContext &ctx);
 
 protected:
 

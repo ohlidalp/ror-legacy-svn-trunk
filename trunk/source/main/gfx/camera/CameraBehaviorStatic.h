@@ -22,23 +22,24 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "ICameraBehavior.h"
+#include "CameraManager.h"
+#include "IBehavior.h"
 
-class CameraBehaviorStatic : public ICameraBehavior
+class CameraBehaviorStatic : public IBehavior<CameraManager::CameraContext>
 {
 public:
 
-	void update(const CameraManager::cameraContext_t &ctx);
+	void update(const CameraManager::CameraContext &ctx);
 
-	bool mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg) { return false; };
-	bool mousePressed(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
-	bool mouseReleased(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseMoved(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg) { return false; };
+	bool mousePressed(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
+	bool mouseReleased(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) { return false; };
 
-	void activate(const CameraManager::cameraContext_t &ctx, bool reset = true);
-	void deactivate(const CameraManager::cameraContext_t &ctx);
-	void reset(const CameraManager::cameraContext_t &ctx) {};
+	void activate(const CameraManager::CameraContext &ctx, bool reset = true);
+	void deactivate(const CameraManager::CameraContext &ctx);
+	void reset(const CameraManager::CameraContext &ctx) {};
 
-	bool switchBehavior(const CameraManager::cameraContext_t &ctx) { return true; };
+	bool switchBehavior(const CameraManager::CameraContext &ctx) { return true; };
 
 protected:
 

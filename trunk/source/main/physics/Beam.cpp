@@ -5667,9 +5667,9 @@ int Beam::loadTruck2(String filename, SceneNode *parent, Vector3 pos, Quaternion
 void Beam::updateAI(float dt)
 {
 	if (driveable != TRUCK ||
-		!CameraManager::singletonExists() ||
-		!CameraManager::getSingleton().hasActiveBehavior() ||
-		 CameraManager::getSingleton().gameControlsEnabled())
+		!gEnv->cameraManager ||
+		!gEnv->cameraManager->hasActiveBehavior() ||
+		 gEnv->cameraManager->gameControlsEnabled())
 	{
 		return;
 	}

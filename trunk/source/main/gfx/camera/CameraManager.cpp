@@ -35,8 +35,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBehaviorVehicleSpline.h"
 #include "CameraBehaviorIsometric.h"
 
-#include "ICameraBehavior.h"
-
 #include <stack>
 
 using namespace Ogre;
@@ -49,7 +47,7 @@ CameraManager::CameraManager(OverlayWrapper *ow, DOFManager *dof) :
 	, mRotScale(0.1f)
 	, mRotateSpeed(100.0f)
 {
-	setSingleton(this);
+	gEnv->cameraManager = this;
 
 	createGlobalBehaviors();
 
@@ -65,10 +63,7 @@ CameraManager::CameraManager(OverlayWrapper *ow, DOFManager *dof) :
 
 CameraManager::~CameraManager()
 {
-	for (std::map <int , ICameraBehavior *>::iterator it = globalBehaviors.begin(); it != globalBehaviors.end(); ++it)
-	{
-		delete it->second;
-	}
+	std::for_each(globalBehaviors.begin(), globalBehaviors.end(), [&](std::pair <int, IBehavior<CameraContext> *> p) { delete p.second; });
 
 	globalBehaviors.clear();
 }
@@ -200,21 +195,21 @@ bool CameraManager::hasActiveVehicleBehavior()
 	return dynamic_cast<CameraBehaviorVehicle*>(currentBehavior) != 0;
 }
 
-int CameraManager::getCameraBehavior()
+int CameraManager::getCurrentBehavior()
 {
 	return currentBehaviorID;
 }
 
 void CameraManager::createGlobalBehaviors()
 {
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_STATIC, new CameraBehaviorStatic()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_FIXED, new CameraBehaviorFixed()));
-	globalBehaviors.insert(std::pair<int, ICameraBehavior*>(CAMERA_BEHAVIOR_ISOMETRIC, new CameraBehaviorIsometric()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_CHARACTER, new CameraBehaviorCharacter()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_STATIC, new CameraBehaviorStatic()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_VEHICLE, new CameraBehaviorVehicle()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_VEHICLE_SPLINE, new CameraBehaviorVehicleSpline()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_VEHICLE_CINECAM, new CameraBehaviorVehicleCineCam()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_FREE, new CameraBehaviorFree()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_FIXED, new CameraBehaviorFixed()));
+	globalBehaviors.insert(std::pair<int, IBehavior<CameraContext>*>(CAMERA_BEHAVIOR_ISOMETRIC, new CameraBehaviorIsometric()));
 }
 
 bool CameraManager::mouseMoved(const OIS::MouseEvent& _arg)

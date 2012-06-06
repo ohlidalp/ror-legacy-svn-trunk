@@ -38,11 +38,11 @@ CameraBehaviorVehicleSpline::CameraBehaviorVehicleSpline() :
 {
 }
 
-void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::update(const CameraManager::CameraContext &ctx)
 {
 	if ( ctx.mCurrTruck->free_camerarail <= 0 )
 	{
-		CameraManager::getSingleton().switchToNextBehavior();
+		gEnv->cameraManager->switchToNextBehavior();
 		return;
 	}
 
@@ -97,7 +97,7 @@ void CameraBehaviorVehicleSpline::update(const CameraManager::cameraContext_t &c
 	CameraBehaviorOrbit::update(ctx);
 }
 
-bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_t &ctx, const OIS::MouseEvent& _arg)
+bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::CameraContext &ctx, const OIS::MouseEvent& _arg)
 {
 	const OIS::MouseState ms = _arg.state;
 
@@ -151,11 +151,11 @@ bool CameraBehaviorVehicleSpline::mouseMoved(const CameraManager::cameraContext_
 	}
 }
 
-void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorVehicleSpline::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 	if ( !ctx.mCurrTruck || ctx.mCurrTruck->free_camerarail <= 0 )
 	{
-		CameraManager::getSingleton().switchToNextBehavior();
+		gEnv->cameraManager->switchToNextBehavior();
 		return;
 	} else if ( reset )
 	{
@@ -164,7 +164,7 @@ void CameraBehaviorVehicleSpline::activate(const CameraManager::cameraContext_t 
 	}
 }
 
-void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::reset(const CameraManager::CameraContext &ctx)
 {
 	CameraBehaviorOrbit::reset(ctx);
 
@@ -173,7 +173,7 @@ void CameraBehaviorVehicleSpline::reset(const CameraManager::cameraContext_t &ct
 	splinePos = 0.5f;
 }
 
-void CameraBehaviorVehicleSpline::createSpline(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorVehicleSpline::createSpline(const CameraManager::CameraContext &ctx)
 {
 	splineClosed = false;
 	splineLength = 1.0f;

@@ -17,29 +17,31 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
-#define __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#ifndef __I_Behavior_H_
+#define __I_Behavior_H_
 
 #include "RoRPrerequisites.h"
 
-#include "CameraBehaviorOrbit.h"
+#include <OIS.h>
 
-class CameraBehaviorVehicle : public CameraBehaviorOrbit
+template<class context>
+class IBehavior : public ZeroedMemoryAllocator
 {
 public:
 
-	CameraBehaviorVehicle();
+	virtual ~IBehavior() {}
 
-	void update(const CameraManager::CameraContext &ctx);
+	virtual void update(const context &ctx) = 0;
 
-	void activate(const CameraManager::CameraContext &ctx, bool reset = true);
-	void reset(const CameraManager::CameraContext &ctx);
+	virtual bool mouseMoved(const context &ctx, const OIS::MouseEvent& _arg) = 0;
+	virtual bool mousePressed(const context &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
+	virtual bool mouseReleased(const context &ctx, const OIS::MouseEvent& _arg, OIS::MouseButtonID _id) = 0;
 
-	bool switchBehavior(const CameraManager::CameraContext &ctx) { return true; };
+	virtual void activate(const context &ctx, bool reset = true) = 0;
+	virtual void deactivate(const context &ctx) = 0;
+	virtual void reset(const context &ctx) = 0;
 
-protected:
-
-	bool camPitching;
+	virtual bool switchBehavior(const context &ctx) = 0;
 };
 
-#endif // __CAMERA_BEHAVIOR_VEHICLE_ORBIT_H_
+#endif // __I_Behavior_H_

@@ -28,7 +28,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorStatic::update(const CameraManager::CameraContext &ctx)
 {
 	Vector3 lookAt(Vector3::ZERO);
 	Vector3 camPosition(Vector3::ZERO);
@@ -68,7 +68,7 @@ void CameraBehaviorStatic::update(const CameraManager::cameraContext_t &ctx)
 	}
 }
 
-void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, bool reset /* = true */)
+void CameraBehaviorStatic::activate(const CameraManager::CameraContext &ctx, bool reset /* = true */)
 {
 	fovPreviously = gEnv->mainCamera->getFOVy();
 
@@ -78,7 +78,7 @@ void CameraBehaviorStatic::activate(const CameraManager::cameraContext_t &ctx, b
 	}
 }
 
-void CameraBehaviorStatic::deactivate(const CameraManager::cameraContext_t &ctx)
+void CameraBehaviorStatic::deactivate(const CameraManager::CameraContext &ctx)
 {
 	gEnv->mainCamera->setFOVy(fovPreviously);
 
