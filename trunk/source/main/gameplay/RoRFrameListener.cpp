@@ -90,9 +90,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "SelectorWindow.h"
 #include "LoadingWindow.h"
 #include "Console.h"
-#include "MapControl.h"
-#include "MapTextureCreator.h"
-#include "MapEntity.h"
+#include "SurveyMapManager.h"
+#include "SurveyMapEntity.h"
 #endif //USE_MYGUI
 
 #ifdef USE_MPLATFORM
@@ -681,7 +680,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	mStatsOn(0),
 	mTimeUntilNextToggle(0),
 	mTruckInfoOn(false),
-	mtc(0),
 	net(0),
 	netChat(0),
 	netPointToUID(-1),
@@ -1377,15 +1375,15 @@ bool RoRFrameListener::updateEvents(float dt)
 	if (enablePosStor && curr_truck)
 	{
 		int res = -10, slot=-1;
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS1, 0.5f)) { slot=0; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS2, 0.5f)) { slot=1; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS3, 0.5f)) { slot=2; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS4, 0.5f)) { slot=3; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS5, 0.5f)) { slot=4; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS6, 0.5f)) { slot=5; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS7, 0.5f)) { slot=6; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS8, 0.5f)) { slot=7; res = curr_truck->savePosition(slot); };
-		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS9, 0.5f)) { slot=8; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS01, 0.5f)) { slot=0; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS02, 0.5f)) { slot=1; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS03, 0.5f)) { slot=2; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS04, 0.5f)) { slot=3; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS05, 0.5f)) { slot=4; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS06, 0.5f)) { slot=5; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS07, 0.5f)) { slot=6; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS08, 0.5f)) { slot=7; res = curr_truck->savePosition(slot); };
+		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS09, 0.5f)) { slot=8; res = curr_truck->savePosition(slot); };
 		if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_SAVE_POS10, 0.5f)) { slot=9; res = curr_truck->savePosition(slot); };
 #ifdef USE_MYGUI
 		if (slot != -1 && !res)
@@ -1396,15 +1394,15 @@ bool RoRFrameListener::updateEvents(float dt)
 
 		if (res == -10)
 		{
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS1, 0.5f)) { slot=0; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS2, 0.5f)) { slot=1; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS3, 0.5f)) { slot=2; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS4, 0.5f)) { slot=3; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS5, 0.5f)) { slot=4; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS6, 0.5f)) { slot=5; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS7, 0.5f)) { slot=6; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS8, 0.5f)) { slot=7; res = curr_truck->loadPosition(slot); };
-			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS9, 0.5f)) { slot=8; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS01, 0.5f)) { slot=0; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS02, 0.5f)) { slot=1; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS03, 0.5f)) { slot=2; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS04, 0.5f)) { slot=3; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS05, 0.5f)) { slot=4; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS06, 0.5f)) { slot=5; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS07, 0.5f)) { slot=6; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS08, 0.5f)) { slot=7; res = curr_truck->loadPosition(slot); };
+			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS09, 0.5f)) { slot=8; res = curr_truck->loadPosition(slot); };
 			if (INPUTENGINE.getEventBoolValueBounce(EV_TRUCK_LOAD_POS10, 0.5f)) { slot=9; res = curr_truck->loadPosition(slot); };
 #ifdef USE_MYGUI
 			if (slot != -1 && res==0)
@@ -1490,7 +1488,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				// get commands
 				// -- here we should define a maximum numbers per trucks. Some trucks does not have that much commands
 				// -- available, so why should we iterate till MAX_COMMANDS?
-				for (int i=1; i<=MAX_COMMANDS; i++)
+				for (int i=1; i<=MAX_COMMANDS+1; i++)
 				{
 					float oldVal = curr_truck->commandkey[i].commandValue;
 					
@@ -1609,10 +1607,7 @@ bool RoRFrameListener::updateEvents(float dt)
 							if (!arcadeControls || curr_truck->engine->getAutoMode() > BeamEngine::SEMIAUTO)
 							{
 								// classic mode, realistic
-								if (curr_truck->engine)
-								{
-									curr_truck->engine->autoSetAcc(accl);
-								}
+								curr_truck->engine->autoSetAcc(accl);
 								curr_truck->brake = brake * curr_truck->brakeforce;
 							} else
 							{
@@ -1626,18 +1621,12 @@ bool RoRFrameListener::updateEvents(float dt)
 								if (curr_truck->engine->getGear() >= 0)
 								{
 									// neutral or drive forward, everything is as its used to be: brake is brake and accel. is accel.
-									if (curr_truck->engine)
-									{
-										curr_truck->engine->autoSetAcc(accl);
-									}
+									curr_truck->engine->autoSetAcc(accl);
 									curr_truck->brake = brake * curr_truck->brakeforce;
 								} else
 								{
 									// reverse gear, reverse controls: brake is accel. and accel. is brake.
-									if (curr_truck->engine)
-									{
-										curr_truck->engine->autoSetAcc(brake);
-									}
+									curr_truck->engine->autoSetAcc(brake);
 									curr_truck->brake = accl * curr_truck->brakeforce;
 								}
 
@@ -1764,13 +1753,13 @@ bool RoRFrameListener::updateEvents(float dt)
 								}
 							} else //if (shiftmode > BeamEngine::MANUAL) // h-shift or h-shift with ranges shifting
 							{
-								bool gear_changed	= false;
-								bool found			= false;
-								int curgear		    = curr_truck->engine->getGear();
+								bool gear_changed = false;
+								bool found        = false;
+								int curgear       = curr_truck->engine->getGear();
 								int curgearrange    = curr_truck->engine->getGearRange();
 								int gearoffset      = std::max(0, curgear - curgearrange * 6);
 
-								// one can select range only if in natural
+								// one can select range only if in neutral
 								if (shiftmode==BeamEngine::MANUAL_RANGES && curgear == 0)
 								{
 									//  maybe this should not be here, but should experiment
@@ -1805,10 +1794,10 @@ bool RoRFrameListener::updateEvents(float dt)
 								{
 									if (shiftmode==BeamEngine::MANUAL)
 									{
-										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + curgear -1);
+										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR01 + curgear -1);
 									} else
 									{
-										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 + gearoffset-1); // range mode
+										gear_changed = !INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR01 + gearoffset-1); // range mode
 									}
 								}
 
@@ -1826,9 +1815,9 @@ bool RoRFrameListener::updateEvents(float dt)
 									{
 										if (shiftmode == BeamEngine::MANUAL_STICK)
 										{
-											for (int i=1;i<19 && !found;i++)
+											for (int i=1; i < 19 && !found; i++)
 											{
-												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR01 + i - 1))
 												{
 													curr_truck->engine->shiftTo(i);
 													found = true;
@@ -1838,7 +1827,7 @@ bool RoRFrameListener::updateEvents(float dt)
 										{
 											for (int i=1; i < 7 && !found; i++)
 											{
-												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR1 +i - 1))
+												if (INPUTENGINE.getEventBoolValue(EV_TRUCK_SHIFT_GEAR01 + i - 1))
 												{
 													curr_truck->engine->shiftTo(i + curgearrange * 6);
 													found = true;
@@ -2595,7 +2584,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 				if (surveyMap && localTruck)
 				{
-					MapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), MapControl::getTypeByDriveable(localTruck->driveable));
+					SurveyMapEntity *e = surveyMap->createNamedMapEntity("Truck"+TOSTRING(localTruck->trucknum), SurveyMapManager::getTypeByDriveable(localTruck->driveable));
 					if (e)
 					{
 						e->setState(DESACTIVATED);
@@ -2877,14 +2866,6 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 
 #ifdef USE_MYGUI
 	GUIManager::getSingleton().unfocus();
-	
-	if (mtc)
-	{
-		Vector3 mapsize = gEnv->terrainManager->getMaxTerrainSize();
-		Vector3 position = Vector3(mapsize.x / 2.0f, 0.0f, mapsize.z / 2.0f);
-		mtc->setMapCenter(position);
-		mtc->update();
-	}
 #endif //USE_MYGUI
 		
 	if (BSETTING("REPO_MODE", false))
@@ -3369,7 +3350,7 @@ void RoRFrameListener::netDisconnectTruck(int number)
 #ifdef USE_MYGUI
 	if (surveyMap)
 	{
-		MapEntity *e = surveyMap->getEntityByName("Truck"+TOSTRING(number));
+		SurveyMapEntity *e = surveyMap->getEntityByName("Truck"+TOSTRING(number));
 		if (e)
 			e->setVisibility(false);
 	}

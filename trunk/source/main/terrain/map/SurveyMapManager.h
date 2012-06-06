@@ -26,20 +26,20 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mygui/BaseLayout.h"
 
-ATTRIBUTE_CLASS_LAYOUT(MapControl, "MapControl.layout");
+ATTRIBUTE_CLASS_LAYOUT(SurveyMapManager, "MapControl.layout");
 
-class MapControl : public wraps::BaseLayout, public ZeroedMemoryAllocator
+class SurveyMapManager : public wraps::BaseLayout, public ZeroedMemoryAllocator
 {
 public:
 
-	MapControl(float mapsizex, float mapsizey, float mapsizez);
+	SurveyMapManager(Ogre::Vector3 worldSize);
 
-	MapEntity *createMapEntity(Ogre::String type);
-	MapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
+	SurveyMapEntity *createMapEntity(Ogre::String type);
+	SurveyMapEntity *createNamedMapEntity(Ogre::String name, Ogre::String type);
 	
-	void deleteMapEntity(MapEntity *ent);
+	void deleteMapEntity(SurveyMapEntity *ent);
 
-	MapEntity *getEntityByName(Ogre::String name);
+	SurveyMapEntity *getEntityByName(Ogre::String name);
 	Ogre::Vector3 getMapSize() { return mMapSize; };
 	bool getVisibility();
 	float getAlpha() { return mAlpha; }
@@ -50,7 +50,6 @@ public:
 	void setMapTexture(Ogre::String name);
 	void setPosition(int x, int y, float size);
 	void setVisibility(bool value);
-	void setWorldSize(float width, float length, float height);
 
 	void windowResized();
 
@@ -62,12 +61,13 @@ protected:
 	int mX, mY;
 
 	Ogre::Vector3 mMapSize;
+	Ogre::Vector3 mWorldSize;
 
-	ATTRIBUTE_FIELD_WIDGET_NAME(MapControl, mMapTexture, "mMapTexture");
+	ATTRIBUTE_FIELD_WIDGET_NAME(SurveyMapManager, mMapTexture, "mMapTexture");
 	MyGUI::StaticImage* mMapTexture;
 
-	std::map<Ogre::String, MapEntity *> mNamedEntities;
-	std::set<MapEntity *> mMapEntities;
+	std::map<Ogre::String, SurveyMapEntity *> mNamedEntities;
+	std::set<SurveyMapEntity *> mMapEntities;
 
 	void updateEntityPositions();
 

@@ -271,39 +271,39 @@ enum events
 	EV_TRUCK_HORN, //!< truck horn
 	EV_TRUCK_LEFT_MIRROR_LEFT,
 	EV_TRUCK_LEFT_MIRROR_RIGHT,
-	EV_TRUCK_LIGHTTOGGLE1,  //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE01, //!< toggle custom light 1
+	EV_TRUCK_LIGHTTOGGLE02, //!< toggle custom light 2
+	EV_TRUCK_LIGHTTOGGLE03, //!< toggle custom light 3
+	EV_TRUCK_LIGHTTOGGLE04, //!< toggle custom light 4
+	EV_TRUCK_LIGHTTOGGLE05, //!< toggle custom light 5
+	EV_TRUCK_LIGHTTOGGLE06, //!< toggle custom light 6
+	EV_TRUCK_LIGHTTOGGLE07, //!< toggle custom light 7
+	EV_TRUCK_LIGHTTOGGLE08, //!< toggle custom light 8
+	EV_TRUCK_LIGHTTOGGLE09, //!< toggle custom light 9
 	EV_TRUCK_LIGHTTOGGLE10, //!< toggle custom light 10
-	EV_TRUCK_LIGHTTOGGLE2,  //!< toggle custom light 2
-	EV_TRUCK_LIGHTTOGGLE3,  //!< toggle custom light 3
-	EV_TRUCK_LIGHTTOGGLE4,  //!< toggle custom light 4
-	EV_TRUCK_LIGHTTOGGLE5,  //!< toggle custom light 5
-	EV_TRUCK_LIGHTTOGGLE6,  //!< toggle custom light 6
-	EV_TRUCK_LIGHTTOGGLE7,  //!< toggle custom light 7
-	EV_TRUCK_LIGHTTOGGLE8,  //!< toggle custom light 8
-	EV_TRUCK_LIGHTTOGGLE9,  //!< toggle custom light 9
 	EV_TRUCK_MANUAL_CLUTCH, //!< manual clutch (for manual transmission)
 	EV_TRUCK_PARKING_BRAKE, //!< toggle parking brake
 	EV_TRUCK_RIGHT_MIRROR_LEFT,
 	EV_TRUCK_RIGHT_MIRROR_RIGHT,
 	EV_TRUCK_SHIFT_DOWN, //!< shift one gear down in manual transmission mode
-	EV_TRUCK_SHIFT_GEAR1,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR2,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR3,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR4,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR5,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR6,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR7,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR8,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR9,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR10,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR11,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR12,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR13,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR14,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR15,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR16,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR17,//!< shift directly into this gear
-	EV_TRUCK_SHIFT_GEAR18,//!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR01, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR02, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR03, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR04, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR05, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR06, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR07, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR08, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR09, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR10, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR11, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR12, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR13, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR14, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR15, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR16, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR17, //!< shift directly into this gear
+	EV_TRUCK_SHIFT_GEAR18, //!< shift directly into this gear
 	EV_TRUCK_SHIFT_GEAR_REVERSE, //!< shift directly into this gear
 	EV_TRUCK_SHIFT_HIGHRANGE, //!< select high range (13-18) for H-shaft
 	EV_TRUCK_SHIFT_LOWRANGE, //!< select low range (1-6) for H-shaft
@@ -319,26 +319,26 @@ enum events
 	EV_TRUCK_TRACTION_CONTROL, //!< toggle antilockbrake system
 
 	// position storage now
-	EV_TRUCK_SAVE_POS1,
-	EV_TRUCK_SAVE_POS2,
-	EV_TRUCK_SAVE_POS3,
-	EV_TRUCK_SAVE_POS4,
-	EV_TRUCK_SAVE_POS5,
-	EV_TRUCK_SAVE_POS6,
-	EV_TRUCK_SAVE_POS7,
-	EV_TRUCK_SAVE_POS8,
-	EV_TRUCK_SAVE_POS9,
+	EV_TRUCK_SAVE_POS01,
+	EV_TRUCK_SAVE_POS02,
+	EV_TRUCK_SAVE_POS03,
+	EV_TRUCK_SAVE_POS04,
+	EV_TRUCK_SAVE_POS05,
+	EV_TRUCK_SAVE_POS06,
+	EV_TRUCK_SAVE_POS07,
+	EV_TRUCK_SAVE_POS08,
+	EV_TRUCK_SAVE_POS09,
 	EV_TRUCK_SAVE_POS10,
 
-	EV_TRUCK_LOAD_POS1,
-	EV_TRUCK_LOAD_POS2,
-	EV_TRUCK_LOAD_POS3,
-	EV_TRUCK_LOAD_POS4,
-	EV_TRUCK_LOAD_POS5,
-	EV_TRUCK_LOAD_POS6,
-	EV_TRUCK_LOAD_POS7,
-	EV_TRUCK_LOAD_POS8,
-	EV_TRUCK_LOAD_POS9,
+	EV_TRUCK_LOAD_POS01,
+	EV_TRUCK_LOAD_POS02,
+	EV_TRUCK_LOAD_POS03,
+	EV_TRUCK_LOAD_POS04,
+	EV_TRUCK_LOAD_POS05,
+	EV_TRUCK_LOAD_POS06,
+	EV_TRUCK_LOAD_POS07,
+	EV_TRUCK_LOAD_POS08,
+	EV_TRUCK_LOAD_POS09,
 	EV_TRUCK_LOAD_POS10,
 
 	//DOF events

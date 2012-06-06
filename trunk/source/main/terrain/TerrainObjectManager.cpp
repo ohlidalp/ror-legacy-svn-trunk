@@ -52,8 +52,8 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "ResourceBuffer.h"
 
-#include "MapControl.h"
-#include "MapEntity.h"
+#include "SurveyMapManager.h"
+#include "SurveyMapEntity.h"
 
 
 using namespace Ogre;
@@ -1154,7 +1154,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 			if (typestr != String("") && typestr != String("road") && typestr != String("sign"))
 			{
-				MapEntity *e = gEnv->surveyMap->createMapEntity(typestr);
+				SurveyMapEntity *e = gEnv->surveyMap->createMapEntity(typestr);
 				if (e)
 				{
 					e->setVisibility(true);
@@ -1213,7 +1213,7 @@ void TerrainObjectManager::loadPreloadedTrucks()
 #ifdef USE_MYGUI
 			if (b && gEnv->surveyMap)
 			{
-				MapEntity *e = gEnv->surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), MapControl::getTypeByDriveable(b->driveable));
+				SurveyMapEntity *e = gEnv->surveyMap->createNamedMapEntity("Truck"+TOSTRING(b->trucknum), SurveyMapManager::getTypeByDriveable(b->driveable));
 				if (e)
 				{
 					e->setState(DESACTIVATED);

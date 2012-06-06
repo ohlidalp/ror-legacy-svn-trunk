@@ -80,8 +80,7 @@ protected:
 	DOFManager *dof;
 	ForceFeedback *forcefeedback;
 	HeatHaze *heathaze;
-	MapControl *surveyMap;
-	MapTextureCreator *mtc;
+	SurveyMapManager *surveyMap;
 	Network *net;
 
 	Ogre::Quaternion reload_dir;
