@@ -51,12 +51,12 @@ public:
 	Collisions *getCollisions() { return collisions; };
 	Envmap *getEnvmap() { return envmap; };
 	IHeightFinder *getHeightFinder();
-	SkyManager *getSkyManager() { return sky_manager; };
-	Water *getWater() { return water; };
 	Ogre::Light *getMainLight() { return main_light; };
 	Ogre::Vector3 getSpawnPos() { return start_position; };
-	bool getTrucksLoaded() { return trucksLoaded; };
+	SkyManager *getSkyManager() { return sky_manager; };
 	TerrainGeometryManager *getGeometryManager() { return geometry_manager; };
+	Water *getWater() { return water; };
+	bool getTrucksLoaded() { return trucksLoaded; };
 
 protected:
 	// members
@@ -68,7 +68,7 @@ protected:
 	Dashboard *dashboard;
 	Envmap *envmap;
 	HDRListener *hdr_listener;
-	MapControl *survey_map;
+	SurveyMapManager *survey_map;
 	ShadowManager *shadow_manager;
 	SkyManager *sky_manager;
 	TerrainGeometryManager *geometry_manager;
@@ -80,17 +80,17 @@ protected:
 	Ogre::ColourValue fade_color;
 	Ogre::Light *main_light;
 	Ogre::String fileHash;
+	Ogre::String guid;
 	Ogre::String ogre_terrain_config_filename;
 	Ogre::String terrain_name;
-	Ogre::String guid;
 	Ogre::Vector3 start_position;
-	int categoryID;
-	int version;
 	bool use_caelum;
 	float gravity;
 	float water_line;
+	int categoryID;
 	int farclip;
 	int loading_state;
+	int version;
 	int pagedMode;
 	float pagedDetailFactor;
 	bool trucksLoaded;
@@ -101,24 +101,23 @@ protected:
 	void initDashboards();
 	void initEnvironmentMap();
 	void initFog();
+	void initGeometry();
 	void initGlow();
 	void initHDR();
 	void initLight();
 	void initMotionBlur();
+	void initObjects();
 	void initScripting();
 	void initShadows();
 	void initSkySubSystem();
 	void initSubSystems();
 	void initSunburn();
+	void initSurveyMap();
 	void initVegetation();
 	void initWater();
-	void initSurveyMap();
 
 	void fixCompositorClearColor();
-
 	void loadTerrainObjects();
-	void initGeometry();
-	void initObjects();
 };
 
 #endif // __TerrainManager_H_

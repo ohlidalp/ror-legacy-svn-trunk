@@ -23,21 +23,22 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "BeamFactory.h"
 #include "Character.h"
 #include "Character.h"
+#include "Dashboard.h"
 #include "DustManager.h"
+#include "EnvironmentMap.h"
+#include "ErrorUtils.h"
+#include "GUIFriction.h"
 #include "GlowMaterialListener.h"
+#include "HDRListener.h"
+#include "Language.h"
 #include "ScriptEngine.h"
 #include "Settings.h"
 #include "ShadowManager.h"
 #include "SkyManager.h"
 #include "SoundScriptManager.h"
+#include "SurveyMapManager.h"
 #include "TerrainGeometryManager.h"
 #include "TerrainObjectManager.h"
-#include "Dashboard.h"
-#include "EnvironmentMap.h"
-#include "ErrorUtils.h"
-#include "GUIFriction.h"
-#include "HDRListener.h"
-#include "Language.h"
 #include "Utils.h"
 #include "Water.h"
 
@@ -576,7 +577,7 @@ void TerrainManager::setGravity(float value)
 
 void TerrainManager::initSurveyMap()
 {
-	//survey_map = new MapControl(mapsizex, mapsizey, mapsizez);
+	survey_map = new SurveyMapManager(getMaxTerrainSize());
 }
 
 void TerrainManager::initGeometry()

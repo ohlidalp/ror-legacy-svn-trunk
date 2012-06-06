@@ -1020,55 +1020,55 @@ eventInfo_t eventInfo[] = {
 	},
 	{
 		"TRUCK_LIGHTTOGGLE1",
-		EV_TRUCK_LIGHTTOGGLE1,
+		EV_TRUCK_LIGHTTOGGLE01,
 		"Keyboard EXPL+CTRL+1",
 		_L("toggle custom light 1")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE2",
-		EV_TRUCK_LIGHTTOGGLE2,
+		EV_TRUCK_LIGHTTOGGLE02,
 		"Keyboard EXPL+CTRL+2",
 		_L("toggle custom light 2")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE3",
-		EV_TRUCK_LIGHTTOGGLE3,
+		EV_TRUCK_LIGHTTOGGLE03,
 		"Keyboard EXPL+CTRL+3",
 		_L("toggle custom light 3")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE4",
-		EV_TRUCK_LIGHTTOGGLE4,
+		EV_TRUCK_LIGHTTOGGLE04,
 		"Keyboard EXPL+CTRL+4",
 		_L("toggle custom light 4")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE5",
-		EV_TRUCK_LIGHTTOGGLE5,
+		EV_TRUCK_LIGHTTOGGLE05,
 		"Keyboard EXPL+CTRL+5",
 		_L("toggle custom light 5")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE6",
-		EV_TRUCK_LIGHTTOGGLE6,
+		EV_TRUCK_LIGHTTOGGLE06,
 		"Keyboard EXPL+CTRL+6",
 		_L("toggle custom light 6")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE7",
-		EV_TRUCK_LIGHTTOGGLE7,
+		EV_TRUCK_LIGHTTOGGLE07,
 		"Keyboard EXPL+CTRL+7",
 		_L("toggle custom light 7")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE8",
-		EV_TRUCK_LIGHTTOGGLE8,
+		EV_TRUCK_LIGHTTOGGLE08,
 		"Keyboard EXPL+CTRL+8",
 		_L("toggle custom light 8")
 	},
 	{
 		"TRUCK_LIGHTTOGGLE9",
-		EV_TRUCK_LIGHTTOGGLE9,
+		EV_TRUCK_LIGHTTOGGLE09,
 		"Keyboard EXPL+CTRL+9",
 		_L("toggle custom light 9")
 	},
@@ -1152,55 +1152,55 @@ eventInfo_t eventInfo[] = {
 	},
 	{
 		"TRUCK_SHIFT_GEAR1",
-		EV_TRUCK_SHIFT_GEAR1,
+		EV_TRUCK_SHIFT_GEAR01,
 		"",
 		_L("shift directly to first gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR2",
-		EV_TRUCK_SHIFT_GEAR2,
+		EV_TRUCK_SHIFT_GEAR02,
 		"",
 		_L("shift directly to second gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR3",
-		EV_TRUCK_SHIFT_GEAR3,
+		EV_TRUCK_SHIFT_GEAR03,
 		"",
 		_L("shift directly to third gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR4",
-		EV_TRUCK_SHIFT_GEAR4,
+		EV_TRUCK_SHIFT_GEAR04,
 		"",
 		_L("shift directly to fourth gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR5",
-		EV_TRUCK_SHIFT_GEAR5,
+		EV_TRUCK_SHIFT_GEAR05,
 		"",
 		_L("shift directly to 5th gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR6",
-		EV_TRUCK_SHIFT_GEAR6,
+		EV_TRUCK_SHIFT_GEAR06,
 		"",
 		_L("shift directly to 6th gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR7",
-		EV_TRUCK_SHIFT_GEAR7,
+		EV_TRUCK_SHIFT_GEAR07,
 		"",
 		_L("shift directly to 7th gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR8",
-		EV_TRUCK_SHIFT_GEAR8,
+		EV_TRUCK_SHIFT_GEAR08,
 		"",
 		_L("shift directly to 8th gear")
 	},
 	{
 		"TRUCK_SHIFT_GEAR9",
-		EV_TRUCK_SHIFT_GEAR9,
+		EV_TRUCK_SHIFT_GEAR09,
 		"",
 		_L("shift directly to 9th gear")
 	},
@@ -1467,26 +1467,26 @@ eventInfo_t eventInfo[] = {
 	},
 
 	// now position storage
-	{ "TRUCK_SAVE_POS1", EV_TRUCK_SAVE_POS1, "Keyboard EXPL+ALT+CTRL+1", _L("save position as slot 1") },
-	{ "TRUCK_SAVE_POS2", EV_TRUCK_SAVE_POS2, "Keyboard EXPL+ALT+CTRL+2", _L("save position as slot 2") },
-	{ "TRUCK_SAVE_POS3", EV_TRUCK_SAVE_POS3, "Keyboard EXPL+ALT+CTRL+3", _L("save position as slot 3") },
-	{ "TRUCK_SAVE_POS4", EV_TRUCK_SAVE_POS4, "Keyboard EXPL+ALT+CTRL+4", _L("save position as slot 4") },
-	{ "TRUCK_SAVE_POS5", EV_TRUCK_SAVE_POS5, "Keyboard EXPL+ALT+CTRL+5", _L("save position as slot 5") },
-	{ "TRUCK_SAVE_POS6", EV_TRUCK_SAVE_POS6, "Keyboard EXPL+ALT+CTRL+6", _L("save position as slot 6") },
-	{ "TRUCK_SAVE_POS7", EV_TRUCK_SAVE_POS7, "Keyboard EXPL+ALT+CTRL+7", _L("save position as slot 7") },
-	{ "TRUCK_SAVE_POS8", EV_TRUCK_SAVE_POS8, "Keyboard EXPL+ALT+CTRL+8", _L("save position as slot 8") },
-	{ "TRUCK_SAVE_POS9", EV_TRUCK_SAVE_POS9, "Keyboard EXPL+ALT+CTRL+9", _L("save position as slot 9") },
+	{ "TRUCK_SAVE_POS1", EV_TRUCK_SAVE_POS01, "Keyboard EXPL+ALT+CTRL+1", _L("save position as slot 1") },
+	{ "TRUCK_SAVE_POS2", EV_TRUCK_SAVE_POS02, "Keyboard EXPL+ALT+CTRL+2", _L("save position as slot 2") },
+	{ "TRUCK_SAVE_POS3", EV_TRUCK_SAVE_POS03, "Keyboard EXPL+ALT+CTRL+3", _L("save position as slot 3") },
+	{ "TRUCK_SAVE_POS4", EV_TRUCK_SAVE_POS04, "Keyboard EXPL+ALT+CTRL+4", _L("save position as slot 4") },
+	{ "TRUCK_SAVE_POS5", EV_TRUCK_SAVE_POS05, "Keyboard EXPL+ALT+CTRL+5", _L("save position as slot 5") },
+	{ "TRUCK_SAVE_POS6", EV_TRUCK_SAVE_POS06, "Keyboard EXPL+ALT+CTRL+6", _L("save position as slot 6") },
+	{ "TRUCK_SAVE_POS7", EV_TRUCK_SAVE_POS07, "Keyboard EXPL+ALT+CTRL+7", _L("save position as slot 7") },
+	{ "TRUCK_SAVE_POS8", EV_TRUCK_SAVE_POS08, "Keyboard EXPL+ALT+CTRL+8", _L("save position as slot 8") },
+	{ "TRUCK_SAVE_POS9", EV_TRUCK_SAVE_POS09, "Keyboard EXPL+ALT+CTRL+9", _L("save position as slot 9") },
 	{ "TRUCK_SAVE_POS10", EV_TRUCK_SAVE_POS10, "Keyboard EXPL+ALT+CTRL+0", _L("save position as slot 10") },
 
-	{ "TRUCK_LOAD_POS1", EV_TRUCK_LOAD_POS1, "Keyboard EXPL+ALT+1", _L("load position under slot 1") },
-	{ "TRUCK_LOAD_POS2", EV_TRUCK_LOAD_POS2, "Keyboard EXPL+ALT+2", _L("load position under slot 2") },
-	{ "TRUCK_LOAD_POS3", EV_TRUCK_LOAD_POS3, "Keyboard EXPL+ALT+3", _L("load position under slot 3") },
-	{ "TRUCK_LOAD_POS4", EV_TRUCK_LOAD_POS4, "Keyboard EXPL+ALT+4", _L("load position under slot 4") },
-	{ "TRUCK_LOAD_POS5", EV_TRUCK_LOAD_POS5, "Keyboard EXPL+ALT+5", _L("load position under slot 5") },
-	{ "TRUCK_LOAD_POS6", EV_TRUCK_LOAD_POS6, "Keyboard EXPL+ALT+6", _L("load position under slot 6") },
-	{ "TRUCK_LOAD_POS7", EV_TRUCK_LOAD_POS7, "Keyboard EXPL+ALT+7", _L("load position under slot 7") },
-	{ "TRUCK_LOAD_POS8", EV_TRUCK_LOAD_POS8, "Keyboard EXPL+ALT+8", _L("load position under slot 8") },
-	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS9, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
+	{ "TRUCK_LOAD_POS1", EV_TRUCK_LOAD_POS01, "Keyboard EXPL+ALT+1", _L("load position under slot 1") },
+	{ "TRUCK_LOAD_POS2", EV_TRUCK_LOAD_POS02, "Keyboard EXPL+ALT+2", _L("load position under slot 2") },
+	{ "TRUCK_LOAD_POS3", EV_TRUCK_LOAD_POS03, "Keyboard EXPL+ALT+3", _L("load position under slot 3") },
+	{ "TRUCK_LOAD_POS4", EV_TRUCK_LOAD_POS04, "Keyboard EXPL+ALT+4", _L("load position under slot 4") },
+	{ "TRUCK_LOAD_POS5", EV_TRUCK_LOAD_POS05, "Keyboard EXPL+ALT+5", _L("load position under slot 5") },
+	{ "TRUCK_LOAD_POS6", EV_TRUCK_LOAD_POS06, "Keyboard EXPL+ALT+6", _L("load position under slot 6") },
+	{ "TRUCK_LOAD_POS7", EV_TRUCK_LOAD_POS07, "Keyboard EXPL+ALT+7", _L("load position under slot 7") },
+	{ "TRUCK_LOAD_POS8", EV_TRUCK_LOAD_POS08, "Keyboard EXPL+ALT+8", _L("load position under slot 8") },
+	{ "TRUCK_LOAD_POS9", EV_TRUCK_LOAD_POS09, "Keyboard EXPL+ALT+9", _L("load position under slot 9") },
 	{ "TRUCK_LOAD_POS10", EV_TRUCK_LOAD_POS10, "Keyboard EXPL+ALT+0", _L("load position under slot 10") },
 
 

@@ -19,16 +19,16 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifdef USE_MYGUI
 
-#include "MapControl.h"
+#include "SurveyMapManager.h"
 
 #include "BeamData.h"
-#include "MapEntity.h"
+#include "SurveyMapEntity.h"
 #include "Ogre.h"
 
 using namespace Ogre;
 
-MapControl::MapControl(float mapsizex, float mapsizey, float mapsizez) :
-	  mMapSize(Vector3(mapsizex, mapsizey, mapsizez))
+SurveyMapManager::SurveyMapManager(Vector3 worldSize) :
+	  mWorldSize(worldSize)
 	, mAlpha(1.0f)
 	, mScale(1.0f)
 	, mX(0)
@@ -38,26 +38,26 @@ MapControl::MapControl(float mapsizex, float mapsizey, float mapsizez) :
 	setVisibility(false);
 }
 
-MapEntity *MapControl::createMapEntity(String type)
+SurveyMapEntity *SurveyMapManager::createMapEntity(String type)
 {
-	MapEntity *entity = new MapEntity(this, type, mMapTexture);
+	SurveyMapEntity *entity = new SurveyMapEntity(this, type, mMapTexture);
 	mMapEntities.insert(entity);
 	return entity;
 }
 
-MapEntity *MapControl::createNamedMapEntity(String name, String type)
+SurveyMapEntity *SurveyMapManager::createNamedMapEntity(String name, String type)
 {
-	MapEntity *entity = createMapEntity(type);
+	SurveyMapEntity *entity = createMapEntity(type);
 	mNamedEntities[name] = entity;
 	return entity;
 }
 
-void MapControl::deleteMapEntity(MapEntity *entity)
+void SurveyMapManager::deleteMapEntity(SurveyMapEntity *entity)
 {
 	mMapEntities.erase(entity);
 }
 
-MapEntity *MapControl::getEntityByName(String name)
+SurveyMapEntity *SurveyMapManager::getEntityByName(String name)
 {
 	if (mNamedEntities.find(name) != mNamedEntities.end())
 	{
@@ -66,31 +66,31 @@ MapEntity *MapControl::getEntityByName(String name)
 	return NULL;
 }
 
-bool MapControl::getVisibility()
+bool SurveyMapManager::getVisibility()
 {
 	return mMainWidget->getVisible();
 }
 
-void MapControl::setAlpha(float value)
+void SurveyMapManager::setAlpha(float value)
 {
 	mAlpha = value;
 	mMainWidget->setAlpha(value);
 }
 
-void MapControl::setEntitiesVisibility(bool value)
+void SurveyMapManager::setEntitiesVisibility(bool value)
 {
-	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
+	for (std::set<SurveyMapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
 	{
 		(*it)->setVisibility(value);
 	}
 }
 
-void MapControl::setMapTexture(String name)
+void SurveyMapManager::setMapTexture(String name)
 {
 	mMapTexture->setImageTexture(name);
 }
 
-void MapControl::setPosition(int x, int y, float size)
+void SurveyMapManager::setPosition(int x, int y, float size)
 {
 	int realx, realy, realw, realh;
 
@@ -129,22 +129,17 @@ void MapControl::setPosition(int x, int y, float size)
 	updateEntityPositions();
 }
 
-void MapControl::setVisibility(bool value)
+void SurveyMapManager::setVisibility(bool value)
 {
 	mMainWidget->setVisible(value);
 }
 
-void MapControl::setWorldSize(float width, float length, float height)
-{
-	mMapSize = Vector3(width, length, height);
-}
-
-void MapControl::windowResized()
+void SurveyMapManager::windowResized()
 {
 	setPosition(mX, mY, mScale);
 }
 
-String MapControl::getTypeByDriveable(int driveable)
+String SurveyMapManager::getTypeByDriveable(int driveable)
 {
 	switch (driveable)
 	{
@@ -163,15 +158,15 @@ String MapControl::getTypeByDriveable(int driveable)
 	}
 }
 
-void MapControl::updateEntityPositions()
+void SurveyMapManager::updateEntityPositions()
 {
-	for (std::set<MapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
+	for (std::set<SurveyMapEntity *>::iterator it = mMapEntities.begin(); it != mMapEntities.end(); it++)
 	{
 		(*it)->update();
 	}
 }
 
-void MapControl::updateRenderMetrics()
+void SurveyMapManager::updateRenderMetrics()
 {
 	gEnv->renderWindow->getMetrics(rWinWidth, rWinHeight, rWinDepth, rWinLeft, rWinTop);
 }

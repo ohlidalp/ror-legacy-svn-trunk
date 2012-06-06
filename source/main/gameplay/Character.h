@@ -63,7 +63,7 @@ public:
 protected:
 
 	Beam *beamCoupling;
-	MapEntity *mapEntity;
+	SurveyMapEntity *mapEntity;
 
 	bool canJump;
 	bool physicsEnabled;

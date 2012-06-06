@@ -26,13 +26,13 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mygui/BaseLayout.h"
 
-ATTRIBUTE_CLASS_LAYOUT(MapEntity, "MapEntity.layout");
+ATTRIBUTE_CLASS_LAYOUT(SurveyMapEntity, "MapEntity.layout");
 
-class MapEntity : public wraps::BaseLayout, public ZeroedMemoryAllocator
+class SurveyMapEntity : public wraps::BaseLayout, public ZeroedMemoryAllocator
 {
 public:
 
-	MapEntity(MapControl *ctrl, Ogre::String type, MyGUI::StaticImagePtr parent);
+	SurveyMapEntity(SurveyMapManager *ctrl, Ogre::String type, MyGUI::StaticImagePtr parent);
 
 	Ogre::String getDescription();
 	bool getVisibility();
@@ -52,17 +52,17 @@ private:
 
 	MyGUI::StaticImagePtr mParent;
 
-	ATTRIBUTE_FIELD_WIDGET_NAME(MapEntity, mCaption, "mCaption");
+	ATTRIBUTE_FIELD_WIDGET_NAME(SurveyMapEntity, mCaption, "mCaption");
 	MyGUI::StaticText *mCaption;
 
-	ATTRIBUTE_FIELD_WIDGET_NAME(MapEntity, mIcon, "mIcon");
+	ATTRIBUTE_FIELD_WIDGET_NAME(SurveyMapEntity, mIcon, "mIcon");
 	MyGUI::StaticImage *mIcon;
 	MyGUI::RotatingSkin *mIconRotating;
 
 	enum EntityStates {Activated, Deactivated, Sleeping, Networked, MaxEntityStates};
 	
 	EntityStates mState;
-	MapControl *mMapControl;
+	SurveyMapManager *mMapControl;
 	MyGUI::IntSize mIconSize;
 	Ogre::Real mRotation;
 	Ogre::Real mX, mZ;

@@ -20,15 +20,15 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USE_MYGUI
 
 #include "Beam.h"
-#include "MapEntity.h"
-#include "MapControl.h"
+#include "SurveyMapEntity.h"
+#include "SurveyMapManager.h"
 #include "Ogre.h"
 
 using namespace Ogre;
 
-String MapEntity::entityStates[MaxEntityStates] = {"activated", "deactivated", "sleeping", "networked"};
+String SurveyMapEntity::entityStates[MaxEntityStates] = {"activated", "deactivated", "sleeping", "networked"};
 
-MapEntity::MapEntity(MapControl *ctrl, String type, MyGUI::StaticImagePtr parent) :
+SurveyMapEntity::SurveyMapEntity(SurveyMapManager *ctrl, String type, MyGUI::StaticImagePtr parent) :
 	  mMapControl(ctrl)
 	, mType(type)
 	, mParent(parent)
@@ -47,7 +47,7 @@ MapEntity::MapEntity(MapControl *ctrl, String type, MyGUI::StaticImagePtr parent
 	init();
 }
 
-void MapEntity::init()
+void SurveyMapEntity::init()
 {
 	// check if static only icon
 	String imageFile = "icon_" + mType + ".dds";
@@ -69,12 +69,12 @@ void MapEntity::init()
 	update();
 }
 
-void MapEntity::setPosition(Vector3 pos)
+void SurveyMapEntity::setPosition(Vector3 pos)
 {
 	setPosition(pos.x, pos.z);
 }
 
-void MapEntity::setPosition(float x, float z)
+void SurveyMapEntity::setPosition(float x, float z)
 {
 	bool needUpdate = false;
 
@@ -92,29 +92,29 @@ void MapEntity::setPosition(float x, float z)
 	}
 }
 
-void MapEntity::setRotation(Quaternion q)
+void SurveyMapEntity::setRotation(Quaternion q)
 {
 	mRotation = q.getYaw().valueRadians() - Math::HALF_PI;
 	if (mIconRotating) mIconRotating->setAngle(-mRotation);
 }
 
-void MapEntity::setRotation(Radian _r)
+void SurveyMapEntity::setRotation(Radian _r)
 {
 	mRotation = _r.valueRadians();
 	if (mIconRotating) mIconRotating->setAngle(-mRotation);
 }
 
-bool MapEntity::getVisibility()
+bool SurveyMapEntity::getVisibility()
 {
 	return mMainWidget->getVisible();
 }
 
-void MapEntity::setVisibility(bool value)
+void SurveyMapEntity::setVisibility(bool value)
 {
 	mMainWidget->setVisible(value);
 }
 
-void MapEntity::setState(int truckstate)
+void SurveyMapEntity::setState(int truckstate)
 {
 	if (mIsStatic) return;
 
@@ -147,12 +147,12 @@ void MapEntity::setState(int truckstate)
 	}
 }
 
-int MapEntity::getState()
+int SurveyMapEntity::getState()
 {
 	return mState;
 }
 
-void MapEntity::update()
+void SurveyMapEntity::update()
 {
 	float wscale = mMapControl->getWindowScale();
 
@@ -172,18 +172,18 @@ void MapEntity::update()
 	mIcon->setVisible(true);
 }
 
-void MapEntity::setDescription(String s)
+void SurveyMapEntity::setDescription(String s)
 {
 	mDescription = s;
 	mCaption->setCaption(mDescription);
 }
 
-String MapEntity::getDescription()
+String SurveyMapEntity::getDescription()
 {
 	return mDescription;
 }
 
-void MapEntity::updateIcon()
+void SurveyMapEntity::updateIcon()
 {
 	// check if static only icon
 	String imageFile = "icon_" + mType + "_" + entityStates[mState] + ".dds";

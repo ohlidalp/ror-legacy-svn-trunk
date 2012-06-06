@@ -24,7 +24,7 @@ class CameraManager;
 class Character;
 class Collisions;
 class IHeightFinder;
-class MapControl;
+class SurveyMapManager;
 class Network;
 class RoRFrameListener;
 class SkyManager;
@@ -62,7 +62,7 @@ public:
 	CameraManager *cameraManager;
 	Character *player;
 	Collisions *collisions;
-	MapControl *surveyMap;
+	SurveyMapManager *surveyMap;
 	Network *network;
 	RoRFrameListener *frameListener;
 	SkyManager *sky;
