@@ -1736,7 +1736,7 @@ void Beam::calcForcesEuler(int doUpdate, Real dt, int step, int maxstep)
 			if (trucks[i]->state==DESACTIVATED && trucks[i]->importcommands)
 			{
 				// forward commands
-				for (int j=1; j<MAX_COMMANDS; j++)
+				for (int j=1; j<=MAX_COMMANDS; j++)
 					trucks[i]->commandkey[j].commandValue = commandkey[j].commandValue;
 
 				// just send brake and lights to the connected truck, and no one else :)

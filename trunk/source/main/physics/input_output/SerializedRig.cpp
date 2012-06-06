@@ -2893,7 +2893,7 @@ int SerializedRig::loadTruck(Ogre::String filename, Ogre::SceneNode *parent, Ogr
 				}
 
 				//verify array limits so we don't overflow
-				if (keys >= MAX_COMMANDS || keyl >= MAX_COMMANDS)
+				if (keys > MAX_COMMANDS || keyl > MAX_COMMANDS)
 				{
 					parser_warning(c, "Command key invalid", PARSER_ERROR);
 					continue;
