@@ -1475,7 +1475,7 @@ bool RoRFrameListener::updateEvents(float dt)
 
 	if (loading_state==ALL_LOADED || loading_state == TERRAIN_EDITOR)
 	{
-		if (gEnv->cameraManager && gEnv->cameraManager->gameControlsEnabled())
+		if (gEnv->cameraManager && !gEnv->cameraManager->gameControlsLocked())
 		{
 			if (!curr_truck)
 			{
@@ -2448,7 +2448,7 @@ bool RoRFrameListener::updateEvents(float dt)
 				surveyMapMode == SURVEY_MAP_BIG &&
 				gEnv->cameraManager &&
 				gEnv->cameraManager->hasActiveBehavior() &&
-				gEnv->cameraManager->gameControlsEnabled())
+				!gEnv->cameraManager->gameControlsLocked())
 			{
 				if (velocity > 7.5f || gEnv->cameraManager->getCurrentBehavior() == CameraManager::CAMERA_BEHAVIOR_VEHICLE_CINECAM)
 				{

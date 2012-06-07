@@ -17,23 +17,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef __IBehaviorManager_H__
-#define __IBehaviorManager_H__
+#ifndef __I_BehaviorManager_H__
+#define __I_BehaviorManager_H__
 
 #include "RoRPrerequisites.h"
 
-class IBehaviorManager : public ZeroedMemoryAllocator
+#include "IManager.h"
+
+class IBehaviorManager : public IManager
 {
 public:
 
 	virtual ~IBehaviorManager() {}
 
-	virtual void update(float dt) = 0;
-
 	virtual void switchBehavior(int newBehavior, bool reset = true) = 0;
 	virtual void switchToNextBehavior(bool force = true) = 0;
 	virtual void toggleBehavior(int behavior) = 0;
 
+	virtual bool gameControlsLocked() = 0;
 	virtual bool hasActiveBehavior() = 0;
 	virtual bool hasActiveCharacterBehavior() = 0;
 	virtual bool hasActiveVehicleBehavior() = 0;
@@ -41,4 +42,4 @@ public:
 	virtual int getCurrentBehavior() = 0;
 };
 
-#endif // __IBehaviorManager_H__
+#endif // __I_BehaviorManager_H__

@@ -17,14 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef IMANAGER_H__
-#define IMANAGER_H__
+#ifndef __I_Manager_H_
+#define __I_Manager_H_
 
 #include "RoRPrerequisites.h"
 
 class IManager : public ZeroedMemoryAllocator
 {
 public:
+
 	virtual ~IManager() {}
 
 	virtual bool update(float dt) = 0;
@@ -32,4 +33,4 @@ public:
 	virtual void freeResources() = 0;
 };
 
-#endif // IMANAGER_H__
+#endif // __I_Manager_H_

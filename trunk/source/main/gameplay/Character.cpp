@@ -276,7 +276,7 @@ void Character::update(float dt)
 	{
 		// disable character movement when using the free camera mode or when the menu is opened
 		// TODO: check for menu being opened
-		if (gEnv->cameraManager && !gEnv->cameraManager->gameControlsEnabled()) return;
+		if (gEnv->cameraManager && gEnv->cameraManager->gameControlsLocked()) return;
 
 		// small hack: if not visible do not apply physics
 		Vector3 position = mCharacterNode->getPosition();

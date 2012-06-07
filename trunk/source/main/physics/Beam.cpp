@@ -5669,7 +5669,7 @@ void Beam::updateAI(float dt)
 	if (driveable != TRUCK ||
 		!gEnv->cameraManager ||
 		!gEnv->cameraManager->hasActiveBehavior() ||
-		 gEnv->cameraManager->gameControlsEnabled())
+		!gEnv->cameraManager->gameControlsLocked())
 	{
 		return;
 	}

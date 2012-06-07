@@ -62,18 +62,21 @@ public:
 		CAMERA_BEHAVIOR_ISOMETRIC
 	};
 
-	void update(float dt);
+	bool update(float dt);
 
 	void switchBehavior(int newBehavior, bool reset = true);
 	void switchToNextBehavior(bool force = true);
 	void toggleBehavior(int behavior);
 
-	bool gameControlsEnabled();
+	bool gameControlsLocked();
 	bool hasActiveBehavior();
 	bool hasActiveCharacterBehavior();
 	bool hasActiveVehicleBehavior();
 
 	int getCurrentBehavior();
+
+	size_t getMemoryUsage();
+	void freeResources() {};
 
 protected:
 
