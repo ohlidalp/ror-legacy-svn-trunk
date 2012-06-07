@@ -376,8 +376,18 @@ bool Settings::setupPaths()
 		path_add(resources_path, "resources");
 		if (!folderExists(resources_path))
 		{
-			showError(_L("Startup error"), _L("Resources folder not found. Check if correctly installed."));
-			exit(1);
+			// 3rd fallback: check the installation path
+#ifndef WIN32
+			// linux fallback
+			// TODO: use installation patch values from CMake
+			strcpy(resources_path, "/usr/share/rigsofrods/resources/");
+#endif // WIN32
+
+			if (!folderExists(resources_path))
+			{
+				showError(_L("Startup error"), _L("Resources folder not found. Check if correctly installed."));
+				exit(1);
+			}
 		}
 	}
 
@@ -388,7 +398,16 @@ bool Settings::setupPaths()
 
 	//setup config files names
 	char plugins_fname[1024] = {};
+
+#ifdef WIN32
+	// under windows, the plugins.cfg is in the installation directory
 	strcpy(plugins_fname, program_path);
+#else
+	// under linux, the plugins.cfg is somewhere in /usr/share/rigsofrods/resources
+	strcpy(plugins_fname, resources_path);
+#endif // WIN32
+
+
 #ifdef _DEBUG
 	strcat(plugins_fname, "plugins_d.cfg");
 #else
