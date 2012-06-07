@@ -31,9 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include <OgreTerrainGroup.h>
 
 #include <OgreConfigFile.h>
+#include "IManager.h"
 
 // this class handles all interactions with the Ogre Terrain system
-class TerrainGeometryManager : public IHeightFinder, public ZeroedMemoryAllocator
+class TerrainGeometryManager : public IHeightFinder, public IManager
 {
 	friend class TerrainObjectManager;
 public:
@@ -62,8 +63,13 @@ public:
 	Ogre::Vector3 getMaxTerrainSize();
 	Ogre::Vector3 getTerrainPosition();
 
-	void update(float dt);
+	bool update(float dt);
 	void updateLightMap();
+
+
+	size_t getMemoryUsage();
+	void freeResources();
+
 protected:
 
 	Ogre::ConfigFile terrainConfig;

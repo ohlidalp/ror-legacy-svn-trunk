@@ -25,8 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "CacheSystem.h"
 
 #include <OgreConfigFile.h>
+#include "IManager.h"
 
-class TerrainManager : public ZeroedMemoryAllocator
+class TerrainManager : public IManager
 {
 	friend class CacheSystem;
 	friend class TerrainObjectManager;
@@ -40,7 +41,7 @@ public:
 	void loadTerrainConfigBasics(Ogre::DataStreamPtr &ds);
 	
 
-	void update(float dt);
+	bool update(float dt);
 
 	void setGravity(float value);
 	float getGravity() { return gravity; };
@@ -57,6 +58,9 @@ public:
 	TerrainGeometryManager *getGeometryManager() { return geometry_manager; };
 	Water *getWater() { return water; };
 	bool getTrucksLoaded() { return trucksLoaded; };
+
+	size_t getMemoryUsage();
+	void freeResources();
 
 protected:
 	// members

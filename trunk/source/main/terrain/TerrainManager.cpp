@@ -522,13 +522,15 @@ void TerrainManager::initCollisions()
 	}
 }
 
-void TerrainManager::update(float dt)
+bool TerrainManager::update(float dt)
 {
 	if(object_manager)
 		object_manager->update(dt);
 
 	if(geometry_manager)
 		geometry_manager->update(dt);
+
+	return true;
 }
 
 
@@ -600,4 +602,15 @@ Ogre::Vector3 TerrainManager::getMaxTerrainSize()
 IHeightFinder* TerrainManager::getHeightFinder()
 {
 	return geometry_manager;
+}
+
+size_t TerrainManager::getMemoryUsage()
+{
+	// TODO: FIX
+	return 0;
+}
+
+void TerrainManager::freeResources()
+{
+	// TODO
 }

@@ -25,8 +25,9 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "CaelumPrerequisites.h"
+#include "IManager.h"
 
-class SkyManager : public ZeroedMemoryAllocator
+class SkyManager : public IManager
 {
 public:
 
@@ -44,6 +45,10 @@ public:
 	/// prints the current time of the simulation in the format of HH:MM:SS
 	Ogre::String getPrettyTime();
 	
+	bool update( float dt );
+	size_t getMemoryUsage();
+	void freeResources();
+
 	void forceUpdate(float dt);
 
 	void notifyCameraChanged(Ogre::Camera *cam);

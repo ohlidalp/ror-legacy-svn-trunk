@@ -23,11 +23,11 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "RoRPrerequisites.h"
 
 #include "IBehavior.h"
-#include "IManager.h"
+#include "IBehaviorManager.h"
 
 #include <OIS.h>
 
-class CameraManager : public IManager
+class CameraManager : public IBehaviorManager
 {
 	friend class SceneMouse;
 
