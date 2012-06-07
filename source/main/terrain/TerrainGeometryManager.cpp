@@ -136,7 +136,7 @@ void TerrainGeometryManager::updateLightMap()
 	}
 }
 
-void TerrainGeometryManager::update(float dt)
+bool TerrainGeometryManager::update(float dt)
 {
 	Light *light = gEnv->terrainManager->getMainLight();
 	TerrainGlobalOptions *terrainOptions = TerrainGlobalOptions::getSingletonPtr();
@@ -148,6 +148,7 @@ void TerrainGeometryManager::update(float dt)
 	terrainOptions->setCompositeMapAmbient(gEnv->sceneManager->getAmbientLight());
 
 	mTerrainGroup->update();
+	return true;
 }
 
 void TerrainGeometryManager::configureTerrainDefaults()
@@ -352,5 +353,16 @@ Ogre::Vector3 TerrainGeometryManager::getMaxTerrainSize()
 Ogre::Vector3 TerrainGeometryManager::getTerrainPosition()
 {
 	return terrainPos;
+}
+
+size_t TerrainGeometryManager::getMemoryUsage()
+{
+	// TODO
+	return 0;
+}
+
+void TerrainGeometryManager::freeResources()
+{
+	// TODO
 }
 

@@ -31,9 +31,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TreeLoader2D.h"
 #include "TreeLoader3D.h"
 #endif //USE_PAGED
+#include "IManager.h"
 
 
-class TerrainObjectManager : public ZeroedMemoryAllocator
+class TerrainObjectManager : public IManager
 {
 	friend class TerrainManager;
 public:
@@ -123,6 +124,11 @@ protected:
 	void loadPreloadedTrucks();
 	bool updateAnimatedObjects(float dt);
 	void postLoad();
+
+	virtual size_t getMemoryUsage();
+
+	virtual void freeResources();
+
 };
 
 #endif // __TerrainObjectManager_H_

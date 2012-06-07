@@ -1242,3 +1242,14 @@ bool TerrainObjectManager::update( float dt )
 	
 	return true;
 }
+
+size_t TerrainObjectManager::getMemoryUsage()
+{
+	// very rough estamation
+	return (sizeof(loadedObject_t) * loadedObjects.size());
+}
+
+void TerrainObjectManager::freeResources()
+{
+	// TODO
+}
