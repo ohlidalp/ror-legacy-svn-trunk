@@ -71,11 +71,11 @@ CameraManager::~CameraManager()
 	globalBehaviors.clear();
 }
 
-void CameraManager::update(float dt)
+bool CameraManager::update(float dt)
 {
 	static std::stack<int> precedingBehaviors;
 
-	if ( dt == 0 ) return;
+	if ( dt == 0 ) return false;
 
 	mTransScale = mTransSpeed  * dt;
 	mRotScale   = mRotateSpeed * dt;
@@ -125,6 +125,8 @@ void CameraManager::update(float dt)
 	{
 		switchBehavior(CAMERA_BEHAVIOR_CHARACTER);
 	}
+
+	return true;
 }
 
 void CameraManager::switchToNextBehavior(bool force /* = true */)
@@ -233,8 +235,14 @@ bool CameraManager::mouseReleased(const OIS::MouseEvent& _arg, OIS::MouseButtonI
 	return currentBehavior->mouseReleased(ctx, _arg, _id);
 }
 
-bool CameraManager::gameControlsEnabled()
+bool CameraManager::gameControlsLocked()
 {
 	// game controls are only disabled in free camera mode for now
-	return (currentBehaviorID != CAMERA_BEHAVIOR_FREE);
+	return (currentBehaviorID == CAMERA_BEHAVIOR_FREE);
+}
+
+size_t CameraManager::getMemoryUsage()
+{
+	// TODO
+	return 0;
 }
