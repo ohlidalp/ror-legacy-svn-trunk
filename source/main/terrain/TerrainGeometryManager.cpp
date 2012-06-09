@@ -366,3 +366,16 @@ void TerrainGeometryManager::freeResources()
 	// TODO
 }
 
+Ogre::String TerrainGeometryManager::getCompositeMaterialName()
+{
+	TerrainGroup::TerrainIterator ti = mTerrainGroup->getTerrainIterator();
+	while(ti.hasMoreElements())
+	{
+		Terrain *terrain = ti.getNext()->instance;
+		MaterialPtr mat = terrain->getCompositeMapMaterial();
+		if(!mat.isNull())
+			return mat->getName();
+	}
+	return String();
+}
+
