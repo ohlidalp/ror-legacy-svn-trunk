@@ -22,6 +22,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
+#include "IManager.h"
 
 #ifdef USE_PAGED
 #include "BatchPage.h"
@@ -31,12 +32,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "TreeLoader2D.h"
 #include "TreeLoader3D.h"
 #endif //USE_PAGED
-#include "IManager.h"
-
 
 class TerrainObjectManager : public IManager
 {
 	friend class TerrainManager;
+	friend class GameScript;
+
 public:
 
 	TerrainObjectManager(TerrainManager *terrainManager);
@@ -109,17 +110,17 @@ protected:
 
 	typedef struct loadedObject_t
 	{
+		Ogre::SceneNode *sceneNode;
+		Ogre::String instanceName;
 		bool enabled;
 		int loadType;
-		Ogre::String instanceName;
-		Ogre::SceneNode *sceneNode;
-		std::vector <int> collTris;
 		std::vector <int> collBoxes;
+		std::vector <int> collTris;
 	} loadedObject_t;
 	std::map< std::string, loadedObject_t> loadedObjects;
 
-	void loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, Ogre::SceneNode * bakeNode, const char* instancename, bool enable_collisions=true, int scripthandler=-1, const char *type=0, bool uniquifyMaterial=false);
-	void unloadObject(const char* name);
+	void loadObject(const Ogre::String &name, const Ogre::Vector3 &pos, const Ogre::Vector3 &rot, Ogre::SceneNode *bakeNode, const Ogre::String &instancename, const Ogre::String &type, bool enable_collisions = true, int scripthandler = -1, bool uniquifyMaterial = false);
+	void unloadObject(const Ogre::String &instancename);
 
 	void loadPreloadedTrucks();
 	bool updateAnimatedObjects(float dt);
@@ -128,7 +129,6 @@ protected:
 	virtual size_t getMemoryUsage();
 
 	virtual void freeResources();
-
 };
 
 #endif // __TerrainObjectManager_H_

@@ -24,10 +24,10 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "RoRPrerequisites.h"
 
-#include "Singleton.h"
 #include "Collisions.h"
 #include "InterThreadStoreVector.h"
 #include "Ogre.h"
+#include "Singleton.h"
 
 #include "scriptdictionary/scriptdictionary.h"
 #include "scriptbuilder/scriptbuilder.h"

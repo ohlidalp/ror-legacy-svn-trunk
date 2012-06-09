@@ -310,18 +310,17 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 
 		Console::getSingleton().startPrivateChat(user_uid);
 	}
+	
+	if (!gEnv->frameListener) return;
 
-
-	if (miname == _L("get new Vehicle") && gEnv->frameListener->person)
+	if (miname == _L("get new Vehicle") && gEnv->player)
 	{
-		if (gEnv->frameListener->loading_state == NONE_LOADED)
-			return;
+		if (gEnv->frameListener->loading_state == NONE_LOADED) return;
 		// get out first
-		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1)
-			BeamFactory::getSingleton().setCurrentTruck(-1);
-		gEnv->frameListener->reload_pos = gEnv->frameListener->person->getPosition() + Vector3(0, 1, 0); // 1 meter above the character
-		gEnv->frameListener->freeTruckPosition=true;
-		gEnv->frameListener->loading_state=RELOADING;
+		if (BeamFactory::getSingleton().getCurrentTruckNumber() != -1) BeamFactory::getSingleton().setCurrentTruck(-1);
+		gEnv->frameListener->reload_pos = gEnv->player->getPosition() + Vector3(0.0f, 1.0f, 0.0f); // 1 meter above the character
+		gEnv->frameListener->freeTruckPosition = true;
+		gEnv->frameListener->loading_state = RELOADING;
 		SelectorWindow::getSingleton().show(SelectorWindow::LT_AllBeam);
 
 	} else if (miname == _L("Save Scenery") || miname == _L("Load Scenery"))
@@ -436,7 +435,6 @@ void GUI_MainMenu::onMenuBtn(MyGUI::MenuCtrlPtr _sender, MyGUI::MenuItemPtr _ite
 	{
 		TextureToolWindow::getSingleton().show();
 	}
-
 
 	//LOG(" menu button pressed: " + _item->getCaption());
 }

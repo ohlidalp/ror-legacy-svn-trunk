@@ -18,14 +18,15 @@ You should have received a copy of the GNU General Public License
 along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 */
 // created on 24th of February 2009 by Thomas Fischer
-#ifndef GAMESCRIPT_H__
-#define GAMESCRIPT_H__
+#ifndef __GameScript_H_
+#define __GameScript_H_
 
 #include "RoRPrerequisites.h"
 
 #include "ScriptEngine.h"
 
 #include <angelscript.h>
+#include <pthread.h>
 
 struct curlMemoryStruct {
   char *memory;
@@ -37,16 +38,10 @@ struct curlMemoryStruct {
  */
 class GameScript : public ZeroedMemoryAllocator
 {
-protected:
-	ScriptEngine *mse;              //!< local script engine pointer, used as proxy mostly
-	RoRFrameListener *mefl;     //!< local pointer to the main RoRFrameListener, used as proxy mostly
-	pthread_t apiThread;
-
 public:
 	/**
 	 * constructor
 	 * @param se pointer to the ScriptEngine instance
-	 * @param efl pointer to the RoRFrameListener instance
 	 */
 	GameScript(ScriptEngine *se);
 
@@ -59,7 +54,7 @@ public:
 	 * writes a message to the games log (RoR.log)
 	 * @param msg string to log
 	 */
-	void log(std::string &msg);
+	void log(const Ogre::String &msg);
 
 	/**
 	 * returns the time in seconds since the game was started
@@ -76,22 +71,22 @@ public:
 	 * @param y Y position on the terrain
 	 * @param z Z position on the terrain
 	 */
-	void setPersonPosition(Ogre::Vector3 &vec);
+	void setPersonPosition(const Ogre::Vector3 &vec);
 
-	void loadTerrain(std::string &terrain);
+	void loadTerrain(const Ogre::String &terrain);
 	/**
 	 * moves the person relative
 	 * @param x X translation
 	 * @param y Y translation
 	 * @param z Z translation
 	 */
-	void movePerson(Ogre::Vector3);
+	void movePerson(const Ogre::Vector3 &vec);
 
 	/**
 	 * gets the time of the day in seconds
 	 * @return string with HH::MM::SS format
 	 */
-	std::string getCaelumTime();
+	Ogre::String getCaelumTime();
 	
 	/**
 	 * sets the time of the day in seconds
@@ -159,18 +154,18 @@ public:
 	 * DEPRECATED: use message
 	 * shows a message to the user
 	 */
-	void flashMessage(std::string &txt, float time, float charHeight);
+	void flashMessage(Ogre::String &txt, float time, float charHeight);
 
 	/**
 	 * shows a message to the user over the console system
 	 */
-	void message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible);
+	void message(Ogre::String &txt, Ogre::String &icon, float timeMilliseconds, bool forceVisible);
 
 	/**
 	 * set direction arrow
 	 * @param text text to be displayed. "" to hide the text
 	 */
-	void setDirectionArrow(std::string &text, Ogre::Vector3 &vec);
+	void setDirectionArrow(Ogre::String &text, Ogre::Vector3 &vec);
 
 
 	/**
@@ -189,13 +184,13 @@ public:
 	 * Sets the camera's position.
 	 * @param pos The new position of the camera.
 	 */
-	void setCameraPosition(Ogre::Vector3 &pos);
+	void setCameraPosition(const Ogre::Vector3 &pos);
 	
 	/**
 	 * Sets the camera's direction vector.
 	 * @param vec A vector representing the direction of the vector.
 	 */
-	void setCameraDirection(Ogre::Vector3 &vec);
+	void setCameraDirection(const Ogre::Vector3 &vec);
 	
 	/**
 	 * Rolls the camera anticlockwise, around its local z axis.
@@ -235,65 +230,65 @@ public:
 	 *      and the supplied look-at point.
 	 * @param targetPoint A vector specifying the look at point.
 	*/
-	void cameraLookAt(Ogre::Vector3 &targetPoint);
+	void cameraLookAt(const Ogre::Vector3 &targetPoint);
 	
 	/**
 	 * Adds a global function to the script
 	 * (Wrapper for ScriptEngine::addFunction)
 	 * @param arg A declaration for the function.
 	*/
-	int addScriptFunction(const std::string &arg);
+	int addScriptFunction(const Ogre::String &arg);
 	
 	/**
 	 * Checks if a global function exists in the script
 	 * (Wrapper for ScriptEngine::functionExists)
 	 * @param arg A declaration for the function.
 	*/
-	int scriptFunctionExists(const std::string &arg);
+	int scriptFunctionExists(const Ogre::String &arg);
 	
 	/**
 	 * Deletes a global function from the script
 	 * (Wrapper for ScriptEngine::deleteFunction)
 	 * @param arg A declaration for the function.
 	*/
-	int deleteScriptFunction(const std::string &arg);
+	int deleteScriptFunction(const Ogre::String &arg);
 	
 	/**
 	 * Adds a global variable to the script
 	 * (Wrapper for ScriptEngine::addVariable)
 	 * @param arg A declaration for the variable.
 	*/
-	int addScriptVariable(const std::string &arg);
+	int addScriptVariable(const Ogre::String &arg);
 	
 	/**
 	 * Deletes a global variable from the script
 	 * (Wrapper for ScriptEngine::deleteVariable)
 	 * @param arg A declaration for the variable.
 	*/
-	int deleteScriptVariable(const std::string &arg);
+	int deleteScriptVariable(const Ogre::String &arg);
 
 	// new things, not documented yet
-	void showChooser(std::string &type, std::string &instance, std::string &box);
-	void repairVehicle(std::string &instance, std::string &box, bool keepPosition);
-	void removeVehicle(std::string &instance, std::string &box);
+	void showChooser(const Ogre::String &type, const Ogre::String &instance, const Ogre::String &box);
+	void repairVehicle(const Ogre::String &instance, const Ogre::String &box, bool keepPosition);
+	void removeVehicle(const Ogre::String &instance, const Ogre::String &box);
 
-	void spawnObject(const std::string &objectName, const std::string &instanceName, Ogre::Vector3 &pos, Ogre::Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials);
-	void destroyObject(const std::string &instanceName);
+	void spawnObject(const Ogre::String &objectName, const Ogre::String &instanceName, const Ogre::Vector3 &pos, const Ogre::Vector3 &rot, const Ogre::String &eventhandler, bool uniquifyMaterials);
+	void destroyObject(const Ogre::String &instanceName);
 	int getNumTrucksByFlag(int flag);
 	bool getCaelumAvailable();
 	float stopTimer();
 	void startTimer();
-	std::string getSetting(std::string str);
+	Ogre::String getSetting(const Ogre::String &str);
 	void hideDirectionArrow();
-	int setMaterialAmbient(const std::string &materialName, float red, float green, float blue);
-	int setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha);
-	int setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha);
-	int setMaterialEmissive(const std::string &materialName, float red, float green, float blue);
-	int getSafeTextureUnitState(Ogre::TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum);
-	int setMaterialTextureName(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, const std::string &textureName);
-	int setMaterialTextureRotate(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation);
-	int setMaterialTextureScroll(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy);
-	int setMaterialTextureScale(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v);
+	int setMaterialAmbient(const Ogre::String &materialName, float red, float green, float blue);
+	int setMaterialDiffuse(const Ogre::String &materialName, float red, float green, float blue, float alpha);
+	int setMaterialSpecular(const Ogre::String &materialName, float red, float green, float blue, float alpha);
+	int setMaterialEmissive(const Ogre::String &materialName, float red, float green, float blue);
+	int getSafeTextureUnitState(Ogre::TextureUnitState **tu, const Ogre::String materialName, int techniqueNum, int passNum, int textureUnitNum);
+	int setMaterialTextureName(const Ogre::String &materialName, int techniqueNum, int passNum, int textureUnitNum, const Ogre::String &textureName);
+	int setMaterialTextureRotate(const Ogre::String &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation);
+	int setMaterialTextureScroll(const Ogre::String &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy);
+	int setMaterialTextureScale(const Ogre::String &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v);
 	
 	typedef struct OnlineAPIParams_t {
 		GameScript *cls;
@@ -303,14 +298,19 @@ public:
 	} OnlineAPIParams_t;
 
 	float rangeRandom(float from, float to);
-	int useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &dict, std::string &result);
+	int useOnlineAPI(const Ogre::String &apiquery, const AngelScript::CScriptDictionary &dict, Ogre::String &result);
 	int useOnlineAPIDirectly(OnlineAPIParams_t params);
 
-	int getLoadedTerrain(std::string &result);
+	int getLoadedTerrain(Ogre::String &result);
 	Ogre::Vector3 getPersonPosition();
 
 	void clearEventCache();
-	int sendGameCmd(const std::string& message);
+	int sendGameCmd(const Ogre::String& message);
+
+protected:
+
+	ScriptEngine *mse;          //!< local script engine pointer, used as proxy mostly
+	pthread_t apiThread;
 };
 
-#endif // GAMESCRIPT_H__
+#endif // __GameScript_H_

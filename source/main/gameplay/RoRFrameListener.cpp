@@ -687,7 +687,6 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 	objectCounter(0),
 	ow(0),
 	parentState(parentState),
-	person(0),
 	persostart(Vector3(0,0,0)),
 	pressure_pressed(false),
 	raceStartTime(-1),
@@ -992,11 +991,10 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 			preselected_map = getASCIIFromCharString(terrn, 255);
 		}
 
-		// create person _AFTER_ network, important
+		// create player _AFTER_ network, important
 		int colourNum = 0;
 		if (net->getLocalUserData()) colourNum = net->getLocalUserData()->colournum;
-		person = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
-		gEnv->player = person;
+		gEnv->player = (Character *)CharacterFactory::getSingleton().createLocal(colourNum);
 
 		// network chat stuff
 		netChat = ChatSystemFactory::getSingleton().createLocal(colourNum);
@@ -1022,13 +1020,15 @@ RoRFrameListener::RoRFrameListener(AppState *parentState, String inputhwnd) :
 #endif //SOCKETW
 	
 	// no network
-	person = (Character *)CharacterFactory::getSingleton().createLocal(-1);
-	gEnv->player = person;
+	gEnv->player = (Character *)CharacterFactory::getSingleton().createLocal(-1);
 
 	// init camera manager after mygui and after we have a character
 	new CameraManager(ow, dof);
 
-	person->setVisible(false);
+	if (gEnv->player)
+	{
+		gEnv->player->setVisible(false);
+	}
 
 	// load guy
 	int source=-1;
@@ -1274,9 +1274,12 @@ bool RoRFrameListener::updateEvents(float dt)
 #endif //USE_MYGUI
 	// update characters
 	if (loading_state==ALL_LOADED && net)
+	{
 		CharacterFactory::getSingleton().updateCharacters(dt);
-	else if (loading_state==ALL_LOADED && !net)
-		person->update(dt);
+	} else if (loading_state==ALL_LOADED && !net)
+	{
+		gEnv->player->update(dt);
+	}
 
 	if (INPUTENGINE.getEventBoolValueBounce(EV_COMMON_QUIT_GAME))
 	{
@@ -1479,9 +1482,9 @@ bool RoRFrameListener::updateEvents(float dt)
 		{
 			if (!curr_truck)
 			{
-				if (person)
+				if (gEnv->player)
 				{
-					person->setPhysicsEnabled(true);
+					gEnv->player->setPhysicsEnabled(true);
 				}
 			} else // we are in a vehicle
 			{
@@ -2485,7 +2488,11 @@ bool RoRFrameListener::updateEvents(float dt)
 						LOG("cinecam missing, cannot enter truck!");
 						continue;
 					}
-					float len = (trucks[i]->nodes[trucks[i]->cinecameranodepos[0]].AbsPosition-(person->getPosition()+Vector3(0.0, 2.0, 0.0))).length();
+					float len = 0.0f;
+					if (gEnv->player)
+					{
+						len = trucks[i]->nodes[trucks[i]->cinecameranodepos[0]].AbsPosition.distance(gEnv->player->getPosition()+Vector3(0.0, 2.0, 0.0));
+					}
 					if (len < mindist)
 					{
 						mindist=len;
@@ -2610,16 +2617,14 @@ bool RoRFrameListener::updateEvents(float dt)
 					if (localTruck->engine)
 						localTruck->engine->start();
 					BeamFactory::getSingleton().setCurrentTruck(localTruck->trucknum);
-				} else
+				} else if (gEnv->player)
 				{
-					// if it is a load or trailer, than stay in person mode
-					// but relocate to the new position, so we dont spawn the dialog again
-					//personode->setPosition(reload_pos);
-					person->move(Vector3(3.0, 0.2, 0.0)); //bad, but better
+					// if it is a load or trailer, than stay in player mode
+					// but relocate to the new position, so we don't spawn the dialog again
+					gEnv->player->move(Vector3(3.0, 0.2, 0.0)); //bad, but better
 					//BeamFactory::getSingleton().setCurrentTruck(-1);
 				}
 			}
-
 		}
 #endif //MYGUI
 	}
@@ -2671,8 +2676,11 @@ bool RoRFrameListener::updateEvents(float dt)
 		Radian rotation(0);
 		if (BeamFactory::getSingleton().getCurrentTruckNumber() == -1)
 		{
-			position = person->getPosition();
-			rotation = person->getRotation() + Radian(Math::PI);
+			if (gEnv->player)
+			{
+				position = gEnv->player->getPosition();
+				rotation = gEnv->player->getRotation() + Radian(Math::PI);
+			}
 		} else
 		{
 			position = curr_truck->getPosition();
@@ -2853,9 +2861,9 @@ void RoRFrameListener::initTrucks(bool loadmanual, Ogre::String selected, Ogre::
 	}
 
 	//force perso start
-	if (persostart != Vector3(0,0,0))
+	if (persostart != Vector3(0,0,0) && gEnv->player)
 	{
-		person->setPosition(persostart);
+		gEnv->player->setPosition(persostart);
 	}
 
 	loading_state = ALL_LOADED;
@@ -2895,17 +2903,15 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 	// normal workflow
 	if (!currentTruck)
 	{
-		// get out
-		if (previousTruck && person)
+		// get player out of the vehicle
+		if (previousTruck && gEnv->player)
 		{
-			person->setPosition(previousTruck->getPosition());
-			person->updateCharacterRotation();
-		}
-
-		// detach person from truck
-		if (person)
-		{
-			person->setBeamCoupling(false);
+			// detach from truck
+			gEnv->player->setBeamCoupling(false);
+			// update position
+			gEnv->player->setPosition(previousTruck->getPosition());
+			// update rotation
+			gEnv->player->updateCharacterRotation();
 		}
 
 		//force feedback
@@ -2946,11 +2952,11 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 			}
 		}
 		//position.y=hfinder->getHeightAt(position.x,position.z);
-		if (person && position != Vector3::ZERO)
+		if (gEnv->player && position != Vector3::ZERO)
 		{
-			person->setPosition(position);
-			person->updateCharacterRotation();
-			//person->setVisible(true);
+			gEnv->player->setPosition(position);
+			gEnv->player->updateCharacterRotation();
+			//gEnv->player->setVisible(true);
 		}
 		if (ow) ow->showDashboardOverlays(false, currentTruck);
 #ifdef USE_OPENAL
@@ -2974,8 +2980,6 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 		//getting inside
 		currentTruck->desactivate();
 
-
-		//person->setVisible(false);
 		if (ow &&!hidegui)
 		{
 			ow->showDashboardOverlays(true, currentTruck);
@@ -3000,10 +3004,10 @@ void RoRFrameListener::changedCurrentTruck(Beam *previousTruck, Beam *currentTru
 #endif //OIS_G27
 
 
-		// attach person to truck
-		if (person)
+		// attach player to truck
+		if (gEnv->player)
 		{
-			person->setBeamCoupling(true, currentTruck);
+			gEnv->player->setBeamCoupling(true, currentTruck);
 		}
 
 		if (ow)
@@ -3115,7 +3119,10 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
 		// now update mumble 3d audio things
 #ifdef USE_MUMBLE
-		MumbleIntegration::getSingleton().update(gEnv->mainCamera->getPosition(), person->getPosition() + Vector3(0, 1.8f, 0));
+		if (gEnv->player)
+		{
+			MumbleIntegration::getSingleton().update(gEnv->mainCamera->getPosition(), gEnv->player->getPosition() + Vector3(0, 1.8f, 0));
+		}
 #endif // USE_MUMBLE
 	}
 
@@ -3209,13 +3216,13 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 	{
 		dirArrowNode->lookAt(dirArrowPointed, Node::TS_WORLD,Vector3::UNIT_Y);
 		char tmp[256];
-		Real distance = 0;
+		Real distance = 0.0f;
 		if (curr_truck && curr_truck->state == ACTIVATED)
 		{
 			distance = curr_truck->getPosition().distance(dirArrowPointed);
-		} else
+		} else if (gEnv->player)
 		{
-			distance = person->getPosition().distance(dirArrowPointed);
+			distance = gEnv->player->getPosition().distance(dirArrowPointed);
 		}
 		sprintf(tmp,"%0.1f meter", distance);
 		ow->directionArrowDistance->setCaption(tmp);
@@ -3287,7 +3294,7 @@ bool RoRFrameListener::frameEnded(const FrameEvent& evt)
 	return true;
 }
 
-void RoRFrameListener::showLoad(int type, char* instance, char* box)
+void RoRFrameListener::showLoad(int type, const Ogre::String &instance, const Ogre::String &box)
 {
 	int free_truck    = BeamFactory::getSingleton().getTruckCount();
 	Beam **trucks     = BeamFactory::getSingleton().getTrucks();

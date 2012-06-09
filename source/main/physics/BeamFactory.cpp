@@ -444,7 +444,7 @@ void BeamFactory::recalcGravityMasses()
 	}
 }
 
-int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* box)
+int BeamFactory::findTruckInsideBox(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box)
 {
 	// try to find the desired truck (the one in the box)
 	int id = -1;
@@ -464,7 +464,7 @@ int BeamFactory::findTruckInsideBox(Collisions *collisions, char* inst, char* bo
 	return id;
 }
 
-void BeamFactory::repairTruck(Collisions *collisions, char* inst, char* box, bool keepPosition)
+void BeamFactory::repairTruck(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box, bool keepPosition)
 {
 	int rtruck = findTruckInsideBox(collisions, inst, box);
 	if (rtruck >= 0)
@@ -480,7 +480,7 @@ void BeamFactory::repairTruck(Collisions *collisions, char* inst, char* box, boo
 	}
 }
 
-void BeamFactory::removeTruck(Collisions *collisions, char* inst, char* box)
+void BeamFactory::removeTruck(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box)
 {
 	int rtruck = findTruckInsideBox(collisions, inst, box);
 
