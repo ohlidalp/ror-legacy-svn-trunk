@@ -60,6 +60,8 @@ public:
 		return down;
 	}
 
+	Ogre::String getCompositeMaterialName();
+
 	Ogre::Vector3 getMaxTerrainSize();
 	Ogre::Vector3 getTerrainPosition();
 
