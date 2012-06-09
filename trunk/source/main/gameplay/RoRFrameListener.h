@@ -50,8 +50,6 @@ public:
 	RoRFrameListener(AppState *parent, Ogre::String inputhwnd=0);
 	virtual ~RoRFrameListener();
 
-
-	Character *person;
 	ChatSystem *netChat;
 
 	bool freeTruckPosition;
@@ -188,7 +186,7 @@ public: // public methods
 	void setDirectionArrow(char *text, Ogre::Vector3 position);
 	void setLoadingState(int value);
 	void setNetPointToUID(int uid);
-	void showLoad(int type, char* instance, char* box);
+	void showLoad(int type, const Ogre::String &instance, const Ogre::String &box);
 	void showspray(bool s);
 	void shutdown_final();
 	void startTimer();

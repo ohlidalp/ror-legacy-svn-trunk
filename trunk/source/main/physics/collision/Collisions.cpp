@@ -313,7 +313,7 @@ void Collisions::parseGroundConfig(Ogre::ConfigFile *cfg, String groundModel)
 	}
 }
 
-Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi)
+Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, const Ogre::Vector3& lo, const Ogre::Vector3& hi)
 {	
 	Ogre::Real min = pos.x - lo.x;
 	Ogre::Vector3 newPos = Ogre::Vector3(lo.x, pos.y, pos.z);
@@ -322,31 +322,31 @@ Ogre::Vector3 Collisions::calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vecto
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, lo.y, pos.z);
-	};
+	}
 	
 	t = pos.z - lo.z;
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, pos.y, lo.z);
-	};
+	}
 	
 	t = hi.x - pos.x;
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(hi.x, pos.y, pos.z);
-	};
+	}
 	
 	t = hi.y - pos.y;
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, hi.y, pos.z);
-	};
+	}
 	
 	t = hi.z - pos.z;
 	if (t < min) {
 		min=t;
 		newPos = Ogre::Vector3(pos.x, pos.y, hi.z);
-	};
+	}
 	
 	return newPos;
 }
@@ -498,14 +498,10 @@ cell_t *Collisions::hash_find(int cell_x, int cell_z)
 	return NULL;
 }
 
-int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx,float hx,float ly,float hy,float lz,float hz,float srx,float sry,float srz, const char* eventname, const char* instancename, bool forcecam, Vector3 campos, float scx, float scy, float scz, float drx, float dry, float drz, int event_filter, int scripthandler)
+int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, Vector3 pos, Ogre::Vector3 rot, Ogre::Vector3 l, Ogre::Vector3 h, Ogre::Vector3 sr, const Ogre::String &eventname, const Ogre::String &instancename, bool forcecam, Ogre::Vector3 campos, Ogre::Vector3 sc /* = Vector3::UNIT_SCALE */, Ogre::Vector3 dr /* = Vector3::ZERO */, int event_filter /* = EVENT_ALL */, int scripthandler /* = -1 */)
 {
-	Quaternion 	rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-	Quaternion 	direction=Quaternion(Degree(drx), Vector3::UNIT_X)*Quaternion(Degree(dry), Vector3::UNIT_Y)*Quaternion(Degree(drz), Vector3::UNIT_Z);
-	Ogre::Vector3 l(lx, ly, lz);
-	Ogre::Vector3 h(hx, hy, hz);
-	Ogre::Vector3 p(px, py, pz);
-	Ogre::Vector3 sc(scx, scy, scz);
+	Quaternion rotation  = Quaternion(Degree(rot.x), Vector3::UNIT_X) * Quaternion(Degree(rot.y), Vector3::UNIT_Y) * Quaternion(Degree(rot.z), Vector3::UNIT_Z);
+	Quaternion direction = Quaternion(Degree(dr.x), Vector3::UNIT_X) * Quaternion(Degree(dr.y), Vector3::UNIT_Y) * Quaternion(Degree(dr.z), Vector3::UNIT_Z);
 	collision_box_t& coll_box = collision_boxes[free_collision_box];
 
 	coll_box.enabled = true;
@@ -520,7 +516,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	coll_box.selfcenter *= 0.5;
 	
 	// and center too (we need it)
-	coll_box.center = p;
+	coll_box.center = pos;
 	coll_box.virt = virt;
 	coll_box.event_filter = event_filter;
 
@@ -528,7 +524,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	coll_box.camforced = forcecam;
 	if (forcecam)
 	{
-		coll_box.campos = coll_box.center+rotation * campos;
+		coll_box.campos = coll_box.center + rotation * campos;
 	}
 
 	// first, self-rotate
@@ -536,7 +532,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	{
 		// we have a self-rotated block
 		coll_box.selfrotated = true;
-		coll_box.selfrot     = Quaternion(Degree(srx), Vector3::UNIT_X)*Quaternion(Degree(sry), Vector3::UNIT_Y)*Quaternion(Degree(srz), Vector3::UNIT_Z);
+		coll_box.selfrot     = Quaternion(Degree(sr.x), Vector3::UNIT_X) * Quaternion(Degree(sr.y), Vector3::UNIT_Y) * Quaternion(Degree(sr.z), Vector3::UNIT_Z);
 		coll_box.selfunrot   = coll_box.selfrot.Inverse();
 	} else
 	{
@@ -545,12 +541,12 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 	coll_box.eventsourcenum = -1;
 
-	if (strlen(eventname) > 0)
+	if (!eventname.empty())
 	{
 		//LOG("COLL: adding "+TOSTRING(free_eventsource)+" "+String(instancename)+" "+String(eventname));
 		// this is event-generating
-		strcpy(eventsources[free_eventsource].boxname, eventname);
-		strcpy(eventsources[free_eventsource].instancename, instancename);
+		strcpy(eventsources[free_eventsource].boxname, eventname.c_str());
+		strcpy(eventsources[free_eventsource].instancename, instancename.c_str());
 		eventsources[free_eventsource].scripthandler = scripthandler;
 		eventsources[free_eventsource].cbox = free_collision_box;
 		eventsources[free_eventsource].snode = tenode;
@@ -561,7 +557,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	}
 
 	// next, global rotate
-	if (fabs(rx) < 0.0001f && fabs(ry) < 0.0001f && fabs(rz) < 0.0001f)
+	if (fabs(rot.x) < 0.0001f && fabs(rot.y) < 0.0001f && fabs(rot.z) < 0.0001f)
 	{
 		// unrefined box
 		coll_box.refined = false;
@@ -586,14 +582,14 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 	Vector3 cube_points[8];
 	if (coll_box.selfrotated || coll_box.refined)
 	{
-		cube_points[0] = Ogre::Vector3(lx, ly, lz) * sc;
-		cube_points[1] = Ogre::Vector3(hx, ly, lz) * sc;
-		cube_points[2] = Ogre::Vector3(lx, hy, lz) * sc;
-		cube_points[3] = Ogre::Vector3(hx, hy, lz) * sc;
-		cube_points[4] = Ogre::Vector3(lx, ly, hz) * sc;
-		cube_points[5] = Ogre::Vector3(hx, ly, hz) * sc;
-		cube_points[6] = Ogre::Vector3(lx, hy, hz) * sc;
-		cube_points[7] = Ogre::Vector3(hx, hy, hz) * sc;
+		cube_points[0] = Ogre::Vector3(l.x, l.y, l.z) * sc;
+		cube_points[1] = Ogre::Vector3(h.x, l.y, l.z) * sc;
+		cube_points[2] = Ogre::Vector3(l.x, h.y, l.z) * sc;
+		cube_points[3] = Ogre::Vector3(h.x, h.y, l.z) * sc;
+		cube_points[4] = Ogre::Vector3(l.x, l.y, h.z) * sc;
+		cube_points[5] = Ogre::Vector3(h.x, l.y, h.z) * sc;
+		cube_points[6] = Ogre::Vector3(l.x, h.y, h.z) * sc;
+		cube_points[7] = Ogre::Vector3(h.x, h.y, h.z) * sc;
 		
 		// rotate box
 		if (coll_box.selfrotated)
@@ -619,14 +615,14 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 				coll_box.hi.makeCeil(cube_points[i]);
 			}
 			// set absolute coords
-			coll_box.lo += p;
-			coll_box.hi += p;
+			coll_box.lo += pos;
+			coll_box.hi += pos;
 	}
 	else
 	{
 		// unrefined box
-		coll_box.lo = p + coll_box.relo;
-		coll_box.hi = p + coll_box.rehi;
+		coll_box.lo = pos + coll_box.relo;
+		coll_box.hi = pos + coll_box.rehi;
 		Vector3 d = (coll_box.rehi - coll_box.relo);
 		cube_points[0] = coll_box.relo;
 		cube_points[1] = coll_box.relo;	cube_points[1].x += d.x;
@@ -640,7 +636,7 @@ int Collisions::addCollisionBox(SceneNode *tenode, bool rotating, bool virt, flo
 
 	if (debugsn)
 	{
-		debugsn->setPosition(p);
+		debugsn->setPosition(pos);
 		// box content
 		ManualObject *mo = gEnv->sceneManager->createManualObject();
 		String matName = "tracks/debug/collision/box";
@@ -1218,11 +1214,11 @@ bool Collisions::nodeCollision(node_t *node, bool iscinecam, int contacted, floa
 }
 
 
-Vector3 Collisions::getPosition(char* instance, char* box)
+Vector3 Collisions::getPosition(const Ogre::String &inst, const Ogre::String &box)
 {
 	for (int i=0; i<free_eventsource; i++)
 	{
-		if (!strcmp(instance, eventsources[i].instancename) && !strcmp(box, eventsources[i].boxname))
+		if (!strcmp(inst.c_str(), eventsources[i].instancename) && !strcmp(box.c_str(), eventsources[i].boxname))
 		{
 			return collision_boxes[eventsources[i].cbox].center+collision_boxes[eventsources[i].cbox].rot*collision_boxes[eventsources[i].cbox].selfcenter;
 		}
@@ -1230,11 +1226,11 @@ Vector3 Collisions::getPosition(char* instance, char* box)
 	return Vector3::ZERO;
 }
 
-Quaternion Collisions::getDirection(char* instance, char* box)
+Quaternion Collisions::getDirection(const Ogre::String &inst, const Ogre::String &box)
 {
 	for (int i=0; i<free_eventsource; i++)
 	{
-		if (!strcmp(instance, eventsources[i].instancename) && !strcmp(box, eventsources[i].boxname))
+		if (!strcmp(inst.c_str(), eventsources[i].instancename) && !strcmp(box.c_str(), eventsources[i].boxname))
 		{
 			return collision_boxes[eventsources[i].cbox].rot*eventsources[i].direction;
 		}
@@ -1242,11 +1238,11 @@ Quaternion Collisions::getDirection(char* instance, char* box)
 	return Quaternion::ZERO;
 }
 
-collision_box_t *Collisions::getBox(char* instance, char* box)
+collision_box_t *Collisions::getBox(const Ogre::String &inst, const Ogre::String &box)
 {
 	for (int i=0; i<free_eventsource; i++)
 	{
-		if (!strcmp(instance, eventsources[i].instancename) && !strcmp(box, eventsources[i].boxname))
+		if (!strcmp(inst.c_str(), eventsources[i].instancename) && !strcmp(box.c_str(), eventsources[i].boxname))
 		{
 			return &collision_boxes[eventsources[i].cbox];
 		}
@@ -1286,9 +1282,9 @@ eventsource_t *Collisions::isTruckInEventBox(Beam *truck)
 	return 0;
 }
 
-bool Collisions::isInside(Vector3 pos, char* instance, char* box, float border)
+bool Collisions::isInside(Vector3 pos, const Ogre::String &inst, const Ogre::String &box, float border)
 {
-	collision_box_t *cbox=getBox(instance, box);
+	collision_box_t *cbox = getBox(inst, box);
 	return isInside(pos, cbox, border);
 }
 

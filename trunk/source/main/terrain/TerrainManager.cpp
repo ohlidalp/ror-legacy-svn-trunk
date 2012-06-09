@@ -21,8 +21,6 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "BeamData.h"
 #include "BeamFactory.h"
-#include "Character.h"
-#include "Character.h"
 #include "Dashboard.h"
 #include "DustManager.h"
 #include "EnvironmentMap.h"
@@ -31,6 +29,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "GlowMaterialListener.h"
 #include "HDRListener.h"
 #include "Language.h"
+#include "RoRFrameListener.h"
 #include "ScriptEngine.h"
 #include "Settings.h"
 #include "ShadowManager.h"
@@ -44,8 +43,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-TerrainManager::TerrainManager() :
-	  loading_state(NONE_LOADED)
+TerrainManager::TerrainManager()
 {
 	gravity = DEFAULT_GRAVITY;
 }
@@ -54,7 +52,6 @@ TerrainManager::~TerrainManager()
 {
 
 }
-
 
 // some shortcut to remove ugly code
 #ifdef USE_MYGUI
@@ -115,7 +112,6 @@ void TerrainManager::loadTerrain(String filename)
 
 	loadTerrainConfigBasics(ds);
 
-
 	// then, init the subsystems, order is important :)
 	initSubSystems();
 
@@ -133,11 +129,8 @@ void TerrainManager::loadTerrain(String filename)
 
 	collisions->printStats();
 
-	// rorframelistener still has its own var, need to fix this
-	loading_state = TERRAIN_LOADED;
-
-
-
+	if (gEnv->frameListener) gEnv->frameListener->loading_state = TERRAIN_LOADED;
+	
 	// bake the decals
 	//finishTerrainDecal();
 

@@ -135,9 +135,9 @@ private:
 	void hash_free(int cell_x, int cell_z, int value);
 	cell_t *hash_find(int cell_x, int cell_z);
 	unsigned int hashfunc(unsigned int cellid);
-	void parseGroundConfig(Ogre::ConfigFile *cfg, Ogre::String groundModel=Ogre::String());
+	void parseGroundConfig(Ogre::ConfigFile *cfg, Ogre::String groundModel = "");
 
-	Ogre::Vector3 calcCollidedSide(const Ogre::Vector3& pos, Ogre::Vector3& lo, Ogre::Vector3& hi);
+	Ogre::Vector3 calcCollidedSide(const Ogre::Vector3& pos, const Ogre::Vector3& lo, const Ogre::Vector3& hi);
 
 public:
 
@@ -149,15 +149,15 @@ public:
 
 	Collisions();
 
-	Ogre::Vector3 getPosition(char* instance, char* box);
-	Ogre::Quaternion getDirection(char* instance, char* box);
-	collision_box_t *getBox(char* instance, char* box);
+	Ogre::Vector3 getPosition(const Ogre::String &inst, const Ogre::String &box);
+	Ogre::Quaternion getDirection(const Ogre::String &inst, const Ogre::String &box);
+	collision_box_t *getBox(const Ogre::String &inst, const Ogre::String &box);
 
 	eventsource_t *isTruckInEventBox(Beam *truck);
 
 	bool collisionCorrect(Ogre::Vector3 *refpos);
 	bool groundCollision(node_t *node, float dt, ground_model_t** gm, float *nso=0);
-	bool isInside(Ogre::Vector3 pos, char* instance, char* box, float border=0);
+	bool isInside(Ogre::Vector3 pos, const Ogre::String &inst, const Ogre::String &box, float border=0);
 	bool isInside(Ogre::Vector3 pos, collision_box_t *cbox, float border=0);
 	bool nodeCollision(node_t *node, bool iscinecam, int contacted, float dt, float* nso, ground_model_t** ogm, int *handlernum=0);
 
@@ -166,7 +166,7 @@ public:
 	void primitiveCollision(node_t *node, Ogre::Vector3 &normal, Ogre::Vector3 &force, Ogre::Vector3 &velocity, float dt, ground_model_t* gm, float* nso, float penetration=0, float reaction=-1.0f);
 	void printStats();
 
-	int addCollisionBox(Ogre::SceneNode *tenode, bool rotating, bool virt, float px, float py, float pz, float rx, float ry, float rz, float lx, float hx, float ly, float hy, float lz, float hz, float srx, float sry, float srz, const char* eventname, const char* instancename, bool forcecam, Ogre::Vector3 campos, float scx=1.0f, float scy=1.0f, float scz=1.0f, float drx=0.0f, float dry=0.0f, float drz=0.0f, int event_filter=EVENT_ALL, int scripthandler=-1);
+	int addCollisionBox(Ogre::SceneNode *tenode, bool rotating, bool virt, Ogre::Vector3 pos, Ogre::Vector3 rot, Ogre::Vector3 l, Ogre::Vector3 h, Ogre::Vector3 sr, const Ogre::String &eventname, const Ogre::String &instancename, bool forcecam, Ogre::Vector3 campos, Ogre::Vector3 sc = Ogre::Vector3::UNIT_SCALE, Ogre::Vector3 dr = Ogre::Vector3::ZERO, int event_filter = EVENT_ALL, int scripthandler = -1);
 	int addCollisionMesh(Ogre::String meshname, Ogre::Vector3 pos, Ogre::Quaternion q, Ogre::Vector3 scale, ground_model_t *gm=0, std::vector<int> *collTris=0);
 	int addCollisionTri(Ogre::Vector3 p1, Ogre::Vector3 p2, Ogre::Vector3 p3, ground_model_t* gm);
 	int createCollisionDebugVisualization();

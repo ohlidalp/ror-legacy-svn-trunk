@@ -55,11 +55,11 @@ public:
 
 	bool removeBeam(Beam *b);
 	void removeCurrentTruck();
-	void removeTruck(Collisions *collisions, char* inst, char* box);
+	void removeTruck(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box);
 	void removeTruck(int truck);
 	
 	bool enterRescueTruck();
-	void repairTruck(Collisions *collisions, char* inst, char* box, bool keepPosition=false);
+	void repairTruck(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box, bool keepPosition=false);
 
 	void updateVisual(float dt);
 	void updateAI(float dt);
@@ -91,7 +91,7 @@ protected:
 	unsigned long physFrame;
 
 	int getFreeTruckSlot();
-	int findTruckInsideBox(Collisions *collisions, char* inst, char* box);
+	int findTruckInsideBox(Collisions *collisions, const Ogre::String &inst, const Ogre::String &box);
 
 	// functions used by friends
 	void netUserAttributesChanged(int source, int streamid);

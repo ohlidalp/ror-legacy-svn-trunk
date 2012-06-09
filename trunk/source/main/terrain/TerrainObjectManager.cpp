@@ -147,14 +147,13 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			lastprogress = progress;
 		}
 
-		char oname[1024];
-		char type[256];
-		char name[256];
-		int r;
-		float ox, oy, oz;
-		float rx, ry, rz;
-		//fscanf(fd," %[^\n\r]",line);
-		size_t ll=ds->readLine(line, 1023);
+		char oname[1024] = {};
+		char type[256] = {};
+		char name[256] = {};
+		Vector3 pos(Vector3::ZERO);
+		Vector3 rot(Vector3::ZERO);
+
+		size_t ll = ds->readLine(line, 1023);
 		if (line[0]=='/' || line[0]==';' || ll==0) continue; //comments
 		if (!strcmp("end",line)) break;
 
@@ -167,9 +166,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 		if (!strncmp(line,"grid", 4))
 		{
-			float px=0,py=0,pz=0;
-			sscanf(line, "grid %f, %f, %f", &px, &py, &pz);
-			Vector3 pos = Vector3(px,py,pz);
+			sscanf(line, "grid %f, %f, %f", &pos.x, &pos.y, &pos.z);
 
 			Ogre::ColourValue BackgroundColour = Ogre::ColourValue::White;//Ogre::ColourValue(0.1337f, 0.1337f, 0.1337f, 1.0f);
 			Ogre::ColourValue GridColour = Ogre::ColourValue(0.2f, 0.2f, 0.2f, 1.0f);
@@ -218,6 +215,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 
 			mReferenceObject->end();
 			mReferenceObject->setCastShadows(false);
+			
 			SceneNode *n = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 			n->setPosition(pos);
 			n->attachObject(mReferenceObject);
@@ -449,8 +447,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			{
 				if (r2oldmode)
 				{
-					if (proceduralManager)
-						proceduralManager->addObject(po);
+					if (proceduralManager) proceduralManager->addObject(po);
 					po = ProceduralObject();
 				}
 				proroad = false;
@@ -460,9 +457,8 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			{
 				float rwidth, bwidth, bheight;
 				//position x,y,z rotation rx,ry,rz, width, border width, border height, type
-				r=sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %s",&ox,&oy,&oz, &rx, &ry, &rz, &rwidth, &bwidth, &bheight, oname);
-				Vector3 pos=Vector3(ox, oy, oz);
-				Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
+				int r = sscanf(line, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %s",&pos.x,&pos.y,&pos.z, &rot.x, &rot.y, &rot.z, &rwidth, &bwidth, &bheight, oname);
+				Quaternion rotation = Quaternion(Degree(rot.x), Vector3::UNIT_X)*Quaternion(Degree(rot.y), Vector3::UNIT_Y)*Quaternion(Degree(rot.z), Vector3::UNIT_Z);
 				int roadtype=Road2::ROAD_AUTOMATIC;
 				int pillartype = 0;
 				if (!strcmp(oname, "flat")) roadtype=Road2::ROAD_FLAT;
@@ -496,9 +492,8 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		memset(oname, 0, 255);
 		memset(type, 0, 255);
 		memset(name, 0, 255);
-		r=sscanf(line, "%f, %f, %f, %f, %f, %f, %s %s %s",&ox,&oy,&oz, &rx, &ry, &rz, oname, type, name);
-		if (r<6)
-			continue;
+		int r = sscanf(line, "%f, %f, %f, %f, %f, %f, %s %s %s",&pos.x,&pos.y,&pos.z, &rot.x, &rot.y, &rot.z, oname, type, name);
+		if (r < 6) continue;
 		if ((!strcmp(oname, "truck")) || (!strcmp(oname, "load") || (!strcmp(oname, "machine")) || (!strcmp(oname, "boat")) || (!strcmp(oname, "truck2")) ))
 		{
 			bool newFormat = (!strcmp(oname, "truck2"));
@@ -514,12 +509,12 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				continue;
 			}
 			//this is a truck or load declaration
-			truck_preload[truck_preload_num].px=ox;
-			truck_preload[truck_preload_num].py=oy;
-			truck_preload[truck_preload_num].pz=oz;
+			truck_preload[truck_preload_num].px = pos.x;
+			truck_preload[truck_preload_num].py = pos.y;
+			truck_preload[truck_preload_num].pz = pos.z;
 			truck_preload[truck_preload_num].freePosition = newFormat;
 			truck_preload[truck_preload_num].ismachine=(!strcmp(oname, "machine"));
-			truck_preload[truck_preload_num].rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
+			truck_preload[truck_preload_num].rotation=Quaternion(Degree(rot.x), Vector3::UNIT_X)*Quaternion(Degree(rot.y), Vector3::UNIT_Y)*Quaternion(Degree(rot.z), Vector3::UNIT_Z);
 			//truck_preload[truck_preload_num].ry=ry;
 			strcpy(truck_preload[truck_preload_num].name, truckname.c_str());
 			truck_preload_num++;
@@ -535,35 +530,33 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			|| !strcmp(oname, "roadbridge"))
 		{
 			int pillartype = !(strcmp(oname, "roadbridgenopillar") == 0);
-			//okay, this is a job for roads2
+			// okay, this is a job for roads2
 			int roadtype=Road2::ROAD_AUTOMATIC;
 			if (!strcmp(oname, "road")) roadtype=Road2::ROAD_FLAT;
-			Vector3 pos=Vector3(ox, oy, oz);
 			Quaternion rotation;
-			rotation=Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
-			if ((pos-r2lastpos).length()>20.0)
+			rotation = Quaternion(Degree(rot.x), Vector3::UNIT_X)*Quaternion(Degree(rot.y), Vector3::UNIT_Y)*Quaternion(Degree(rot.z), Vector3::UNIT_Z);
+			if (pos.distance(r2lastpos) > 20.0f)
 			{
-				//break the road
-				if (r2oldmode!=0)
+				// break the road
+				if (r2oldmode != 0)
 				{
-					//fill object
+					// fill object
 					ProceduralPoint pp;
 					pp.bheight = 0.2;
 					pp.bwidth = 1.4;
 					pp.pillartype = pillartype;
-					pp.position = r2lastpos+r2lastrot*Vector3(10.0,0,0);
+					pp.position = r2lastpos + r2lastrot * Vector3(10.0f, 0.0f, 0.9f);
 					pp.rotation = r2lastrot;
 					pp.type = roadtype;
 					pp.width = 8;
 					po.points.push_back(pp);
 
 					// finish it and start new object
-					if (proceduralManager)
-						proceduralManager->addObject(po);
+					if (proceduralManager) proceduralManager->addObject(po);
 					po = ProceduralObject();
-					r2oldmode=1;
+					r2oldmode = 1;
 				}
-				r2oldmode=1;
+				r2oldmode = 1;
 				// beginning of new
 				ProceduralPoint pp;
 				pp.bheight = 0.2;
@@ -574,10 +567,9 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 				pp.type = roadtype;
 				pp.width = 8;
 				po.points.push_back(pp);
-			}
-			else
+			} else
 			{
-				//fill object
+				// fill object
 				ProceduralPoint pp;
 				pp.bheight = 0.2;
 				pp.bwidth = 1.4;
@@ -591,22 +583,17 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 			r2lastpos=pos;
 			r2lastrot=rotation;
 
-
 			continue;
 		}
-		loadObject(oname, ox, oy, oz, rx, ry, rz, bakeNode, name, true, -1, type);
+		loadObject(oname, pos, rot, bakeNode, name, type);
 	}
 
-
-	//fclose(fd);
-
-	// ds closes automatically, so do not close it explicitly here:
-	//ds->close();
+	// ds closes automatically, so do not close it explicitly here: ds->close();
 
 	// finish the last road
 	if (r2oldmode != 0)
 	{
-		//fill object
+		// fill object
 		ProceduralPoint pp;
 		pp.bheight = 0.2;
 		pp.bwidth = 1.4;
@@ -618,8 +605,7 @@ void TerrainObjectManager::loadObjectConfigFile(Ogre::String odefname)
 		po.points.push_back(pp);
 
 		// finish it and start new object
-		if (proceduralManager)
-			proceduralManager->addObject(po);
+		if (proceduralManager) proceduralManager->addObject(po);
 	}
 }
 
@@ -644,98 +630,96 @@ void TerrainObjectManager::postLoad()
 	}
 }
 
-void TerrainObjectManager::unloadObject(const char* instancename)
+void removeCollisionTri(int number)
 {
-	if (loadedObjects.find(std::string(instancename)) == loadedObjects.end())
+	if (gEnv->collisions) gEnv->collisions->removeCollisionTri(number);
+}
+
+void removeCollisionBox(int number)
+{
+	if (gEnv->collisions) gEnv->collisions->removeCollisionBox(number);
+}
+
+void TerrainObjectManager::unloadObject(const String &instancename)
+{
+	if (loadedObjects.find(instancename) == loadedObjects.end())
 	{
-		LOG("unable to unload object: " + std::string(instancename));
+		LOG("unable to unload object: " + instancename);
 		return;
 	}
 
-	loadedObject_t obj = loadedObjects[std::string(instancename)];
+	loadedObject_t obj = loadedObjects[instancename];
 
 	// check if it was already deleted
 	if (!obj.enabled)
 		return;
 
 	// unload any collision tris
-	if (obj.collTris.size() > 0)
-	{
-		for (std::vector<int>::iterator it = obj.collTris.begin(); it != obj.collTris.end(); it++)
-		{
-			gEnv->collisions->removeCollisionTri(*it);
-		}
-	}
-
+	std::for_each(obj.collTris.begin(), obj.collTris.end(), removeCollisionTri);
 	// and any collision boxes
-	if (obj.collBoxes.size() > 0)
-	{
-		for (std::vector<int>::iterator it = obj.collBoxes.begin(); it != obj.collBoxes.end(); it++)
-		{
-			gEnv->collisions->removeCollisionBox(*it);
-		}
-	}
+	std::for_each(obj.collTris.begin(), obj.collTris.end(), removeCollisionBox);
 
 	obj.sceneNode->detachAllObjects();
 	obj.sceneNode->setVisible(false);
 	obj.enabled = false;
 }
 
-void TerrainObjectManager::loadObject(const char* name, float px, float py, float pz, float rx, float ry, float rz, SceneNode * bakeNode, const char* instancename, bool enable_collisions, int scripthandler, const char *type, bool uniquifyMaterial)
+void TerrainObjectManager::loadObject(const Ogre::String &name, const Ogre::Vector3 &pos, const Ogre::Vector3 &rot, Ogre::SceneNode *bakeNode, const Ogre::String &instancename, const Ogre::String &type, bool enable_collisions /* = true */, int scripthandler /* = -1 */, bool uniquifyMaterial /* = false */)
 {
-	ScopeLog log("object_"+String(name));
-	if (type && !strcmp(type, "grid"))
+	ScopeLog log("object_"+name);
+
+	if (type == "grid")
 	{
 		// some fast grid object hacks :)
-		for (int x=0;x<500;x+=50)
-			for (int z=0;z<500;z+=50)
-				loadObject(name, px+x, py, pz+z, rx, ry, rz, bakeNode, 0, enable_collisions, scripthandler, 0);
+		for (int x=0; x < 500; x += 50)
+		{
+			for (int z=0; z < 500; z += 50)
+			{
+				const String notype = "";
+				loadObject(name, pos + Vector3(x, 0.0f, z), rot, bakeNode, name, notype, enable_collisions, scripthandler, uniquifyMaterial);
+			}
+		}
 		return;
 	}
 
 	// nice idea, but too many random hits
-	//if (abs(rx+1) < 0.001) rx = Math::RangeRandom(0, 360);
-	//if (abs(ry+1) < 0.001) ry = Math::RangeRandom(0, 360);
-	//if (abs(rz+1) < 0.001) rz = Math::RangeRandom(0, 360);
+	//if (abs(rot.x+1) < 0.001) rot.x = Math::RangeRandom(0, 360);
+	//if (abs(rot.y+1) < 0.001) rot.y = Math::RangeRandom(0, 360);
+	//if (abs(rot.z+1) < 0.001) rot.z = Math::RangeRandom(0, 360);
 
-	if (strnlen(name, 250)==0)
-		return;
+	if (name.empty()) return;
 
 	//FILE *fd;
-	char fname[1024] = {};
 	char oname[1024] = {};
 	char mesh[1024] = {};
 	char line[1024] = {};
 	char collmesh[1024] = {};
-	float scx = 0, scy = 0, scz = 0;
-	float lx = 0, hx = 0, ly = 0, hy = 0, lz = 0, hz = 0;
-	float srx = 0, sry = 0, srz = 0;
-	float drx = 0, dry = 0, drz = 0;
-	float fcx = 0, fcy = 0, fcz = 0;
+	Vector3 l(Vector3::ZERO);
+	Vector3 h(Vector3::ZERO);
+	Vector3 dr(Vector3::ZERO);
+	Vector3 fc(Vector3::ZERO);
+	Vector3 sc(Vector3::ZERO);
+	Vector3 sr(Vector3::ZERO);
 	bool forcecam=false;
 	bool ismovable=false;
 
 	int event_filter = EVENT_ALL;
-	Quaternion rotation = Quaternion(Degree(rx), Vector3::UNIT_X)*Quaternion(Degree(ry), Vector3::UNIT_Y)*Quaternion(Degree(rz), Vector3::UNIT_Z);
+
+	Quaternion rotation = Quaternion(Degree(rot.x), Vector3::UNIT_X) * Quaternion(Degree(rot.y), Vector3::UNIT_Y) * Quaternion(Degree(rot.z), Vector3::UNIT_Z);
 
 	// try to load with UID first!
 	String odefgroup = "";
-	String odefname = "";
+	String odefname = name + ".odef";
 
 	bool odefFound = false;
 
+	bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
+	if (exists)
 	{
-		sprintf(fname,"%s.odef", name);
-		odefname = String(fname);
-		bool exists = ResourceGroupManager::getSingleton().resourceExistsInAnyGroup(odefname);
-		if (exists)
-		{
-			odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
-			odefFound = true;
-		}
+		odefgroup = ResourceGroupManager::getSingleton().findGroupContainingResource(odefname);
+		odefFound = true;
 	}
-
-
+	
 	if (!CACHE.checkResourceLoaded(odefname, odefgroup))
 		if (!odefFound)
 		{
@@ -754,42 +738,42 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 		//scale
 		ds->readLine(line, 1023);
-		sscanf(line, "%f, %f, %f",&scx,&scy,&scz);
-		sprintf(oname,"object%i(%s)", objcounter,name);
+		sscanf(line, "%f, %f, %f",&sc.x, &sc.y, &sc.z);
+		String entityName = "object" + TOSTRING(objcounter) + "(" + name + ")";
 		objcounter++;
-
 
 		SceneNode *tenode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
 		bool background_loading = BSETTING("Background Loading", false);
 
 		MeshObject *mo = NULL;
 		if (String(mesh) != "none")
-			mo = new MeshObject(mesh, oname, tenode, NULL, background_loading);
+		{
+			mo = new MeshObject(mesh, entityName, tenode, NULL, background_loading);
+		}
 
 		//mo->setQueryFlags(OBJECTS_MASK);
 		//tenode->attachObject(te);
-		tenode->setScale(scx,scy,scz);
-		tenode->setPosition(px,py,pz);
+		tenode->setScale(sc);
+		tenode->setPosition(pos);
 		tenode->rotate(rotation);
 		tenode->pitch(Degree(-90));
 		tenode->setVisible(true);
 
 		// register in map
-		loadedObject_t *obj = &loadedObjects[std::string(instancename)];
-		obj->instanceName = std::string(instancename);
+		loadedObject_t *obj = &loadedObjects[instancename];
+		obj->instanceName = instancename;
 		obj->loadType     = 0;
 		obj->enabled      = true;
 		obj->sceneNode    = tenode;
 		obj->collTris.clear();
 
-
-		if (mo && uniquifyMaterial && instancename)
+		if (mo && uniquifyMaterial && !instancename.empty())
 		{
 			for (unsigned int i = 0; i < mo->getEntity()->getNumSubEntities(); i++)
 			{
 				SubEntity *se = mo->getEntity()->getSubEntity(i);
 				String matname = se->getMaterialName();
-				String newmatname = matname + "/" + String(instancename);
+				String newmatname = matname + "/" + instancename;
 				//LOG("subentity " + TOSTRING(i) + ": "+ matname + " -> " + newmatname);
 				se->getMaterial()->clone(newmatname);
 				se->setMaterialName(newmatname);
@@ -805,8 +789,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 		bool classic_ref=true;
 		// everything is of concrete by default
 		ground_model_t *gm = gEnv->collisions->getGroundModelByString("concrete");
-		char eventname[256];
-		eventname[0]=0;
+		char eventname[256] = {};
 		while (!ds->eof())
 		{
 			size_t ll=ds->readLine(line, 1023);
@@ -822,7 +805,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			if (!strcmp("movable", ptline)) {ismovable=true;continue;};
 			if (!strcmp("localizer-h", ptline))
 			{
-				localizers[free_localizer].position=Vector3(px,py,pz);
+				localizers[free_localizer].position=Vector3(pos.x,pos.y,pos.z);
 				localizers[free_localizer].rotation=rotation;
 				localizers[free_localizer].type=Autopilot::LOCALIZER_HORIZONTAL;
 				free_localizer++;
@@ -830,7 +813,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 			if (!strcmp("localizer-v", ptline))
 			{
-				localizers[free_localizer].position=Vector3(px,py,pz);
+				localizers[free_localizer].position=Vector3(pos.x,pos.y,pos.z);
 				localizers[free_localizer].rotation=rotation;
 				localizers[free_localizer].type=Autopilot::LOCALIZER_VERTICAL;
 				free_localizer++;
@@ -838,7 +821,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 			if (!strcmp("localizer-ndb", ptline))
 			{
-				localizers[free_localizer].position=Vector3(px,py,pz);
+				localizers[free_localizer].position=Vector3(pos.x,pos.y,pos.z);
 				localizers[free_localizer].rotation=rotation;
 				localizers[free_localizer].type=Autopilot::LOCALIZER_NDB;
 				free_localizer++;
@@ -846,7 +829,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 			if (!strcmp("localizer-vor", ptline))
 			{
-				localizers[free_localizer].position=Vector3(px,py,pz);
+				localizers[free_localizer].position=Vector3(pos.x,pos.y,pos.z);
 				localizers[free_localizer].rotation=rotation;
 				localizers[free_localizer].type=Autopilot::LOCALIZER_VOR;
 				free_localizer++;
@@ -869,7 +852,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 			if (!strcmp("beginbox", ptline) || !strcmp("beginmesh", ptline))
 			{
-				drx=dry=drz=0.0;
+				dr = Vector3::ZERO;
 				rotating=false;
 				virt=false;
 				forcecam=false;
@@ -881,7 +864,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			};
 			if (!strncmp("boxcoords", ptline, 9))
 			{
-				sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&lx,&hx,&ly,&hy,&lz, &hz);
+				sscanf(ptline, "boxcoords %f, %f, %f, %f, %f, %f",&l.x,&h.x,&l.y,&h.y,&l.z, &h.z);
 				continue;
 			}
 			if (!strncmp("mesh", ptline, 4))
@@ -891,19 +874,19 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 			}
 			if (!strncmp("rotate", ptline, 6))
 			{
-				sscanf(ptline, "rotate %f, %f, %f",&srx, &sry, &srz);
+				sscanf(ptline, "rotate %f, %f, %f",&sr.x, &sr.y, &sr.z);
 				rotating=true;
 				continue;
 			}
 			if (!strncmp("forcecamera", ptline, 11))
 			{
-				sscanf(ptline, "forcecamera %f, %f, %f",&fcx, &fcy, &fcz);
+				sscanf(ptline, "forcecamera %f, %f, %f",&fc.x, &fc.y, &fc.z);
 				forcecam=true;
 				continue;
 			}
 			if (!strncmp("direction", ptline, 9))
 			{
-				sscanf(ptline, "direction %f, %f, %f",&drx, &dry, &drz);
+				sscanf(ptline, "direction %f, %f, %f",&dr.x, &dr.y, &dr.z);
 				continue;
 			}
 			if (!strncmp("frictionconfig", ptline, 14) && strlen(ptline) > 15)
@@ -942,19 +925,19 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 
 				continue;
 			}
-			//resp=sscanf(ptline, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %c",&lx,&hx,&ly, &hy,&lz, &hz, &srx, &sry, &srz,&type);
 			if (!strcmp("endbox", ptline))
 			{
 				if (enable_collisions)
 				{
-					int boxnum = gEnv->collisions->addCollisionBox(tenode, rotating, virt,px,py,pz,rx,ry,rz,lx,hx,ly,hy,lz,hz,srx,sry,srz,eventname, instancename, forcecam, Vector3(fcx, fcy, fcz), scx, scy, scz, drx, dry, drz, event_filter, scripthandler);
+					const String eventname = eventname;
+					int boxnum = gEnv->collisions->addCollisionBox(tenode, rotating, virt, pos, rot, l, h, sr, eventname, instancename, forcecam, fc, sc, dr, event_filter, scripthandler);
 					obj->collBoxes.push_back((boxnum));
 				}
 				continue;
 			}
 			if (!strcmp("endmesh", ptline))
 			{
-				gEnv->collisions->addCollisionMesh(collmesh, Vector3(px,py,pz), tenode->getOrientation(), Vector3(scx, scy, scz), gm, &(obj->collTris));
+				gEnv->collisions->addCollisionMesh(collmesh, Vector3(pos.x,pos.y,pos.z), tenode->getOrientation(), sc, gm, &(obj->collTris));
 				continue;
 			}
 
@@ -983,7 +966,9 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				{
 					pAff = pParticleSys->getAffector(i);
 					if (pAff->getType()=="ExtinguishableFire")
+					{
 						((ExtinguishableFireAffector*)pAff)->setInstanceName(obj->instanceName);
+					}
 				}
 #endif // USE_ANGELSCRIPT
 
@@ -1027,7 +1012,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 					AnimationStateSet *s = mo->getEntity()->getAllAnimationStates();
 					if (!s->hasAnimationState(String(animname)))
 					{
-						LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
+						LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + name + ".odef' not found!");
 						continue;
 					}
 					animated_object_t ao;
@@ -1046,7 +1031,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 					}
 					if (!ao.anim)
 					{
-						LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + String(name) + ".odef' not found!");
+						LOG("ODEF: animation '" + String(animname) + "' for mesh: '" + String(mesh) + "' in odef file '" + name + ".odef' not found!");
 						continue;
 					}
 					ao.anim->setEnabled(true);
@@ -1062,14 +1047,14 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				MaterialPtr m = MaterialManager::getSingleton().getByName(matName);
 				if (m.getPointer() == 0)
 				{
-					LOG("ODEF: problem with drawTextOnMeshTexture command: mesh material not found: "+String(fname)+" : "+String(ptline));
+					LOG("ODEF: problem with drawTextOnMeshTexture command: mesh material not found: "+odefname+" : "+String(ptline));
 					continue;
 				}
 				String texName = m->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
 				Texture* background = (Texture *)TextureManager::getSingleton().getByName(texName).getPointer();
 				if (!background)
 				{
-					LOG("ODEF: problem with drawTextOnMeshTexture command: mesh texture not found: "+String(fname)+" : "+String(ptline));
+					LOG("ODEF: problem with drawTextOnMeshTexture command: mesh texture not found: "+odefname+" : "+String(ptline));
 					continue;
 				}
 
@@ -1081,7 +1066,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				TexturePtr texture = TextureManager::getSingleton().createManual(tmpTextName, ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, TEX_TYPE_2D, (Ogre::uint)background->getWidth(), (Ogre::uint)background->getHeight(), MIP_UNLIMITED , PF_X8R8G8B8, Ogre::TU_STATIC|Ogre::TU_AUTOMIPMAP, new ResourceBuffer());
 				if (texture.getPointer() == 0)
 				{
-					LOG("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+String(fname)+" : "+String(ptline));
+					LOG("ODEF: problem with drawTextOnMeshTexture command: could not create texture: "+odefname+" : "+String(ptline));
 					continue;
 				}
 
@@ -1093,13 +1078,13 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				int res = sscanf(ptline, "drawTextOnMeshTexture %f, %f, %f, %f, %f, %f, %f, %f, %c, %s %s", &x, &y, &w, &h, &r, &g, &b, &a, &option, fontname, text);
 				if (res < 11)
 				{
-					LOG("ODEF: problem with drawTextOnMeshTexture command: "+String(fname)+" : "+String(ptline));
+					LOG("ODEF: problem with drawTextOnMeshTexture command: "+odefname+" : "+String(ptline));
 					continue;
 				}
 
-				// cehck if we got a template argument
+				// check if we got a template argument
 				if (!strncmp(text, "{{argument1}}", 13))
-					strncpy(text, instancename, 250);
+					strncpy(text, instancename.c_str(), 250);
 
 				// replace '_' with ' '
 				char *text_pointer = text;
@@ -1108,7 +1093,7 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				Font* font = (Font *)FontManager::getSingleton().getByName(String(fontname)).getPointer();
 				if (!font)
 				{
-					LOG("ODEF: problem with drawTextOnMeshTexture command: font not found: "+String(fname)+" : "+String(ptline));
+					LOG("ODEF: problem with drawTextOnMeshTexture command: font not found: "+odefname+" : "+String(ptline));
 					continue;
 				}
 
@@ -1135,34 +1120,33 @@ void TerrainObjectManager::loadObject(const char* name, float px, float py, floa
 				continue;
 			}
 
-			LOG("ODEF: unknown command in "+String(fname)+" : "+String(ptline));
+			LOG("ODEF: unknown command in "+odefname+" : "+String(ptline));
 		}
 
 		//add icons if type is set
 #ifdef USE_MYGUI
 		String typestr = "";
-		if (type && gEnv->surveyMap)
+		if (!type.empty() && gEnv->surveyMap)
 		{
-			typestr = String(type);
+			typestr = type;
 			// hack for raceways
-			if (!strcmp(name, "chp-checkpoint"))
+			if (name == "chp-checkpoint")
 				typestr = "checkpoint";
-			if (!strcmp(name, "chp-start"))
+			if (name == "chp-start")
 				typestr = "racestart";
-			if (!strncmp(name, "road", 4))
+			if (name == "road", 4)
 				typestr = "road";
 
-			if (typestr != String("") && typestr != String("road") && typestr != String("sign"))
+			if (typestr != "" && typestr != "road" && typestr != "sign")
 			{
 				SurveyMapEntity *e = gEnv->surveyMap->createMapEntity(typestr);
 				if (e)
 				{
 					e->setVisibility(true);
-					e->setPosition(px, pz);
-					e->setRotation(Radian(ry));
+					e->setPosition(pos);
+					e->setRotation(Radian(rot.y));
 
-					if (String(name) != String(""))
-						e->setDescription(String(instancename));
+					if (!name.empty()) e->setDescription(instancename);
 				}
 			}
 		}

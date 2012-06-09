@@ -20,12 +20,12 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "GameScript.h"
 
 // AS addons start
-#include "scriptstdstring/scriptstdstring.h"
-#include "scriptmath/scriptmath.h"
 #include "contextmgr/contextmgr.h"
 #include "scriptany/scriptany.h"
 #include "scriptarray/scriptarray.h"
 #include "scripthelper/scripthelper.h"
+#include "scriptmath/scriptmath.h"
+#include "scriptstdstring/scriptstdstring.h"
 #include "scriptstring/scriptstring.h"
 // AS addons end
 
@@ -51,6 +51,7 @@ along with Rigs of Rods.  If not, see <http://www.gnu.org/licenses/>.
 #include "Settings.h"
 #include "SkyManager.h"
 #include "TerrainManager.h"
+#include "TerrainObjectManager.h"
 #include "Utils.h"
 #include "Water.h"
 
@@ -58,8 +59,8 @@ using namespace Ogre;
 
 /* class that implements the interface for the scripts */
 GameScript::GameScript(ScriptEngine *se) :
-	  apiThread()
-	, mse(se)
+	  mse(se)
+	, apiThread()
 {
 }
 
@@ -67,107 +68,94 @@ GameScript::~GameScript()
 {
 }
 
-void GameScript::log(std::string &msg)
+void GameScript::log(const String &msg)
 {
 	SLOG(msg);
 }
 
 double GameScript::getTime()
 {
-	return gEnv->frameListener->getTime();
+	double result = 0.0l;
+	if (gEnv->frameListener) result = gEnv->frameListener->getTime();
+	return result;
 }
 
-void GameScript::setPersonPosition(Vector3 &vec)
+void GameScript::setPersonPosition(const Vector3 &vec)
 {
-	if (gEnv->frameListener && gEnv->frameListener->person) gEnv->frameListener->person->setPosition(Vector3(vec.x, vec.y, vec.z));
+	if (gEnv->player) gEnv->player->setPosition(vec);
 }
 
-void GameScript::loadTerrain(std::string &terrain)
+void GameScript::loadTerrain(const String &terrain)
 {
 	if (gEnv->frameListener) gEnv->frameListener->loadTerrain(terrain);
 }
 
 Vector3 GameScript::getPersonPosition()
 {
-	if (gEnv->frameListener && gEnv->frameListener->person)
-	{
-		Vector3 ov = gEnv->frameListener->person->getPosition();
-		return Vector3(ov.x, ov.y, ov.z);
-	}
-	return Vector3::ZERO;
+	Vector3 result(Vector3::ZERO);
+	if (gEnv->player) result = gEnv->player->getPosition();
+	return result;
 }
 
-void GameScript::movePerson(Vector3 vec)
+void GameScript::movePerson(const Vector3 &vec)
 {
-	if (gEnv->frameListener && gEnv->frameListener->person) gEnv->frameListener->person->move(Vector3(vec.x, vec.y, vec.z));
+	if (gEnv->player) gEnv->player->move(vec);
 }
 
-std::string GameScript::getCaelumTime()
+String GameScript::getCaelumTime()
 {
+	String result = "";
 #ifdef USE_CAELUM
-	return gEnv->terrainManager->getSkyManager()->getPrettyTime();
-#else
-	return "";
+	if (gEnv->terrainManager) result = gEnv->terrainManager->getSkyManager()->getPrettyTime();
 #endif // USE_CAELUM
+	return result;
 }
 
 void GameScript::setCaelumTime(float value)
 {
 #ifdef USE_CAELUM
-	gEnv->terrainManager->getSkyManager()->setTimeFactor(value);
+	if (gEnv->terrainManager) gEnv->terrainManager->getSkyManager()->setTimeFactor(value);
 #endif // USE_CAELUM
 }
 
 bool GameScript::getCaelumAvailable()
 {
+	bool result = false;
 #ifdef USE_CAELUM
-	return gEnv->terrainManager->getSkyManager() != 0;
-#else
-	return false;
+	if (gEnv->terrainManager) result = gEnv->terrainManager->getSkyManager() != 0;
 #endif // USE_CAELUM
+	return result;
 }
 
 float GameScript::stopTimer()
 {
-	if (gEnv->frameListener)
-	{
-		return gEnv->frameListener->stopTimer();
-	}
-	return 0.0f;
+	float result = 0.0f;
+	if (gEnv->frameListener) result = gEnv->frameListener->stopTimer();
+	return result;
 }
 
 void GameScript::startTimer()
 {
-	if (gEnv->frameListener)
-	{
-		gEnv->frameListener->startTimer();
-	}
+	if (gEnv->frameListener) gEnv->frameListener->startTimer();
 }
 
 void GameScript::setWaterHeight(float value)
 {
-	if (gEnv->frameListener && gEnv->terrainManager->getWater())
-	{
-		gEnv->terrainManager->getWater()->setHeight(value);
-	}
+	if (gEnv->terrainManager && gEnv->terrainManager->getWater()) gEnv->terrainManager->getWater()->setHeight(value);
 }
 
 float GameScript::getGroundHeight(Vector3 &v)
 {
-	if (gEnv->terrainManager->getHeightFinder())
-	{
-		return gEnv->terrainManager->getHeightFinder()->getHeightAt(v.x, v.z);
-	}
-	return -1;
+	float result = -1.0f;
+	if (gEnv->terrainManager && gEnv->terrainManager->getHeightFinder()) result = gEnv->terrainManager->getHeightFinder()->getHeightAt(v.x, v.z);
+	return result;
 }
 
 float GameScript::getWaterHeight()
 {
-	if (gEnv->frameListener && gEnv->terrainManager->getWater())
-	{
-		return gEnv->terrainManager->getWater()->getHeight();
-	}
-	return 0;
+	float result = 0.0f;
+	if (gEnv->terrainManager && gEnv->terrainManager->getWater()) result = gEnv->terrainManager->getWater()->getHeight();
+	return result;
 }
 
 Beam *GameScript::getCurrentTruck()
@@ -177,19 +165,14 @@ Beam *GameScript::getCurrentTruck()
 
 float GameScript::getGravity()
 {
-	if (gEnv->frameListener)
-	{
-		return gEnv->terrainManager->getGravity();
-	}
-	return 0;
+	float result = 0.0f;
+	if (gEnv->frameListener) result = gEnv->terrainManager->getGravity();
+	return result;
 }
 
 void GameScript::setGravity(float value)
 {
-	if (gEnv->frameListener)
-	{
-		gEnv->terrainManager->setGravity(value);
-	}
+	if (gEnv->terrainManager) gEnv->terrainManager->setGravity(value);
 }
 
 Beam *GameScript::getTruckByNum(int num)
@@ -204,46 +187,42 @@ int GameScript::getNumTrucks()
 
 int GameScript::getNumTrucksByFlag(int flag)
 {
-	int res = 0;
-	for (int i=0; i< BeamFactory::getSingleton().getTruckCount(); i++)
+	int result = 0;
+	for (int i=0; i < BeamFactory::getSingleton().getTruckCount(); i++)
 	{
 		Beam *truck = BeamFactory::getSingleton().getTruck(i);
-		if (!truck && !flag)
-			res++;
+		if (!truck && !flag) result++;
 		if (!truck) continue;
-		if (truck->state == flag)
-			res++;
+		if (truck->state == flag) result++;
 	}
-	return res;
+	return result;
 }
 
 int GameScript::getCurrentTruckNumber()
 {
-	if (gEnv->frameListener) return BeamFactory::getSingleton().getCurrentTruckNumber();
-	return -1;
+	return BeamFactory::getSingleton().getCurrentTruckNumber();
 }
 
 void GameScript::registerForEvent(int eventValue)
 {
-	if (!mse) return;
-	mse->eventMask += eventValue;
+	if (mse) mse->eventMask += eventValue;
 }
 
-void GameScript::flashMessage(std::string &txt, float time, float charHeight)
+void GameScript::flashMessage(String &txt, float time, float charHeight)
 {
 #ifdef USE_MYGUI
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, "script_code_red.png");
 #endif // USE_MYGUI
 }
 
-void GameScript::message(std::string &txt, std::string &icon, float timeMilliseconds, bool forceVisible)
+void GameScript::message(String &txt, String &icon, float timeMilliseconds, bool forceVisible)
 {
 #ifdef USE_MYGUI
 	Console::getSingleton().putMessage(Console::CONSOLE_MSGTYPE_SCRIPT, Console::CONSOLE_SYSTEM_NOTICE, txt, icon, timeMilliseconds, forceVisible);
 #endif // USE_MYGUI
 }
 
-void GameScript::setDirectionArrow(std::string &text, Vector3 &vec)
+void GameScript::setDirectionArrow(String &text, Vector3 &vec)
 {
 	if (gEnv->frameListener) gEnv->frameListener->setDirectionArrow(const_cast<char*>(text.c_str()), Vector3(vec.x, vec.y, vec.z));
 }
@@ -258,7 +237,7 @@ void GameScript::setChatFontSize(int size)
 	//NETCHAT.setFontSize(size);
 }
 
-void GameScript::showChooser(std::string &type, std::string &instance, std::string &box)
+void GameScript::showChooser(const String &type, const String &instance, const String &box)
 {
 #ifdef USE_MYGUI
 	SelectorWindow::LoaderType ntype = SelectorWindow::LT_None;
@@ -277,30 +256,32 @@ void GameScript::showChooser(std::string &type, std::string &instance, std::stri
 	
 	if (ntype != SelectorWindow::LT_None)
 	{
-		gEnv->frameListener->showLoad(ntype, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+		if (gEnv->frameListener) gEnv->frameListener->showLoad(ntype, instance, box);
 	}
 #endif //USE_MYGUI
 }
 
-void GameScript::repairVehicle(std::string &instance, std::string &box, bool keepPosition)
+void GameScript::repairVehicle(const String &instance, const String &box, bool keepPosition)
 {
-	BeamFactory::getSingleton().repairTruck(gEnv->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()), keepPosition);
+	BeamFactory::getSingleton().repairTruck(gEnv->collisions, instance, box, keepPosition);
 }
 
-void GameScript::removeVehicle(std::string &instance, std::string &box)
+void GameScript::removeVehicle(const String &instance, const String &box)
 {
-	BeamFactory::getSingleton().removeTruck(gEnv->collisions, const_cast<char*>(instance.c_str()), const_cast<char*>(box.c_str()));
+	BeamFactory::getSingleton().removeTruck(gEnv->collisions, instance, box);
 }
 
-
-void GameScript::destroyObject(const std::string &instanceName)
+void GameScript::destroyObject(const String &instanceName)
 {
-	//gEnv->frameListener->unloadObject(const_cast<char*>(instanceName.c_str()));
+	if (gEnv->terrainManager && gEnv->terrainManager->getObjectManager())
+	{
+		gEnv->terrainManager->getObjectManager()->unloadObject(instanceName);
+	}
 }
 
-void GameScript::spawnObject(const std::string &objectName, const std::string &instanceName, Vector3 &pos, Vector3 &rot, const std::string &eventhandler, bool uniquifyMaterials)
+void GameScript::spawnObject(const String &objectName, const String &instanceName, const Vector3 &pos, const Vector3 &rot, const String &eventhandler, bool uniquifyMaterials)
 {
-	AngelScript::asIScriptModule *mod=0;
+	AngelScript::asIScriptModule *mod = 0;
 	try
 	{
 		mod = mse->getEngine()->GetModule(mse->moduleName, AngelScript::asGM_ONLY_IF_EXISTS);
@@ -313,8 +294,12 @@ void GameScript::spawnObject(const std::string &objectName, const std::string &i
 	int functionPtr = mod->GetFunctionIdByName(eventhandler.c_str());
 
 	// trying to create the new object
-	SceneNode *bakeNode=gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
-	//gEnv->frameListener->loadObject(const_cast<char*>(objectName.c_str()), pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, bakeNode, const_cast<char*>(instanceName.c_str()), true, functionPtr, const_cast<char*>(objectName.c_str()), uniquifyMaterials);
+	SceneNode *bakeNode = gEnv->sceneManager->getRootSceneNode()->createChildSceneNode();
+	if (gEnv->terrainManager && gEnv->terrainManager->getObjectManager())
+	{
+		const String type = "";
+		gEnv->terrainManager->getObjectManager()->loadObject(objectName, pos, rot, bakeNode, instanceName, type, true, functionPtr, uniquifyMaterials);
+	}
 }
 
 void GameScript::hideDirectionArrow()
@@ -322,7 +307,7 @@ void GameScript::hideDirectionArrow()
 	if (gEnv->frameListener) gEnv->frameListener->setDirectionArrow(0, Vector3::ZERO);
 }
 
-int GameScript::setMaterialAmbient(const std::string &materialName, float red, float green, float blue)
+int GameScript::setMaterialAmbient(const String &materialName, float red, float green, float blue)
 {
 	try
 	{
@@ -337,7 +322,7 @@ int GameScript::setMaterialAmbient(const std::string &materialName, float red, f
 	return 1;
 }
 
-int GameScript::setMaterialDiffuse(const std::string &materialName, float red, float green, float blue, float alpha)
+int GameScript::setMaterialDiffuse(const String &materialName, float red, float green, float blue, float alpha)
 {
 	try
 	{
@@ -352,7 +337,7 @@ int GameScript::setMaterialDiffuse(const std::string &materialName, float red, f
 	return 1;
 }
 
-int GameScript::setMaterialSpecular(const std::string &materialName, float red, float green, float blue, float alpha)
+int GameScript::setMaterialSpecular(const String &materialName, float red, float green, float blue, float alpha)
 {
 	try
 	{
@@ -367,7 +352,7 @@ int GameScript::setMaterialSpecular(const std::string &materialName, float red, 
 	return 1;
 }
 
-int GameScript::setMaterialEmissive(const std::string &materialName, float red, float green, float blue)
+int GameScript::setMaterialEmissive(const String &materialName, float red, float green, float blue)
 {
 	try
 	{
@@ -382,7 +367,7 @@ int GameScript::setMaterialEmissive(const std::string &materialName, float red, 
 	return 1;
 }
 
-int GameScript::getSafeTextureUnitState(TextureUnitState **tu, const std::string materialName, int techniqueNum, int passNum, int textureUnitNum)
+int GameScript::getSafeTextureUnitState(TextureUnitState **tu, const String materialName, int techniqueNum, int passNum, int textureUnitNum)
 {
 	try
 	{
@@ -413,7 +398,7 @@ int GameScript::getSafeTextureUnitState(TextureUnitState **tu, const std::string
 	return 1;
 }
 
-int GameScript::setMaterialTextureName(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, const std::string &textureName)
+int GameScript::setMaterialTextureName(const String &materialName, int techniqueNum, int passNum, int textureUnitNum, const String &textureName)
 {
 	TextureUnitState *tu = 0;
 	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
@@ -425,7 +410,7 @@ int GameScript::setMaterialTextureName(const std::string &materialName, int tech
 	return res;
 }
 
-int GameScript::setMaterialTextureRotate(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation)
+int GameScript::setMaterialTextureRotate(const String &materialName, int techniqueNum, int passNum, int textureUnitNum, float rotation)
 {
 	TextureUnitState *tu = 0;
 	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
@@ -436,7 +421,7 @@ int GameScript::setMaterialTextureRotate(const std::string &materialName, int te
 	return res;
 }
 
-int GameScript::setMaterialTextureScroll(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy)
+int GameScript::setMaterialTextureScroll(const String &materialName, int techniqueNum, int passNum, int textureUnitNum, float sx, float sy)
 {
 	TextureUnitState *tu = 0;
 	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
@@ -447,7 +432,7 @@ int GameScript::setMaterialTextureScroll(const std::string &materialName, int te
 	return res;
 }
 
-int GameScript::setMaterialTextureScale(const std::string &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v)
+int GameScript::setMaterialTextureScale(const String &materialName, int techniqueNum, int passNum, int textureUnitNum, float u, float v)
 {
 	TextureUnitState *tu = 0;
 	int res = getSafeTextureUnitState(&tu, materialName, techniqueNum, passNum, textureUnitNum);
@@ -464,65 +449,66 @@ float GameScript::rangeRandom(float from, float to)
 	return Math::RangeRandom(from, to);
 }
 
-int GameScript::getLoadedTerrain(std::string &result)
+int GameScript::getLoadedTerrain(String &result)
 {
-	//result = gEnv->frameListener->loadedTerrain;
-	return 0;
+	String terrainName = "";
+
+	if (gEnv->terrainManager)
+	{
+		terrainName = gEnv->terrainManager->getTerrainName();
+		result = terrainName;
+	}
+
+	return !terrainName.empty();
 }
 
 void GameScript::clearEventCache()
 {
-	gEnv->collisions->clearEventCache();
+	if (gEnv->collisions) gEnv->collisions->clearEventCache();
 }
 
-void GameScript::setCameraPosition(Vector3 &pos)
+void GameScript::setCameraPosition(const Vector3 &pos)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->setPosition(Vector3(pos.x, pos.y, pos.z));
+	if (gEnv->mainCamera) gEnv->mainCamera->setPosition(Vector3(pos.x, pos.y, pos.z));
 }
 
-void GameScript::setCameraDirection(Vector3 &rot)
+void GameScript::setCameraDirection(const Vector3 &rot)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->setDirection(Vector3(rot.x, rot.y, rot.z));
+	if (gEnv->mainCamera) gEnv->mainCamera->setDirection(Vector3(rot.x, rot.y, rot.z));
 }
 
 void GameScript::setCameraYaw(float rotX)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->yaw(Degree(rotX));
+	if (gEnv->mainCamera) gEnv->mainCamera->yaw(Degree(rotX));
 }
 
 void GameScript::setCameraPitch(float rotY)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->pitch(Degree(rotY));
+	if (gEnv->mainCamera) gEnv->mainCamera->pitch(Degree(rotY));
 }
 
 void GameScript::setCameraRoll(float rotZ)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->roll(Degree(rotZ));
+	if (gEnv->mainCamera) gEnv->mainCamera->roll(Degree(rotZ));
 }
 
 Vector3 GameScript::getCameraPosition()
 {
-	// TODO: TOFIX
-	//Vector3 pos = gEnv->frameListener->getCamera()->getPosition();
-	return Vector3::ZERO; //Vector3(pos.x, pos.y, pos.z);
+	Vector3 result(Vector3::ZERO);
+	if (gEnv->mainCamera) result = gEnv->mainCamera->getPosition();
+	return result;
 }
 
 Vector3 GameScript::getCameraDirection()
 {
-	// TODO: TOFIX
-	//Vector3 rot = gEnv->frameListener->getCamera()->getDirection();
-	return Vector3::ZERO; //(rot.x, rot.y, rot.z);
+	Vector3 result(Vector3::ZERO);
+	if (gEnv->mainCamera) result = gEnv->mainCamera->getDirection();
+	return result;
 }
 
-void GameScript::cameraLookAt(Vector3 &pos)
+void GameScript::cameraLookAt(const Vector3 &pos)
 {
-	// TODO: TOFIX
-	//gEnv->frameListener->getCamera()->lookAt(Vector3(pos.x, pos.y, pos.z));
+	if (gEnv->mainCamera) gEnv->mainCamera->lookAt(Vector3(pos.x, pos.y, pos.z));
 }
 
 #ifdef USE_CURL
@@ -578,14 +564,14 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	struct curl_httppost *lastptr=NULL;
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::const_iterator it;
+	std::map<String, AngelScript::CScriptDictionary::valueStruct>::const_iterator it;
 	for (it = params.dict->dict.begin(); it != params.dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
 		if (typeId == mse->getEngine()->GetTypeIdByDecl("string"))
 		{
-			// its a std::string
-			std::string *str = (std::string *)it->second.valueObj;
+			// its a String
+			String *str = (String *)it->second.valueObj;
 			curl_formadd(&formpost, &lastptr, CURLFORM_COPYNAME, it->first.c_str(), CURLFORM_COPYCONTENTS, str->c_str(), CURLFORM_END);
 		}
 		else if (typeId == AngelScript::asTYPEID_INT8 \
@@ -673,7 +659,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	char *curl_err_str[CURL_ERROR_SIZE];
 	memset(curl_err_str, 0, CURL_ERROR_SIZE);
 
-	std::string url = "http://" + std::string(REPO_SERVER) + params.apiquery;
+	String url = "http://" + String(REPO_SERVER) + params.apiquery;
 	curl_easy_setopt(curl, CURLOPT_URL,              url.c_str());
 
 	/* send all data to this function  */
@@ -707,12 +693,12 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 
 	curl_formfree(formpost);
 
-	std::string result;
+	String result;
 
 	if (chunk.memory)
 	{
-		// convert memory into std::string now
-		result = std::string(chunk.memory);
+		// convert memory into String now
+		result = String(chunk.memory);
 
 		// then free
 		free(chunk.memory);
@@ -724,7 +710,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	if (res != CURLE_OK)
 	{
 		const char *errstr = curl_easy_strerror(res);
-		result = "ERROR: " + std::string(errstr);
+		result = "ERROR: " + String(errstr);
 	}
 
 	LOG("online API result: " + result);
@@ -738,7 +724,7 @@ int GameScript::useOnlineAPIDirectly(OnlineAPIParams_t params)
 	return 0;
 }
 
-int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CScriptDictionary &d, std::string &result)
+int GameScript::useOnlineAPI(const String &apiquery, const AngelScript::CScriptDictionary &d, String &result)
 {
 	// malloc this, so we are safe from this function scope
 	OnlineAPIParams_t *params = (OnlineAPIParams_t *)malloc(sizeof(OnlineAPIParams_t));
@@ -764,19 +750,19 @@ int GameScript::useOnlineAPI(const std::string &apiquery, const AngelScript::CSc
 	if (con) con->putMessage(Console::CONSOLE_MSGTYPE_INFO, Console::CONSOLE_SYSTEM_NOTICE, _L("using Online API..."), "information.png", 2000);
 #endif // USE_MYGUI
 
-	// fix the std::string objects in the dict
-	// why we need to do this: when we copy the std::map (dict) over, we calso jsut copy the pointers to std::string in it.
+	// fix the String objects in the dict
+	// why we need to do this: when we copy the std::map (dict) over, we calso jsut copy the pointers to String in it.
 	// when this continues and forks, AS releases the strings.
 	// so we will allocate new strings that are persistent.
-	std::map<std::string, AngelScript::CScriptDictionary::valueStruct>::iterator it;
+	std::map<String, AngelScript::CScriptDictionary::valueStruct>::iterator it;
 	for (it = params->dict->dict.begin(); it != params->dict->dict.end(); it++)
 	{
 		int typeId = it->second.typeId;
 		if (typeId == mse->getEngine()->GetTypeIdByDecl("string"))
 		{
-			// its a std::string, copy it over
-			std::string *str = (std::string *)it->second.valueObj;
-			it->second.valueObj = (void *)new std::string(*str);
+			// its a String, copy it over
+			String *str = (String *)it->second.valueObj;
+			it->second.valueObj = (void *)new String(*str);
 		}
 	}
 
@@ -804,32 +790,32 @@ void GameScript::boostCurrentTruck(float factor)
 	}
 }
 
-int GameScript::addScriptFunction(const std::string &arg)
+int GameScript::addScriptFunction(const String &arg)
 {
 	return mse->addFunction(arg);
 }
 
-int GameScript::scriptFunctionExists(const std::string &arg)
+int GameScript::scriptFunctionExists(const String &arg)
 {
 	return mse->functionExists(arg);
 }
 
-int GameScript::deleteScriptFunction(const std::string &arg)
+int GameScript::deleteScriptFunction(const String &arg)
 {
 	return mse->deleteFunction(arg);
 }
 
-int GameScript::addScriptVariable(const std::string &arg)
+int GameScript::addScriptVariable(const String &arg)
 {
 	return mse->addVariable(arg);
 }
 
-int GameScript::deleteScriptVariable(const std::string &arg)
+int GameScript::deleteScriptVariable(const String &arg)
 {
 	return mse->deleteVariable(arg);
 }
 
-int GameScript::sendGameCmd(const std::string& message)
+int GameScript::sendGameCmd(const String& message)
 {
 	Network *net = gEnv->frameListener->getNetwork();
 	if (!net) return -11;

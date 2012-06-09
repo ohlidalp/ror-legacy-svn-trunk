@@ -46,6 +46,7 @@ public:
 	void setGravity(float value);
 	float getGravity() { return gravity; };
 
+	Ogre::String getTerrainName() { return terrain_name; };
 	Ogre::Vector3 getMaxTerrainSize();
 
 	// some getters
@@ -56,6 +57,7 @@ public:
 	Ogre::Vector3 getSpawnPos() { return start_position; };
 	SkyManager *getSkyManager() { return sky_manager; };
 	TerrainGeometryManager *getGeometryManager() { return geometry_manager; };
+	TerrainObjectManager *getObjectManager() { return object_manager; };
 	Water *getWater() { return water; };
 	bool getTrucksLoaded() { return trucksLoaded; };
 
@@ -88,16 +90,15 @@ protected:
 	Ogre::String ogre_terrain_config_filename;
 	Ogre::String terrain_name;
 	Ogre::Vector3 start_position;
+	bool trucksLoaded;
 	bool use_caelum;
 	float gravity;
+	float pagedDetailFactor;
 	float water_line;
 	int categoryID;
 	int farclip;
-	int loading_state;
-	int version;
 	int pagedMode;
-	float pagedDetailFactor;
-	bool trucksLoaded;
+	int version;
 
 	// internal methods
 	void initCamera();

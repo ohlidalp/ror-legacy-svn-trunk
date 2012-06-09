@@ -455,32 +455,14 @@ void Character::update(float dt)
 		if (idleanim)
 		{
 			if (isswimming)
+			{
 				setAnimationMode("Spot_swim", dt * 0.5f);
-			else
+			} else
+			{
 				setAnimationMode("Idle_sway", dt * 0.05f);
+			}
 		}
 
-		/*
-		//object contact
-		int numstep=100;
-		Vector3 dvec=(position-personode->getPosition());
-		Vector3 iposition=personode->getPosition();
-		for (int i=0; i<numstep; i++)
-		{
-		position=iposition+dvec*((float)(i+1)/numstep);
-		Vector3 position2=position+Vector3(0, 0.01, 0);
-		Vector3 position3=position+Vector3(0, 0.25, 0);
-		Vector3 rposition=position;
-		if (collisions->collisionCorrect(&position) || collisions->collisionCorrect(&position2))
-		{
-		if (persovspeed<0) persovspeed=0.0f;
-		Vector3 corr=rposition-position; corr.y=0;
-		if (corr.squaredLength()>0 && !collisions->collisionCorrect(&position3)) persovspeed=2.0; //autojump
-		perso_canJump = true;
-		break;
-		}
-		}
-		*/
 		mCharacterNode->setPosition(position);
 		updateMapIcon();
 	} else if (beamCoupling)
