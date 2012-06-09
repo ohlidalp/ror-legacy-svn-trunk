@@ -657,7 +657,7 @@ void TerrainObjectManager::unloadObject(const String &instancename)
 	// unload any collision tris
 	std::for_each(obj.collTris.begin(), obj.collTris.end(), removeCollisionTri);
 	// and any collision boxes
-	std::for_each(obj.collTris.begin(), obj.collTris.end(), removeCollisionBox);
+	std::for_each(obj.collBoxes.begin(), obj.collBoxes.end(), removeCollisionBox);
 
 	obj.sceneNode->detachAllObjects();
 	obj.sceneNode->setVisible(false);
